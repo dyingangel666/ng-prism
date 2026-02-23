@@ -42,3 +42,15 @@ Thumbs.db
 .nx/workspace-data
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+test-output
+
+# test-workspace: Angular CLI Workspace zum lokalen Testen
+# Nur .gitkeep und angular.json committen, nicht node_modules etc.
+test-workspace/node_modules
+test-workspace/dist
+test-workspace/.angular
+
+# Auto-generiertes Prism-Manifest (wird zur Laufzeit generiert)
+**/prism-manifest.ts
+**/plugin-registry.ts
