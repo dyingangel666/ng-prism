@@ -1,0 +1,55 @@
+{
+  "name": "ng-prism",
+  "version": "21.0.0",
+  "description": "Lightweight Angular-native component showcase — no story files needed.",
+  "keywords": ["angular", "storybook-alternative", "component-library", "styleguide", "showcase"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.js",
+      "default": "./dist/config/index.js"
+    },
+    "./plugin": {
+      "types": "./dist/plugin/index.d.ts",
+      "import": "./dist/plugin/index.js",
+      "default": "./dist/plugin/index.js"
+    }
+  },
+  "schematics": "./schematics/collection.json",
+  "builders": "./builders.json",
+  "files": [
+    "dist",
+    "schematics",
+    "builders.json",
+    "!**/*.tsbuildinfo"
+  ],
+  "peerDependencies": {
+    "@angular/core": "^21.0.0",
+    "@angular-devkit/architect": "^0.2100.0",
+    "@angular-devkit/schematics": "^21.0.0",
+    "typescript": ">=5.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@angular-devkit/architect": { "optional": false },
+    "@angular-devkit/schematics": { "optional": false }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USERNAME/ng-prism.git",
+    "directory": "packages/ng-prism"
+  }
+}
