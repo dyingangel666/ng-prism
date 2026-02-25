@@ -1,0 +1,38 @@
+{
+  "name": "@ng-prism/plugin-figma",
+  "version": "21.0.0",
+  "description": "Figma design embed panel for ng-prism.",
+  "keywords": ["ng-prism", "figma", "plugin", "angular", "styleguide"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "peerDependencies": {
+    "ng-prism": ">=21.0.0",
+    "@angular/core": ">=20.0.0"
+  },
+  "devDependencies": {
+    "ng-prism": "workspace:*"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USERNAME/ng-prism.git",
+    "directory": "packages/plugin-figma"
+  }
+}

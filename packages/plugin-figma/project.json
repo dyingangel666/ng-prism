@@ -1,0 +1,14 @@
+{
+  "name": "plugin-figma",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["ng-prism:build"],
+      "options": {
+        "command": "node_modules/.bin/ngc --project packages/plugin-figma/tsconfig.lib.json"
+      },
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/dist"]
+    }
+  }
+}

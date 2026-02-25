@@ -1,0 +1,17 @@
+import type { Type } from '@angular/core';
+
+export type StyleguidePage = CustomPage | ComponentPage;
+
+export interface CustomPage {
+  type: 'custom';
+  title: string;
+  category?: string;
+  data: Record<string, unknown>;
+}
+
+export interface ComponentPage {
+  type: 'component';
+  title: string;
+  category?: string;
+  component: Type<unknown>;
+}
