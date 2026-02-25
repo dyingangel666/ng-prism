@@ -1,0 +1,63 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "test-lib": {
+      "projectType": "library",
+      "root": "projects/test-lib",
+      "sourceRoot": "projects/test-lib/src",
+      "architect": {
+        "prism": {
+          "builder": "ng-prism:serve",
+          "options": {
+            "entryPoint": "projects/test-lib/src/public-api.ts",
+            "prismProject": "test-lib-prism",
+            "libraryProject": "test-lib",
+            "port": 4400
+          }
+        },
+        "prism-build": {
+          "builder": "ng-prism:build",
+          "options": {
+            "entryPoint": "projects/test-lib/src/public-api.ts",
+            "prismProject": "test-lib-prism",
+            "libraryProject": "test-lib",
+            "outputPath": "dist/test-lib-prism"
+          }
+        }
+      }
+    },
+    "test-lib-prism": {
+      "projectType": "application",
+      "root": "projects/test-lib-prism",
+      "sourceRoot": "projects/test-lib-prism/src",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": "dist/test-lib-prism",
+            "index": "projects/test-lib-prism/src/index.html",
+            "browser": "projects/test-lib-prism/src/main.ts",
+            "tsConfig": "projects/test-lib-prism/tsconfig.app.json",
+            "styles": [
+              "node_modules/highlight.js/styles/base16/solarized-dark.min.css"
+            ],
+            "polyfills": [
+              "zone.js"
+            ],
+            "allowedCommonJsDependencies": ["highlight.js"],
+            "preserveSymlinks": true
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "test-lib-prism:build",
+            "port": 4400
+          }
+        }
+      }
+    }
+  }
+}

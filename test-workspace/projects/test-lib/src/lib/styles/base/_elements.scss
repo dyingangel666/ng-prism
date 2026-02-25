@@ -1,0 +1,310 @@
+@use './variables' as *;
+@use './typoraphy' as *;
+
+/*************************************************************************************************************
+ * Custom elements/building blocks
+ *************************************************************************************************************/
+
+.sg-visually-hidden {
+    position: absolute;
+
+    // We need at least one of top/bottom/left/right in order to prevent cases where the
+    // absolute-positioned element is pushed down and can affect scrolling (see #24597).
+    // `left` was chosen here, because it's the least likely to break overrides where the
+    // element might have been positioned (e.g. `mat-checkbox`).
+    left: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+
+    // This works around a Chrome bug that can cause the tab to crash when large amounts of
+    // non-English text get wrapped: https://bugs.chromium.org/p/chromium/issues/detail?id=1201444
+    white-space: nowrap;
+
+    // Avoid some cases where the browser will still render the native controls (see #9049).
+    appearance: none;
+
+    // Avoid browsers rendering the focus ring in some cases.
+    outline: 0;
+    border: 0;
+    clip-path: inset(0 0 0 0);
+}
+
+.sg-link {
+    display: inline-flex;
+    align-items: center;
+    color: $color-accent-default;
+    cursor: pointer;
+
+    &--nounderline {
+        text-decoration: none;
+    }
+
+    &--small {
+        @include text-default-small;
+    }
+
+    &--xsmall {
+        @include text-strong-xsmall;
+    }
+
+    &--readmore {
+        display: block;
+        margin-top: $spacing-smallbase;
+    }
+
+    &--error {
+        color: $color-error-default;
+    }
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+$sg-form-gap: $spacing-small;
+$sg-form-separator-width: 10px;
+
+.sg-form {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-small;
+    align-items: flex-start;
+
+    > * {
+        width: 100%;
+    }
+
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $sg-form-gap;
+        align-items: flex-start;
+
+        &__separator {
+            width: $sg-form-separator-width;
+            padding-top: $spacing-small;
+            text-align: center;
+        }
+
+        &--100 {
+            > * {
+                width: 100%;
+            }
+        }
+
+        &--50-50 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        &--80-20 {
+            > *:first-child {
+                flex: 1 1 calc(80% - #{$sg-form-gap});
+            }
+
+            > *:last-child {
+                flex: 1 1 calc(20% - #{$sg-form-gap});
+            }
+        }
+
+        &--20-80 {
+            > *:first-child {
+                flex: 1 1 calc(20% - #{$sg-form-gap});
+            }
+
+            > *:last-child {
+                flex: 1 1 calc(80% - #{$sg-form-gap});
+            }
+        }
+
+        &--30-35-35 {
+            > *:nth-child(1) {
+                flex: 1 1 calc(20% - #{$sg-form-gap});
+            }
+
+            > *:nth-child(2),
+            > *:nth-child(3) {
+                flex: 1 1 calc(40% - #{$sg-form-gap});
+            }
+        }
+
+        &--50-space-50 {
+            > *:first-child {
+                flex: 1 1 calc(50% - #{$sg-form-gap + $sg-form-separator-width});
+            }
+
+            > *:last-child {
+                flex: 1 1 calc(50% - #{$sg-form-gap + $sg-form-separator-width});
+            }
+        }
+
+        &--33-33-33 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+    }
+
+    &__actions {
+        display: flex;
+        gap: $spacing-small;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    &--nogap {
+        gap: 0;
+    }
+}
+
+.sg-definitition-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-medium;
+    white-space: nowrap;
+
+    > div {
+        flex: 1;
+        flex-basis: calc(33.33% - 16px);
+        min-width: 250px;
+
+        > div {
+            // The first smaller label
+            &:nth-child(1) {
+                @include text-strong-medium;
+
+                position: relative;
+                margin-bottom: $spacing-smallbase;
+                color: $color-base-dark-100;
+                white-space: normal;
+
+                &:empty {
+                    height: 20px;
+
+                    &::before {
+                        position: absolute;
+                        top: 50%;
+                        width: 16px;
+                        height: 1px;
+                        content: '';
+                        background: $color-base-medium-100;
+                        transform: translateY(-50%);
+                    }
+                }
+            }
+
+            // All other following divs
+            &:nth-child(n + 2) {
+                @include text-default-medium;
+
+                position: relative;
+                color: $color-base-dark-80;
+                white-space: normal;
+
+                // Used to make sure richtext element styles are reverted
+                &.revertStyles * {
+                    all: revert;
+                    word-break: auto-phrase;
+                    white-space: normal;
+                }
+
+                &:empty {
+                    height: 20px;
+
+                    &::before {
+                        position: absolute;
+                        top: 50%;
+                        width: 16px;
+                        height: 1px;
+                        content: '';
+                        background: $color-base-medium-100;
+                        transform: translateY(-50%);
+                    }
+                }
+            }
+        }
+    }
+
+    &--fullwidth {
+        grid-template-columns: 1fr;
+        gap: $spacing-xlarge;
+    }
+
+    &--firstitemstrong {
+        > div:first-child > div:nth-child(2) {
+            @include text-strong-medium;
+        }
+    }
+}
+
+.sg-fieldset {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-medium;
+    padding: $spacing-medium;
+    background: rgba($color-accent-lighter, 0.15);
+    border: 1px solid $color-base-light-100;
+    border-radius: $border-radius-default;
+
+    &__legend {
+        position: absolute;
+        top: 0;
+        left: $spacing-small;
+        padding: 0;
+        font-size: 0.8rem;
+        color: $color-base-dark-80;
+        letter-spacing: normal;
+        background: $color-base-white;
+        border-radius: $spacing-small;
+        box-shadow: 0 0 6px 2px $color-base-white;
+        transform: translate3d(0, -50%, 0);
+    }
+
+    &__hint {
+        @include text-strong-xsmall;
+
+        margin-bottom: -$spacing-xsmall;
+        color: $color-base-medium-100;
+    }
+
+    &__wrapper {
+        display: flex;
+        gap: $spacing-small;
+        align-items: center;
+
+        .sg-fieldset {
+            flex: 1 1 auto;
+            padding: $spacing-small;
+
+            &__legend {
+                color: rgba($color-base-dark-80, 0.75);
+            }
+        }
+    }
+
+    &:focus-within {
+        color: $color-base-black-100;
+    }
+
+    &--smallpadding {
+        padding: $spacing-small;
+    }
+}
+
+.sg-noresults-box {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xsmall;
+    width: 100%;
+    padding: $spacing-medium;
+    color: $color-base-dark-80;
+    border: 1px solid $color-base-light-100;
+    border-radius: $spacing-xsmall;
+
+    &__title {
+        @include text-strong-large;
+    }
+}

@@ -9,6 +9,9 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
+  "angularCompilerOptions": {
+    "compilationMode": "full"
+  },
   "include": ["src/**/*.ts"],
   "references": [],
   "exclude": [

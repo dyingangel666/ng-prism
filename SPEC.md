@@ -188,7 +188,56 @@ export default defineConfig({
     a11yPlugin(),
     themePlugin({ themes: ['light', 'dark', 'high-contrast'] }),
   ],
+
+  /** Stufe 1: CSS Custom Properties für visuelles Theming */
+  theme: {
+    '--prism-primary': '#6366f1',
+    '--prism-sidebar-width': '300px',
+  },
+
+  /** Stufe 2: Einzelne UI-Sektionen durch eigene Komponenten ersetzen */
+  ui: {
+    header: MyBrandedHeaderComponent,
+  },
+
+  /** Stufe 3: Headless-Mode — komplett eigene App-Komponente */
+  // headless: true,
+  // appComponent: MyCustomAppComponent,
 });
+```
+
+### `NgPrismConfig` Interface (defineConfig)
+
+```typescript
+interface NgPrismConfig {
+  plugins?: NgPrismPlugin[];
+
+  /** Providers die beim Bootstrap der Styleguide-App registriert werden */
+  appProviders?: Provider[];
+
+  /** Stufe 1: CSS Custom Properties für visuelles Theming */
+  theme?: Record<string, string>;
+
+  /** Stufe 1 alternativ: Pfad zu einem eigenen Stylesheet */
+  themeStylesheet?: string;
+
+  /** Stufe 2: Einzelne UI-Sektionen durch eigene Komponenten ersetzen */
+  ui?: {
+    header?: Type<unknown>;
+    sidebar?: Type<unknown>;
+    componentHeader?: Type<unknown>;
+    renderer?: Type<unknown>;
+    controlsPanel?: Type<unknown>;
+    eventsPanel?: Type<unknown>;
+    footer?: Type<unknown>;
+  };
+
+  /** Stufe 3: Headless Mode — kein Standard-UI, nur Services */
+  headless?: boolean;
+
+  /** Stufe 3: Eigene Root-Komponente (nur wenn headless: true) */
+  appComponent?: Type<unknown>;
+}
 ```
 
 ### `NgPrismPlugin` Interface
@@ -390,6 +439,138 @@ Providers aus `@Showcase({ providers })` enthält.
 
 ---
 
+## Customization der Styleguide-App
+
+Die Styleguide-App ist in drei Stufen anpassbar — von einfacher Farbänderung
+bis hin zur komplett eigenen UI. Jede Stufe gibt mehr Kontrolle, erfordert
+aber auch mehr Aufwand.
+
+### Stufe 1: CSS Custom Properties (Low-Effort)
+
+Umfassendes Set an `--prism-*` CSS-Variablen für Farben, Typografie, Spacing
+und Layout-Dimensionen. Deckt den Großteil der visuellen Anpassungen ab.
+
+```typescript
+// ng-prism.config.ts
+export default defineConfig({
+  theme: {
+    '--prism-primary': '#6366f1',
+    '--prism-primary-hover': '#4f46e5',
+    '--prism-bg': '#ffffff',
+    '--prism-bg-surface': '#f8fafc',
+    '--prism-text': '#1e293b',
+    '--prism-text-muted': '#64748b',
+    '--prism-border': '#e2e8f0',
+    '--prism-sidebar-width': '280px',
+    '--prism-sidebar-bg': '#f1f5f9',
+    '--prism-header-height': '56px',
+    '--prism-font-family': '"Inter", sans-serif',
+    '--prism-font-mono': '"Fira Code", monospace',
+    '--prism-radius': '8px',
+    '--prism-radius-sm': '4px',
+    '--prism-panel-height': '240px',
+  },
+});
+```
+
+Alternativ kann ein eigenes Stylesheet angegeben werden:
+
+```typescript
+export default defineConfig({
+  themeStylesheet: './my-prism-theme.scss',
+});
+```
+
+### Stufe 2: Component Slots via Config (Medium)
+
+Jede UI-Sektion der Styleguide-App ist ein austauschbarer **Slot**.
+Entwickler können einzelne Sektionen durch eigene Angular-Komponenten ersetzen,
+ohne die gesamte App neu bauen zu müssen.
+
+```typescript
+export default defineConfig({
+  ui: {
+    header: MyCustomHeaderComponent,
+    sidebar: MyCustomSidebarComponent,
+    componentHeader: MyComponentHeaderComponent,
+    footer: MyFooterComponent,
+    // Nicht überschriebene Slots nutzen die Standard-Komponenten
+  },
+});
+```
+
+**Verfügbare Slots:**
+
+| Slot | Standard-Komponente | Beschreibung |
+|---|---|---|
+| `header` | `PrismHeaderComponent` | Top-Bar mit Logo, Suche, Theme-Toggle |
+| `sidebar` | `PrismSidebarComponent` | Navigations-Sidebar mit Kategorie-Baum |
+| `componentHeader` | `PrismComponentHeaderComponent` | Titel, Beschreibung, Tags der aktiven Komponente |
+| `renderer` | `PrismRendererComponent` | Viewport mit Varianten-Tabs und gerendeter Komponente |
+| `controlsPanel` | `PrismControlsPanelComponent` | Auto-generierte Input-Controls |
+| `eventsPanel` | `PrismEventsPanelComponent` | Event-Log für @Output()-Events |
+| `footer` | — (keiner) | Optionaler Footer |
+
+Custom-Komponenten bekommen per **Dependency Injection** Zugriff auf die
+Kern-Services (siehe unten). Damit können sie auf das Manifest, die Navigation
+und den Renderer-State zugreifen, ohne ng-prism-Interna kennen zu müssen.
+
+### Stufe 3: Headless Mode (Full Control)
+
+Für maximale Kontrolle liefert ng-prism nur die **Kern-Services** und
+**Building Blocks** als Public API. Der Entwickler baut seine eigene
+Styleguide-UI komplett selbst.
+
+```typescript
+export default defineConfig({
+  headless: true,
+  appComponent: MyCompletelyCustomAppComponent,
+});
+```
+
+```typescript
+@Component({
+  selector: 'my-prism-app',
+  standalone: true,
+  template: `
+    <my-sidebar [components]="components()" (select)="navigate($event)" />
+    <main>
+      <ng-container *prismRenderer="activeComponent()" />
+    </main>
+  `,
+})
+export class MyCompletelyCustomAppComponent {
+  private readonly manifest = inject(PrismManifestService);
+  private readonly navigation = inject(PrismNavigationService);
+
+  readonly components = this.manifest.components;
+  readonly activeComponent = this.navigation.activeComponent;
+
+  navigate(component: ScannedComponent): void {
+    this.navigation.select(component);
+  }
+}
+```
+
+### Building Blocks (Public API für Stufe 2 + 3)
+
+Diese Services und Direktiven werden als Public API exportiert und stehen
+Custom-Komponenten per DI zur Verfügung:
+
+| Export | Art | Beschreibung |
+|---|---|---|
+| `PrismManifestService` | Service | Zugriff auf das gescannte Manifest (Komponenten, Inputs, Outputs) |
+| `PrismNavigationService` | Service | Aktive Komponente, Kategorie-Baum, URL-Sync, Suche |
+| `PrismRendererService` | Service | Steuert das dynamische Rendering (Input-Werte, aktive Variante) |
+| `PrismEventLogService` | Service | Sammelt und exponiert @Output()-Events |
+| `PrismSearchService` | Service | Suche/Filter über Tags, Titel, Kategorie |
+| `PrismPluginService` | Service | Zugriff auf registrierte Plugins, Panels, Controls |
+| `PrismRendererDirective` | Direktive | `*prismRenderer` — rendert eine Komponente dynamisch (NgComponentOutlet-Wrapper) |
+
+**Alle Services nutzen Signals** (`signal()`, `computed()`) für reaktiven State.
+
+---
+
 ## `@Showcase` API
 
 ```typescript
@@ -450,7 +631,7 @@ ng-prism                          Kern: Decorator, Builder, Schematic, App-Templ
 ```
 
 **Versionierung:** Orientiert sich an der Angular-Version (wie ngrx, analog).
-`ng-prism@19.x` → Angular 19, `ng-prism@20.x` → Angular 20 etc.
+`ng-prism@21.x` → Angular 21, `ng-prism@22.x` → Angular 22 etc.
 
 ---
 
@@ -463,9 +644,13 @@ ng-prism                          Kern: Decorator, Builder, Schematic, App-Templ
 - [x] Auto-Controls für `boolean`, `string`, `number`, `union`-Typen
 - [x] Event-Log für `@Output()`-Events
 - [x] `ng run lib:styleguide` (Dev Server)
+- [x] Customization Stufe 1: CSS Custom Properties (`theme` in defineConfig)
 
 ## Backlog — Phase 2
 
+- [ ] Customization Stufe 2: Component Slots (`ui` in defineConfig)
+- [ ] Customization Stufe 3: Headless Mode (`headless` + `appComponent`)
+- [ ] Building Blocks als Public API (PrismManifestService, PrismNavigationService, etc.)
 - [ ] Static Build (`ng run lib:prism:build`) + GitHub Pages Deploy-Schematic
 - [ ] JSDoc-Markdown-Rendering in der Dokumentations-Sektion
 - [ ] Viewport-Switcher (Mobile / Tablet / Desktop)

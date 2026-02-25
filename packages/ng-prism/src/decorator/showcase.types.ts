@@ -17,6 +17,8 @@ export interface ShowcaseConfig {
    * For library-wide providers, use defineConfig({ appProviders }).
    */
   providers?: Provider[];
+  /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
+  meta?: Record<string, unknown>;
 }
 
 export interface Variant {

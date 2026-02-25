@@ -1,0 +1,39 @@
+@use './variables' as *;
+
+/*************************************************************************************************************
+* Mixins
+*************************************************************************************************************/
+
+@mixin transition($properties, $duration: $transition-default-duration, $easing: $transition-default-timing-fn) {
+    transition-timing-function: $easing;
+    transition-duration: #{$duration};
+    transition-property: #{$properties};
+}
+
+@mixin custom-scrollbar($backgroundColor: var(--color-base-light-60)) {
+    &::-webkit-scrollbar {
+        width: var(--scrollbar-width);
+    }
+
+    &::-webkit-scrollbar-track {
+        background: $backgroundColor;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--color-base-light-100);
+        border: 6px solid #{$backgroundColor};
+        border-radius: 20px;
+    }
+}
+
+@mixin remove-scrollbar {
+    &::-webkit-scrollbar {
+        width: 0;
+    }
+
+    &::-webkit-scrollbar-track,
+    &::-webkit-scrollbar-thumb,
+    &::-webkit-scrollbar-thumb:hover {
+        background: transparent;
+    }
+}

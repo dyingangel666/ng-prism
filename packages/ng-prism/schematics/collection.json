@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "ng-add": {
+      "description": "Set up ng-prism in an Angular workspace",
+      "factory": "../dist/schematics/ng-add/index#ngAdd",
+      "schema": "./ng-add/schema.json"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ng-prism Serve Builder",
+  "description": "Start the ng-prism development server",
+  "type": "object",
+  "properties": {
+    "entryPoint": {
+      "type": "string",
+      "description": "Path to the library's public-api.ts (entry point for scanning)"
+    },
+    "prismProject": {
+      "type": "string",
+      "description": "Angular project name for the Prism styleguide app"
+    },
+    "libraryProject": {
+      "type": "string",
+      "description": "Library project name (used to resolve source root)"
+    },
+    "port": {
+      "type": "number",
+      "default": 4400,
+      "description": "Dev server port"
+    },
+    "libraryImportPath": {
+      "type": "string",
+      "description": "NPM package name used for imports in the generated manifest (defaults to libraryProject)"
+    },
+    "configFile": {
+      "type": "string",
+      "default": "ng-prism.config.ts",
+      "description": "Path to the ng-prism config file"
+    }
+  },
+  "required": ["entryPoint", "prismProject"],
+  "additionalProperties": false
+}

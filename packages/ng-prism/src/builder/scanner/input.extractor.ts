@@ -3,7 +3,7 @@ import type { InputMeta, OutputMeta } from '../../plugin/plugin.types.js';
 import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
 
 /**
- * Extract all @Input() metadata from a class declaration.
+ * Extract all @Input() and input() signal metadata from a class declaration.
  */
 export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): InputMeta[] {
   const inputs: InputMeta[] = [];
@@ -11,26 +11,36 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
   for (const member of classDecl.members) {
     if (!ts.isPropertyDeclaration(member)) continue;
 
-    const inputDecorator = findDecorator(member, 'Input');
-    if (!inputDecorator) continue;
-
     const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
     if (!name) continue;
 
-    const required = isInputRequired(inputDecorator);
-    const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
-    const doc = getJsDocComment(member, checker);
-    const { type, values } = resolveInputType(member, checker);
+    const inputDecorator = findDecorator(member, 'Input');
+    if (inputDecorator) {
+      const required = isDecoratorInputRequired(inputDecorator);
+      const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
+      const doc = getJsDocComment(member, checker);
+      const { type, values } = resolveDecoratorInputType(member, checker);
+      inputs.push({ name, type, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+      continue;
+    }
 
-    const input: InputMeta = { name, type, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) };
-    inputs.push(input);
+    const signalCall = getInputSignalCall(member);
+    if (signalCall) {
+      const required = isSignalInputRequired(signalCall);
+      const defaultValue = !required && signalCall.arguments.length > 0
+        ? evaluateExpression(signalCall.arguments[0])
+        : undefined;
+      const doc = getJsDocComment(member, checker);
+      const { type, values } = resolveSignalInputType(signalCall, checker);
+      inputs.push({ name, type, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+    }
   }
 
   return inputs;
 }
 
 /**
- * Extract all @Output() metadata from a class declaration.
+ * Extract all @Output() and output() signal metadata from a class declaration.
  */
 export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): OutputMeta[] {
   const outputs: OutputMeta[] = [];
@@ -38,21 +48,78 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
   for (const member of classDecl.members) {
     if (!ts.isPropertyDeclaration(member)) continue;
 
-    const outputDecorator = findDecorator(member, 'Output');
-    if (!outputDecorator) continue;
-
     const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
     if (!name) continue;
 
-    const doc = getJsDocComment(member, checker);
-    const output: OutputMeta = { name, ...(doc && { doc }) };
-    outputs.push(output);
+    const outputDecorator = findDecorator(member, 'Output');
+    if (outputDecorator) {
+      const doc = getJsDocComment(member, checker);
+      outputs.push({ name, ...(doc && { doc }) });
+      continue;
+    }
+
+    if (isOutputSignal(member)) {
+      const doc = getJsDocComment(member, checker);
+      outputs.push({ name, ...(doc && { doc }) });
+    }
   }
 
   return outputs;
 }
 
-function isInputRequired(decorator: ts.Decorator): boolean {
+function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression | null {
+  const init = member.initializer;
+  if (!init || !ts.isCallExpression(init)) return null;
+
+  const expr = init.expression;
+
+  if (ts.isIdentifier(expr) && expr.text === 'input') return init;
+
+  if (
+    ts.isPropertyAccessExpression(expr) &&
+    ts.isIdentifier(expr.expression) && expr.expression.text === 'input' &&
+    ts.isIdentifier(expr.name) && expr.name.text === 'required'
+  ) {
+    return init;
+  }
+
+  return null;
+}
+
+function isSignalInputRequired(callExpr: ts.CallExpression): boolean {
+  const expr = callExpr.expression;
+  return (
+    ts.isPropertyAccessExpression(expr) &&
+    ts.isIdentifier(expr.name) &&
+    expr.name.text === 'required'
+  );
+}
+
+function isOutputSignal(member: ts.PropertyDeclaration): boolean {
+  const init = member.initializer;
+  if (!init || !ts.isCallExpression(init)) return false;
+  const expr = init.expression;
+  return ts.isIdentifier(expr) && expr.text === 'output';
+}
+
+function resolveSignalInputType(
+  callExpr: ts.CallExpression,
+  checker: ts.TypeChecker,
+): { type: InputMeta['type']; values?: string[] } {
+  if (callExpr.typeArguments && callExpr.typeArguments.length > 0) {
+    const resolved = checker.getTypeFromTypeNode(callExpr.typeArguments[0]);
+    return mapType(resolved, checker);
+  }
+
+  if (callExpr.arguments.length > 0) {
+    const argType = checker.getTypeAtLocation(callExpr.arguments[0]);
+    return mapType(argType, checker);
+  }
+
+  return { type: 'unknown' };
+}
+
+function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
   const arg = getDecoratorArgument(decorator);
   if (!arg || !ts.isObjectLiteralExpression(arg)) return false;
 
@@ -68,7 +135,7 @@ function isInputRequired(decorator: ts.Decorator): boolean {
   return false;
 }
 
-function resolveInputType(
+function resolveDecoratorInputType(
   member: ts.PropertyDeclaration,
   checker: ts.TypeChecker,
 ): { type: InputMeta['type']; values?: string[] } {
@@ -80,7 +147,6 @@ function mapType(
   tsType: ts.Type,
   checker: ts.TypeChecker,
 ): { type: InputMeta['type']; values?: string[] } {
-  // Boolean check first (before union, since boolean is internally a union of true|false)
   if (tsType.flags & ts.TypeFlags.BooleanLike) {
     return { type: 'boolean' };
   }
@@ -88,7 +154,6 @@ function mapType(
     return { type: 'boolean' };
   }
 
-  // Union types
   if (tsType.isUnion()) {
     const filtered = tsType.types.filter(
       (t) =>
@@ -96,18 +161,15 @@ function mapType(
         !(t.flags & ts.TypeFlags.Null),
     );
 
-    // Boolean union (true | false) -> boolean
     if (filtered.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) {
       return { type: 'boolean' };
     }
 
-    // String literal union -> union with values
     if (filtered.every((t) => t.isStringLiteral())) {
       const values = filtered.map((t) => (t as ts.StringLiteralType).value);
       return { type: 'union', values };
     }
 
-    // Mixed union without literals -> unknown
     return { type: 'unknown' };
   }
 
@@ -123,7 +185,6 @@ function mapType(
     return { type: 'array' };
   }
 
-  // Object types (non-primitive)
   if (tsType.flags & ts.TypeFlags.Object) {
     return { type: 'object' };
   }

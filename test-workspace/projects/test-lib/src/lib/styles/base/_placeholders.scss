@@ -1,0 +1,55 @@
+@use 'base/variables' as *;
+@use 'base/typoraphy' as *;
+@use 'base/animations' as *;
+
+/*************************************************************************************************************
+* Placeholders
+*************************************************************************************************************/
+
+$placeholder-number-circle-size: 40px;
+
+%page-animation {
+    opacity: 0;
+    animation: fade-in $transition-default-timing-fn $transition-page-duration forwards;
+    animation-delay: $transition-page-delay;
+}
+
+%ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+%count {
+    @include text-caps-small;
+
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    padding: 1px 2px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    vertical-align: middle;
+    color: $color-base-white;
+    background-color: $color-accent-default;
+    border-radius: 4px;
+}
+
+%number-circle {
+    @include text-strong-xxlarge;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $placeholder-number-circle-size;
+    height: $placeholder-number-circle-size;
+    color: $color-accent-default;
+    background: $color-accent-light;
+    border-radius: 50%;
+}

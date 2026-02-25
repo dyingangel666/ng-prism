@@ -1,4 +1,5 @@
 import type { Provider, Type } from '@angular/core';
+import type { StyleguidePage } from './page.types.js';
 
 export interface NgPrismPlugin {
   /** Unique plugin name — used for debugging and conflict detection */
@@ -6,6 +7,7 @@ export interface NgPrismPlugin {
 
   // Build-time hooks (run inside the Angular builder / Node.js)
   onComponentScanned?: (component: ScannedComponent) => ScannedComponent | void | Promise<ScannedComponent | void>;
+  onPageScanned?: (page: StyleguidePage) => StyleguidePage | void | Promise<StyleguidePage | void>;
   onManifestReady?: (manifest: PrismManifest) => PrismManifest | void | Promise<PrismManifest | void>;
 
   // Runtime contributions (embedded into the Prism app)
@@ -19,7 +21,9 @@ export interface PanelDefinition {
   id: string;
   label: string;
   /** Angular standalone component for the panel content */
-  component: Type<unknown>;
+  component?: Type<unknown>;
+  /** Lazy-loaded component — use when the component import would pull in browser-only dependencies (e.g. DomSanitizer) */
+  loadComponent?: () => Promise<Type<unknown>>;
   icon?: string;
   position?: 'bottom' | 'right';
 }
@@ -35,6 +39,7 @@ export interface ControlDefinition {
 
 export interface PrismManifest {
   components: ScannedComponent[];
+  pages?: StyleguidePage[];
 }
 
 export interface ScannedComponent {
@@ -65,10 +70,36 @@ export interface OutputMeta {
   doc?: string;
 }
 
+// --- Runtime manifest types (post-builder, contains actual class references) ---
+
+export interface RuntimeManifest {
+  components: RuntimeComponent[];
+  pages?: StyleguidePage[];
+}
+
+export interface RuntimeComponent {
+  meta: ScannedComponent;
+  type: Type<unknown>;
+}
+
 // --- defineConfig types ---
 
 export interface NgPrismConfig {
   plugins?: NgPrismPlugin[];
+  pages?: StyleguidePage[];
   /** Providers added to the Prism app bootstrap — for library-wide services */
   appProviders?: Provider[];
+  theme?: Record<string, string>;
+  themeStylesheet?: string;
+  ui?: {
+    header?: Type<unknown>;
+    sidebar?: Type<unknown>;
+    componentHeader?: Type<unknown>;
+    renderer?: Type<unknown>;
+    controlsPanel?: Type<unknown>;
+    eventsPanel?: Type<unknown>;
+    footer?: Type<unknown>;
+  };
+  headless?: boolean;
+  appComponent?: Type<unknown>;
 }

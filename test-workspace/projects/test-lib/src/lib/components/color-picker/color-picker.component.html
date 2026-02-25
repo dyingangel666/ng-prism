@@ -1,0 +1,60 @@
+<div class="sg-color-picker__wrapper">
+    <div
+        class="sg-color-picker__color"
+        [matMenuTriggerFor]="colorPickerFlyout"
+        #colorPickerFlyoutTrigger="matMenuTrigger"
+        (menuClosed)="onFlyoutClosed()"
+        (menuOpened)="onFlyoutOpened()">
+        <div class="sg-color-picker__color__color" [style.background]="value"></div>
+    </div>
+    <input
+        #input
+        class="sg-color-picker__value sg-input-element"
+        type="text"
+        [required]="required"
+        [disabled]="disabled()"
+        [readonly]="readonly()"
+        [tabIndex]="tabIndex()"
+        [(ngModel)]="value"
+        (input)="onChangeEvent($event)" />
+    <!-- Errors shown below within the transcluded content wrapper -->
+    <ng-content />
+</div>
+<mat-menu class="sg-color-picker__flyout {{ initialized ? 'sg-color-picker__flyout--initialized' : '' }}" #colorPickerFlyout="matMenu">
+    <div class="sg-color-picker__flyoutcontent" (click)="$event.stopPropagation()">
+        <div #saturationArea class="sg-color-picker__flyoutcontent__saturationarea" [style.background]="hueSliderColor">
+            <div
+                class="sg-color-picker__flyoutcontent__saturationarea__overlaygradient sg-color-picker__flyoutcontent__saturationarea__overlaygradient--whitelefttoright">
+                <div
+                    class="sg-color-picker__flyoutcontent__saturationarea__overlaygradient sg-color-picker__flyoutcontent__saturationarea__overlaygradient--blackbottomtotop">
+                    <div
+                        #saturationAreaHandle
+                        class="sg-color-picker__flyoutcontent__saturationarea__handle"
+                        [style.left]="saturationHandleXPositionFromLeft + 'px'"
+                        [style.top]="saturationHandleYPositionFromTop + 'px'"></div>
+                </div>
+            </div>
+        </div>
+        <div class="sg-color-picker__flyoutcontent__wrapper">
+            <div class="sg-color-picker__flyoutcontent__currentcolor">
+                <div class="sg-color-picker__flyoutcontent__currentcolor__color" [style.background]="value"></div>
+            </div>
+            <div class="sg-color-picker__flyoutcontent__sliders">
+                <div #hueSlider class="sg-color-picker__flyoutcontent__slider sg-color-picker__flyoutcontent__slider--hue">
+                    <div #hueSliderHandle class="sg-color-picker__flyoutcontent__slider__handle" [style.left]="hueSliderXPositionFromLeft + 'px'"><span></span></div>
+                </div>
+                @if (alphaChannel) {
+                    <div #alphaSlider class="sg-color-picker__flyoutcontent__slider sg-color-picker__flyoutcontent__slider--alpha">
+                        <div
+                            class="sg-color-picker__flyoutcontent__slider--alpha__overlaygradient"
+                            [style.background]="'linear-gradient(to right, transparent, ' + valueNoAlpha + ')'">
+                            <div #alphaSliderHandle class="sg-color-picker__flyoutcontent__slider__handle" [style.left]="alphaSliderXPositionFromLeft + 'px'">
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</mat-menu>

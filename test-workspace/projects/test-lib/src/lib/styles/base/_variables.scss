@@ -1,0 +1,63 @@
+@use 'sass:color';
+
+$color-base-black-100: #0e0f1b;
+$color-base-dark-100: #333a47;
+$color-base-dark-80: #546076;
+$color-base-medium-100: #98a0ad;
+$color-base-light-100: #d7dae3;
+$color-base-light-80: #e6e8f0;
+$color-base-light-60: #f5f5f9;
+$color-base-light-40: #fcfcff;
+$color-base-white: #fff;
+
+$color-accent-lighter: #f2f3ff;
+$color-accent-light: #e9eaff;
+$color-accent-default: #005fe3;
+$color-accent-dark: #0045a5;
+$color-accent-darker: #003c8f;
+
+$color-success-light: #d3efd6;
+$color-success-default: #00830a;
+$color-success-dark: #2f6133;
+$color-success-darker: color.scale($color-success-dark, $lightness: -30%);
+$color-alert-light: #fadbc4;
+$color-alert-default: #a95e00;
+$color-alert-dark: color.scale($color-alert-default, $lightness: -30%);
+$color-alert-darker: #380303;
+$color-error-lighter: #ffe9e8;
+$color-error-light: #fddcdb;
+$color-error-default: #d43223;
+$color-error-dark: #851209;
+$color-error-darker: color.scale($color-error-dark, $lightness: -30%);
+
+$font-family-inter: 'Inter', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+
+$transition-page-duration: 350ms;
+$transition-page-delay: 100ms;
+$transition-default-duration: 180ms;
+$transition-default-timing-fn: ease-in-out;
+
+$spacing-base: 8px;
+$spacing-smallbase: 4px;
+$spacing-xsmall: $spacing-base; // 8px
+$spacing-small: 2 * $spacing-base; // 16px
+$spacing-medium: 3 * $spacing-base; // 24px
+$spacing-large: 4 * $spacing-base; // 32px
+$spacing-xlarge: 5 * $spacing-base; // 40px
+$spacing-xxlarge: 6 * $spacing-base; // 48px
+$spacing-xxxlarge: 7 * $spacing-base; // 56px
+$spacing-xxxxlarge: 8 * $spacing-base; // 64px
+
+$box-shadow-deep: 0 0 32px rgba($color-base-dark-80, 0.6);
+$box-shadow-normal: 0 0 10px rgba($color-base-dark-100, 0.4);
+$box-shadow-medium: 0 1px 6px 0 rgba($color-base-dark-80, 0.24);
+$box-shadow-shallow: 0 0 4px rgba($color-base-dark-80, 0.15);
+
+$border-radius-default: 6px;
+$width-menu-default: 104px;
+$width-menu-hovered: 280px;
+$minwidth-submenu: 220px;
+$header-height: 100px;
+$footer-height: 48px;
+$action-bar-height: 91px;
+$superadmin-menu-height: 50px;

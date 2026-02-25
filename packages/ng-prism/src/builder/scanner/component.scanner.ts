@@ -61,6 +61,7 @@ function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefi
   if (obj['description']) config.description = obj['description'] as string;
   if (obj['category']) config.category = obj['category'] as string;
   if (obj['tags']) config.tags = obj['tags'] as string[];
+  if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
 
   if (Array.isArray(obj['variants'])) {
     config.variants = obj['variants'] as ShowcaseConfig['variants'];

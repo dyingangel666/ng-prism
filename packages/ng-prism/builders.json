@@ -1,0 +1,14 @@
+{
+  "builders": {
+    "serve": {
+      "implementation": "./dist/builder/serve/index.js",
+      "schema": "./src/builder/serve/schema.json",
+      "description": "Start the ng-prism development server"
+    },
+    "build": {
+      "implementation": "./dist/builder/build/index.js",
+      "schema": "./src/builder/build/schema.json",
+      "description": "Build the ng-prism styleguide for production"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+export const PRISM_DEFAULT_THEME: Record<string, string> = {
+  '--prism-primary': '#6366f1',
+  '--prism-primary-hover': '#4f46e5',
+  '--prism-bg': '#ffffff',
+  '--prism-bg-surface': '#f8fafc',
+  '--prism-text': '#1e293b',
+  '--prism-text-muted': '#64748b',
+  '--prism-border': '#e2e8f0',
+  '--prism-sidebar-width': '280px',
+  '--prism-sidebar-bg': '#f1f5f9',
+  '--prism-header-height': '56px',
+  '--prism-font-family': 'system-ui, -apple-system, sans-serif',
+  '--prism-font-mono': 'ui-monospace, "Cascadia Code", monospace',
+  '--prism-radius': '8px',
+  '--prism-radius-sm': '4px',
+  '--prism-panel-height': '240px',
+};

@@ -1,19 +1,3 @@
-# Custom Instruction References
-
-The following custom instruction files exist in the `.github` directory and should be loaded by agents as needed:
-
-- [.github/copilot-instructions.md](.github/copilot-instructions.md)
-- [.github/instructions/angular.instructions.md](.github/instructions/angular.instructions.md)
-- [.github/instructions/angular-component-library.instructions.md](.github/instructions/angular-component-library.instructions.md)
-- [.github/instructions/angular-signal-forms.instructions.md](.github/instructions/angular-signal-forms.instructions.md)
-- [.github/instructions/angular-testing.instructions.md](.github/instructions/angular-testing.instructions.md)
-- [.github/instructions/architecture.instructions.md](.github/instructions/architecture.instructions.md)
-- [.github/instructions/ngrx-feature-store.instructions.md](.github/instructions/ngrx-feature-store.instructions.md)
-- [.github/instructions/scss.instructions.md](.github/instructions/scss.instructions.md)
-- [.github/instructions/techstack.instructions.md](.github/instructions/techstack.instructions.md)
-- [.github/instructions/typescript.instructions.md](.github/instructions/typescript.instructions.md)
-
-
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->
 

@@ -1,0 +1,45 @@
+@use 'angular-material/material-fonts';
+
+// inter-regular - latin
+@font-face {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 400;
+    src:
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-regular.woff2') format('woff2'),
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-regular.woff') format('woff');
+    font-display: swap;
+}
+
+// inter-500 - latin
+@font-face {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 500;
+    src:
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-500.woff2') format('woff2'),
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-500.woff') format('woff');
+    font-display: swap;
+}
+
+// inter-600 - latin
+@font-face {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 600;
+    src:
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-600.woff2') format('woff2'),
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-600.woff') format('woff');
+    font-display: swap;
+}
+
+// inter-800 - latin
+@font-face {
+    font-family: Inter;
+    font-style: normal;
+    font-weight: 800;
+    src:
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-800.woff2') format('woff2'),
+        url('https://static.softgarden.de/thirdparty/fonts/inter/inter-v3-latin-800.woff') format('woff');
+    font-display: swap;
+}

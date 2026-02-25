@@ -4,10 +4,16 @@ storage: ../tmp/local-registry/storage
 # a list of other known repositories we can talk to
 uplinks:
   npmjs:
-    url: https://nexus.softgarden.dev/repository/npm-repos/
+    url: https://registry.npmjs.org/
     maxage: 60m
 
 packages:
+  'ng-prism':
+    access: $all
+    publish: $all
+    unpublish: $all
+    # no proxy - ng-prism must be published locally via e2e:publish
+
   '**':
     # give all users (including non-authenticated users) full access
     # because it is a local registry

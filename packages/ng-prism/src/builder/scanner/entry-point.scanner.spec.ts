@@ -19,7 +19,7 @@ describe('resolveEntryPointExports', () => {
     const { exports } = resolveEntryPointExports(entryPoint, compilerOptions);
     const names = exports.map((s) => s.name).sort();
 
-    expect(names).toEqual(['ButtonComponent', 'CardComponent', 'NoShowcaseComponent']);
+    expect(names).toEqual(['ButtonComponent', 'CardComponent', 'NoShowcaseComponent', 'SignalButtonComponent']);
   });
 
   it('should return a valid program', () => {

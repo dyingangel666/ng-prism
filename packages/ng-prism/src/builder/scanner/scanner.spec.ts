@@ -8,7 +8,7 @@ describe('scan (integration)', () => {
     const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
     const manifest = scan({ entryPoint });
 
-    expect(manifest.components).toHaveLength(2);
+    expect(manifest.components).toHaveLength(3);
   });
 
   it('should produce correct ButtonComponent data', () => {
@@ -68,6 +68,6 @@ describe('scan (integration)', () => {
       compilerOptions: { strict: false },
     });
 
-    expect(manifest.components).toHaveLength(2);
+    expect(manifest.components).toHaveLength(3);
   });
 });
