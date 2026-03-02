@@ -81,20 +81,35 @@ import { generateSnippet } from './snippet-generator.js';
       background: none;
       color: var(--prism-text-muted);
       cursor: pointer;
-      border-bottom: 2px solid transparent;
+      position: relative;
       margin-bottom: -1px;
+      transition: color 0.12s;
+    }
+    .prism-renderer__variant::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      opacity: 0;
+      transition: opacity 0.12s;
     }
     .prism-renderer__variant:hover {
       color: var(--prism-text);
     }
     .prism-renderer__variant--active {
       color: var(--prism-primary);
-      border-bottom-color: var(--prism-primary);
+    }
+    .prism-renderer__variant--active::after {
+      opacity: 1;
     }
     .prism-renderer__canvas {
       flex: 1;
-      padding: 24px;
+      padding: 32px;
       overflow: auto;
+      background: var(--prism-bg-surface);
     }
     .prism-renderer__code-toggle {
       display: flex;
@@ -110,6 +125,7 @@ import { generateSnippet } from './snippet-generator.js';
       background: none;
       color: var(--prism-text-muted);
       cursor: pointer;
+      transition: color 0.12s;
     }
     .prism-renderer__code-button:hover {
       color: var(--prism-text);
@@ -118,6 +134,7 @@ import { generateSnippet } from './snippet-generator.js';
       border-top: 1px solid var(--prism-border);
       overflow: auto;
       flex-shrink: 0;
+      background: var(--prism-bg);
     }
     .prism-renderer__code pre {
       margin: 0;
@@ -147,10 +164,13 @@ export class PrismRendererComponent {
   readonly snippet = computed(() => {
     const comp = this.navigationService.activeComponent();
     if (!comp) return '';
+    const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
+    const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
     return generateSnippet(
       comp.meta.componentMeta.selector,
       comp.meta.inputs,
       this.rendererService.inputValues(),
+      explicitKeys,
     );
   });
 
@@ -199,9 +219,12 @@ export class PrismRendererComponent {
     for (const [key, value] of Object.entries(this.rendererService.inputValues())) {
       this.componentRef.setInput(key, value);
     }
+
+    this.rendererService.renderedElement.set(this.componentRef.location.nativeElement);
   }
 
   private cleanup(): void {
+    this.rendererService.renderedElement.set(null);
     for (const sub of this.outputSubscriptions) {
       sub.unsubscribe();
     }
