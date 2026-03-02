@@ -36,7 +36,7 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
       flex-direction: column;
       min-height: var(--prism-panel-height);
       border-top: 1px solid var(--prism-border);
-      background: var(--prism-bg);
+      background: var(--prism-bg-elevated);
     }
     .prism-panel-host__tabs {
       display: flex;
@@ -53,15 +53,29 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
       background: none;
       color: var(--prism-text-muted);
       cursor: pointer;
-      border-bottom: 2px solid transparent;
+      position: relative;
       margin-bottom: -1px;
+      transition: color 0.12s;
+    }
+    .prism-panel-host__tab::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      opacity: 0;
+      transition: opacity 0.12s;
     }
     .prism-panel-host__tab:hover {
       color: var(--prism-text);
     }
     .prism-panel-host__tab--active {
       color: var(--prism-primary);
-      border-bottom-color: var(--prism-primary);
+    }
+    .prism-panel-host__tab--active::after {
+      opacity: 1;
     }
     .prism-panel-host__content {
       flex: 1;
