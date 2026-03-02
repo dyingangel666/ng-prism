@@ -18,6 +18,7 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-radius-sm': '4px',
   '--prism-panel-height': '240px',
   '--prism-glow': 'rgba(167,139,250,0.15)',
+  '--prism-input-bg': 'rgba(255,255,255,0.04)',
 };
 
 export const PRISM_LIGHT_THEME: Record<string, string> = {
@@ -40,6 +41,7 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-radius-sm': '4px',
   '--prism-panel-height': '240px',
   '--prism-glow': 'rgba(95,22,186,0.10)',
+  '--prism-input-bg': 'rgba(95,22,186,0.04)',
 };
 
 export const PRISM_DEFAULT_THEME = PRISM_DARK_THEME;

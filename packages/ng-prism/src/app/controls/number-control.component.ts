@@ -28,7 +28,7 @@ import { Component, input, output } from '@angular/core';
       gap: 4px;
     }
     .prism-number-control__input {
-      background: rgba(255,255,255,0.04);
+      background: var(--prism-input-bg);
       border: 1px solid var(--prism-border);
       border-radius: var(--prism-radius-sm);
       color: var(--prism-text);

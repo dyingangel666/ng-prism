@@ -226,7 +226,7 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
       font-size: 13px;
       font-family: var(--prism-font-family);
       color: var(--prism-text);
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--prism-input-bg);
       transition: box-shadow 0.15s;
     }
     .prism-header__input:focus {
