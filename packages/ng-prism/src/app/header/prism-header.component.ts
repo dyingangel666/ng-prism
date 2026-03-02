@@ -1,10 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
+import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.component.js';
 
 @Component({
   selector: 'prism-header',
   standalone: true,
+  imports: [PrismLayoutMenuComponent],
   template: `
     <header class="prism-header">
       <div class="prism-header__brand">
@@ -171,6 +173,7 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
           (input)="searchService.search($any($event.target).value)"
         />
       </div>
+      <prism-layout-menu />
       <button
         class="prism-header__theme-toggle"
         (click)="themeService.toggle()"

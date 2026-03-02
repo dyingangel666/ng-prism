@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, HostListener } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PRISM_DARK_THEME, PRISM_LIGHT_THEME } from '../theme/prism-default-theme.js';
@@ -193,6 +193,17 @@ export class PrismShellComponent {
 
   constructor() {
     this.navigationService.selectFirst();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  protected onKeyDown(e: KeyboardEvent): void {
+    if (!e.altKey) return;
+    switch (e.key.toLowerCase()) {
+      case 's': e.preventDefault(); this.layout.toggleSidebar(); break;
+      case 't': e.preventDefault(); this.layout.toggleToolbar(); break;
+      case 'a': e.preventDefault(); this.layout.toggleAddons(); break;
+      case 'd': e.preventDefault(); this.layout.toggleOrientation(); break;
+    }
   }
 
   protected startSidebarResize(e: MouseEvent): void {
