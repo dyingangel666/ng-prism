@@ -30,6 +30,7 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
       [attr.data-sidebar]="layout.sidebarVisible() ? 'visible' : 'hidden'"
       [attr.data-addons]="layout.addonsVisible() ? 'visible' : 'hidden'"
       [attr.data-orientation]="layout.addonsOrientation()"
+      [attr.data-toolbar]="layout.toolbarVisible() ? 'visible' : 'hidden'"
     >
       <prism-header class="prism-shell__header" />
 

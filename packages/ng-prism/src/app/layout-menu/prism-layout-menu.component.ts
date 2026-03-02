@@ -180,7 +180,7 @@ export class PrismLayoutMenuComponent {
   protected readonly layout = inject(PrismLayoutService);
   protected readonly open = signal(false);
 
-  toggle(target: 'sidebar' | 'toolbar' | 'addons' | 'orientation'): void {
+  protected toggle(target: 'sidebar' | 'toolbar' | 'addons' | 'orientation'): void {
     this.open.set(false);
     switch (target) {
       case 'sidebar': this.layout.toggleSidebar(); break;
