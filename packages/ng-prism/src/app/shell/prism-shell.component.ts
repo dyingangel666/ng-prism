@@ -2,7 +2,8 @@ import { Component, computed, inject } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
-import { PRISM_DEFAULT_THEME } from '../theme/prism-default-theme.js';
+import { PRISM_DARK_THEME, PRISM_LIGHT_THEME } from '../theme/prism-default-theme.js';
+import { PrismThemeService } from '../services/prism-theme.service.js';
 import { PrismComponentHeaderComponent } from '../component-header/prism-component-header.component.js';
 import { PrismHeaderComponent } from '../header/prism-header.component.js';
 import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.component.js';
@@ -34,7 +35,7 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
         <prism-page-renderer />
         } @else {
         <div class="prism-shell__empty">
-          <p>No component selected</p>
+          <p>Select a component</p>
         </div>
         }
       </main>
@@ -85,9 +86,11 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
 export class PrismShellComponent {
   private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
   protected readonly navigationService = inject(PrismNavigationService);
+  private readonly themeService = inject(PrismThemeService);
 
   protected readonly themeStyle = computed(() => {
-    const merged = { ...PRISM_DEFAULT_THEME, ...(this.config.theme ?? {}) };
+    const base = this.themeService.isDark() ? PRISM_DARK_THEME : PRISM_LIGHT_THEME;
+    const merged = { ...base, ...(this.config.theme ?? {}) };
     return Object.entries(merged)
       .map(([k, v]) => `${k}: ${v}`)
       .join('; ');
