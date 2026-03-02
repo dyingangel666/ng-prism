@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "postinstall": "rm -rf packages/ng-prism/node_modules/@angular packages/ng-prism/node_modules/@angular-devkit packages/plugin-figma/node_modules/@angular packages/plugin-figma/node_modules/@angular-devkit",
     "prism": "nx run-many -t build --projects=ng-prism",
     "e2e:registry": "nx run local-registry",
     "e2e:publish": "nx build ng-prism --skip-nx-cache && rm -rf tmp/local-registry/storage/ng-prism && npm cache clean --force && cd packages/ng-prism && npm publish --no-git-checks --registry=http://localhost:4873",
-    "e2e:setup": "pnpm nx build ng-prism --skip-nx-cache && rm -rf packages/ng-prism/node_modules/@angular packages/ng-prism/node_modules/@angular-devkit && cd test-workspace && npm install --prefer-online && npx ng add file:../packages/ng-prism --project=test-lib --skip-confirmation",
+    "e2e:setup": "npx nx build ng-prism --skip-nx-cache && cd test-workspace && npm install --prefer-online && npx ng add file:../packages/ng-prism --project=test-lib --skip-confirmation",
     "e2e:serve": "cd test-workspace && trap 'lsof -ti:4400 | xargs kill 2>/dev/null' EXIT INT TERM && ng run test-lib:prism",
     "e2e:clean": "rm -rf test-workspace/node_modules test-workspace/package-lock.json test-workspace/ng-prism.config.ts && rm -f test-workspace/projects/test-lib-prism/src/prism-manifest.ts test-workspace/projects/test-lib-prism/src/index.html test-workspace/projects/test-lib-prism/tsconfig.app.json && git checkout -- test-workspace/angular.json && node -e \"const fs=require('fs'),p=JSON.parse(fs.readFileSync('test-workspace/package.json','utf8'));delete (p.devDependencies||{})['ng-prism'];delete (p.dependencies||{})['ng-prism'];fs.writeFileSync('test-workspace/package.json',JSON.stringify(p,null,2)+'\\n')\""
   },
   "private": true,
+  "workspaces": ["packages/*"],
   "devDependencies": {
     "@angular-devkit/architect": "0.2101.4",
     "@angular-devkit/core": "^21.0.0",
@@ -20,7 +20,7 @@
     "@angular/compiler": "^21.1.0",
     "@angular/compiler-cli": "^21.1.0",
     "@angular/core": "^21.1.0",
-    "@angular/platform-browser": "~21.1.0",
+    "@angular/platform-browser": "^21.1.0",
     "@nx/jest": "22.5.2",
     "@nx/js": "22.5.2",
     "@swc-node/register": "1.11.1",
