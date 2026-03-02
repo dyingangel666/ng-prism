@@ -23,7 +23,7 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
   `,
   styles: `
     .prism-component-header {
-      padding: 16px 24px;
+      padding: 20px 24px 16px;
       border-bottom: 1px solid var(--prism-border);
     }
     .prism-component-header__title {
@@ -33,22 +33,24 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
       color: var(--prism-text);
     }
     .prism-component-header__description {
-      margin: 4px 0 0;
+      margin: 6px 0 0;
       font-size: 14px;
+      line-height: 1.5;
       color: var(--prism-text-muted);
     }
     .prism-component-header__tags {
       display: flex;
       gap: 6px;
-      margin-top: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
     }
     .prism-component-header__tag {
-      padding: 2px 8px;
+      padding: 2px 10px;
       font-size: 11px;
       border-radius: 9999px;
-      background: var(--prism-bg-surface);
-      color: var(--prism-text-muted);
-      border: 1px solid var(--prism-border);
+      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
+      color: var(--prism-primary);
+      border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
     }
   `,
 })
