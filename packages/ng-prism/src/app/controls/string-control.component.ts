@@ -21,21 +21,26 @@ import { Component, input, output } from '@angular/core';
       gap: 4px;
     }
     .prism-string-control__label {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--prism-text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
     .prism-string-control__input {
-      padding: 6px 8px;
+      background: rgba(255,255,255,0.04);
       border: 1px solid var(--prism-border);
       border-radius: var(--prism-radius-sm);
-      font-size: 13px;
-      font-family: var(--prism-font-family);
       color: var(--prism-text);
-      background: var(--prism-bg);
+      font-family: var(--prism-font-family);
+      padding: 5px 8px;
+      font-size: 13px;
+      width: 100%;
+      box-sizing: border-box;
     }
     .prism-string-control__input:focus {
-      outline: 2px solid var(--prism-primary);
-      outline-offset: -1px;
+      outline: none;
+      box-shadow: 0 0 0 2px var(--prism-primary);
     }
   `,
 })

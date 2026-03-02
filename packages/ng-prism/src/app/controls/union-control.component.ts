@@ -30,8 +30,11 @@ import { Component, input, output } from '@angular/core';
       gap: 4px;
     }
     .prism-union-control__label {
-      font-size: 12px;
+      font-size: 13px;
       color: var(--prism-text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       padding: 0;
       margin-bottom: 2px;
     }
@@ -45,6 +48,7 @@ import { Component, input, output } from '@angular/core';
     }
     .prism-union-control__option input {
       accent-color: var(--prism-primary);
+      cursor: pointer;
     }
   `,
 })
