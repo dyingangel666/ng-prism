@@ -76,7 +76,7 @@ import { generateSnippet } from './snippet-generator.js';
     .prism-renderer__variant {
       padding: 8px 16px;
       font-size: 13px;
-      font-family: var(--prism-font-family);
+      font-family: var(--prism-font-sans);
       border: none;
       background: none;
       color: var(--prism-text-muted);
@@ -107,9 +107,18 @@ import { generateSnippet } from './snippet-generator.js';
     }
     .prism-renderer__canvas {
       flex: 1;
-      padding: 32px;
+      padding: 48px 40px;
       overflow: auto;
-      background: var(--prism-bg-surface);
+      background-color: var(--prism-bg-surface);
+      background-image: radial-gradient(
+        circle,
+        color-mix(in srgb, var(--prism-primary) 15%, transparent) 1px,
+        transparent 1px
+      );
+      background-size: 20px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
     .prism-renderer__code-toggle {
       display: flex;

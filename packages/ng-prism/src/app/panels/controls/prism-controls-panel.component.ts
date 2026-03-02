@@ -70,17 +70,25 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
   `,
   styles: `
     .prism-controls-panel {
-      padding: 12px 16px;
+      padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 12px;
       overflow-y: auto;
-      max-height: 100%;
+      height: 100%;
     }
+
+    .prism-controls-panel__row {
+      border-bottom: 1px solid var(--prism-border);
+    }
+
+    .prism-controls-panel__row:last-child { border-bottom: none; }
+
     .prism-controls-panel__empty {
-      color: var(--prism-text-muted);
+      color: var(--prism-text-ghost);
       font-size: 13px;
+      font-family: var(--prism-font-sans);
       margin: 0;
+      padding: 16px;
     }
   `,
 })

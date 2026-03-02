@@ -4,51 +4,69 @@ import { Component, input, output } from '@angular/core';
   selector: 'prism-union-control',
   standalone: true,
   template: `
-    <fieldset class="prism-union-control">
-      <legend class="prism-union-control__label">{{ label() }}</legend>
-      @for (option of options(); track option) {
-        <label class="prism-union-control__option">
-          <input
-            type="radio"
-            [name]="label()"
-            [value]="option"
-            [checked]="option === value()"
-            (change)="valueChange.emit(option)"
-          />
-          <span>{{ option }}</span>
-        </label>
-      }
-    </fieldset>
+    <div class="prism-union-control">
+      <span class="prism-union-control__label">{{ label() }}</span>
+      <div class="prism-union-control__options">
+        @for (option of options(); track option) {
+          <button
+            class="prism-union-control__option"
+            [class.prism-union-control__option--active]="option === value()"
+            (click)="valueChange.emit(option)"
+          >{{ option }}</button>
+        }
+      </div>
+    </div>
   `,
   styles: `
     .prism-union-control {
-      border: none;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .prism-union-control__label {
-      font-size: 13px;
-      color: var(--prism-text-muted);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 0;
-      margin-bottom: 2px;
-    }
-    .prism-union-control__option {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--prism-text);
-      cursor: pointer;
+      gap: 12px;
+      padding: 6px 16px;
+      min-height: 36px;
     }
-    .prism-union-control__option input {
-      accent-color: var(--prism-primary);
+
+    .prism-union-control__label {
+      font-size: 13px;
+      font-family: var(--prism-font-sans);
+      color: var(--prism-text-muted);
+      font-weight: 500;
+      flex-shrink: 0;
+      width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .prism-union-control__options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .prism-union-control__option {
+      padding: 3px 10px;
+      font-size: 12px;
+      font-family: var(--prism-font-sans);
+      border: 1px solid var(--prism-border);
+      border-radius: var(--prism-radius-xs);
+      background: var(--prism-input-bg);
+      color: var(--prism-text-muted);
       cursor: pointer;
+      transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+
+    .prism-union-control__option:hover {
+      color: var(--prism-text-2);
+      border-color: var(--prism-border-strong);
+    }
+
+    .prism-union-control__option--active {
+      background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
+      color: var(--prism-primary);
+      border-color: color-mix(in srgb, var(--prism-primary) 40%, transparent);
+      font-weight: 500;
     }
   `,
 })

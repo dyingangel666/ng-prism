@@ -34,21 +34,23 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
     .prism-panel-host {
       display: flex;
       flex-direction: column;
-      min-height: var(--prism-panel-height);
-      border-top: 1px solid var(--prism-border);
+      height: 100%;
       background: var(--prism-bg-elevated);
     }
+
     .prism-panel-host__tabs {
       display: flex;
       gap: 0;
       border-bottom: 1px solid var(--prism-border);
       padding: 0 8px;
       flex-shrink: 0;
+      background: var(--prism-bg-elevated);
     }
+
     .prism-panel-host__tab {
-      padding: 8px 16px;
+      padding: 9px 14px;
       font-size: 13px;
-      font-family: var(--prism-font-family);
+      font-family: var(--prism-font-sans);
       border: none;
       background: none;
       color: var(--prism-text-muted);
@@ -57,29 +59,29 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
       margin-bottom: -1px;
       transition: color 0.12s;
     }
+
     .prism-panel-host__tab::after {
       content: '';
       position: absolute;
       bottom: 0;
-      left: 0;
-      right: 0;
+      left: 8px;
+      right: 8px;
       height: 2px;
       background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
       opacity: 0;
       transition: opacity 0.12s;
     }
-    .prism-panel-host__tab:hover {
-      color: var(--prism-text);
-    }
-    .prism-panel-host__tab--active {
-      color: var(--prism-primary);
-    }
-    .prism-panel-host__tab--active::after {
-      opacity: 1;
-    }
+
+    .prism-panel-host__tab:hover { color: var(--prism-text-2); }
+
+    .prism-panel-host__tab--active { color: var(--prism-primary); font-weight: 500; }
+
+    .prism-panel-host__tab--active::after { opacity: 1; }
+
     .prism-panel-host__content {
       flex: 1;
       overflow: hidden;
+      height: 100%;
     }
   `,
 })
