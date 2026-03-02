@@ -70,7 +70,6 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
   `,
   styles: `
     .prism-controls-panel {
-      padding: 0;
       display: flex;
       flex-direction: column;
       overflow-y: auto;

@@ -32,7 +32,7 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
 
     .prism-component-header__title {
       margin: 0;
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 600;
       letter-spacing: -0.01em;
       color: var(--prism-text);

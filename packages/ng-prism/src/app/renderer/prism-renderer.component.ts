@@ -68,7 +68,6 @@ import { generateSnippet } from './snippet-generator.js';
     }
     .prism-renderer__variants {
       display: flex;
-      gap: 0;
       padding: 0 16px;
       border-bottom: 1px solid var(--prism-border);
       flex-shrink: 0;

@@ -6,7 +6,7 @@ import { Component, input, output } from '@angular/core';
   template: `
     <div class="prism-union-control">
       <span class="prism-union-control__label">{{ label() }}</span>
-      <div class="prism-union-control__options">
+      <div class="prism-union-control__options" role="group" [attr.aria-label]="label()">
         @for (option of options(); track option) {
           <button
             class="prism-union-control__option"
@@ -67,6 +67,11 @@ import { Component, input, output } from '@angular/core';
       color: var(--prism-primary);
       border-color: color-mix(in srgb, var(--prism-primary) 40%, transparent);
       font-weight: 500;
+    }
+
+    .prism-union-control__option--active:hover {
+      color: var(--prism-primary);
+      border-color: color-mix(in srgb, var(--prism-primary) 40%, transparent);
     }
   `,
 })

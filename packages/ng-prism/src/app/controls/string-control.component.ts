@@ -9,6 +9,7 @@ import { Component, input, output } from '@angular/core';
       <input
         type="text"
         class="prism-string-control__input"
+        [attr.aria-label]="label()"
         [value]="value()"
         (input)="valueChange.emit($any($event.target).value)"
       />

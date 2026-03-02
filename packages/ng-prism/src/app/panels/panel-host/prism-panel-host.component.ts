@@ -40,7 +40,6 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
 
     .prism-panel-host__tabs {
       display: flex;
-      gap: 0;
       border-bottom: 1px solid var(--prism-border);
       padding: 0 8px;
       flex-shrink: 0;
@@ -80,8 +79,7 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
 
     .prism-panel-host__content {
       flex: 1;
-      overflow: hidden;
-      height: 100%;
+      overflow: auto;
     }
   `,
 })
@@ -90,11 +88,11 @@ export class PrismPanelHostComponent {
   private readonly nav = inject(PrismNavigationService);
 
   private readonly builtInPanels: PanelDefinition[] = [
-    ...CONTROLS_PLUGIN.panels!,
-    ...EVENTS_PLUGIN.panels!,
+    ...(CONTROLS_PLUGIN.panels ?? []),
+    ...(EVENTS_PLUGIN.panels ?? []),
   ];
 
-  protected readonly allPanels = () => [...this.builtInPanels, ...this.pluginService.panels()];
+  protected readonly allPanels = computed(() => [...this.builtInPanels, ...this.pluginService.panels()]);
   protected readonly activePanelId = signal('controls');
   protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
   protected readonly panelInputs = computed(() => ({

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 
@@ -87,7 +87,6 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
     }
 
     .prism-sidebar__page-icon {
-      margin-right: 2px;
       font-size: 10px;
       opacity: 0.6;
     }
@@ -96,8 +95,8 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
 export class PrismSidebarComponent {
   protected readonly navigationService = inject(PrismNavigationService);
 
-  protected readonly entries = () =>
-    [...this.navigationService.categoryTree().entries()];
+  protected readonly entries = computed(() =>
+    [...this.navigationService.categoryTree().entries()]);
 
   protected itemKey(item: NavigationItem): string {
     return item.kind === 'component'

@@ -178,6 +178,7 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
         class="prism-header__theme-toggle"
         (click)="themeService.toggle()"
         [title]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.aria-label]="themeService.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
       >
         @if (themeService.isDark()) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -245,7 +246,7 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
     }
     .prism-header__input:focus {
       outline: none;
-      box-shadow: 0 0 0 2px var(--prism-primary);
+      box-shadow: 0 0 0 2px var(--prism-primary-from);
     }
     .prism-header__input::placeholder {
       color: var(--prism-text-muted);
@@ -261,7 +262,6 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
       border-radius: var(--prism-radius-sm);
       background: transparent;
       cursor: pointer;
-      font-size: 14px;
       color: var(--prism-text-muted);
       transition: border-color 0.15s, background 0.15s;
       flex-shrink: 0;

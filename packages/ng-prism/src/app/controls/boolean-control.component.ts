@@ -64,7 +64,7 @@ import { Component, input, output } from '@angular/core';
 
     .prism-boolean-control__toggle--on .prism-boolean-control__thumb {
       transform: translateX(16px);
-      background: white;
+      background: var(--prism-bg-elevated);
     }
   `,
 })

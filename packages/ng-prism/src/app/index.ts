@@ -14,6 +14,7 @@ export { PrismNavigationService } from './services/prism-navigation.service.js';
 export { PrismRendererService } from './services/prism-renderer.service.js';
 export { PrismEventLogService, type EventLogEntry } from './services/prism-event-log.service.js';
 export { PrismPluginService } from './services/prism-plugin.service.js';
+export { PrismLayoutService } from './services/prism-layout.service.js';
 
 // Shell (root component)
 export { PrismShellComponent } from './shell/prism-shell.component.js';

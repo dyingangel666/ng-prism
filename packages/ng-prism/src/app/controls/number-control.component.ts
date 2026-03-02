@@ -9,8 +9,9 @@ import { Component, input, output } from '@angular/core';
       <input
         type="number"
         class="prism-number-control__input"
+        [attr.aria-label]="label()"
         [value]="value()"
-        (input)="valueChange.emit(+$any($event.target).value)"
+        (input)="valueChange.emit($any($event.target).valueAsNumber || 0)"
       />
     </div>
   `,
