@@ -31,9 +31,6 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-radius': '8px',
   '--prism-radius-lg': '12px',
 
-  '--prism-sidebar-width': '280px',
-  '--prism-panel-height': '300px',
-  '--prism-font-family': "'Inter', system-ui, -apple-system, sans-serif",
 };
 
 export const PRISM_LIGHT_THEME: Record<string, string> = {
@@ -69,9 +66,6 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-radius': '8px',
   '--prism-radius-lg': '12px',
 
-  '--prism-sidebar-width': '280px',
-  '--prism-panel-height': '300px',
-  '--prism-font-family': "'Inter', system-ui, -apple-system, sans-serif",
 };
 
 export const PRISM_DEFAULT_THEME = PRISM_DARK_THEME;
