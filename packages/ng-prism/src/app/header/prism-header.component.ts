@@ -213,15 +213,15 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
     .prism-header__brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 5px;
       flex-shrink: 0;
     }
     .prism-header__logo-svg {
-      width: 28px;
-      height: 28px;
+      width: 60px;
+      height: 60px;
     }
     .prism-header__logo-text {
-      font-size: 15px;
+      font-size: 18px;
       font-weight: 700;
       background: linear-gradient(135deg, var(--prism-primary), var(--prism-accent));
       -webkit-background-clip: text;
