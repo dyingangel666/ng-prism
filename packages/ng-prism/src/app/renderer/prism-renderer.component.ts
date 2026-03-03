@@ -46,6 +46,7 @@ import { generateSnippet } from './snippet-generator.js';
         <div class="prism-renderer__code-toggle">
           <button
             class="prism-renderer__code-button"
+            [class.prism-renderer__code-button--active]="codeVisible()"
             (click)="codeVisible.set(!codeVisible())"
           >
             &lt;/&gt; Code
@@ -121,39 +122,62 @@ import { generateSnippet } from './snippet-generator.js';
     }
     .prism-renderer__code-toggle {
       display: flex;
+      align-items: center;
+      padding: 0 8px;
+      background: var(--prism-bg-elevated);
       border-top: 1px solid var(--prism-border);
-      padding: 0 16px;
       flex-shrink: 0;
     }
     .prism-renderer__code-button {
-      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
       font-size: 12px;
-      font-family: var(--prism-font-mono);
+      font-family: var(--prism-font-sans);
       border: none;
       background: none;
       color: var(--prism-text-muted);
       cursor: pointer;
+      position: relative;
       transition: color 0.12s;
     }
-    .prism-renderer__code-button:hover {
-      color: var(--prism-text);
+    .prism-renderer__code-button::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 8px;
+      right: 8px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      opacity: 0;
+      transition: opacity 0.12s;
     }
+    .prism-renderer__code-button:hover { color: var(--prism-text-2); }
+    .prism-renderer__code-button--active { color: var(--prism-primary); }
+    .prism-renderer__code-button--active::after { opacity: 1; }
     .prism-renderer__code {
       border-top: 1px solid var(--prism-border);
       overflow: auto;
       flex-shrink: 0;
-      background: var(--prism-bg);
+      max-height: 240px;
+      background: var(--prism-void);
     }
     .prism-renderer__code pre {
       margin: 0;
-      padding: 16px;
-      font-size: 13px;
-      line-height: 1.6;
+      padding: 20px 24px;
+      font-size: 12.5px;
+      line-height: 1.65;
       font-family: var(--prism-font-mono);
     }
-    .prism-renderer__code code {
-      font-family: inherit;
+    .prism-renderer__code code { font-family: inherit; }
+    :host ::ng-deep .prism-renderer__code .hljs {
+      background: transparent;
+      color: var(--prism-text-2);
     }
+    :host ::ng-deep .prism-renderer__code .hljs-tag { color: var(--prism-text-muted); }
+    :host ::ng-deep .prism-renderer__code .hljs-name { color: var(--prism-primary); }
+    :host ::ng-deep .prism-renderer__code .hljs-attr { color: #93c5fd; }
+    :host ::ng-deep .prism-renderer__code .hljs-string { color: #7dd3fc; }
   `,
 })
 export class PrismRendererComponent {
