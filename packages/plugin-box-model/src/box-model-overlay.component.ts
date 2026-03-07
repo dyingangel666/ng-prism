@@ -165,6 +165,10 @@ export class BoxModelOverlayComponent {
   }
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.stateService.hoveredBoxModel.set(null);
+    });
+
     afterNextRender(() => {
       const canvas = this.el.nativeElement.parentElement;
       if (!canvas) return;
