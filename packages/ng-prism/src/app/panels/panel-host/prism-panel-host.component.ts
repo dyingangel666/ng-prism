@@ -4,6 +4,7 @@ import type { PanelDefinition } from '../../../plugin/plugin.types.js';
 import { CONTROLS_PLUGIN } from '../controls/controls-plugin.js';
 import { EVENTS_PLUGIN } from '../events/events-plugin.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
+import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 
 @Component({
@@ -16,8 +17,8 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
         @for (panel of allPanels(); track panel.id) {
           <button
             class="prism-panel-host__tab"
-            [class.prism-panel-host__tab--active]="activePanelId() === panel.id"
-            (click)="activePanelId.set(panel.id)"
+            [class.prism-panel-host__tab--active]="panelService.activePanelId() === panel.id"
+            (click)="panelService.activePanelId.set(panel.id)"
           >
             {{ panel.label }}
           </button>
@@ -86,6 +87,7 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
 export class PrismPanelHostComponent {
   private readonly pluginService = inject(PrismPluginService);
   private readonly nav = inject(PrismNavigationService);
+  protected readonly panelService = inject(PrismPanelService);
 
   private readonly builtInPanels: PanelDefinition[] = [
     ...(CONTROLS_PLUGIN.panels ?? []),
@@ -93,7 +95,6 @@ export class PrismPanelHostComponent {
   ];
 
   protected readonly allPanels = computed(() => [...this.builtInPanels, ...this.pluginService.panels()]);
-  protected readonly activePanelId = signal('controls');
   protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
   protected readonly panelInputs = computed(() => ({
     activeComponent: this.nav.activeComponent(),
@@ -103,7 +104,7 @@ export class PrismPanelHostComponent {
 
   constructor() {
     effect(() => {
-      const panel = this.allPanels().find((p) => p.id === this.activePanelId()) ?? null;
+      const panel = this.allPanels().find((p) => p.id === this.panelService.activePanelId()) ?? null;
       if (!panel) {
         this.resolvedComponent.set(null);
         return;
