@@ -37,7 +37,29 @@ export class PrismNavigationService {
       map.set(cat, list);
     }
 
-    return map;
+    for (const items of map.values()) {
+      items.sort((a, b) => {
+        const orderA = a.kind === 'component' ? (a.data.meta.showcaseConfig.componentOrder ?? Infinity) : Infinity;
+        const orderB = b.kind === 'component' ? (b.data.meta.showcaseConfig.componentOrder ?? Infinity) : Infinity;
+        if (orderA !== orderB) return orderA - orderB;
+        const labelA = a.kind === 'component' ? a.data.meta.showcaseConfig.title : a.data.title;
+        const labelB = b.kind === 'component' ? b.data.meta.showcaseConfig.title : b.data.title;
+        return labelA.localeCompare(labelB);
+      });
+    }
+
+    const sorted = [...map.entries()].sort(([catA, itemsA], [catB, itemsB]) => {
+      const orderA = Math.min(...itemsA
+        .filter((i): i is { kind: 'component'; data: RuntimeComponent } => i.kind === 'component')
+        .map((i) => i.data.meta.showcaseConfig.categoryOrder ?? Infinity));
+      const orderB = Math.min(...itemsB
+        .filter((i): i is { kind: 'component'; data: RuntimeComponent } => i.kind === 'component')
+        .map((i) => i.data.meta.showcaseConfig.categoryOrder ?? Infinity));
+      if (orderA !== orderB) return orderA - orderB;
+      return catA.localeCompare(catB);
+    });
+
+    return new Map(sorted);
   });
 
   select(comp: RuntimeComponent): void {

@@ -58,7 +58,7 @@ describe('generateSnippet', () => {
     expect(result).toBe('<lib-button label="Save" />');
   });
 
-  it('should render multiline format with 2+ attributes', () => {
+  it('should render single-line when total length fits in 80 chars', () => {
     const inputs = [
       meta({ name: 'variant' }),
       meta({ name: 'label' }),
@@ -70,7 +70,25 @@ describe('generateSnippet', () => {
       disabled: true,
     });
     expect(result).toBe(
-      `<lib-button\n  variant="filled"\n  label="Save"\n  [disabled]="true" />`,
+      '<lib-button variant="filled" label="Save" [disabled]="true" />',
+    );
+  });
+
+  it('should render multiline when total length exceeds 80 chars', () => {
+    const inputs = [
+      meta({ name: 'variant' }),
+      meta({ name: 'label' }),
+      meta({ name: 'placeholder' }),
+      meta({ name: 'disabled', type: 'boolean' }),
+    ];
+    const result = generateSnippet('my-long-component-selector', inputs, {
+      variant: 'filled',
+      label: 'Save Changes',
+      placeholder: 'Enter something here',
+      disabled: true,
+    });
+    expect(result).toBe(
+      `<my-long-component-selector\n  variant="filled"\n  label="Save Changes"\n  placeholder="Enter something here"\n  [disabled]="true" />`,
     );
   });
 
@@ -84,5 +102,49 @@ describe('generateSnippet', () => {
     const inputs = [meta({ name: 'items', type: 'array' })];
     const result = generateSnippet('lib-button', inputs, { items: [1, 2, 3] });
     expect(result).toBe('<lib-button [items]="yourData" />');
+  });
+
+  it('should include default values when input is in explicitKeys', () => {
+    const inputs = [
+      meta({ name: 'variant', defaultValue: 'filled' }),
+      meta({ name: 'icon', defaultValue: '★' }),
+    ];
+    const explicitKeys = new Set(['variant', 'icon']);
+    const result = generateSnippet(
+      'lib-button',
+      inputs,
+      { variant: 'icon-only', icon: '★' },
+      explicitKeys,
+    );
+    expect(result).toBe(
+      '<lib-button variant="icon-only" icon="★" />',
+    );
+  });
+
+  it('should include values not present in inputs metadata', () => {
+    const inputs = [meta({ name: 'disabled', type: 'boolean' })];
+    const result = generateSnippet(
+      'sg-color-picker',
+      inputs,
+      { value: '#6366f1', alphaChannel: true, disabled: false },
+    );
+    expect(result).toBe(
+      '<sg-color-picker value="#6366f1" [alphaChannel]="true" />',
+    );
+  });
+
+  it('should still omit defaults for non-explicit inputs', () => {
+    const inputs = [
+      meta({ name: 'variant', defaultValue: 'filled' }),
+      meta({ name: 'label', defaultValue: 'Button' }),
+    ];
+    const explicitKeys = new Set(['variant']);
+    const result = generateSnippet(
+      'lib-button',
+      inputs,
+      { variant: 'outlined', label: 'Button' },
+      explicitKeys,
+    );
+    expect(result).toBe('<lib-button variant="outlined" />');
   });
 });
