@@ -7,21 +7,25 @@ import {
   inject,
   Injector,
   signal,
+  type Type,
   untracked,
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
 import { Highlight } from 'ngx-highlightjs';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import { PrismEventLogService } from '../services/prism-event-log.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import { PrismPanelService } from '../services/prism-panel.service.js';
+import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { generateSnippet } from './snippet-generator.js';
 
 @Component({
   selector: 'prism-renderer',
   standalone: true,
-  imports: [Highlight],
+  imports: [Highlight, NgComponentOutlet],
   template: `
     <div class="prism-renderer">
       @if (navigationService.activeComponent(); as comp) {
@@ -41,6 +45,9 @@ import { generateSnippet } from './snippet-generator.js';
       }
       <div class="prism-renderer__canvas">
         <ng-container #outlet />
+        @if (activeOverlay()) {
+          <ng-container *ngComponentOutlet="activeOverlay()!" />
+        }
       </div>
       @if (snippet()) {
         <div class="prism-renderer__code-toggle">
@@ -106,6 +113,7 @@ import { generateSnippet } from './snippet-generator.js';
       opacity: 1;
     }
     .prism-renderer__canvas {
+      position: relative;
       flex: 1;
       padding: 48px 40px;
       overflow: auto;
@@ -190,6 +198,10 @@ export class PrismRendererComponent {
   private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
   private componentRef: ComponentRef<unknown> | null = null;
   private outputSubscriptions: Array<{ unsubscribe(): void }> = [];
+  private readonly panelService = inject(PrismPanelService);
+  private readonly pluginService = inject(PrismPluginService);
+  private readonly overlayCache = new Map<string, Type<unknown>>();
+  readonly activeOverlay = signal<Type<unknown> | null>(null);
 
   readonly codeVisible = signal(false);
 
@@ -224,6 +236,37 @@ export class PrismRendererComponent {
       for (const [key, value] of Object.entries(inputs)) {
         ref.setInput(key, value);
       }
+    });
+
+    effect(() => {
+      const panelId = this.panelService.activePanelId();
+      const panel = this.pluginService.panels().find((p) => p.id === panelId) ?? null;
+
+      if (!panel) {
+        this.activeOverlay.set(null);
+        return;
+      }
+
+      if (panel.overlayComponent) {
+        this.activeOverlay.set(panel.overlayComponent);
+        return;
+      }
+
+      if (panel.loadOverlayComponent) {
+        const cached = this.overlayCache.get(panel.id);
+        if (cached) {
+          this.activeOverlay.set(cached);
+          return;
+        }
+        this.activeOverlay.set(null);
+        panel.loadOverlayComponent().then((comp) => {
+          this.overlayCache.set(panel.id, comp);
+          this.activeOverlay.set(comp);
+        });
+        return;
+      }
+
+      this.activeOverlay.set(null);
     });
 
     this.destroyRef.onDestroy(() => this.cleanup());

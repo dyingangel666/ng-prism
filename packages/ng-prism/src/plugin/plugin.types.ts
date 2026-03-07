@@ -24,6 +24,8 @@ export interface PanelDefinition {
   component?: Type<unknown>;
   /** Lazy-loaded component — use when the component import would pull in browser-only dependencies (e.g. DomSanitizer) */
   loadComponent?: () => Promise<Type<unknown>>;
+  overlayComponent?: Type<unknown>;
+  loadOverlayComponent?: () => Promise<Type<unknown>>;
   icon?: string;
   position?: 'bottom' | 'right';
 }
