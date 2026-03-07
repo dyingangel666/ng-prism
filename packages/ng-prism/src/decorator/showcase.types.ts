@@ -7,6 +7,10 @@ export interface ShowcaseConfig {
   description?: string;
   /** Groups the component in the sidebar */
   category?: string;
+  /** Controls the order of this category in the sidebar (lower = higher). Categories without this sort alphabetically after ordered ones. */
+  categoryOrder?: number;
+  /** Controls the order of this component within its category (lower = higher). Components without this sort alphabetically after ordered ones. */
+  componentOrder?: number;
   /** Predefined variants shown as tabs */
   variants?: Variant[];
   /** Tags for search and filtering */

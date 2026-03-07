@@ -8,6 +8,7 @@ export class PrismRendererService {
 
   readonly activeVariantIndex = signal(0);
   readonly inputValues = signal<Record<string, unknown>>({});
+  readonly renderedElement = signal<Element | null>(null);
 
   resetForComponent(comp: RuntimeComponent): void {
     this.activeVariantIndex.set(0);

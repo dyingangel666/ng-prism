@@ -46,7 +46,9 @@
             "polyfills": [
               "zone.js"
             ],
-            "allowedCommonJsDependencies": ["highlight.js"],
+            "allowedCommonJsDependencies": [
+              "highlight.js"
+            ],
             "preserveSymlinks": true
           }
         },

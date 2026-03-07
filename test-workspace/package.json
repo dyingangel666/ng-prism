@@ -24,9 +24,13 @@
     "@angular-devkit/build-angular": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
+    "@ng-prism/plugin-a11y": "file:../packages/plugin-a11y",
     "@ng-prism/plugin-figma": "file:../packages/plugin-figma",
+    "@ng-prism/plugin-jsdoc": "file:../packages/plugin-jsdoc",
+    "axe-core": "^4.10.0",
     "highlight.js": "^11.11.1",
     "ng-prism": "file:../packages/ng-prism",
+    "ngx-highlightjs": "^14.0.0",
     "typescript": "~5.9.0"
   }
 }

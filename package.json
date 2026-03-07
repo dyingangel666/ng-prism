@@ -11,7 +11,9 @@
     "e2e:clean": "rm -rf test-workspace/node_modules test-workspace/package-lock.json test-workspace/ng-prism.config.ts && rm -f test-workspace/projects/test-lib-prism/src/prism-manifest.ts test-workspace/projects/test-lib-prism/src/index.html test-workspace/projects/test-lib-prism/tsconfig.app.json && git checkout -- test-workspace/angular.json && node -e \"const fs=require('fs'),p=JSON.parse(fs.readFileSync('test-workspace/package.json','utf8'));delete (p.devDependencies||{})['ng-prism'];delete (p.dependencies||{})['ng-prism'];fs.writeFileSync('test-workspace/package.json',JSON.stringify(p,null,2)+'\\n')\""
   },
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@angular-devkit/architect": "0.2101.4",
     "@angular-devkit/core": "^21.0.0",
@@ -29,9 +31,12 @@
     "@swc/jest": "~0.2.38",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",
+    "axe-core": "^4.11.1",
+    "highlight.js": "^11.11.1",
     "jest": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
+    "ngx-highlightjs": "^14.0.1",
     "nx": "22.5.2",
     "prettier": "^2.6.2",
     "reflect-metadata": "^0.2.2",
@@ -39,8 +44,6 @@
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
-    "highlight.js": "^11.11.1",
-    "ngx-highlightjs": "^14.0.1",
     "verdaccio": "^6.0.5"
   },
   "nx": {

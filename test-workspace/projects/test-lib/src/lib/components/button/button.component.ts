@@ -4,6 +4,8 @@ interface ShowcaseConfig {
   title: string;
   description?: string;
   category?: string;
+  categoryOrder?: number;
+  componentOrder?: number;
   variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
   tags?: string[];
   meta?: Record<string, unknown>;
@@ -18,8 +20,16 @@ export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-
 @Showcase({
   title: 'Button',
   category: 'Inputs',
+  categoryOrder: 1,
+  componentOrder: 1,
   description: 'Flexible button with five visual variants.',
-  meta: { figma: 'https://www.figma.com/file/LbcvMJxDtshDmYtdyfJfkA72/storybook-addon-figma' },
+  meta: {
+    figma:
+      'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2778&m=dev',
+    a11y: {
+      rules: { region: { enabled: false } },
+    },
+  },
   variants: [
     { name: 'Filled', inputs: { variant: 'filled', label: 'Filled' } },
     { name: 'Outlined', inputs: { variant: 'outlined', label: 'Outlined' } },
@@ -168,22 +178,38 @@ export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-
     }
   `,
 })
+/**
+ * Flexible button component with five visual variants.
+ * Supports label text, icon-only mode, disabled and readonly states.
+ * @since 1.0.0
+ * @see ButtonVariant
+ * @example
+ * <lib-button label="Save" variant="filled" />
+ * @example
+ * <lib-button variant="icon-only" icon="★" />
+ */
 export class ButtonComponent {
-  /** Visual style variant */
+  /** Visual style variant of the button. */
   readonly variant = input<ButtonVariant>('filled');
 
-  /** Button label text (not used for icon-only) */
+  /** Label text displayed inside the button. Not rendered in `icon-only` variant. */
   readonly label = input<string>('Button');
 
-  /** Icon character for icon-only variant */
+  /**
+   * Icon character displayed in `icon-only` variant.
+   * Any Unicode character or symbol can be used.
+   */
   readonly icon = input<string>('★');
 
-  /** Whether the button is disabled */
+  /** Disables the button — prevents interaction and reduces opacity. */
   readonly disabled = input<boolean>(false);
 
-  /** Whether the button is disabled */
+  /**
+   * Puts the button into a readonly visual state without disabling it at the DOM level.
+   * @since 1.1.0
+   */
   readonly readonly = input<boolean>(false);
 
-  /** Emits when the button is clicked */
+  /** Emits when the button is clicked. Not emitted when disabled. */
   readonly clicked = output<void>();
 }
