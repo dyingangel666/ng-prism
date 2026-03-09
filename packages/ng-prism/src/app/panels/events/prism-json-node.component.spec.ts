@@ -1,4 +1,4 @@
-import { summarizeValue } from './prism-json-node.component.js';
+import { summarizeValue } from './prism-json-node.utils.js';
 
 describe('summarizeValue', () => {
   it('renders a string with quotes', () => {

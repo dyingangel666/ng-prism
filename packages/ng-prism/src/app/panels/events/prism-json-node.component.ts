@@ -1,24 +1,8 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, signal, Type } from '@angular/core';
+import { NgComponentOutlet } from '@angular/common';
+import { summarizeValue } from './prism-json-node.utils.js';
 
-export function summarizeValue(val: unknown): string {
-  if (val === undefined) return 'undefined';
-  if (val === null) return 'null';
-  if (typeof val === 'string') return `"${val}"`;
-  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
-  if (Array.isArray(val)) {
-    if (val.length === 0) return '[]';
-    const items = val.slice(0, 3).map(summarizeValue);
-    return val.length > 3 ? `[${items.join(', ')}, …]` : `[${items.join(', ')}]`;
-  }
-  if (typeof val === 'object') {
-    const obj = val as Record<string, unknown>;
-    const keys = Object.keys(obj);
-    if (keys.length === 0) return '{}';
-    const pairs = keys.slice(0, 2).map((k) => `${k}: ${summarizeValue(obj[k])}`);
-    return keys.length > 2 ? `{${pairs.join(', ')}, …}` : `{${pairs.join(', ')}}`;
-  }
-  return String(val);
-}
+export { summarizeValue } from './prism-json-node.utils.js';
 
 type JsonNodeType = 'string' | 'number' | 'boolean' | 'null' | 'undefined' | 'object' | 'array';
 
@@ -32,12 +16,12 @@ function getType(val: unknown): JsonNodeType {
 @Component({
   selector: 'prism-json-node',
   standalone: true,
-  imports: [PrismJsonNodeComponent],
+  imports: [NgComponentOutlet],
   template: `
     @switch (type()) {
       @case ('object') {
         @if (entries().length === 0) {
-          <span class="json-brace">{}</span>
+          <span class="json-brace">{{ '{}' }}</span>
         } @else {
           <span class="json-expandable" (click)="toggle()">
             <span class="json-chevron">{{ expanded() ? '▾' : '▸' }}</span>
@@ -46,17 +30,20 @@ function getType(val: unknown): JsonNodeType {
             }
           </span>
           @if (expanded()) {
-            <span class="json-brace">&#123;</span>
+            <span class="json-brace">{{ '{' }}</span>
             <div class="json-children">
               @for (entry of entries(); track entry.key) {
                 <div class="json-row">
                   <span class="json-key">{{ entry.key }}</span>
                   <span class="json-colon">:&nbsp;</span>
-                  <prism-json-node [value]="entry.value" />
+                  <ng-container
+                    [ngComponentOutlet]="self"
+                    [ngComponentOutletInputs]="{ value: entry.value }"
+                  />
                 </div>
               }
             </div>
-            <span class="json-brace">&#125;</span>
+            <span class="json-brace">{{ '}' }}</span>
           }
         }
       }
@@ -77,7 +64,10 @@ function getType(val: unknown): JsonNodeType {
                 <div class="json-row">
                   <span class="json-index">{{ $index }}</span>
                   <span class="json-colon">:&nbsp;</span>
-                  <prism-json-node [value]="item" />
+                  <ng-container
+                    [ngComponentOutlet]="self"
+                    [ngComponentOutletInputs]="{ value: item }"
+                  />
                 </div>
               }
             </div>
@@ -171,6 +161,8 @@ function getType(val: unknown): JsonNodeType {
 })
 export class PrismJsonNodeComponent {
   readonly value = input<unknown>(undefined);
+
+  protected readonly self: Type<PrismJsonNodeComponent> = PrismJsonNodeComponent;
 
   protected readonly type = computed(() => getType(this.value()));
   protected readonly expanded = signal(false);
