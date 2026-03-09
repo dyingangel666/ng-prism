@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { PrismEventLogService } from '../../services/prism-event-log.service.js';
+import { PrismJsonNodeComponent } from './prism-json-node.component.js';
 
 @Component({
   selector: 'prism-events-panel',
   standalone: true,
+  imports: [PrismJsonNodeComponent],
   template: `
     <div class="prism-events-panel">
       <div class="prism-events-panel__header">
@@ -20,7 +22,9 @@ import { PrismEventLogService } from '../../services/prism-event-log.service.js'
           <div class="prism-events-panel__entry">
             <span class="prism-events-panel__time">{{ formatTime(entry.timestamp) }}</span>
             <span class="prism-events-panel__name">{{ entry.name }}</span>
-            <span class="prism-events-panel__value">{{ formatValue(entry.value) }}</span>
+            <span class="prism-events-panel__value">
+              <prism-json-node [value]="entry.value" />
+            </span>
           </div>
         } @empty {
           <p class="prism-events-panel__empty">No events recorded</p>
@@ -72,6 +76,8 @@ import { PrismEventLogService } from '../../services/prism-event-log.service.js'
       font-size: 12px;
       font-family: var(--prism-font-mono);
       border-bottom: 1px solid var(--prism-border);
+      align-items: baseline;
+      flex-wrap: wrap;
     }
     .prism-events-panel__time {
       color: var(--prism-text-muted);
@@ -83,10 +89,8 @@ import { PrismEventLogService } from '../../services/prism-event-log.service.js'
       flex-shrink: 0;
     }
     .prism-events-panel__value {
-      color: var(--prism-text);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
     }
     .prism-events-panel__empty {
       color: var(--prism-text-muted);
@@ -102,14 +106,5 @@ export class PrismEventsPanelComponent {
   protected formatTime(ts: number): string {
     const d = new Date(ts);
     return d.toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 });
-  }
-
-  protected formatValue(val: unknown): string {
-    if (val === undefined) return 'undefined';
-    try {
-      return JSON.stringify(val);
-    } catch {
-      return String(val);
-    }
   }
 }
