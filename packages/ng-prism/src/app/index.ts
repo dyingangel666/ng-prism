@@ -1,5 +1,6 @@
 // Tokens
-export { PRISM_MANIFEST, PRISM_CONFIG } from './tokens/prism-tokens.js';
+export { PRISM_MANIFEST, PRISM_CONFIG, PRISM_RENDERER_HOOKS } from './tokens/prism-tokens.js';
+export type { PrismRendererHooks } from './tokens/prism-tokens.js';
 
 // Theme
 export { PRISM_DEFAULT_THEME } from './theme/prism-default-theme.js';

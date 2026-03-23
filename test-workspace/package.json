@@ -30,6 +30,7 @@
     "@ng-prism/plugin-box-model": "file:../packages/plugin-box-model",
     "@ng-prism/plugin-figma": "file:../packages/plugin-figma",
     "@ng-prism/plugin-jsdoc": "file:../packages/plugin-jsdoc",
+    "@ng-prism/plugin-perf": "file:../packages/plugin-perf",
     "@types/node": "^25.5.0",
     "axe-core": "^4.10.0",
     "highlight.js": "^11.11.1",

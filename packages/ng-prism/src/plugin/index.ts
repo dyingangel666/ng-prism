@@ -19,3 +19,5 @@ export type {
 export { customPage, componentPage } from './page-helpers.js';
 export type { ComponentPageOptions } from './page-helpers.js';
 export { defineConfig } from './define-config.js';
+export { PRISM_RENDERER_HOOKS } from '../app/tokens/prism-tokens.js';
+export type { PrismRendererHooks } from '../app/tokens/prism-tokens.js';

@@ -17,6 +17,7 @@ import { Highlight } from 'ngx-highlightjs';
 import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.types.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
 import { A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
+import { PRISM_RENDERER_HOOKS } from '../tokens/prism-tokens.js';
 
 import { PrismEventLogService } from '../services/prism-event-log.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
@@ -200,6 +201,7 @@ export class PrismRendererComponent {
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, { optional: true });
 
   private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
   private componentRef: ComponentRef<unknown> | null = null;
@@ -239,9 +241,13 @@ export class PrismRendererComponent {
       const inputs = this.rendererService.inputValues();
       const ref = this.componentRef;
       if (!ref) return;
+      performance.mark('prism:rerender:start');
       for (const [key, value] of Object.entries(inputs)) {
         ref.setInput(key, value);
       }
+      ref.changeDetectorRef.detectChanges();
+      performance.mark('prism:rerender:end');
+      performance.measure('prism:rerender', 'prism:rerender:start', 'prism:rerender:end');
     });
 
     effect(() => {
@@ -282,6 +288,12 @@ export class PrismRendererComponent {
   private createComponent(comp: RuntimeComponent): void {
     this.cleanup();
 
+    const selector = comp.meta.componentMeta.selector;
+    const detail = { detail: { selector } };
+
+    this.rendererHooks?.onBeforeCreate?.(selector);
+    performance.mark('prism:render:start', detail);
+
     const injector = Injector.create({
       providers: comp.meta.showcaseConfig.providers ?? [],
       parent: this.injector,
@@ -301,11 +313,17 @@ export class PrismRendererComponent {
     for (const [key, value] of Object.entries(this.rendererService.inputValues())) {
       this.componentRef.setInput(key, value);
     }
+    this.componentRef.changeDetectorRef.detectChanges();
+
+    performance.mark('prism:render:end', detail);
+    performance.measure('prism:render', 'prism:render:start', 'prism:render:end');
 
     this.rendererService.renderedElement.set(this.componentRef.location.nativeElement);
+    this.rendererHooks?.onAfterCreate?.(selector);
   }
 
   private cleanup(): void {
+    const hadComponent = this.componentRef !== null;
     this.rendererService.renderedElement.set(null);
     for (const sub of this.outputSubscriptions) {
       sub.unsubscribe();
@@ -313,5 +331,8 @@ export class PrismRendererComponent {
     this.outputSubscriptions = [];
     this.outlet().clear();
     this.componentRef = null;
+    if (hadComponent) {
+      this.rendererHooks?.onAfterDestroy?.('');
+    }
   }
 }

@@ -62,6 +62,10 @@ function formatMeta(comp: ScannedComponent, baseIndent: number): string {
     `${indent(inner)}componentMeta: ${formatObject(comp.componentMeta, inner)},`,
   ];
 
+  if (comp.meta && Object.keys(comp.meta).length > 0) {
+    lines.push(`${indent(inner)}meta: ${formatObject(comp.meta as Record<string, unknown>, inner)},`);
+  }
+
   return `{\n${lines.join('\n')}\n${indent(baseIndent)}}`;
 }
 
