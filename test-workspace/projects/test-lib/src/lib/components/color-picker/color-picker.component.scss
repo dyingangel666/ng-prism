@@ -73,6 +73,7 @@ $color-picker-component-flyout-sliderbox-slider-handle-height: $color-picker-com
 
     // Wrapper for the colorpicker flyout content
     &__flyoutcontent {
+      background: $color-base-white;
         // Upper box for the color saturation selection
         &__saturationarea {
             position: relative;

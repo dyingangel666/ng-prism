@@ -32,4 +32,6 @@ export interface Variant {
   inputs?: Record<string, unknown>;
   /** Optional description for this variant */
   description?: string;
+  /** Arbitrary metadata for plugins (e.g. { figma: 'https://...?node-id=12-34' }) */
+  meta?: Record<string, unknown>;
 }

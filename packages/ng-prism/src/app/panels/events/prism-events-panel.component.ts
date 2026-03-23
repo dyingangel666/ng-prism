@@ -18,7 +18,7 @@ import { PrismJsonNodeComponent } from './prism-json-node.component.js';
         </button>
       </div>
       <div class="prism-events-panel__list">
-        @for (entry of eventLogService.events(); track $index) {
+        @for (entry of eventLogService.events(); track entry.id) {
           <div class="prism-events-panel__entry">
             <span class="prism-events-panel__time">{{ formatTime(entry.timestamp) }}</span>
             <span class="prism-events-panel__name">{{ entry.name }}</span>

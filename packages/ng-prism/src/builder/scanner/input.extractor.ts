@@ -3,7 +3,7 @@ import type { InputMeta, OutputMeta } from '../../plugin/plugin.types.js';
 import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
 
 /**
- * Extract all @Input() and input() signal metadata from a class declaration.
+ * Extract all @Input(), input() and model() signal metadata from a class declaration.
  */
 export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): InputMeta[] {
   const inputs: InputMeta[] = [];
@@ -73,11 +73,11 @@ function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression |
 
   const expr = init.expression;
 
-  if (ts.isIdentifier(expr) && expr.text === 'input') return init;
+  if (ts.isIdentifier(expr) && (expr.text === 'input' || expr.text === 'model')) return init;
 
   if (
     ts.isPropertyAccessExpression(expr) &&
-    ts.isIdentifier(expr.expression) && expr.expression.text === 'input' &&
+    ts.isIdentifier(expr.expression) && (expr.expression.text === 'input' || expr.expression.text === 'model') &&
     ts.isIdentifier(expr.name) && expr.name.text === 'required'
   ) {
     return init;

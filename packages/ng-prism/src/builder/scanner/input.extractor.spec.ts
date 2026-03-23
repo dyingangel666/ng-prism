@@ -184,6 +184,21 @@ describe('extractInputs (signal-based)', () => {
     expect(title.defaultValue).toBeUndefined();
   });
 
+  it('should extract model() inputs like signal inputs', () => {
+    const classDecl = getClassDeclaration(exports, 'ModelInputComponent', checker);
+    const inputs = extractInputs(classDecl, checker);
+
+    expect(inputs).toHaveLength(2);
+    expect(inputs[0].name).toBe('value');
+    expect(inputs[0].type).toBe('string');
+    expect(inputs[0].defaultValue).toBe('');
+    expect(inputs[0].required).toBe(false);
+    expect(inputs[1].name).toBe('disabled');
+    expect(inputs[1].type).toBe('boolean');
+    expect(inputs[1].defaultValue).toBe(false);
+    expect(inputs[1].required).toBe(false);
+  });
+
   it('should extract JSDoc comments from signal inputs', () => {
     const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
     const inputs = extractInputs(classDecl, checker);

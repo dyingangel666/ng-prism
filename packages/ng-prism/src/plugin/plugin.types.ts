@@ -28,6 +28,8 @@ export interface PanelDefinition {
   loadOverlayComponent?: () => Promise<Type<unknown>>;
   icon?: string;
   position?: 'bottom' | 'right';
+  /** Providers injected into a child EnvironmentInjector scoped to this panel */
+  providers?: Provider[];
 }
 
 export interface ControlDefinition {

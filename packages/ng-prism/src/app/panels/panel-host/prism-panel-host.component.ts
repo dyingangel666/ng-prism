@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, effect, inject, signal, type Type } from '@angular/core';
+import { Component, computed, createEnvironmentInjector, effect, EnvironmentInjector, inject, OnDestroy, signal, type Type } from '@angular/core';
 import type { PanelDefinition } from '../../../plugin/plugin.types.js';
 import { CONTROLS_PLUGIN } from '../controls/controls-plugin.js';
 import { EVENTS_PLUGIN } from '../events/events-plugin.js';
@@ -26,7 +26,7 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
       </div>
       <div class="prism-panel-host__content">
         @if (resolvedComponent()) {
-          <ng-container *ngComponentOutlet="resolvedComponent(); inputs: panelInputs()" />
+          <ng-container *ngComponentOutlet="resolvedComponent(); inputs: panelInputs(); injector: activeInjector()" />
         }
       </div>
     </div>
@@ -84,10 +84,11 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
     }
   `,
 })
-export class PrismPanelHostComponent {
+export class PrismPanelHostComponent implements OnDestroy {
   private readonly pluginService = inject(PrismPluginService);
   private readonly nav = inject(PrismNavigationService);
   protected readonly panelService = inject(PrismPanelService);
+  private readonly envInjector = inject(EnvironmentInjector);
 
   private readonly builtInPanels: PanelDefinition[] = [
     ...(CONTROLS_PLUGIN.panels ?? []),
@@ -101,6 +102,21 @@ export class PrismPanelHostComponent {
   }));
 
   private readonly lazyCache = new Map<string, Type<unknown>>();
+  private readonly injectorCache = new Map<string, EnvironmentInjector>();
+
+  protected readonly activeInjector = computed(() => {
+    const panelId = this.panelService.activePanelId();
+    const panel = this.allPanels().find((p) => p.id === panelId);
+    if (!panel?.providers?.length) return this.envInjector;
+
+    if (!this.injectorCache.has(panel.id)) {
+      this.injectorCache.set(
+        panel.id,
+        createEnvironmentInjector(panel.providers, this.envInjector, `PrismPanel[${panel.id}]`),
+      );
+    }
+    return this.injectorCache.get(panel.id)!;
+  });
 
   constructor() {
     effect(() => {
@@ -129,5 +145,9 @@ export class PrismPanelHostComponent {
         });
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.injectorCache.forEach((injector) => injector.destroy());
   }
 }

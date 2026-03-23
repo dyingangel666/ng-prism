@@ -50,6 +50,7 @@ test-output
 test-workspace/node_modules
 test-workspace/dist
 test-workspace/.angular
+test-workspace/.env
 test-workspace/package-lock.json
 test-workspace/projects/test-lib-prism/
 test-workspace/ng-prism.config.ts

@@ -1,26 +1,31 @@
 import { FocusMonitor, FocusOrigin } from '@angular/cdk/a11y';
-import { coerceBooleanProperty } from '@angular/cdk/coercion';
 import {
-    AfterContentInit,
-    AfterViewInit,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
-    Component,
-    ElementRef,
-    forwardRef,
-    inject,
-    Injector,
-    Input,
-    input,
-    model,
-    OnDestroy,
-    output,
-    Renderer2,
-    ViewChild,
-    viewChild,
-    ViewEncapsulation
+  AfterContentInit,
+  AfterViewInit,
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  forwardRef,
+  inject,
+  Injector,
+  input,
+  model,
+  OnDestroy,
+  output,
+  Renderer2,
+  signal,
+  viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
-import { ControlValueAccessor, FormControl, FormsModule, NG_VALUE_ACCESSOR, NgControl } from '@angular/forms';
+import {
+  ControlValueAccessor,
+  FormControl,
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+  NgControl,
+} from '@angular/forms';
 import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 import { Subscription } from 'rxjs';
 import { ColorPickerChangeEvent } from './typings/color-picker-change-event';
@@ -28,15 +33,18 @@ import { ColorPickerUtils } from './typings/color-picker.utils';
 import { ColorPickerColorInterface } from './typings/color.interface';
 
 interface ShowcaseConfig {
-    title: string;
-    description?: string;
-    category?: string;
-    variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
-    tags?: string[];
+  title: string;
+  description?: string;
+  category?: string;
+  categoryOrder?: number;
+  componentOrder?: number;
+  variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
+  tags?: string[];
+  meta?: Record<string, unknown>;
 }
 
 function Showcase(config: ShowcaseConfig): ClassDecorator {
-    return () => {};
+  return () => {};
 }
 
 @Showcase({
@@ -63,7 +71,7 @@ function Showcase(config: ShowcaseConfig): ClassDecorator {
     class: 'sg-color-picker',
     '[class.sg-color-picker--disabled]': 'disabled()',
     '[class.sg-color-picker--readonly]': 'readonly()',
-    '[class.sg-color-picker--focused]': 'focused',
+    '[class.sg-color-picker--focused]': 'focused()',
   },
   providers: [
     {
@@ -100,18 +108,13 @@ export class ColorPickerComponent
   private onChange = (_: any) => {};
   private onTouched = () => {};
 
-  private _required = false;
-  private _alphaChannel = false;
-  private _value: string | undefined;
-  private _focused = false;
+  private _control?: FormControl;
+  private _currentHue = 0;
+  private _currentSaturation = 0;
+  private _currentValue = 100;
+  private _currentAlpha = 100;
 
-  private _control: FormControl | undefined;
-  private _currentHue: number | undefined;
-  private _currentSaturation: number | undefined;
-  private _currentValue: number | undefined;
-  private _currentAlpha: number | undefined;
-
-  private readonly _windowResizeSubscribtion: Subscription | null | undefined;
+  private readonly _windowResizeSubscribtion: Subscription | null = null;
   private _keyPressListener: any = null;
   private _saturationAreaMouseMoveListener: any = null;
   private _saturationAreaMouseUpListener: any = null;
@@ -120,27 +123,31 @@ export class ColorPickerComponent
   private _alphaSliderMouseMoveListener: any = null;
   private _alphaSliderMouseUpListener: any = null;
 
-  private _saturationAreaOffsetWidth: number | undefined;
-  private _saturationAreaOffsetHeight: number | undefined;
-  private _hueSliderOffsetWidth: number | undefined;
-  private _alphaSliderOffsetWidth: number | undefined;
+  private _saturationAreaOffsetWidth = 0;
+  private _saturationAreaOffsetHeight = 0;
+  private _hueSliderOffsetWidth = 0;
+  private _alphaSliderOffsetWidth = 0;
 
-  currentColorHsl: ColorPickerColorInterface | undefined;
-  currentColorRgb: ColorPickerColorInterface | undefined;
-  currentColorHex: ColorPickerColorInterface | undefined;
-  currentColorHexNoAlpha: ColorPickerColorInterface | undefined;
-  valueNoAlpha: string | undefined;
+  currentColorHsl!: ColorPickerColorInterface;
+  currentColorRgb!: ColorPickerColorInterface;
+  currentColorHex!: ColorPickerColorInterface;
+  currentColorHexNoAlpha!: ColorPickerColorInterface;
+  valueNoAlpha = '';
 
   saturationHandleXPositionFromLeft = 0;
   saturationHandleYPositionFromTop = 0;
   hueSliderXPositionFromLeft = 0;
   alphaSliderXPositionFromLeft = 0;
-  hueSliderColor: string | undefined;
+  hueSliderColor = '';
   initialized = false;
 
+  value = model<string>('');
   disabled = model<boolean>(false);
   readonly = input<boolean>(false);
   tabIndex = input<number | null>(null);
+  readonly required = input(false, { transform: booleanAttribute });
+  readonly alphaChannel = input(false, { transform: booleanAttribute });
+  protected readonly focused = signal<boolean>(false);
 
   readonly changeEvent = output<ColorPickerChangeEvent>();
 
@@ -152,21 +159,9 @@ export class ColorPickerComponent
     viewChild.required<ElementRef>('saturationArea');
   readonly _hueSliderElement = viewChild.required<ElementRef>('hueSlider');
 
-  private _alphaSliderElement: ElementRef | undefined;
-  private _alphaSliderHandleElement: ElementRef | undefined;
-  private _debounceTimeout: ReturnType<typeof setTimeout> | undefined;
-
-  @ViewChild('alphaSlider') set alphaSliderElement(
-    alphaSliderElement: ElementRef
-  ) {
-    this._alphaSliderElement = alphaSliderElement;
-  }
-
-  @ViewChild('alphaSliderHandle') set alphaSliderHandleElement(
-    alphaSliderHandleElement: ElementRef
-  ) {
-    this._alphaSliderHandleElement = alphaSliderHandleElement;
-  }
+  private readonly _alphaSliderEl = viewChild<ElementRef>('alphaSlider');
+  private _alphaListenerAttached = false;
+  private _debounceTimeout!: ReturnType<typeof setTimeout>;
 
   /**************************************************************************************************************
    * CTOR
@@ -174,7 +169,7 @@ export class ColorPickerComponent
 
   constructor() {
     // When no value is passed set an initial one
-    !this.value && (this.value = this.DEFAULT_COLOR);
+    !this.value() && this.value.set(this.DEFAULT_COLOR);
 
     // Detect if used device supports touch and set correct event types
     this._isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints;
@@ -353,77 +348,6 @@ export class ColorPickerComponent
       }
     );
 
-    // Listen for mousedown/touchstart on the alpha slider handle
-    if (this.alphaChannel) {
-      this._renderer.listen(
-        this._alphaSliderElement?.nativeElement,
-        this._eventStart,
-        (downEvent) => {
-          downEvent.preventDefault();
-
-          // Only allow mouse stuff with left mouse clicks and prevent others for non mobile devices
-          if (!this._isTouchDevice && downEvent.which !== 1) {
-            return;
-          }
-
-          const startXPos = this._isTouchDevice
-            ? downEvent.touches[0].clientX
-            : downEvent.clientX;
-          const alphaSliderBBox =
-            this._alphaSliderElement?.nativeElement.getBoundingClientRect();
-
-          // Calc the relative position within the saturation area box and the percentage value of the slider
-          let newSliderXPos = startXPos - alphaSliderBBox.left;
-          let percentageValue =
-            (newSliderXPos * 100) / this._alphaSliderOffsetWidth!;
-
-          // Set values for the slider and trigger cd
-          this._setAlphaSliderValues(newSliderXPos, percentageValue);
-
-          // Tmp save last calculated top position which is used for offset calculation while moving
-          const startXOffset = this.alphaSliderXPositionFromLeft;
-
-          // Listen for mousemove/touchmove when element was clicked before
-          this._alphaSliderMouseMoveListener = this._renderer.listen(
-            document,
-            this._eventMove,
-            (moveEvent) => {
-              if (!this._isTouchDevice) {
-                moveEvent.preventDefault();
-              }
-
-              newSliderXPos =
-                startXOffset +
-                (this._isTouchDevice
-                  ? moveEvent.touches[0].clientX
-                  : moveEvent.clientX) -
-                startXPos;
-              percentageValue =
-                (this.alphaSliderXPositionFromLeft * 100) /
-                this._alphaSliderOffsetWidth!;
-
-              // Set values for the slider and trigger cd
-              this._setAlphaSliderValues(newSliderXPos, percentageValue);
-            }
-          );
-
-          // Listen for mouseup/touchend when element was clicked before
-          this._alphaSliderMouseUpListener = this._renderer.listen(
-            document,
-            this._eventEnd,
-            () => {
-              // Trigger change on input when mouse was released
-              this._emitChangeEvent();
-
-              // Destroy tmp event listeners for mousemove and mouseup
-              this._alphaSliderMouseMoveListener();
-              this._alphaSliderMouseUpListener();
-            }
-          );
-        }
-      );
-    }
-
     // Set picker from initially given hex color
     setTimeout(() => {
       this._setPickerFromHexColor(false, true);
@@ -473,57 +397,80 @@ export class ColorPickerComponent
         }
       }
     );
-  }
 
-  private _onInputFocusChange(focusOrigin: FocusOrigin) {
-    if (!this.focused) {
-      this.focused = true;
-    } else if (!focusOrigin) {
-      this.focused = false;
-      this.onTouched();
+    if (this.alphaChannel() && !this._alphaListenerAttached) {
+      setTimeout(() => {
+        const el = this._alphaSliderEl();
+        if (!el) return;
+
+        this._alphaListenerAttached = true;
+        this._alphaSliderOffsetWidth = el.nativeElement.offsetWidth;
+
+        this._renderer.listen(el.nativeElement, this._eventStart, (downEvent) => {
+          downEvent.preventDefault();
+
+          if (!this._isTouchDevice && downEvent.which !== 1) {
+            return;
+          }
+
+          const startXPos = this._isTouchDevice
+            ? downEvent.touches[0].clientX
+            : downEvent.clientX;
+          const alphaSliderBBox = el.nativeElement.getBoundingClientRect();
+
+          if (this._alphaSliderOffsetWidth === 0) {
+            this._alphaSliderOffsetWidth = alphaSliderBBox.width;
+          }
+
+          let newSliderXPos = startXPos - alphaSliderBBox.left;
+          let percentageValue = (newSliderXPos * 100) / alphaSliderBBox.width;
+
+          this._setAlphaSliderValues(newSliderXPos, percentageValue);
+
+          const startXOffset = this.alphaSliderXPositionFromLeft;
+
+          this._alphaSliderMouseMoveListener = this._renderer.listen(
+            document,
+            this._eventMove,
+            (moveEvent) => {
+              if (!this._isTouchDevice) {
+                moveEvent.preventDefault();
+              }
+
+              newSliderXPos =
+                startXOffset +
+                (this._isTouchDevice
+                  ? moveEvent.touches[0].clientX
+                  : moveEvent.clientX) -
+                startXPos;
+              percentageValue =
+                (this.alphaSliderXPositionFromLeft * 100) / alphaSliderBBox.width;
+
+              this._setAlphaSliderValues(newSliderXPos, percentageValue);
+            }
+          );
+
+          this._alphaSliderMouseUpListener = this._renderer.listen(
+            document,
+            this._eventEnd,
+            () => {
+              this._emitChangeEvent();
+              this._alphaSliderMouseMoveListener();
+              this._alphaSliderMouseUpListener();
+            }
+          );
+        });
+      });
     }
   }
 
-  /**************************************************************************************************************
-   * SETTERS & GETTERS
-   *************************************************************************************************************/
-
-  @Input()
-  set required(value: boolean) {
-    this._required = coerceBooleanProperty(value);
-  }
-
-  get required(): boolean {
-    return this._required;
-  }
-
-  @Input()
-  set alphaChannel(value: boolean) {
-    this._alphaChannel = coerceBooleanProperty(value);
-  }
-
-  get alphaChannel(): boolean {
-    return this._alphaChannel;
-  }
-
-  @Input()
-  set value(value: string) {
-    this._value = value;
-    this._changeDetectorRef.markForCheck();
-  }
-
-  get value(): string {
-    return this._value!;
-  }
-
-  @Input()
-  set focused(value: boolean) {
-    this._focused = coerceBooleanProperty(value);
-    this._changeDetectorRef.markForCheck();
-  }
-
-  get focused(): boolean {
-    return this._focused;
+  private _onInputFocusChange(focusOrigin: FocusOrigin) {
+    if (!this.focused()) {
+      this.focused.set(true);
+    } else if (!focusOrigin) {
+      this.focused.set(false);
+      this.onTouched();
+    }
   }
 
   /**************************************************************************************************************
@@ -535,7 +482,7 @@ export class ColorPickerComponent
   }
 
   writeValue(value: any): void {
-    this.value = value;
+    this.value.set(value);
   }
 
   registerOnChange(fn: any): void {
@@ -587,18 +534,18 @@ export class ColorPickerComponent
 
     if (ColorPickerUtils.isHexColor(_inputElement.nativeElement.value)) {
       // Sync the value from the underlying input element with the component instance.
-      this.value = _inputElement.nativeElement.value;
+      this.value.set(_inputElement.nativeElement.value);
 
       // Get a hsl color from the input's hex value and calculate back a y-position for the rhs hue slider value by current hsl hue value
-      const hsvColor = ColorPickerUtils.hexToHsv(this.value);
+      const hsvColor = ColorPickerUtils.hexToHsv(this.value());
 
       // (hsvHue * 100 / 360 => gets percentage part of the hue value (value 0-360) for the slider and calculate back the absolute pixel position for the handle depending on the the slider offset width
       const hueSliderHandleXPos =
-        (((hsvColor.array![0] * 100) / 360) * this._hueSliderOffsetWidth!) / 100;
+        (((hsvColor.array![0] * 100) / 360) * this._hueSliderOffsetWidth) / 100;
 
       // (hsvAlpha * 100 / 360 => gets percentage part of the alpha value (value 0 - 1) for the slider and calculate back the absolute pixel position for the handle depending on the the slider offset width
       const alphaSliderHandleXPos =
-        (hsvColor.array![3] * 100 * this._alphaSliderOffsetWidth!) / 100;
+        (hsvColor.array![3] * 100 * this._alphaSliderOffsetWidth) / 100;
 
       // Set the hue slider color which is used as static background color (only hue value with full saturation and lightning) for the lhs saturation area and overlapped by the two transparent gradients
       this.hueSliderColor = 'hsl(' + hsvColor.array![0] + ', 100%, 50%)';
@@ -606,11 +553,11 @@ export class ColorPickerComponent
       // Set hue and alpha slider handle positions
       this.hueSliderXPositionFromLeft = Math.max(
         0,
-        Math.min(hueSliderHandleXPos, this._hueSliderOffsetWidth!)
+        Math.min(hueSliderHandleXPos, this._hueSliderOffsetWidth)
       );
       this.alphaSliderXPositionFromLeft = Math.max(
         0,
-        Math.min(alphaSliderHandleXPos, this._alphaSliderOffsetWidth!)
+        Math.min(alphaSliderHandleXPos, this._alphaSliderOffsetWidth)
       );
 
       // Set hue value which is used for the setColors function
@@ -620,20 +567,20 @@ export class ColorPickerComponent
 
       // Get the positions for the saturation area handle (x-axis => saturation, y-axis => value/brightness)
       const saturationAreaHandleXPos =
-        (hsvColor.array![1] * this._saturationAreaOffsetWidth!) / 100;
+        (hsvColor.array![1] * this._saturationAreaOffsetWidth) / 100;
       const saturationAreaHandleYPos = Math.abs(
-        (hsvColor.array![2] * this._saturationAreaOffsetHeight!) / 100 -
-          this._saturationAreaOffsetHeight!
+        (hsvColor.array![2] * this._saturationAreaOffsetHeight) / 100 -
+          this._saturationAreaOffsetHeight
       );
 
       // Clamp the saturation handle position to be within the saturation area bounds
       this.saturationHandleXPositionFromLeft = Math.max(
         0,
-        Math.min(saturationAreaHandleXPos, this._saturationAreaOffsetWidth!)
+        Math.min(saturationAreaHandleXPos, this._saturationAreaOffsetWidth)
       );
       this.saturationHandleYPositionFromTop = Math.max(
         0,
-        Math.min(saturationAreaHandleYPos, this._saturationAreaOffsetHeight!)
+        Math.min(saturationAreaHandleYPos, this._saturationAreaOffsetHeight)
       );
 
       // Set the saturation and value for the HSV model
@@ -673,11 +620,6 @@ export class ColorPickerComponent
       this._hueSliderOffsetWidth =
         this._hueSliderElement().nativeElement.offsetWidth;
 
-      if (this.alphaChannel) {
-        this._alphaSliderOffsetWidth =
-          this._alphaSliderElement?.nativeElement.offsetWidth;
-      }
-
       this._flyoutElement().closeMenu();
     });
   }
@@ -688,28 +630,28 @@ export class ColorPickerComponent
   ) {
     // Directly set the handle to the clicked position on x and y axis
     this.saturationHandleXPositionFromLeft =
-      (newSliderXPos < 0
+      newSliderXPos < 0
         ? 0
-        : newSliderXPos > this._saturationAreaOffsetWidth!
+        : newSliderXPos > this._saturationAreaOffsetWidth
         ? this._saturationAreaOffsetWidth
-        : newSliderXPos)!;
+        : newSliderXPos;
     this.saturationHandleYPositionFromTop =
-      (newSliderYPos < 0
+      newSliderYPos < 0
         ? 0
-        : newSliderYPos > this._saturationAreaOffsetHeight!
+        : newSliderYPos > this._saturationAreaOffsetHeight
         ? this._saturationAreaOffsetHeight
-        : newSliderYPos)!;
+        : newSliderYPos;
 
     // Calculate the saturation and value for the HSV model
     this._currentSaturation =
       (this.saturationHandleXPositionFromLeft * 100) /
-      this._saturationAreaOffsetWidth!;
+      this._saturationAreaOffsetWidth;
     this._currentValue =
       (Math.abs(
-        this.saturationHandleYPositionFromTop - this._saturationAreaOffsetHeight!
+        this.saturationHandleYPositionFromTop - this._saturationAreaOffsetHeight
       ) *
         100) /
-      this._saturationAreaOffsetHeight!;
+      this._saturationAreaOffsetHeight;
 
     // Set colors and trigger change detection to update ui
     this._setColors();
@@ -719,11 +661,11 @@ export class ColorPickerComponent
   private _setHueSliderValues(newSliderXPos: number, percentageValue: number) {
     // Set handle position on y axis
     this.hueSliderXPositionFromLeft =
-      (newSliderXPos < 0
+      newSliderXPos < 0
         ? 0
-        : newSliderXPos > this._hueSliderOffsetWidth!
+        : newSliderXPos > this._hueSliderOffsetWidth
         ? this._hueSliderOffsetWidth
-        : newSliderXPos)!;
+        : newSliderXPos;
 
     // Get an hsl color string from percentage hue value which is used as background for the saturation area
     this.hueSliderColor = this._percHueValueToHslColor(percentageValue);
@@ -742,11 +684,11 @@ export class ColorPickerComponent
   ) {
     // Set handle position on y axis
     this.alphaSliderXPositionFromLeft =
-      (newSliderXPos < 0
+      newSliderXPos < 0
         ? 0
-        : newSliderXPos > this._alphaSliderOffsetWidth!
+        : newSliderXPos > this._alphaSliderOffsetWidth
         ? this._alphaSliderOffsetWidth
-        : newSliderXPos)!;
+        : newSliderXPos;
 
     // Set alpha value
     this._currentAlpha = percentageValue;
@@ -762,15 +704,15 @@ export class ColorPickerComponent
 
   private _setColors() {
     this.currentColorHsl = ColorPickerUtils.hsvToHsl(
-      this._currentHue!,
-      this._currentSaturation!,
-      this._currentValue!,
+      this._currentHue,
+      this._currentSaturation,
+      this._currentValue,
       this._currentAlpha
     );
     this.currentColorRgb = ColorPickerUtils.hsvToRgb(
-      this._currentHue!,
-      this._currentSaturation!,
-      this._currentValue!,
+      this._currentHue,
+      this._currentSaturation,
+      this._currentValue,
       this._currentAlpha
     );
     this.currentColorHex = ColorPickerUtils.rgbToHex(
@@ -785,7 +727,7 @@ export class ColorPickerComponent
       this.currentColorRgb.array![2]
     );
 
-    this.value = this.currentColorHex.string!;
+    this.value.set(this.currentColorHex.string!);
     this.valueNoAlpha = this.currentColorHexNoAlpha.string as string;
 
     // Ensure errors (when used as form control with reactive forms) are resetted properly
@@ -797,7 +739,7 @@ export class ColorPickerComponent
   }
 
   private _emitChangeEvent() {
-    this.onChange(this.value);
-    this.changeEvent.emit(new ColorPickerChangeEvent(this, this.value));
+    this.onChange(this.value());
+    this.changeEvent.emit(new ColorPickerChangeEvent(this, this.value()));
   }
 }

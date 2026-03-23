@@ -6,7 +6,7 @@ interface ShowcaseConfig {
   category?: string;
   categoryOrder?: number;
   componentOrder?: number;
-  variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
+  variants?: { name: string; inputs?: Record<string, unknown>; description?: string; meta?: Record<string, unknown> }[];
   tags?: string[];
   meta?: Record<string, unknown>;
 }
@@ -31,11 +31,46 @@ export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-
     },
   },
   variants: [
-    { name: 'Filled', inputs: { variant: 'filled', label: 'Filled' } },
-    { name: 'Outlined', inputs: { variant: 'outlined', label: 'Outlined' } },
-    { name: 'Elevated', inputs: { variant: 'elevated', label: 'Elevated' } },
-    { name: 'Text', inputs: { variant: 'text', label: 'Text' } },
-    { name: 'Icon Only', inputs: { variant: 'icon-only', icon: '★' } },
+    {
+      name: 'Filled',
+      inputs: { variant: 'filled', label: 'Filled' },
+      meta: {
+        figma:
+          'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2779&m=dev',
+      },
+    },
+    {
+      name: 'Outlined',
+      inputs: { variant: 'outlined', label: 'Outlined' },
+      meta: {
+        figma:
+          'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2812&m=dev',
+      },
+    },
+    {
+      name: 'Elevated',
+      inputs: { variant: 'elevated', label: 'Elevated' },
+      meta: {
+        figma:
+          'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=5117-31054&m=dev',
+      },
+    },
+    {
+      name: 'Text',
+      inputs: { variant: 'text', label: 'Text' },
+      meta: {
+        figma:
+          'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2782',
+      },
+    },
+    {
+      name: 'Icon Only',
+      inputs: { variant: 'icon-only', icon: '★' },
+      meta: {
+        figma:
+          'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2783',
+      },
+    },
     {
       name: 'Disabled',
       inputs: { variant: 'filled', label: 'Disabled', disabled: true },

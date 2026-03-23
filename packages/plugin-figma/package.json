@@ -22,7 +22,13 @@
   ],
   "peerDependencies": {
     "ng-prism": ">=21.0.0",
-    "@angular/core": ">=20.0.0"
+    "@angular/core": ">=20.0.0",
+    "html2canvas": ">=1.4.0",
+    "pixelmatch": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "html2canvas": { "optional": true },
+    "pixelmatch": { "optional": true }
   },
   "devDependencies": {
     "ng-prism": "*"

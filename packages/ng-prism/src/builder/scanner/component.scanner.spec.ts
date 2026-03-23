@@ -32,8 +32,9 @@ describe('scanComponents', () => {
     expect(names).toContain('ButtonComponent');
     expect(names).toContain('CardComponent');
     expect(names).toContain('SignalButtonComponent');
+    expect(names).toContain('ModelInputComponent');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(3);
+    expect(components).toHaveLength(4);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
@@ -61,6 +62,16 @@ describe('scanComponents', () => {
       variant: 'danger',
       disabled: true,
     });
+  });
+
+  it('should extract variant-level meta', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.showcaseConfig.variants![0].meta).toEqual({
+      figma: 'https://www.figma.com/design/abc123/DS?node-id=12-34',
+    });
+    expect(button.showcaseConfig.variants![1].meta).toBeUndefined();
   });
 
   it('should extract component metadata (selector, standalone)', () => {

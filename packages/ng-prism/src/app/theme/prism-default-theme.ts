@@ -6,8 +6,8 @@ export const PRISM_DARK_THEME: Record<string, string> = {
 
   '--prism-text': '#ede9f8',
   '--prism-text-2': '#b0a6c8',
-  '--prism-text-muted': '#6b5e80',
-  '--prism-text-ghost': '#3a3355',
+  '--prism-text-muted': '#8476a2',
+  '--prism-text-ghost': '#6a5d87',
 
   '--prism-primary': '#a78bfa',
   '--prism-primary-from': '#7c3aed',

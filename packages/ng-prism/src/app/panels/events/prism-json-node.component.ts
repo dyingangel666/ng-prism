@@ -1,4 +1,7 @@
 import { Component, computed, input, signal, Type } from '@angular/core';
+
+const MAX_DEPTH = 10;
+const MAX_ENTRIES = 50;
 import { NgComponentOutlet } from '@angular/common';
 import { summarizeValue } from './prism-json-node.utils.js';
 
@@ -30,20 +33,24 @@ function getType(val: unknown): JsonNodeType {
             }
           </span>
           @if (expanded()) {
-            <span class="json-brace">{{ '{' }}</span>
-            <div class="json-children">
-              @for (entry of entries(); track entry.key) {
-                <div class="json-row">
-                  <span class="json-key">{{ entry.key }}</span>
-                  <span class="json-colon">:&nbsp;</span>
-                  <ng-container
-                    [ngComponentOutlet]="self"
-                    [ngComponentOutletInputs]="{ value: entry.value }"
-                  />
-                </div>
-              }
-            </div>
-            <span class="json-brace">{{ '}' }}</span>
+            @if (depth() >= maxDepth) {
+              <span class="json-summary">…</span>
+            } @else {
+              <span class="json-brace">{{ '{' }}</span>
+              <div class="json-children">
+                @for (entry of entries(); track entry.key) {
+                  <div class="json-row">
+                    <span class="json-key">{{ entry.key }}</span>
+                    <span class="json-colon">:&nbsp;</span>
+                    <ng-container
+                      [ngComponentOutlet]="self"
+                      [ngComponentOutletInputs]="{ value: entry.value, depth: depth() + 1 }"
+                    />
+                  </div>
+                }
+              </div>
+              <span class="json-brace">{{ '}' }}</span>
+            }
           }
         }
       }
@@ -58,20 +65,24 @@ function getType(val: unknown): JsonNodeType {
             }
           </span>
           @if (expanded()) {
-            <span class="json-brace">[</span>
-            <div class="json-children">
-              @for (item of items(); track $index) {
-                <div class="json-row">
-                  <span class="json-index">{{ $index }}</span>
-                  <span class="json-colon">:&nbsp;</span>
-                  <ng-container
-                    [ngComponentOutlet]="self"
-                    [ngComponentOutletInputs]="{ value: item }"
-                  />
-                </div>
-              }
-            </div>
-            <span class="json-brace">]</span>
+            @if (depth() >= maxDepth) {
+              <span class="json-summary">…</span>
+            } @else {
+              <span class="json-brace">[</span>
+              <div class="json-children">
+                @for (item of items(); track $index) {
+                  <div class="json-row">
+                    <span class="json-index">{{ $index }}</span>
+                    <span class="json-colon">:&nbsp;</span>
+                    <ng-container
+                      [ngComponentOutlet]="self"
+                      [ngComponentOutletInputs]="{ value: item, depth: depth() + 1 }"
+                    />
+                  </div>
+                }
+              </div>
+              <span class="json-brace">]</span>
+            }
           }
         }
       }
@@ -161,7 +172,9 @@ function getType(val: unknown): JsonNodeType {
 })
 export class PrismJsonNodeComponent {
   readonly value = input<unknown>(undefined);
+  readonly depth = input<number>(0);
 
+  protected readonly maxDepth = MAX_DEPTH;
   protected readonly self: Type<PrismJsonNodeComponent> = PrismJsonNodeComponent;
 
   protected readonly type = computed(() => getType(this.value()));
@@ -170,7 +183,13 @@ export class PrismJsonNodeComponent {
   protected readonly entries = computed<{ key: string; value: unknown }[]>(() => {
     const v = this.value();
     if (typeof v !== 'object' || v === null || Array.isArray(v)) return [];
-    return Object.entries(v as Record<string, unknown>).map(([key, value]) => ({ key, value }));
+    try {
+      return Object.entries(v as Record<string, unknown>)
+        .slice(0, MAX_ENTRIES)
+        .map(([key, value]) => ({ key, value }));
+    } catch {
+      return [];
+    }
   });
 
   protected readonly items = computed<unknown[]>(() => {

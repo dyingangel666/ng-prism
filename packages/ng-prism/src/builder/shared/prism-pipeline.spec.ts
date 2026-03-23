@@ -46,7 +46,7 @@ describe('runPrismPipeline integration', () => {
 
     const result = await runPrismPipeline(defaultOptions, ctx);
 
-    expect(result.componentCount).toBe(3);
+    expect(result.componentCount).toBe(4);
   });
 
   it('should write prism-manifest.ts to expected path', async () => {
@@ -66,7 +66,7 @@ describe('runPrismPipeline integration', () => {
     await runPrismPipeline(defaultOptions, ctx);
 
     const content = readFileSync(join(tmp, 'prism-app', 'src', 'prism-manifest.ts'), 'utf-8');
-    expect(content).toContain("import { ButtonComponent, CardComponent, SignalButtonComponent } from 'my-lib'");
+    expect(content).toContain("import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent } from 'my-lib'");
   });
 
   it('should include component type references (not strings)', async () => {
@@ -105,7 +105,7 @@ describe('runPrismPipeline integration', () => {
     expect(ctx.reportStatus).toHaveBeenCalledWith('Generating runtime manifest...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 3 component(s)'),
+      expect.stringContaining('Generated manifest with 4 component(s)'),
     );
   });
 });

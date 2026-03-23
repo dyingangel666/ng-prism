@@ -15,11 +15,14 @@
 '--prism-bg-surface': '#131022'  // Karten / Panel-Backgrounds
 '--prism-bg-elevated': '#1a1535' // Panel Host, Dropdowns
 
-// Text (4 Ebenen)
-'--prism-text': '#ede9f8'        // Primary
-'--prism-text-2': '#b0a6c8'      // Secondary / Descriptions
-'--prism-text-muted': '#6b5e80'  // Labels, Meta
-'--prism-text-ghost': '#3a3355'  // Category Titles, Disabled
+// Text (4 Ebenen) — Dark-Mode-Werte
+'--prism-text': '#ede9f8'        // Primary          contrast vs bg: ~17:1
+'--prism-text-2': '#b0a6c8'      // Secondary        contrast vs bg: ~9:1
+'--prism-text-muted': '#8476a2'  // Labels, Meta     contrast vs bg: ~4.8:1
+'--prism-text-ghost': '#6a5d87'  // Category Titles  contrast vs bg: ~3.1:1
+
+// Hinweis: Light-Mode nutzt andere Werte für ghost/muted (helles bg)
+// → ghost im Light: #b0a6c8, muted im Light: #6b5e80
 
 // Prisma-Gradient
 '--prism-primary': '#a78bfa'     // Solid Akzent
@@ -275,7 +278,7 @@ input:focus {
 | Heading (Component Title) | 18px | 600 | `--prism-text` |
 | Body / Item | 13px | 400/500 | `--prism-text` / `--prism-text-muted` |
 | Label / Meta | 13px | 500 | `--prism-text-muted` |
-| Category Title | 11px | 600 | `--prism-text-ghost` (uppercase, ls 0.08em) |
+| Category Title | 11px | 600 | `--prism-text-ghost` (uppercase, ls 0.08em) — Dark: ~3.1:1 |
 | Tag / Pill | 11–12px | 500 | `--prism-primary` |
 
 `font-family: var(--prism-font-sans)` explizit auf allen text-bearing Elementen setzen (kein Verlass auf Vererbung in Komponenten-Scope).

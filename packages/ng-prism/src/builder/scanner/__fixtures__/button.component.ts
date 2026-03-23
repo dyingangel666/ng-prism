@@ -4,7 +4,7 @@ export interface ShowcaseConfig {
   title: string;
   description?: string;
   category?: string;
-  variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
+  variants?: { name: string; inputs?: Record<string, unknown>; description?: string; meta?: Record<string, unknown> }[];
   tags?: string[];
 }
 
@@ -17,7 +17,7 @@ function Showcase(config: ShowcaseConfig): ClassDecorator {
   category: 'Inputs',
   description: 'A versatile button component',
   variants: [
-    { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' } },
+    { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' }, meta: { figma: 'https://www.figma.com/design/abc123/DS?node-id=12-34' } },
     { name: 'Danger', inputs: { variant: 'danger', disabled: true } },
   ],
   tags: ['form', 'action'],
