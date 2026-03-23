@@ -19,8 +19,8 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
       const required = isDecoratorInputRequired(inputDecorator);
       const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
       const doc = getJsDocComment(member, checker);
-      const { type, values } = resolveDecoratorInputType(member, checker);
-      inputs.push({ name, type, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+      const { type, values, rawType } = resolveDecoratorInputType(member, checker);
+      inputs.push({ name, type, rawType, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
       continue;
     }
 
@@ -31,8 +31,8 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
         ? evaluateExpression(signalCall.arguments[0])
         : undefined;
       const doc = getJsDocComment(member, checker);
-      const { type, values } = resolveSignalInputType(signalCall, checker);
-      inputs.push({ name, type, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+      const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
+      inputs.push({ name, type, rawType, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
     }
   }
 
@@ -105,7 +105,7 @@ function isOutputSignal(member: ts.PropertyDeclaration): boolean {
 function resolveSignalInputType(
   callExpr: ts.CallExpression,
   checker: ts.TypeChecker,
-): { type: InputMeta['type']; values?: string[] } {
+): { type: InputMeta['type']; values?: string[]; rawType: string } {
   if (callExpr.typeArguments && callExpr.typeArguments.length > 0) {
     const resolved = checker.getTypeFromTypeNode(callExpr.typeArguments[0]);
     return mapType(resolved, checker);
@@ -116,7 +116,7 @@ function resolveSignalInputType(
     return mapType(argType, checker);
   }
 
-  return { type: 'unknown' };
+  return { type: 'unknown', rawType: 'unknown' };
 }
 
 function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
@@ -138,20 +138,40 @@ function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
 function resolveDecoratorInputType(
   member: ts.PropertyDeclaration,
   checker: ts.TypeChecker,
-): { type: InputMeta['type']; values?: string[] } {
+): { type: InputMeta['type']; values?: string[]; rawType: string } {
   const tsType = checker.getTypeAtLocation(member);
   return mapType(tsType, checker);
+}
+
+function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
+  if (tsType.flags & (ts.TypeFlags.Boolean | ts.TypeFlags.BooleanLike | ts.TypeFlags.BooleanLiteral)) {
+    return 'boolean';
+  }
+
+  if (tsType.isUnion()) {
+    const meaningful = tsType.types.filter(
+      (t) => !(t.flags & ts.TypeFlags.Undefined) && !(t.flags & ts.TypeFlags.Null),
+    );
+    if (meaningful.length === 0) return checker.typeToString(tsType);
+    if (meaningful.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) return 'boolean';
+    if (meaningful.length === 1) return checker.typeToString(meaningful[0]);
+    if (tsType.aliasSymbol) return tsType.aliasSymbol.getName();
+    return meaningful.map((t) => checker.typeToString(t)).join(' | ');
+  }
+  return checker.typeToString(tsType);
 }
 
 function mapType(
   tsType: ts.Type,
   checker: ts.TypeChecker,
-): { type: InputMeta['type']; values?: string[] } {
+): { type: InputMeta['type']; values?: string[]; rawType: string } {
+  const rawType = getRawTypeLabel(tsType, checker);
+
   if (tsType.flags & ts.TypeFlags.BooleanLike) {
-    return { type: 'boolean' };
+    return { type: 'boolean', rawType };
   }
   if (tsType.flags & ts.TypeFlags.Boolean) {
-    return { type: 'boolean' };
+    return { type: 'boolean', rawType };
   }
 
   if (tsType.isUnion()) {
@@ -162,32 +182,32 @@ function mapType(
     );
 
     if (filtered.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) {
-      return { type: 'boolean' };
+      return { type: 'boolean', rawType };
     }
 
     if (filtered.every((t) => t.isStringLiteral())) {
       const values = filtered.map((t) => (t as ts.StringLiteralType).value);
-      return { type: 'union', values };
+      return { type: 'union', values, rawType };
     }
 
-    return { type: 'unknown' };
+    return { type: 'unknown', rawType };
   }
 
   if (tsType.flags & ts.TypeFlags.StringLike) {
-    return { type: 'string' };
+    return { type: 'string', rawType };
   }
 
   if (tsType.flags & ts.TypeFlags.NumberLike) {
-    return { type: 'number' };
+    return { type: 'number', rawType };
   }
 
   if (checker.isArrayType(tsType)) {
-    return { type: 'array' };
+    return { type: 'array', rawType };
   }
 
   if (tsType.flags & ts.TypeFlags.Object) {
-    return { type: 'object' };
+    return { type: 'object', rawType };
   }
 
-  return { type: 'unknown' };
+  return { type: 'unknown', rawType };
 }

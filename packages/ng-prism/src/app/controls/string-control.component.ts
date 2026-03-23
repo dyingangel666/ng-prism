@@ -5,7 +5,10 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     <div class="prism-string-control">
-      <span class="prism-string-control__label">{{ label() }}</span>
+      <div class="prism-string-control__label">
+        <span class="prism-string-control__label-text">{{ label() }}</span>
+        @if (typeName()) { <code class="prism-string-control__type">{{ typeName() }}</code> }
+      </div>
       <input
         type="text"
         class="prism-string-control__input"
@@ -25,12 +28,26 @@ import { Component, input, output } from '@angular/core';
     }
 
     .prism-string-control__label {
+      flex-shrink: 0;
+      width: 140px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .prism-string-control__label-text {
       font-size: 13px;
       font-family: var(--prism-font-sans);
       color: var(--prism-text-muted);
       font-weight: 500;
-      flex-shrink: 0;
-      width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .prism-string-control__type {
+      font-size: 10px;
+      font-family: var(--prism-font-mono, monospace);
+      color: var(--prism-text-ghost);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -60,5 +77,6 @@ import { Component, input, output } from '@angular/core';
 export class StringControlComponent {
   readonly value = input('');
   readonly label = input('');
+  readonly typeName = input('');
   readonly valueChange = output<string>();
 }

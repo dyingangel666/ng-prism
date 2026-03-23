@@ -1,21 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { Showcase } from 'ng-prism';
 
-interface ShowcaseConfig {
-  title: string;
-  description?: string;
-  category?: string;
-  categoryOrder?: number;
-  componentOrder?: number;
-  variants?: { name: string; inputs?: Record<string, unknown>; description?: string; meta?: Record<string, unknown> }[];
-  tags?: string[];
-  meta?: Record<string, unknown>;
-}
-
-function Showcase(config: ShowcaseConfig): ClassDecorator {
-  return () => {};
-}
-
-export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-only';
+export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-only';
 
 @Showcase({
   title: 'Button',
@@ -217,7 +203,7 @@ export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-
  * Flexible button component with five visual variants.
  * Supports label text, icon-only mode, disabled and readonly states.
  * @since 1.0.0
- * @see ButtonVariant
+ * @see ButtonVariantType
  * @example
  * <lib-button label="Save" variant="filled" />
  * @example
@@ -225,7 +211,7 @@ export type ButtonVariant = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-
  */
 export class ButtonComponent {
   /** Visual style variant of the button. */
-  readonly variant = input<ButtonVariant>('filled');
+  readonly variant = input<ButtonVariantType>('filled');
 
   /** Label text displayed inside the button. Not rendered in `icon-only` variant. */
   readonly label = input<string>('Button');

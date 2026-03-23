@@ -66,7 +66,7 @@ import type { JsDocData } from './jsdoc.types.js';
                       }
                     </td>
                     <td class="prism-jsdoc-panel__cell--type">
-                      <code>{{ inp.type }}{{ inp.values?.length ? ' (' + inp.values!.join(' | ') + ')' : '' }}</code>
+                      <code>{{ inp.rawType ?? inp.type }}</code>
                     </td>
                     <td class="prism-jsdoc-panel__cell--default">
                       @if (inp.defaultValue !== undefined) {

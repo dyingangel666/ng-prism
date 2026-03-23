@@ -5,7 +5,10 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     <div class="prism-boolean-control">
-      <span class="prism-boolean-control__label">{{ label() }}</span>
+      <div class="prism-boolean-control__label">
+        <span class="prism-boolean-control__label-text">{{ label() }}</span>
+        @if (typeName()) { <code class="prism-boolean-control__type">{{ typeName() }}</code> }
+      </div>
       <button
         class="prism-boolean-control__toggle"
         [class.prism-boolean-control__toggle--on]="value()"
@@ -27,10 +30,20 @@ import { Component, input, output } from '@angular/core';
     }
 
     .prism-boolean-control__label {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .prism-boolean-control__label-text {
       font-size: 13px;
       font-family: var(--prism-font-sans);
       color: var(--prism-text-muted);
       font-weight: 500;
+    }
+    .prism-boolean-control__type {
+      font-size: 10px;
+      font-family: var(--prism-font-mono, monospace);
+      color: var(--prism-text-ghost);
     }
 
     .prism-boolean-control__toggle {
@@ -71,5 +84,6 @@ import { Component, input, output } from '@angular/core';
 export class BooleanControlComponent {
   readonly value = input(false);
   readonly label = input('');
+  readonly typeName = input('');
   readonly valueChange = output<boolean>();
 }

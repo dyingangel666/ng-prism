@@ -14,7 +14,10 @@ import {
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { Highlight } from 'ngx-highlightjs';
-import type { RuntimeComponent } from '../../plugin/plugin.types.js';
+import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.types.js';
+import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import { A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
+
 import { PrismEventLogService } from '../services/prism-event-log.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPanelService } from '../services/prism-panel.service.js';
@@ -30,8 +33,8 @@ import { generateSnippet } from './snippet-generator.js';
     <div class="prism-renderer">
       @if (navigationService.activeComponent(); as comp) {
         @if (comp.meta.showcaseConfig.variants?.length) {
-          <div class="prism-renderer__variants">
-            @for (variant of comp.meta.showcaseConfig.variants; track variant.name; let i = $index) {
+          <div class="prism-renderer__toolbar">
+            @for (variant of comp.meta.showcaseConfig.variants!; track variant.name; let i = $index) {
               <button
                 class="prism-renderer__variant"
                 [class.prism-renderer__variant--active]="rendererService.activeVariantIndex() === i"
@@ -43,14 +46,14 @@ import { generateSnippet } from './snippet-generator.js';
           </div>
         }
       }
-      <div class="prism-renderer__canvas">
+      <div class="prism-renderer__canvas" [class.prism-renderer__canvas--sr]="perspectiveService.mode() === 'screen-reader'">
         <ng-container #outlet />
         @if (activeOverlay()) {
           <ng-container *ngComponentOutlet="activeOverlay()!" />
         }
       </div>
       @if (snippet()) {
-        <div class="prism-renderer__code-toggle">
+        <div class="prism-renderer__code-bar">
           <button
             class="prism-renderer__code-button"
             [class.prism-renderer__code-button--active]="codeVisible()"
@@ -59,11 +62,11 @@ import { generateSnippet } from './snippet-generator.js';
             &lt;/&gt; Code
           </button>
         </div>
-        @if (codeVisible()) {
-          <div class="prism-renderer__code">
-            <pre><code [highlight]="snippet()" language="xml"></code></pre>
-          </div>
-        }
+      }
+      @if (codeVisible()) {
+        <div class="prism-renderer__code">
+          <pre><code [highlight]="snippet()" language="xml"></code></pre>
+        </div>
       }
     </div>
   `,
@@ -74,14 +77,17 @@ import { generateSnippet } from './snippet-generator.js';
       flex: 1;
       min-height: 0;
     }
-    .prism-renderer__variants {
+
+    .prism-renderer__toolbar {
       display: flex;
-      padding: 0 16px;
+      align-items: center;
+      padding: 0 8px;
       border-bottom: 1px solid var(--prism-border);
       flex-shrink: 0;
+      background: var(--prism-bg-elevated);
     }
     .prism-renderer__variant {
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-size: 13px;
       font-family: var(--prism-font-sans);
       border: none;
@@ -95,23 +101,16 @@ import { generateSnippet } from './snippet-generator.js';
     .prism-renderer__variant::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       height: 2px;
       background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
       opacity: 0;
       transition: opacity 0.12s;
     }
-    .prism-renderer__variant:hover {
-      color: var(--prism-text);
-    }
-    .prism-renderer__variant--active {
-      color: var(--prism-primary);
-    }
-    .prism-renderer__variant--active::after {
-      opacity: 1;
-    }
+    .prism-renderer__variant:hover { color: var(--prism-text); }
+    .prism-renderer__variant--active { color: var(--prism-primary); }
+    .prism-renderer__variant--active::after { opacity: 1; }
+
     .prism-renderer__canvas {
       position: relative;
       flex: 1;
@@ -127,34 +126,39 @@ import { generateSnippet } from './snippet-generator.js';
       display: flex;
       align-items: flex-start;
       justify-content: center;
+      transition: filter 0.2s;
     }
-    .prism-renderer__code-toggle {
+    .prism-renderer__canvas--sr {
+      filter: brightness(0.82) saturate(0.7);
+    }
+
+    .prism-renderer__code-bar {
       display: flex;
       align-items: center;
-      padding: 0 8px;
-      background: var(--prism-bg-elevated);
+      padding: 0 12px;
       border-top: 1px solid var(--prism-border);
       flex-shrink: 0;
+      background: var(--prism-bg-elevated);
     }
     .prism-renderer__code-button {
       display: flex;
       align-items: center;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-family: var(--prism-font-sans);
+      gap: 5px;
+      padding: 6px 8px;
+      font-size: 11.5px;
+      font-family: var(--prism-font-mono, monospace);
       border: none;
       background: none;
       color: var(--prism-text-muted);
       cursor: pointer;
       position: relative;
       transition: color 0.12s;
+      margin-bottom: -1px;
     }
     .prism-renderer__code-button::after {
       content: '';
       position: absolute;
-      bottom: 0;
-      left: 8px;
-      right: 8px;
+      bottom: 0; left: 4px; right: 4px;
       height: 2px;
       background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
       opacity: 0;
@@ -163,6 +167,7 @@ import { generateSnippet } from './snippet-generator.js';
     .prism-renderer__code-button:hover { color: var(--prism-text-2); }
     .prism-renderer__code-button--active { color: var(--prism-primary); }
     .prism-renderer__code-button--active::after { opacity: 1; }
+
     .prism-renderer__code {
       border-top: 1px solid var(--prism-border);
       overflow: auto;
@@ -191,6 +196,7 @@ import { generateSnippet } from './snippet-generator.js';
 export class PrismRendererComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
+  protected readonly perspectiveService = inject(A11yPerspectiveService);
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
@@ -240,7 +246,8 @@ export class PrismRendererComponent {
 
     effect(() => {
       const panelId = this.panelService.activePanelId();
-      const panel = this.pluginService.panels().find((p) => p.id === panelId) ?? null;
+      const allPanels: PanelDefinition[] = [...BUILTIN_PANELS, ...this.pluginService.panels()];
+      const panel = allPanels.find((p) => p.id === panelId) ?? null;
 
       if (!panel) {
         this.activeOverlay.set(null);

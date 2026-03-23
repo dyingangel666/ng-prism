@@ -27,6 +27,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
                 <prism-boolean-control
                   [value]="asBoolean(rendererService.inputValues()[input.name])"
                   [label]="input.name"
+                  [typeName]="input.rawType ?? ''"
                   (valueChange)="rendererService.updateInput(input.name, $event)"
                 />
               }
@@ -34,6 +35,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
                 <prism-number-control
                   [value]="asNumber(rendererService.inputValues()[input.name])"
                   [label]="input.name"
+                  [typeName]="input.rawType ?? ''"
                   (valueChange)="rendererService.updateInput(input.name, $event)"
                 />
               }
@@ -41,6 +43,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
                 <prism-union-control
                   [value]="asString(rendererService.inputValues()[input.name])"
                   [label]="input.name"
+                  [typeName]="input.rawType ?? ''"
                   [options]="input.values ?? []"
                   (valueChange)="rendererService.updateInput(input.name, $event)"
                 />
@@ -49,6 +52,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
                 <prism-string-control
                   [value]="asString(rendererService.inputValues()[input.name])"
                   [label]="input.name"
+                  [typeName]="input.rawType ?? ''"
                   (valueChange)="rendererService.updateInput(input.name, $event)"
                 />
               }
@@ -56,6 +60,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
                 <prism-json-control
                   [value]="rendererService.inputValues()[input.name]"
                   [label]="input.name"
+                  [typeName]="input.rawType ?? ''"
                   (valueChange)="rendererService.updateInput(input.name, $event)"
                 />
               }

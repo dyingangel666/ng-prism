@@ -5,7 +5,10 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     <div class="prism-union-control">
-      <span class="prism-union-control__label">{{ label() }}</span>
+      <div class="prism-union-control__label">
+        <span class="prism-union-control__label-text">{{ label() }}</span>
+        @if (typeName()) { <code class="prism-union-control__type">{{ typeName() }}</code> }
+      </div>
       <div class="prism-union-control__options" role="group" [attr.aria-label]="label()">
         @for (option of options(); track option) {
           <button
@@ -27,12 +30,26 @@ import { Component, input, output } from '@angular/core';
     }
 
     .prism-union-control__label {
+      flex-shrink: 0;
+      width: 140px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .prism-union-control__label-text {
       font-size: 13px;
       font-family: var(--prism-font-sans);
       color: var(--prism-text-muted);
       font-weight: 500;
-      flex-shrink: 0;
-      width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .prism-union-control__type {
+      font-size: 10px;
+      font-family: var(--prism-font-mono, monospace);
+      color: var(--prism-text-ghost);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -78,6 +95,7 @@ import { Component, input, output } from '@angular/core';
 export class UnionControlComponent {
   readonly value = input('');
   readonly label = input('');
+  readonly typeName = input('');
   readonly options = input<string[]>([]);
   readonly valueChange = output<string>();
 }

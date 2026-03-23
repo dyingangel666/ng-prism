@@ -5,7 +5,10 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     <div class="prism-json-control">
-      <label class="prism-json-control__label">{{ label() }}</label>
+      <label class="prism-json-control__label">
+        {{ label() }}
+        @if (typeName()) { <code class="prism-json-control__type">{{ typeName() }}</code> }
+      </label>
       <textarea
         class="prism-json-control__input"
         [value]="stringify(value())"
@@ -28,7 +31,12 @@ import { Component, input, output } from '@angular/core';
       color: var(--prism-text-muted);
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
+    }
+    .prism-json-control__type {
+      font-size: 10px;
+      font-family: var(--prism-font-mono, monospace);
+      color: var(--prism-text-ghost);
     }
     .prism-json-control__input {
       background: var(--prism-input-bg);
@@ -56,6 +64,7 @@ import { Component, input, output } from '@angular/core';
 export class JsonControlComponent {
   readonly value = input<unknown>(null);
   readonly label = input('');
+  readonly typeName = input('');
   readonly valueChange = output<unknown>();
 
   parseError = false;

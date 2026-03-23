@@ -63,6 +63,7 @@ export interface ScannedComponent {
 export interface InputMeta {
   name: string;
   type: 'string' | 'number' | 'boolean' | 'union' | 'array' | 'object' | 'unknown';
+  rawType?: string;
   values?: string[];
   defaultValue?: unknown;
   required: boolean;

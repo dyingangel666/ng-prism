@@ -5,7 +5,10 @@ import { Component, input, output } from '@angular/core';
   standalone: true,
   template: `
     <div class="prism-number-control">
-      <span class="prism-number-control__label">{{ label() }}</span>
+      <div class="prism-number-control__label">
+        <span class="prism-number-control__label-text">{{ label() }}</span>
+        @if (typeName()) { <code class="prism-number-control__type">{{ typeName() }}</code> }
+      </div>
       <input
         type="number"
         class="prism-number-control__input"
@@ -25,12 +28,26 @@ import { Component, input, output } from '@angular/core';
     }
 
     .prism-number-control__label {
+      flex-shrink: 0;
+      width: 140px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .prism-number-control__label-text {
       font-size: 13px;
       font-family: var(--prism-font-sans);
       color: var(--prism-text-muted);
       font-weight: 500;
-      flex-shrink: 0;
-      width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .prism-number-control__type {
+      font-size: 10px;
+      font-family: var(--prism-font-mono, monospace);
+      color: var(--prism-text-ghost);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -60,5 +77,6 @@ import { Component, input, output } from '@angular/core';
 export class NumberControlComponent {
   readonly value = input(0);
   readonly label = input('');
+  readonly typeName = input('');
   readonly valueChange = output<number>();
 }

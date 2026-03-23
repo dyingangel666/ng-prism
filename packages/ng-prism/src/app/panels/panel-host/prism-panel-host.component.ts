@@ -1,16 +1,18 @@
 import { NgComponentOutlet } from '@angular/common';
 import { Component, computed, createEnvironmentInjector, effect, EnvironmentInjector, inject, OnDestroy, signal, type Type } from '@angular/core';
-import type { PanelDefinition } from '../../../plugin/plugin.types.js';
-import { CONTROLS_PLUGIN } from '../controls/controls-plugin.js';
-import { EVENTS_PLUGIN } from '../events/events-plugin.js';
+import { BUILTIN_PANELS } from '../builtin-panels.js';
+import { A11yAuditService } from '../a11y/a11y-audit.service.js';
+import { A11yScoreComponent } from '../a11y/a11y-score.component.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
+import { PrismRendererService } from '../../services/prism-renderer.service.js';
+import type { A11yCoreConfig } from '../a11y/a11y.types.js';
 
 @Component({
   selector: 'prism-panel-host',
   standalone: true,
-  imports: [NgComponentOutlet],
+  imports: [NgComponentOutlet, A11yScoreComponent],
   template: `
     <div class="prism-panel-host">
       <div class="prism-panel-host__tabs">
@@ -20,6 +22,9 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
             [class.prism-panel-host__tab--active]="panelService.activePanelId() === panel.id"
             (click)="panelService.activePanelId.set(panel.id)"
           >
+            @if (panel.id === 'a11y' && a11yScore() !== null) {
+              <prism-a11y-score [score]="a11yScore()!" [compact]="true" style="width:18px;height:18px;" />
+            }
             {{ panel.label }}
           </button>
         }
@@ -78,6 +83,8 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
 
     .prism-panel-host__tab--active::after { opacity: 1; }
 
+    .prism-panel-host__tab { display: flex; align-items: center; gap: 6px; }
+
     .prism-panel-host__content {
       flex: 1;
       overflow: auto;
@@ -89,11 +96,12 @@ export class PrismPanelHostComponent implements OnDestroy {
   private readonly nav = inject(PrismNavigationService);
   protected readonly panelService = inject(PrismPanelService);
   private readonly envInjector = inject(EnvironmentInjector);
+  private readonly auditService = inject(A11yAuditService);
+  private readonly rendererService = inject(PrismRendererService);
 
-  private readonly builtInPanels: PanelDefinition[] = [
-    ...(CONTROLS_PLUGIN.panels ?? []),
-    ...(EVENTS_PLUGIN.panels ?? []),
-  ];
+  protected readonly a11yScore = computed(() => this.auditService.scoreResult()?.score ?? null);
+
+  private readonly builtInPanels = BUILTIN_PANELS;
 
   protected readonly allPanels = computed(() => [...this.builtInPanels, ...this.pluginService.panels()]);
   protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
@@ -119,6 +127,26 @@ export class PrismPanelHostComponent implements OnDestroy {
   });
 
   constructor() {
+    effect(() => {
+      const element = this.rendererService.renderedElement();
+      const comp = this.nav.activeComponent() as any;
+      this.rendererService.inputValues();
+      this.rendererService.activeVariantIndex();
+
+      if (!element || !comp) {
+        this.auditService.clear();
+        return;
+      }
+
+      const a11yConfig: A11yCoreConfig | undefined = comp.meta?.showcaseConfig?.meta?.['a11y'];
+      if (a11yConfig?.disable === true) {
+        this.auditService.clear();
+        return;
+      }
+
+      this.auditService.scheduleAudit(element, a11yConfig);
+    });
+
     effect(() => {
       const panel = this.allPanels().find((p) => p.id === this.panelService.activePanelId()) ?? null;
       if (!panel) {

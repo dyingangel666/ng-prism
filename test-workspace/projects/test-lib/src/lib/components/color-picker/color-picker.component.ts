@@ -31,21 +31,7 @@ import { Subscription } from 'rxjs';
 import { ColorPickerChangeEvent } from './typings/color-picker-change-event';
 import { ColorPickerUtils } from './typings/color-picker.utils';
 import { ColorPickerColorInterface } from './typings/color.interface';
-
-interface ShowcaseConfig {
-  title: string;
-  description?: string;
-  category?: string;
-  categoryOrder?: number;
-  componentOrder?: number;
-  variants?: { name: string; inputs?: Record<string, unknown>; description?: string }[];
-  tags?: string[];
-  meta?: Record<string, unknown>;
-}
-
-function Showcase(config: ShowcaseConfig): ClassDecorator {
-  return () => {};
-}
+import { Showcase } from 'ng-prism';
 
 @Showcase({
   title: 'Color Picker',
