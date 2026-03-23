@@ -1,0 +1,40 @@
+{
+  "name": "@ng-prism/plugin-perf",
+  "version": "21.0.0",
+  "description": "Performance profiling panel for ng-prism — bundle size, render time, memory footprint.",
+  "keywords": ["ng-prism", "performance", "profiling", "plugin", "angular", "styleguide"],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "peerDependencies": {
+    "ng-prism": ">=21.0.0",
+    "@angular/core": ">=20.0.0",
+    "typescript": ">=5.0.0"
+  },
+  "devDependencies": {
+    "ng-prism": "*"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/USERNAME/ng-prism.git",
+    "directory": "packages/plugin-perf"
+  }
+}

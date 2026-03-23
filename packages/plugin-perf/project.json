@@ -1,0 +1,24 @@
+{
+  "name": "plugin-perf",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["ng-prism:build"],
+      "options": {
+        "command": "node_modules/.bin/ngc --project packages/plugin-perf/tsconfig.lib.json"
+      },
+      "inputs": ["production", "^production"],
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/plugin-perf",
+        "command": "jest",
+        "env": {
+          "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+        }
+      }
+    }
+  }
+}
