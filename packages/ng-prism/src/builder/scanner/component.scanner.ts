@@ -32,9 +32,17 @@ export function scanComponents(
     const outputs = extractOutputs(classDecl, checker);
 
     const filePath = classDecl.getSourceFile().fileName;
+    const className = classDecl.name?.text ?? 'Anonymous';
+
+    if (hasDecoratorInputs(classDecl)) {
+      console.warn(
+        `⚠ ng-prism: ${className} uses @Input() decorators which are not fully supported. ` +
+        `Migrate to input() signals for full ng-prism support.`
+      );
+    }
 
     components.push({
-      className: classDecl.name?.text ?? 'Anonymous',
+      className,
       filePath,
       showcaseConfig,
       inputs,
@@ -44,6 +52,14 @@ export function scanComponents(
   }
 
   return components;
+}
+
+function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
+  for (const member of classDecl.members) {
+    if (!ts.isPropertyDeclaration(member)) continue;
+    if (findDecorator(member, 'Input')) return true;
+  }
+  return false;
 }
 
 function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefined {

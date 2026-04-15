@@ -147,4 +147,29 @@ describe('scanComponents', () => {
 
     expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
   });
+
+  it('should warn when @Showcase class uses @Input() decorators', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    scanComponents(exports, checker);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('ButtonComponent uses @Input() decorators')
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it('should not warn for signal-based components', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    scanComponents(exports, checker);
+
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('SignalButtonComponent')
+    );
+    expect(warnSpy).not.toHaveBeenCalledWith(
+      expect.stringContaining('HighlightDirective')
+    );
+
+    warnSpy.mockRestore();
+  });
 });
