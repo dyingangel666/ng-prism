@@ -62,33 +62,51 @@ function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefi
   if (obj['category']) config.category = obj['category'] as string;
   if (obj['tags']) config.tags = obj['tags'] as string[];
   if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
+  if (obj['host'] !== undefined) config.host = obj['host'] as ShowcaseConfig['host'];
 
   if (Array.isArray(obj['variants'])) {
     config.variants = obj['variants'] as ShowcaseConfig['variants'];
   }
 
-  // providers are skipped — not statically serializable
   return config;
 }
 
 function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent['componentMeta'] {
   const componentDecorator = findDecorator(classDecl, 'Component');
-  if (!componentDecorator) {
-    return { selector: '', standalone: true, isDirective: false };
+  if (componentDecorator) {
+    const arg = getDecoratorArgument(componentDecorator);
+    if (!arg) return { selector: '', standalone: true, isDirective: false };
+
+    const raw = evaluateExpression(arg);
+    if (!raw || typeof raw !== 'object') {
+      return { selector: '', standalone: true, isDirective: false };
+    }
+
+    const obj = raw as Record<string, unknown>;
+    return {
+      selector: (obj['selector'] as string) ?? '',
+      standalone: obj['standalone'] !== false,
+      isDirective: false,
+    };
   }
 
-  const arg = getDecoratorArgument(componentDecorator);
-  if (!arg) return { selector: '', standalone: true, isDirective: false };
+  const directiveDecorator = findDecorator(classDecl, 'Directive');
+  if (directiveDecorator) {
+    const arg = getDecoratorArgument(directiveDecorator);
+    if (!arg) return { selector: '', standalone: true, isDirective: true };
 
-  const raw = evaluateExpression(arg);
-  if (!raw || typeof raw !== 'object') {
-    return { selector: '', standalone: true, isDirective: false };
+    const raw = evaluateExpression(arg);
+    if (!raw || typeof raw !== 'object') {
+      return { selector: '', standalone: true, isDirective: true };
+    }
+
+    const obj = raw as Record<string, unknown>;
+    return {
+      selector: (obj['selector'] as string) ?? '',
+      standalone: obj['standalone'] !== false,
+      isDirective: true,
+    };
   }
 
-  const obj = raw as Record<string, unknown>;
-  return {
-    selector: (obj['selector'] as string) ?? '',
-    standalone: obj['standalone'] !== false,
-    isDirective: false,
-  };
+  return { selector: '', standalone: true, isDirective: false };
 }

@@ -111,4 +111,40 @@ describe('scanComponents', () => {
     expect(card.inputs).toHaveLength(2);
     expect(card.outputs).toHaveLength(0);
   });
+
+  it('should set isDirective true for directives', () => {
+    const components = scanComponents(exports, checker);
+    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+
+    expect(highlight.componentMeta.isDirective).toBe(true);
+    expect(highlight.componentMeta.selector).toBe('[appHighlight]');
+    expect(highlight.componentMeta.standalone).toBe(true);
+  });
+
+  it('should set isDirective false for components', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.componentMeta.isDirective).toBe(false);
+  });
+
+  it('should extract inputs and outputs from directives', () => {
+    const components = scanComponents(exports, checker);
+    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+
+    expect(highlight.inputs).toHaveLength(1);
+    expect(highlight.inputs[0].name).toBe('highlightColor');
+    expect(highlight.inputs[0].type).toBe('string');
+    expect(highlight.inputs[0].defaultValue).toBe('yellow');
+
+    expect(highlight.outputs).toHaveLength(1);
+    expect(highlight.outputs[0].name).toBe('highlighted');
+  });
+
+  it('should extract host config from directive showcase', () => {
+    const components = scanComponents(exports, checker);
+    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+
+    expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
+  });
 });
