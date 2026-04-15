@@ -28,6 +28,42 @@ const CARD: ScannedComponent = {
   componentMeta: { selector: 'my-card', standalone: true, isDirective: false },
 };
 
+const HIGHLIGHT: ScannedComponent = {
+  className: 'HighlightDirective',
+  filePath: 'src/lib/highlight/highlight.directive.ts',
+  showcaseConfig: {
+    title: 'Highlight',
+    category: 'Utility',
+    host: '<span class="demo-text">',
+    variants: [
+      { name: 'Yellow', inputs: { highlightColor: 'yellow' }, content: 'Hover me' },
+    ],
+  },
+  inputs: [
+    { name: 'highlightColor', type: 'string', defaultValue: 'yellow', required: false },
+  ],
+  outputs: [{ name: 'highlighted' }],
+  componentMeta: { selector: '[appHighlight]', standalone: true, isDirective: true },
+};
+
+const TOOLTIP_WITH_HOST_COMPONENT: ScannedComponent = {
+  className: 'TooltipDirective',
+  filePath: 'src/lib/tooltip/tooltip.directive.ts',
+  showcaseConfig: {
+    title: 'Tooltip',
+    host: {
+      selector: 'my-button',
+      import: { name: 'ButtonComponent', from: 'my-lib' },
+      inputs: { label: 'Click me' },
+    },
+  },
+  inputs: [
+    { name: 'tooltipText', type: 'string', required: false },
+  ],
+  outputs: [],
+  componentMeta: { selector: '[appTooltip]', standalone: true, isDirective: true },
+};
+
 describe('generateRuntimeManifest', () => {
   it('should generate the type import from ng-prism/plugin', () => {
     const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: 'my-lib' });
@@ -128,5 +164,73 @@ describe('generateRuntimeManifest', () => {
 
     expect(source).toContain("import { PillComponent } from 'sgui-lib/atoms/pill';");
     expect(source).toContain("import { CardComponent } from 'sgui-lib';");
+  });
+});
+
+describe('directive wrapper generation', () => {
+  it('should generate a wrapper component class for directives with string host', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('class HighlightDirective__PrismHost');
+    expect(source).toContain('@Component');
+    expect(source).toContain('imports: [HighlightDirective]');
+  });
+
+  it('should generate template with host element and directive selector', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('appHighlight');
+    expect(source).toContain('<span');
+    expect(source).toContain('class="demo-text"');
+  });
+
+  it('should generate input bindings in the template for each directive input', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('[highlightColor]="highlightColor()"');
+  });
+
+  it('should generate output bindings in the template for each directive output', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('(highlighted)="highlighted.emit($event)"');
+  });
+
+  it('should generate signal input declarations on the wrapper class', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('highlightColor = input');
+  });
+
+  it('should generate __prismContent__ input on the wrapper class', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain("__prismContent__ = input('')");
+  });
+
+  it('should reference the wrapper class as type in the manifest entry', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('type: HighlightDirective__PrismHost,');
+    expect(source).not.toContain('type: HighlightDirective,');
+  });
+
+  it('should generate wrapper with Angular component import for object host', () => {
+    const source = generateRuntimeManifest({ components: [TOOLTIP_WITH_HOST_COMPONENT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('imports: [TooltipDirective, ButtonComponent]');
+    expect(source).toContain("ButtonComponent } from 'my-lib';");
+    expect(source).toContain('<my-button');
+    expect(source).toContain('appTooltip');
+    expect(source).toContain('label="Click me"');
+  });
+
+  it('should generate both components and directive wrappers in the same manifest', () => {
+    const source = generateRuntimeManifest({ components: [BUTTON, HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('type: ButtonComponent,');
+    expect(source).toContain('type: HighlightDirective__PrismHost,');
+    expect(source).toContain('class HighlightDirective__PrismHost');
+  });
+
+  it('should import Component, input, output from @angular/core for wrapper classes', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain("import { Component, input, output } from '@angular/core';");
+  });
+
+  it('should not generate Angular imports when there are no directives', () => {
+    const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: 'my-lib' });
+    expect(source).not.toContain("from '@angular/core'");
   });
 });
