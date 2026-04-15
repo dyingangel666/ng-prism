@@ -10,6 +10,8 @@ function createComponent(
   overrides: Partial<{
     inputs: RuntimeComponent['meta']['inputs'];
     variants: RuntimeComponent['meta']['showcaseConfig']['variants'];
+    isDirective: boolean;
+    host: RuntimeComponent['meta']['showcaseConfig']['host'];
   }> = {},
 ): RuntimeComponent {
   return {
@@ -20,10 +22,11 @@ function createComponent(
       showcaseConfig: {
         title: 'Test',
         variants: overrides.variants,
+        ...(overrides.host !== undefined && { host: overrides.host }),
       },
       inputs: overrides.inputs ?? [],
       outputs: [],
-      componentMeta: { selector: 'test', standalone: true, isDirective: false },
+      componentMeta: { selector: 'test', standalone: true, isDirective: overrides.isDirective ?? false },
     },
   };
 }
@@ -203,5 +206,75 @@ describe('PrismRendererService', () => {
 
     expect(renderer.activeVariantIndex()).toBe(0);
     expect(renderer.inputValues()).toEqual({ b: 0 });
+  });
+
+  describe('directive support', () => {
+    it('should set __prismContent__ in inputValues for directive with string content', () => {
+      const comp = createComponent({
+        isDirective: true,
+        host: '<button>',
+        inputs: [{ name: 'color', type: 'string', defaultValue: 'red', required: false }],
+        variants: [
+          { name: 'Default', inputs: { color: 'red' }, content: 'Hover me' },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      expect(renderer.inputValues()['__prismContent__']).toBe('Hover me');
+      expect(renderer.inputValues()['color']).toBe('red');
+    });
+
+    it('should set activeContent to undefined for directive variants', () => {
+      const comp = createComponent({
+        isDirective: true,
+        host: '<span>',
+        variants: [
+          { name: 'Default', content: 'Text' },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      expect(renderer.activeContent()).toBeUndefined();
+    });
+
+    it('should not inject __prismContent__ when directive variant has no content', () => {
+      const comp = createComponent({
+        isDirective: true,
+        host: '<div>',
+        inputs: [{ name: 'size', type: 'number', defaultValue: 16, required: false }],
+        variants: [
+          { name: 'Default', inputs: { size: 24 } },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      expect(renderer.inputValues()['__prismContent__']).toBeUndefined();
+      expect(renderer.inputValues()['size']).toBe(24);
+    });
+
+    it('should set activeContent normally for non-directive components', () => {
+      const comp = createComponent({
+        isDirective: false,
+        variants: [
+          { name: 'Default', content: 'Projected content' },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      expect(renderer.activeContent()).toBe('Projected content');
+      expect(renderer.inputValues()['__prismContent__']).toBeUndefined();
+    });
   });
 });
