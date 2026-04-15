@@ -233,4 +233,14 @@ describe('directive wrapper generation', () => {
     const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: 'my-lib' });
     expect(source).not.toContain("from '@angular/core'");
   });
+
+  it('should serialize isDirective in componentMeta', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('isDirective: true');
+  });
+
+  it('should serialize host in showcaseConfig', () => {
+    const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
+    expect(source).toContain('host:');
+  });
 });
