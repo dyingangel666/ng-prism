@@ -1,4 +1,4 @@
-import type { ScannedComponent } from '../../plugin/plugin.types.js';
+import type { ScannedComponent, InputMeta } from '../../plugin/plugin.types.js';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { DirectiveHost } from '../../decorator/showcase.types.js';
 import { parseHostString } from './host-parser.js';
@@ -7,6 +7,34 @@ export interface RuntimeManifestOptions {
   components: ScannedComponent[];
   libraryImportPath: string;
   pages?: StyleguidePage[];
+}
+
+function inputTypeAnnotation(input: InputMeta): string {
+  if (input.type === 'union' && input.values) {
+    return input.values.map((v) => `'${v}'`).join(' | ');
+  }
+  if (input.type === 'boolean') return 'boolean';
+  if (input.type === 'number') return 'number';
+  if (input.type === 'string') return 'string';
+  if (input.type === 'array') return 'unknown[]';
+  if (input.type === 'object') return 'Record<string, unknown>';
+  return 'unknown';
+}
+
+function formatInputDeclaration(input: InputMeta): string {
+  if (input.required) {
+    const typeAnnotation = inputTypeAnnotation(input);
+    return `input.required<${typeAnnotation}>()`;
+  }
+
+  const def = input.defaultValue !== undefined ? JSON.stringify(input.defaultValue) : "''";
+  const needsAnnotation = input.type === 'union' && input.values;
+
+  if (needsAnnotation) {
+    const typeAnnotation = inputTypeAnnotation(input);
+    return `input<${typeAnnotation}>(${def})`;
+  }
+  return `input(${def})`;
 }
 
 function directiveSelector(selector: string): string {
@@ -54,8 +82,7 @@ function generateWrapperClass(comp: ScannedComponent): string {
 
   const members: string[] = [];
   for (const i of comp.inputs) {
-    const def = i.defaultValue !== undefined ? JSON.stringify(i.defaultValue) : "''";
-    members.push(`  ${i.name} = input(${def});`);
+    members.push(`  ${i.name} = ${formatInputDeclaration(i)};`);
   }
   for (const o of comp.outputs) {
     members.push(`  ${o.name} = output();`);

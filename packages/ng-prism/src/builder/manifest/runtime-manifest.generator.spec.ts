@@ -64,6 +64,22 @@ const TOOLTIP_WITH_HOST_COMPONENT: ScannedComponent = {
   componentMeta: { selector: '[appTooltip]', standalone: true, isDirective: true },
 };
 
+const THEMED_DIRECTIVE: ScannedComponent = {
+  className: 'ThemedDirective',
+  filePath: 'src/lib/themed/themed.directive.ts',
+  showcaseConfig: {
+    title: 'Themed',
+    host: '<div>',
+  },
+  inputs: [
+    { name: 'theme', type: 'union', values: ['light', 'dark'], defaultValue: 'light', required: false },
+    { name: 'size', type: 'number', defaultValue: 16, required: false },
+    { name: 'label', type: 'string', required: true },
+  ],
+  outputs: [],
+  componentMeta: { selector: '[appThemed]', standalone: true, isDirective: true },
+};
+
 describe('generateRuntimeManifest', () => {
   it('should generate the type import from ng-prism/plugin', () => {
     const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: 'my-lib' });
@@ -242,5 +258,43 @@ describe('directive wrapper generation', () => {
   it('should serialize host in showcaseConfig', () => {
     const source = generateRuntimeManifest({ components: [HIGHLIGHT], libraryImportPath: 'my-lib' });
     expect(source).toContain('host:');
+  });
+
+  it('should generate typed input for union types', () => {
+    const source = generateRuntimeManifest({ components: [THEMED_DIRECTIVE], libraryImportPath: 'my-lib' });
+    expect(source).toContain("theme = input<'light' | 'dark'>(\"light\")");
+  });
+
+  it('should generate input.required with type annotation for required inputs', () => {
+    const source = generateRuntimeManifest({ components: [THEMED_DIRECTIVE], libraryImportPath: 'my-lib' });
+    expect(source).toContain("label = input.required<string>()");
+  });
+
+  it('should keep simple types without explicit annotation', () => {
+    const source = generateRuntimeManifest({ components: [THEMED_DIRECTIVE], libraryImportPath: 'my-lib' });
+    expect(source).toContain("size = input(16)");
+  });
+
+  it('should generate type annotation for union inputs', () => {
+    const directive: ScannedComponent = {
+      ...HIGHLIGHT,
+      inputs: [
+        { name: 'theme', type: 'union', values: ['light', 'dark'], defaultValue: 'light', required: false },
+      ],
+    };
+    const source = generateRuntimeManifest({ components: [directive], libraryImportPath: 'my-lib' });
+    expect(source).toContain('theme = input<\'light\' | \'dark\'>("light")');
+  });
+
+  it('should not generate type annotation for simple string inputs', () => {
+    const directive: ScannedComponent = {
+      ...HIGHLIGHT,
+      inputs: [
+        { name: 'label', type: 'string', defaultValue: 'Hello', required: false },
+      ],
+    };
+    const source = generateRuntimeManifest({ components: [directive], libraryImportPath: 'my-lib' });
+    expect(source).toContain('label = input("Hello")');
+    expect(source).not.toContain('input<');
   });
 });
