@@ -70,4 +70,18 @@ describe('scan (integration)', () => {
 
     expect(manifest.components).toHaveLength(5);
   });
+
+  it('should produce correct HighlightDirective data', () => {
+    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
+    const manifest = scan({ entryPoint });
+    const highlight = manifest.components.find((c) => c.className === 'HighlightDirective')!;
+
+    expect(highlight).toBeDefined();
+    expect(highlight.showcaseConfig.title).toBe('Highlight');
+    expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
+    expect(highlight.componentMeta.isDirective).toBe(true);
+    expect(highlight.componentMeta.selector).toBe('[appHighlight]');
+    expect(highlight.inputs).toHaveLength(1);
+    expect(highlight.outputs).toHaveLength(1);
+  });
 });
