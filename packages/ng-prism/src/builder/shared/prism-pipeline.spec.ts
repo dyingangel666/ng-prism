@@ -4,11 +4,19 @@ import { tmpdir } from 'os';
 import { runPrismPipeline } from './prism-pipeline.js';
 
 const FIXTURES_DIR = join(__dirname, '..', 'scanner', '__fixtures__');
+const MULTI_ENTRY_FIXTURES_DIR = join(__dirname, '__fixtures__', 'multi-entry-lib');
 const CONFIG_FIXTURE = join(__dirname, '__fixtures__', 'ng-prism.config.ts');
 
 function createTempWorkspace(): string {
   const tmp = mkdtempSync(join(tmpdir(), 'ng-prism-pipeline-'));
   cpSync(FIXTURES_DIR, join(tmp, 'lib'), { recursive: true });
+  cpSync(CONFIG_FIXTURE, join(tmp, 'ng-prism.config.ts'));
+  return tmp;
+}
+
+function createMultiEntryWorkspace(): string {
+  const tmp = mkdtempSync(join(tmpdir(), 'ng-prism-pipeline-multi-'));
+  cpSync(MULTI_ENTRY_FIXTURES_DIR, join(tmp, 'lib'), { recursive: true });
   cpSync(CONFIG_FIXTURE, join(tmp, 'ng-prism.config.ts'));
   return tmp;
 }
@@ -46,7 +54,7 @@ describe('runPrismPipeline integration', () => {
 
     const result = await runPrismPipeline(defaultOptions, ctx);
 
-    expect(result.componentCount).toBe(4);
+    expect(result.componentCount).toBe(5);
   });
 
   it('should write prism-manifest.ts to expected path', async () => {
@@ -66,7 +74,7 @@ describe('runPrismPipeline integration', () => {
     await runPrismPipeline(defaultOptions, ctx);
 
     const content = readFileSync(join(tmp, 'prism-app', 'src', 'prism-manifest.ts'), 'utf-8');
-    expect(content).toContain("import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent } from 'my-lib'");
+    expect(content).toContain("import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective } from 'my-lib'");
   });
 
   it('should include component type references (not strings)', async () => {
@@ -105,7 +113,56 @@ describe('runPrismPipeline integration', () => {
     expect(ctx.reportStatus).toHaveBeenCalledWith('Generating runtime manifest...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 4 component(s)'),
+      expect.stringContaining('Generated manifest with 5 component(s)'),
     );
+  });
+});
+
+describe('runPrismPipeline multi-entry-point integration', () => {
+  let tmp: string;
+
+  afterEach(() => {
+    if (tmp && existsSync(tmp)) {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  const multiOptions = {
+    entryPoint: 'lib',
+    libraryImportPath: 'multi-entry-lib',
+    prismProject: 'my-lib-prism',
+    configFile: 'ng-prism.config.ts',
+  };
+
+  it('should discover and scan secondary entry points', async () => {
+    tmp = createMultiEntryWorkspace();
+    const ctx = createMockContext(tmp, 'prism-app/src');
+
+    const result = await runPrismPipeline(multiOptions, ctx);
+
+    expect(result.componentCount).toBe(2);
+  });
+
+  it('should generate grouped imports per entry point', async () => {
+    tmp = createMultiEntryWorkspace();
+    const ctx = createMockContext(tmp, 'prism-app/src');
+
+    await runPrismPipeline(multiOptions, ctx);
+
+    const content = readFileSync(join(tmp, 'prism-app', 'src', 'prism-manifest.ts'), 'utf-8');
+    expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
+    expect(content).toContain("from 'multi-entry-lib/atoms/pill'");
+    expect(content).not.toContain("from 'multi-entry-lib';");
+  });
+
+  it('should include component type references', async () => {
+    tmp = createMultiEntryWorkspace();
+    const ctx = createMockContext(tmp, 'prism-app/src');
+
+    await runPrismPipeline(multiOptions, ctx);
+
+    const content = readFileSync(join(tmp, 'prism-app', 'src', 'prism-manifest.ts'), 'utf-8');
+    expect(content).toContain('type: PillComponent,');
+    expect(content).toContain('type: IconComponent,');
   });
 });

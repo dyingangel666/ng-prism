@@ -33,8 +33,9 @@ describe('scanComponents', () => {
     expect(names).toContain('CardComponent');
     expect(names).toContain('SignalButtonComponent');
     expect(names).toContain('ModelInputComponent');
+    expect(names).toContain('HighlightDirective');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(4);
+    expect(components).toHaveLength(5);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
