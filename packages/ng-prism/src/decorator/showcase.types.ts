@@ -1,5 +1,11 @@
 import type { Provider } from '@angular/core';
 
+export interface DirectiveHost {
+  selector: string;
+  import: { name: string; from: string };
+  inputs?: Record<string, unknown>;
+}
+
 export interface ShowcaseConfig {
   /** Display name in the ng-prism UI */
   title: string;
@@ -23,6 +29,8 @@ export interface ShowcaseConfig {
   providers?: Provider[];
   /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
   meta?: Record<string, unknown>;
+  /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
+  host?: string | DirectiveHost;
 }
 
 export interface Variant {
@@ -30,6 +38,12 @@ export interface Variant {
   name: string;
   /** @Input() values for this variant */
   inputs?: Record<string, unknown>;
+  /**
+   * Content projected into <ng-content>.
+   * - string → projected into the default (unnamed) slot
+   * - Record<string, string> → keys are slot selectors (e.g. '[card-header]'), 'default' is the unnamed slot
+   */
+  content?: string | Record<string, string>;
   /** Optional description for this variant */
   description?: string;
   /** Arbitrary metadata for plugins (e.g. { figma: 'https://...?node-id=12-34' }) */
