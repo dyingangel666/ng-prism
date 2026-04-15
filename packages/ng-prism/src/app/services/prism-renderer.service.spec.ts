@@ -23,7 +23,7 @@ function createComponent(
       },
       inputs: overrides.inputs ?? [],
       outputs: [],
-      componentMeta: { selector: 'test', standalone: true },
+      componentMeta: { selector: 'test', standalone: true, isDirective: false },
     },
   };
 }

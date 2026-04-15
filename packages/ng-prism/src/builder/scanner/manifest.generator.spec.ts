@@ -18,7 +18,7 @@ const BUTTON: ScannedComponent = {
     { name: 'disabled', type: 'boolean', defaultValue: false, required: false },
   ],
   outputs: [{ name: 'clicked', doc: 'Click event' }],
-  componentMeta: { selector: 'my-button', standalone: true },
+  componentMeta: { selector: 'my-button', standalone: true, isDirective: false },
 };
 
 const CARD: ScannedComponent = {
@@ -29,7 +29,7 @@ const CARD: ScannedComponent = {
     { name: 'title', type: 'string', defaultValue: '', required: false },
   ],
   outputs: [],
-  componentMeta: { selector: 'my-card', standalone: true },
+  componentMeta: { selector: 'my-card', standalone: true, isDirective: false },
 };
 
 describe('generateManifest', () => {

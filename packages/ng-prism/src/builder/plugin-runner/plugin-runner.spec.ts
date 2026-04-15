@@ -8,7 +8,7 @@ function createComponent(overrides: Partial<ScannedComponent> = {}): ScannedComp
     showcaseConfig: { title: 'Test' },
     inputs: [],
     outputs: [],
-    componentMeta: { selector: 'test', standalone: true },
+    componentMeta: { selector: 'test', standalone: true, isDirective: false },
     ...overrides,
   };
 }

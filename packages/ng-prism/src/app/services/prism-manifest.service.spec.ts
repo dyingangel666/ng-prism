@@ -17,7 +17,7 @@ function createComponent(
       },
       inputs: [],
       outputs: [],
-      componentMeta: { selector: 'test', standalone: true },
+      componentMeta: { selector: 'test', standalone: true, isDirective: false },
     },
   };
 }

@@ -28,6 +28,8 @@ export interface PanelDefinition {
   loadOverlayComponent?: () => Promise<Type<unknown>>;
   icon?: string;
   position?: 'bottom' | 'right';
+  /** Where this panel appears: 'addon' (bottom/right tabbar) or 'view' (top view toolbar). Default: 'addon' */
+  placement?: 'addon' | 'view';
   /** Providers injected into a child EnvironmentInjector scoped to this panel */
   providers?: Provider[];
 }
@@ -55,7 +57,10 @@ export interface ScannedComponent {
   componentMeta: {
     selector: string;
     standalone: boolean;
+    isDirective: boolean;
   };
+  /** Import path for the component's entry point (e.g. 'my-lib/atoms/pill') */
+  importPath?: string;
   /** Arbitrary plugin metadata */
   meta?: Record<string, unknown>;
 }

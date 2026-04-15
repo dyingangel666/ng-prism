@@ -11,7 +11,7 @@ function makeComponent(overrides?: Partial<ScannedComponent>): ScannedComponent 
     showcaseConfig: { title: 'Button' },
     inputs: [],
     outputs: [],
-    componentMeta: { selector: 'doc-button', standalone: true },
+    componentMeta: { selector: 'doc-button', standalone: true, isDirective: false },
     ...overrides,
   };
 }

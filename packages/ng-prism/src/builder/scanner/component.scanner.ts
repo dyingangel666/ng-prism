@@ -74,20 +74,21 @@ function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefi
 function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent['componentMeta'] {
   const componentDecorator = findDecorator(classDecl, 'Component');
   if (!componentDecorator) {
-    return { selector: '', standalone: true };
+    return { selector: '', standalone: true, isDirective: false };
   }
 
   const arg = getDecoratorArgument(componentDecorator);
-  if (!arg) return { selector: '', standalone: true };
+  if (!arg) return { selector: '', standalone: true, isDirective: false };
 
   const raw = evaluateExpression(arg);
   if (!raw || typeof raw !== 'object') {
-    return { selector: '', standalone: true };
+    return { selector: '', standalone: true, isDirective: false };
   }
 
   const obj = raw as Record<string, unknown>;
   return {
     selector: (obj['selector'] as string) ?? '',
     standalone: obj['standalone'] !== false,
+    isDirective: false,
   };
 }

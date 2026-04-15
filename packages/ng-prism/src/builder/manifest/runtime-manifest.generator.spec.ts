@@ -16,7 +16,7 @@ const BUTTON: ScannedComponent = {
     { name: 'label', type: 'string', defaultValue: 'Button', required: false },
   ],
   outputs: [{ name: 'clicked', doc: 'Click event' }],
-  componentMeta: { selector: 'my-button', standalone: true },
+  componentMeta: { selector: 'my-button', standalone: true, isDirective: false },
 };
 
 const CARD: ScannedComponent = {
@@ -25,7 +25,7 @@ const CARD: ScannedComponent = {
   showcaseConfig: { title: 'Card', category: 'Layout' },
   inputs: [{ name: 'title', type: 'string', defaultValue: '', required: false }],
   outputs: [],
-  componentMeta: { selector: 'my-card', standalone: true },
+  componentMeta: { selector: 'my-card', standalone: true, isDirective: false },
 };
 
 describe('generateRuntimeManifest', () => {
@@ -82,5 +82,51 @@ describe('generateRuntimeManifest', () => {
     const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: '@my-org/components' });
 
     expect(source).toContain("from '@my-org/components'");
+  });
+
+  it('should generate grouped imports when components have different importPaths', () => {
+    const pill: ScannedComponent = {
+      ...BUTTON,
+      className: 'PillComponent',
+      importPath: 'sgui-lib/atoms/pill',
+    };
+    const tooltip: ScannedComponent = {
+      ...CARD,
+      className: 'TooltipComponent',
+      importPath: 'sgui-lib/overlay/tooltip',
+    };
+
+    const source = generateRuntimeManifest({ components: [pill, tooltip], libraryImportPath: 'sgui-lib' });
+
+    expect(source).toContain("import { PillComponent } from 'sgui-lib/atoms/pill';");
+    expect(source).toContain("import { TooltipComponent } from 'sgui-lib/overlay/tooltip';");
+    expect(source).not.toContain("from 'sgui-lib';");
+  });
+
+  it('should group multiple components from the same importPath', () => {
+    const pill: ScannedComponent = {
+      ...BUTTON,
+      className: 'PillComponent',
+      importPath: 'sgui-lib/atoms/pill',
+    };
+    const pillModel: ScannedComponent = {
+      ...CARD,
+      className: 'PillModelComponent',
+      importPath: 'sgui-lib/atoms/pill',
+    };
+
+    const source = generateRuntimeManifest({ components: [pill, pillModel], libraryImportPath: 'sgui-lib' });
+
+    expect(source).toContain("import { PillComponent, PillModelComponent } from 'sgui-lib/atoms/pill';");
+  });
+
+  it('should fall back to libraryImportPath when component has no importPath', () => {
+    const withPath: ScannedComponent = { ...BUTTON, className: 'PillComponent', importPath: 'sgui-lib/atoms/pill' };
+    const withoutPath: ScannedComponent = { ...CARD };
+
+    const source = generateRuntimeManifest({ components: [withPath, withoutPath], libraryImportPath: 'sgui-lib' });
+
+    expect(source).toContain("import { PillComponent } from 'sgui-lib/atoms/pill';");
+    expect(source).toContain("import { CardComponent } from 'sgui-lib';");
   });
 });
