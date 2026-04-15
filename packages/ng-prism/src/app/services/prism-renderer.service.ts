@@ -8,6 +8,7 @@ export class PrismRendererService {
 
   readonly activeVariantIndex = signal(0);
   readonly inputValues = signal<Record<string, unknown>>({});
+  readonly activeContent = signal<string | Record<string, string> | undefined>(undefined);
   readonly renderedElement = signal<Element | null>(null);
 
   resetForComponent(comp: RuntimeComponent): void {
@@ -47,6 +48,13 @@ export class PrismRendererService {
     }
 
     const variant = comp.meta.showcaseConfig.variants?.[index];
-    this.inputValues.set({ ...reset, ...defaults, ...(variant?.inputs ?? {}) });
+    const values = { ...reset, ...defaults, ...(variant?.inputs ?? {}) };
+
+    if (comp.meta.componentMeta.isDirective && variant?.content) {
+      values['__prismContent__'] = typeof variant.content === 'string' ? variant.content : '';
+    }
+
+    this.inputValues.set(values);
+    this.activeContent.set(comp.meta.componentMeta.isDirective ? undefined : variant?.content);
   }
 }
