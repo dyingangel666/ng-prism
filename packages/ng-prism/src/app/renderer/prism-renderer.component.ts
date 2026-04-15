@@ -206,6 +206,7 @@ export class PrismRendererComponent {
   private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
   private componentRef: ComponentRef<unknown> | null = null;
   private outputSubscriptions: Array<{ unsubscribe(): void }> = [];
+  private lastProjectedContent: string | Record<string, string> | undefined = undefined;
   private readonly panelService = inject(PrismPanelService);
   private readonly pluginService = inject(PrismPluginService);
   private readonly overlayCache = new Map<string, Type<unknown>>();
@@ -218,11 +219,16 @@ export class PrismRendererComponent {
     if (!comp) return '';
     const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
     const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
+    const directiveOptions = comp.meta.componentMeta.isDirective
+      ? { host: comp.meta.showcaseConfig.host }
+      : undefined;
     return generateSnippet(
       comp.meta.componentMeta.selector,
       comp.meta.inputs,
       this.rendererService.inputValues(),
       explicitKeys,
+      this.rendererService.activeContent(),
+      directiveOptions,
     );
   });
 
@@ -239,8 +245,18 @@ export class PrismRendererComponent {
 
     effect(() => {
       const inputs = this.rendererService.inputValues();
+      const content = this.rendererService.activeContent();
       const ref = this.componentRef;
       if (!ref) return;
+
+      const comp = untracked(() => this.navigationService.activeComponent());
+      if (!comp) return;
+
+      if (content !== this.lastProjectedContent) {
+        untracked(() => this.createComponent(comp));
+        return;
+      }
+
       performance.mark('prism:rerender:start');
       for (const [key, value] of Object.entries(inputs)) {
         ref.setInput(key, value);
@@ -299,7 +315,11 @@ export class PrismRendererComponent {
       parent: this.injector,
     });
 
-    this.componentRef = this.outlet().createComponent(comp.type, { injector });
+    const content = this.rendererService.activeContent();
+    this.lastProjectedContent = content;
+    const projectableNodes = content ? parseContentToNodes(content) : undefined;
+
+    this.componentRef = this.outlet().createComponent(comp.type, { injector, projectableNodes });
 
     for (const output of comp.meta.outputs) {
       const emitter = (this.componentRef.instance as Record<string, unknown>)[output.name];
@@ -331,8 +351,55 @@ export class PrismRendererComponent {
     this.outputSubscriptions = [];
     this.outlet().clear();
     this.componentRef = null;
+    this.lastProjectedContent = undefined;
     if (hadComponent) {
       this.rendererHooks?.onAfterDestroy?.('');
     }
+  }
+}
+
+function parseContentToNodes(content: string | Record<string, string>): Node[][] {
+  if (typeof content === 'string') {
+    return [htmlToNodes(content)];
+  }
+
+  const defaultNodes = content['default'] ? htmlToNodes(content['default']) : [];
+  const result: Node[][] = [defaultNodes];
+
+  for (const [selector, html] of Object.entries(content)) {
+    if (selector === 'default') continue;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = html;
+    const nodes: Node[] = [];
+    for (const child of Array.from(wrapper.childNodes)) {
+      const el = document.createElement('div');
+      el.innerHTML = (child as Element).outerHTML ?? child.textContent ?? '';
+      const projected = el.firstChild;
+      if (projected && projected instanceof Element) {
+        applySelector(projected, selector);
+        nodes.push(projected);
+      } else if (projected) {
+        const span = document.createElement('span');
+        applySelector(span, selector);
+        span.textContent = child.textContent;
+        nodes.push(span);
+      }
+    }
+    result.push(nodes);
+  }
+
+  return result;
+}
+
+function htmlToNodes(html: string): Node[] {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  return Array.from(wrapper.childNodes);
+}
+
+function applySelector(el: Element, selector: string): void {
+  const attrMatch = selector.match(/^\[([^\]=]+)]$/);
+  if (attrMatch) {
+    el.setAttribute(attrMatch[1], '');
   }
 }
