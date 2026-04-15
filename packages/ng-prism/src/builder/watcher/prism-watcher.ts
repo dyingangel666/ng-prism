@@ -1,5 +1,6 @@
 import chokidar from 'chokidar';
 import { dirname } from 'path';
+import { statSync } from 'fs';
 
 export interface ChangeHandlerOptions {
   onRebuild: () => Promise<void>;
@@ -19,6 +20,7 @@ export interface WatcherHandle {
 export interface StartWatcherOptions {
   entryPoint: string;
   configFile?: string;
+  ignorePaths?: string[];
   onRebuild: () => Promise<void>;
   logger: { info(msg: string): void; error(msg: string): void };
   debounceMs?: number;
@@ -69,16 +71,22 @@ export function createChangeHandler(options: ChangeHandlerOptions): ChangeHandle
 }
 
 export function startWatcher(options: StartWatcherOptions): WatcherHandle {
-  const { entryPoint, configFile, onRebuild, logger, debounceMs } = options;
+  const { entryPoint, configFile, ignorePaths, onRebuild, logger, debounceMs } = options;
   const handler = createChangeHandler({ onRebuild, logger, debounceMs });
 
-  const watchPaths: string[] = [dirname(entryPoint)];
+  const isDir = (() => { try { return statSync(entryPoint).isDirectory(); } catch { return false; } })();
+  const watchPaths: string[] = [isDir ? entryPoint : dirname(entryPoint)];
   if (configFile) {
     watchPaths.push(configFile);
   }
 
+  const ignorePatterns: (string | RegExp)[] = [/(?:^|[/\\])(?:node_modules|\.git)[/\\]/];
+  if (ignorePaths) {
+    ignorePatterns.push(...ignorePaths);
+  }
+
   const watcher = chokidar.watch(watchPaths, {
-    ignored: /(?:^|[/\\])(?:node_modules|\.git)[/\\]/,
+    ignored: ignorePatterns,
     ignoreInitial: true,
     persistent: true,
   });

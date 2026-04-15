@@ -1,6 +1,9 @@
-jest.mock('chokidar', () => ({ default: { watch: jest.fn() } }));
+jest.mock('chokidar', () => ({ __esModule: true, default: { watch: jest.fn() } }));
 
-import { createChangeHandler } from './prism-watcher.js';
+import chokidar from 'chokidar';
+import { createChangeHandler, startWatcher } from './prism-watcher.js';
+
+const mockChokidarWatch = chokidar.watch as jest.Mock;
 
 function createLogger() {
   return {
@@ -8,6 +11,54 @@ function createLogger() {
     error: jest.fn(),
   };
 }
+
+describe('startWatcher', () => {
+  function makeMockWatcher() {
+    const w = { on: jest.fn(), close: jest.fn() };
+    w.on.mockReturnValue(w);
+    return w;
+  }
+
+  beforeEach(() => {
+    mockChokidarWatch.mockReset();
+  });
+
+  it('should pass ignorePaths to chokidar ignored option', () => {
+    const mockWatcher = makeMockWatcher();
+    mockChokidarWatch.mockReturnValue(mockWatcher);
+    const logger = createLogger();
+    const handle = startWatcher({
+      entryPoint: '/some/lib',
+      ignorePaths: ['/some/lib/.ng-prism'],
+      onRebuild: jest.fn().mockResolvedValue(undefined),
+      logger,
+    });
+
+    const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+    expect(Array.isArray(watchOptions.ignored)).toBe(true);
+    expect(watchOptions.ignored).toContain('/some/lib/.ng-prism');
+
+    handle.close();
+  });
+
+  it('should only include default ignore pattern when ignorePaths is not provided', () => {
+    const mockWatcher = makeMockWatcher();
+    mockChokidarWatch.mockReturnValue(mockWatcher);
+    const logger = createLogger();
+    const handle = startWatcher({
+      entryPoint: '/some/lib',
+      onRebuild: jest.fn().mockResolvedValue(undefined),
+      logger,
+    });
+
+    const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+    expect(Array.isArray(watchOptions.ignored)).toBe(true);
+    expect(watchOptions.ignored).toHaveLength(1);
+    expect(watchOptions.ignored[0]).toBeInstanceOf(RegExp);
+
+    handle.close();
+  });
+});
 
 describe('createChangeHandler', () => {
   beforeEach(() => jest.useFakeTimers());

@@ -19,10 +19,13 @@ async function createServeBuilder(
 
   const initialResult = await runPrismPipeline(pipelineOptions, context);
 
+  const absoluteEntryPoint = join(context.workspaceRoot, options.entryPoint);
   const configFilePath = join(context.workspaceRoot, pipelineOptions.configFile);
+  const absolutePrismProject = join(context.workspaceRoot, options.prismProject);
   const watcher = startWatcher({
-    entryPoint: join(context.workspaceRoot, options.entryPoint),
+    entryPoint: absoluteEntryPoint,
     configFile: existsSync(configFilePath) ? configFilePath : undefined,
+    ignorePaths: [absolutePrismProject],
     onRebuild: async () => {
       await runPrismPipeline(pipelineOptions, context);
       appendFileSync(initialResult.manifestPath, `\n// ng-prism rebuild: ${Date.now()}\n`);
