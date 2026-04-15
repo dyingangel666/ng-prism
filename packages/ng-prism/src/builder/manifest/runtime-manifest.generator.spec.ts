@@ -297,4 +297,34 @@ describe('directive wrapper generation', () => {
     expect(source).toContain('label = input("Hello")');
     expect(source).not.toContain('input<');
   });
+
+  it('should skip non-bindable inputs (object/unknown without default)', () => {
+    const directive: ScannedComponent = {
+      ...HIGHLIGHT,
+      inputs: [
+        { name: 'highlightColor', type: 'string', defaultValue: 'yellow', required: false },
+        { name: 'contentTemplate', type: 'object', rawType: 'TemplateRef<any>', required: false },
+        { name: 'config', type: 'unknown', required: false },
+      ],
+    };
+    const source = generateRuntimeManifest({ components: [directive], libraryImportPath: 'my-lib' });
+
+    expect(source).toContain('highlightColor = input');
+    expect(source).not.toContain('contentTemplate = input');
+    expect(source).not.toContain('[contentTemplate]');
+    expect(source).not.toContain('config = input');
+    expect(source).not.toContain('[config]');
+  });
+
+  it('should include object inputs that have a default value', () => {
+    const directive: ScannedComponent = {
+      ...HIGHLIGHT,
+      inputs: [
+        { name: 'offset', type: 'object', rawType: 'TooltipOffset', defaultValue: { x: 0, y: 0 }, required: false },
+      ],
+    };
+    const source = generateRuntimeManifest({ components: [directive], libraryImportPath: 'my-lib' });
+
+    expect(source).toContain('offset = input');
+  });
 });

@@ -42,10 +42,18 @@ function directiveSelector(selector: string): string {
   return match ? match[1] : selector;
 }
 
+function isBindableInput(input: InputMeta): boolean {
+  if (input.type === 'string' || input.type === 'number' || input.type === 'boolean' || input.type === 'union') {
+    return true;
+  }
+  return input.defaultValue !== undefined;
+}
+
 function generateWrapperClass(comp: ScannedComponent): string {
   const wrapperName = `${comp.className}__PrismHost`;
   const host = comp.showcaseConfig.host;
   const directiveAttr = directiveSelector(comp.componentMeta.selector);
+  const bindableInputs = comp.inputs.filter(isBindableInput);
 
   let tag: string;
   let attrs: string;
@@ -70,7 +78,7 @@ function generateWrapperClass(comp: ScannedComponent): string {
     importsArray = `[${comp.className}]`;
   }
 
-  const inputBindings = comp.inputs
+  const inputBindings = bindableInputs
     .map((i) => ` [${i.name}]="${i.name}()"`)
     .join('');
 
@@ -81,7 +89,7 @@ function generateWrapperClass(comp: ScannedComponent): string {
   const template = `<${tag}${attrs} ${directiveAttr}${inputBindings}${outputBindings}>{{ __prismContent__() }}</${tag}>`;
 
   const members: string[] = [];
-  for (const i of comp.inputs) {
+  for (const i of bindableInputs) {
     members.push(`  ${i.name} = ${formatInputDeclaration(i)};`);
   }
   for (const o of comp.outputs) {
