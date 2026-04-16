@@ -36,6 +36,7 @@
     "highlight.js": "^11.11.1",
     "html2canvas": "^1.4.1",
     "jest": "^30.0.2",
+    "jest-environment-jsdom": "^30.3.0",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
     "ngx-highlightjs": "^14.0.1",

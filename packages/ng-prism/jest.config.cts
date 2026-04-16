@@ -11,12 +11,31 @@ swcJestConfig.swcrc = false;
 
 module.exports = {
   displayName: 'ng-prism',
-  preset: '../../jest.preset.js',
-  testEnvironment: 'node',
-  transform: {
-    '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig],
-  },
-  transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$|@angular)'],
-  moduleFileExtensions: ['ts', 'js', 'mjs', 'html'],
-  coverageDirectory: 'test-output/jest/coverage',
+  projects: [
+    {
+      displayName: 'ng-prism:node',
+      preset: '../../jest.preset.js',
+      testEnvironment: 'node',
+      testPathIgnorePatterns: ['\\.browser\\.spec\\.ts$', 'prism-url-state\\.service\\.spec\\.ts$'],
+      transform: {
+        '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig],
+      },
+      transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$|@angular)'],
+      moduleFileExtensions: ['ts', 'js', 'mjs', 'html'],
+      coverageDirectory: 'test-output/jest/coverage',
+    },
+    {
+      displayName: 'ng-prism:browser',
+      preset: '../../jest.preset.js',
+      testEnvironment: 'jsdom',
+      testMatch: ['**/*.browser.spec.ts', '**/prism-url-state.service.spec.ts'],
+      setupFiles: ['<rootDir>/src/test-setup-browser.ts'],
+      transform: {
+        '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig],
+      },
+      transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$|@angular)'],
+      moduleFileExtensions: ['ts', 'js', 'mjs', 'html'],
+      coverageDirectory: 'test-output/jest/coverage',
+    },
+  ],
 };
