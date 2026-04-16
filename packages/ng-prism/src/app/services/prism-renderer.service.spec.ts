@@ -211,6 +211,161 @@ describe('PrismRendererService', () => {
     expect(renderer.inputValues()).toEqual({ b: 0 });
   });
 
+  describe('reconcileForComponent', () => {
+    it('should behave like resetForComponent on first call', () => {
+      const comp = createComponent({
+        inputs: [{ name: 'label', type: 'string', defaultValue: 'Hello', required: false }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+
+      renderer.reconcileForComponent(comp);
+
+      expect(renderer.activeVariantIndex()).toBe(0);
+      expect(renderer.inputValues()).toEqual({ label: 'Hello' });
+    });
+
+    it('should preserve variant index when className is unchanged', () => {
+      const comp = createComponent({
+        inputs: [{ name: 'label', type: 'string', defaultValue: 'Hi', required: false }],
+        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+      renderer.selectVariant(2);
+
+      const compRefreshed = createComponent({
+        inputs: [{ name: 'label', type: 'string', defaultValue: 'Hi', required: false }],
+        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
+      });
+      renderer.reconcileForComponent(compRefreshed);
+
+      expect(renderer.activeVariantIndex()).toBe(2);
+    });
+
+    it('should clamp variant index when variants list shrinks', () => {
+      const comp = createComponent({
+        inputs: [],
+        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+      renderer.selectVariant(2);
+
+      const compShrunk = createComponent({
+        inputs: [],
+        variants: [{ name: 'V1' }],
+      });
+      renderer.reconcileForComponent(compShrunk);
+
+      expect(renderer.activeVariantIndex()).toBe(0);
+    });
+
+    it('should preserve input values for inputs that still exist', () => {
+      const comp = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', defaultValue: 'Default', required: false },
+          { name: 'count', type: 'number', defaultValue: 0, required: false },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+      renderer.updateInput('label', 'User Value');
+      renderer.updateInput('count', 42);
+
+      renderer.reconcileForComponent(comp);
+
+      expect(renderer.inputValues()['label']).toBe('User Value');
+      expect(renderer.inputValues()['count']).toBe(42);
+    });
+
+    it('should discard values for inputs that no longer exist', () => {
+      const comp = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', required: false },
+          { name: 'obsolete', type: 'string', required: false },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+      renderer.updateInput('label', 'Keep');
+      renderer.updateInput('obsolete', 'Drop');
+
+      const compReduced = createComponent({
+        inputs: [{ name: 'label', type: 'string', required: false }],
+      });
+      renderer.reconcileForComponent(compReduced);
+
+      expect(renderer.inputValues()['label']).toBe('Keep');
+      expect(renderer.inputValues()['obsolete']).toBeUndefined();
+    });
+
+    it('should merge variant defaults for newly added inputs', () => {
+      const comp = createComponent({
+        inputs: [{ name: 'label', type: 'string', required: false }],
+        variants: [{ name: 'V1', inputs: { label: 'Orig' } }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      const compExpanded = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', required: false },
+          { name: 'variant', type: 'string', required: false },
+        ],
+        variants: [{ name: 'V1', inputs: { label: 'Orig', variant: 'primary' } }],
+      });
+      renderer.reconcileForComponent(compExpanded);
+
+      expect(renderer.inputValues()['label']).toBe('Orig');
+      expect(renderer.inputValues()['variant']).toBe('primary');
+    });
+
+    it('should full-reset when className changes', () => {
+      const first = createComponent({
+        inputs: [{ name: 'label', type: 'string', defaultValue: 'A', required: false }],
+      });
+      first.meta.className = 'First';
+
+      const { renderer, navigation } = setup({ components: [first] });
+      navigation.select(first);
+      renderer.resetForComponent(first);
+      renderer.updateInput('label', 'Custom');
+
+      const second = createComponent({
+        inputs: [{ name: 'title', type: 'string', defaultValue: 'B', required: false }],
+      });
+      second.meta.className = 'Second';
+
+      renderer.reconcileForComponent(second);
+
+      expect(renderer.inputValues()['label']).toBeUndefined();
+      expect(renderer.inputValues()['title']).toBe('B');
+    });
+
+    it('should preserve __prismContent__ on same-className reconcile', () => {
+      const comp = createComponent({
+        isDirective: true,
+        host: '<button>',
+        inputs: [{ name: 'tooltip', type: 'string', required: false }],
+        variants: [{ name: 'V1', content: 'Hover me' }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+      expect(renderer.inputValues()['__prismContent__']).toBe('Hover me');
+
+      renderer.reconcileForComponent(comp);
+
+      expect(renderer.inputValues()['__prismContent__']).toBe('Hover me');
+    });
+  });
+
   describe('directive support', () => {
     it('should set __prismContent__ in inputValues for directive with string content', () => {
       const comp = createComponent({

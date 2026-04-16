@@ -11,9 +11,48 @@ export class PrismRendererService {
   readonly activeContent = signal<string | Record<string, string> | undefined>(undefined);
   readonly renderedElement = signal<Element | null>(null);
 
+  private _lastClassName: string | null = null;
+
   resetForComponent(comp: RuntimeComponent): void {
+    this._lastClassName = comp.meta.className;
     this.activeVariantIndex.set(0);
     this.applyVariant(0, comp);
+  }
+
+  reconcileForComponent(comp: RuntimeComponent): void {
+    const prev = this._lastClassName;
+    this._lastClassName = comp.meta.className;
+
+    if (prev !== comp.meta.className) {
+      this.activeVariantIndex.set(0);
+      this.applyVariant(0, comp);
+      return;
+    }
+
+    const variants = comp.meta.showcaseConfig.variants ?? [];
+    const maxIndex = Math.max(0, variants.length - 1);
+    const preservedIndex = Math.min(this.activeVariantIndex(), maxIndex);
+    this.activeVariantIndex.set(preservedIndex);
+
+    const validKeys = new Set(comp.meta.inputs.map((i) => i.name));
+    const currentValues = this.inputValues();
+    const preserved: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(currentValues)) {
+      if (validKeys.has(key) || key === '__prismContent__') {
+        preserved[key] = value;
+      }
+    }
+
+    const variant = variants[preservedIndex];
+    const variantInputs = variant?.inputs ?? {};
+    const merged: Record<string, unknown> = { ...variantInputs, ...preserved };
+
+    if (comp.meta.componentMeta.isDirective && variant?.content && preserved['__prismContent__'] === undefined) {
+      merged['__prismContent__'] = typeof variant.content === 'string' ? variant.content : '';
+    }
+
+    this.inputValues.set(merged);
+    this.activeContent.set(comp.meta.componentMeta.isDirective ? undefined : variant?.content);
   }
 
   selectVariant(index: number): void {
