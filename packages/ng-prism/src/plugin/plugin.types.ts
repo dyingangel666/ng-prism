@@ -112,4 +112,6 @@ export interface NgPrismConfig {
   };
   headless?: boolean;
   appComponent?: Type<unknown>;
+  /** When false, disables URL state sync (default: true). */
+  urlState?: boolean;
 }
