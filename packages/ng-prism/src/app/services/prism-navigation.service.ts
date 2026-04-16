@@ -24,7 +24,7 @@ export class PrismNavigationService {
     const item = this.activeItem();
     if (item?.kind !== 'page') return null;
     const manifest = this.manifestService.manifest();
-    const relinked = manifest.pages?.find((p) => p.id === item.data.id);
+    const relinked = manifest.pages?.find((p) => p.title === item.data.title && p.type === item.data.type);
     return relinked ?? null;
   });
 

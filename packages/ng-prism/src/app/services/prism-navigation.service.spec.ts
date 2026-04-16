@@ -123,14 +123,15 @@ describe('PrismNavigationService', () => {
     expect(service.activeComponent()).toBeNull();
   });
 
-  it('should re-link activePage by id when manifest updates', () => {
-    const page = { id: 'intro', title: 'Intro', category: 'Docs', component: class {} as any };
+  it('should re-link activePage by title when manifest updates', () => {
+    const page = { type: 'component' as const, title: 'Intro', category: 'Docs', component: class {} as any };
     const { service, manifestService } = setup({ components: [], pages: [page] });
     service.selectPage(page);
 
-    const updatedPage = { id: 'intro', title: 'Intro NEW', category: 'Docs', component: class {} as any };
+    const updatedPage = { type: 'component' as const, title: 'Intro', category: 'Docs', component: class {} as any };
     manifestService.updateManifest({ components: [], pages: [updatedPage] });
 
     expect(service.activePage()).toBe(updatedPage);
+    expect(service.activePage()).not.toBe(page);
   });
 });
