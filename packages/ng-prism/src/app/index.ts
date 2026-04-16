@@ -26,3 +26,6 @@ export { PrismPageRendererComponent } from './page-renderer/prism-page-renderer.
 // Bootstrap helper
 export { providePrism } from './provide-prism.js';
 export type { ProvidePrismOptions } from './provide-prism.js';
+
+// HMR helper
+export { enablePrismHmr } from './hmr.js';
