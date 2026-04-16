@@ -14,6 +14,7 @@ import { PrismRendererComponent } from '../renderer/prism-renderer.component.js'
 import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
 import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import { PrismUrlStateService } from '../services/prism-url-state.service.js';
 import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
 import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
 
@@ -199,6 +200,7 @@ export class PrismShellComponent {
   protected readonly layout = inject(PrismLayoutService);
   protected readonly panelService = inject(PrismPanelService);
   private readonly pluginService = inject(PrismPluginService);
+  private readonly urlStateService = inject(PrismUrlStateService);
 
   protected readonly viewPanels = computed(() => [
     ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
@@ -217,10 +219,18 @@ export class PrismShellComponent {
 
   constructor() {
     this.navigationService.selectFirst();
+    this.urlStateService.init();
 
+    let lastItemKey: string | null = null;
     effect(() => {
-      this.navigationService.activeItem();
-      this.panelService.activeViewId.set('renderer');
+      const item = this.navigationService.activeItem();
+      const key = item
+        ? (item.kind === 'component' ? item.data.meta.className : item.data.title)
+        : null;
+      if (lastItemKey !== null && lastItemKey !== key) {
+        untracked(() => this.panelService.activeViewId.set('renderer'));
+      }
+      lastItemKey = key;
     });
 
     effect(() => {
