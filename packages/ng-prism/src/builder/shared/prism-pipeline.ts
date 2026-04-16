@@ -1,9 +1,9 @@
 import { join } from 'path';
-import { writeFileSync, mkdirSync, statSync, renameSync, existsSync, unlinkSync } from 'fs';
+import { writeFileSync, readFileSync, mkdirSync, statSync, renameSync, existsSync, unlinkSync } from 'fs';
 import type { BuilderContext } from '@angular-devkit/architect';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { ScannedComponent, PrismManifest } from '../../plugin/plugin.types.js';
-import { scan } from '../scanner/scanner.js';
+import { createScanner, type Scanner } from '../scanner/scanner.js';
 import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
 import { loadConfig } from '../config-loader/config-loader.js';
 import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
@@ -20,6 +20,16 @@ export interface PrismPipelineResult {
   manifestPath: string;
   componentCount: number;
   pageCount: number;
+  /** True if the manifest file was actually written; false if the existing content was identical. */
+  written: boolean;
+}
+
+export interface PrismPipelineState {
+  scanners: Map<string, Scanner>;
+}
+
+export function createPipelineState(): PrismPipelineState {
+  return { scanners: new Map() };
 }
 
 export async function runPrismPipeline(
