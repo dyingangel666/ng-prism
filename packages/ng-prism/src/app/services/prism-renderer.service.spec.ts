@@ -45,7 +45,10 @@ function setup(manifest: RuntimeManifest) {
   );
   const navigation = runInInjectionContext(
     Injector.create({
-      providers: [{ provide: PrismSearchService, useValue: searchService }],
+      providers: [
+        { provide: PrismSearchService, useValue: searchService },
+        { provide: PrismManifestService, useValue: manifestService },
+      ],
       parent: baseInjector,
     }),
     () => new PrismNavigationService(),
