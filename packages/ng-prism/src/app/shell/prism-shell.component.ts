@@ -1,16 +1,21 @@
-import { Component, computed, inject, HostListener } from '@angular/core';
+import { Component, computed, effect, inject, HostListener } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PRISM_DARK_THEME, PRISM_LIGHT_THEME } from '../theme/prism-default-theme.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
 import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import { PrismPanelService } from '../services/prism-panel.service.js';
+import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismComponentHeaderComponent } from '../component-header/prism-component-header.component.js';
 import { PrismHeaderComponent } from '../header/prism-header.component.js';
 import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.component.js';
 import { PrismRendererComponent } from '../renderer/prism-renderer.component.js';
 import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
 import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
+import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
+import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
 
 @Component({
   selector: 'prism-shell',
@@ -22,13 +27,15 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
     PrismRendererComponent,
     PrismPanelHostComponent,
     PrismPageRendererComponent,
+    PrismViewTabBarComponent,
+    PrismViewPanelHostComponent,
   ],
   template: `
     <div
       class="prism-shell"
       [style]="shellStyle()"
       [attr.data-sidebar]="layout.sidebarVisible() ? 'visible' : 'hidden'"
-      [attr.data-addons]="layout.addonsVisible() ? 'visible' : 'hidden'"
+      [attr.data-addons]="layout.addonsVisible() && panelService.activeViewId() === 'renderer' ? 'visible' : 'hidden'"
       [attr.data-orientation]="layout.addonsOrientation()"
       [attr.data-toolbar]="layout.toolbarVisible() ? 'visible' : 'hidden'"
     >
@@ -44,10 +51,18 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
 
       <main class="prism-shell__main">
         @if (navigationService.activeComponent()) {
-          @if (layout.toolbarVisible()) {
-            <prism-component-header class="prism-shell__toolbar" />
+          @if (viewPanels().length > 0) {
+            <prism-view-tab-bar class="prism-shell__view-bar" />
           }
-          <prism-renderer class="prism-shell__canvas" />
+
+          @if (panelService.activeViewId() === 'renderer') {
+            @if (layout.toolbarVisible()) {
+              <prism-component-header class="prism-shell__toolbar" />
+            }
+            <prism-renderer class="prism-shell__canvas" />
+          } @else {
+            <prism-view-panel-host class="prism-shell__canvas" />
+          }
         } @else if (navigationService.activePage()) {
           <prism-page-renderer class="prism-shell__canvas" />
         } @else {
@@ -64,7 +79,7 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
         }
       </main>
 
-      @if (layout.addonsVisible()) {
+      @if (layout.addonsVisible() && panelService.activeViewId() === 'renderer') {
         <div
           class="prism-shell__panel-handle"
           (mousedown)="startPanelResize($event)"
@@ -141,6 +156,7 @@ import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer
       cursor: col-resize;
     }
 
+    .prism-shell__view-bar { flex-shrink: 0; }
     .prism-shell__toolbar { flex-shrink: 0; }
     .prism-shell__canvas  { flex: 1; overflow: auto; min-height: 0; }
 
@@ -181,6 +197,13 @@ export class PrismShellComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   private readonly themeService = inject(PrismThemeService);
   protected readonly layout = inject(PrismLayoutService);
+  protected readonly panelService = inject(PrismPanelService);
+  private readonly pluginService = inject(PrismPluginService);
+
+  protected readonly viewPanels = computed(() => [
+    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
+    ...this.pluginService.viewPanels(),
+  ]);
 
   protected readonly shellStyle = computed(() => {
     const base = this.themeService.isDark() ? PRISM_DARK_THEME : PRISM_LIGHT_THEME;
@@ -194,6 +217,11 @@ export class PrismShellComponent {
 
   constructor() {
     this.navigationService.selectFirst();
+
+    effect(() => {
+      this.navigationService.activeItem();
+      this.panelService.activeViewId.set('renderer');
+    });
   }
 
   @HostListener('document:keydown', ['$event'])

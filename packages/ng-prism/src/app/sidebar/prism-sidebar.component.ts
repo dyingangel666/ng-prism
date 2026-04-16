@@ -13,7 +13,7 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
           @for (item of entry[1]; track itemKey(item)) {
             <button
               class="prism-sidebar__item"
-              [class.prism-sidebar__item--active]="navigationService.activeItem() === item"
+              [class.prism-sidebar__item--active]="isActive(item)"
               [class.prism-sidebar__item--page]="item.kind === 'page'"
               (click)="onSelect(item)"
             >
@@ -108,6 +108,15 @@ export class PrismSidebarComponent {
     return item.kind === 'component'
       ? item.data.meta.showcaseConfig.title
       : item.data.title;
+  }
+
+  protected isActive(item: NavigationItem): boolean {
+    const active = this.navigationService.activeItem();
+    if (!active || active.kind !== item.kind) return false;
+    if (item.kind === 'component') {
+      return item.data.meta.className === (active as typeof item).data.meta.className;
+    }
+    return item.data.title === (active as typeof item).data.title;
   }
 
   protected onSelect(item: NavigationItem): void {

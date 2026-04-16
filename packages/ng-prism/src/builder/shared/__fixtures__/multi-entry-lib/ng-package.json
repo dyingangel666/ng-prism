@@ -1,0 +1,4 @@
+{
+  "dest": "../../dist/multi-entry-lib",
+  "lib": { "entryFile": "./public-api.ts" }
+}

@@ -43,7 +43,7 @@ import { Showcase } from 'ng-prism';
     { name: 'Red', inputs: { value: '#ef4444' } },
     { name: 'With Alpha', inputs: { value: '#6366f180', alphaChannel: true } },
     { name: 'Disabled', inputs: { value: '#6366f1', disabled: true } },
-    { name: 'Readonly', inputs: { value: '#8b5cf6', readonly: true } },
+    { name: 'Readonly', inputs: { value: '#8b5cf6', readonly: true } }
   ],
   tags: ['form', 'color', 'picker', 'input'],
 })
@@ -353,6 +353,7 @@ export class ColorPickerComponent
     this._keyPressListener && this._keyPressListener();
   }
 
+  /** Handles the native change event on the hex input, stops propagation and syncs the picker state. */
   onChangeEvent(event: Event) {
     // We always have to stop propagation on the change event. Otherwise the change event will bubble up
     event.stopPropagation();
@@ -360,11 +361,13 @@ export class ColorPickerComponent
     this._setPickerFromHexColor(true);
   }
 
+  /** Cleans up keyboard listeners when the color flyout menu is closed. */
   onFlyoutClosed() {
     // Unbind keypress listener when flyout was closed again
     this._keyPressListener && this._keyPressListener();
   }
 
+  /** Initializes keyboard listeners and the alpha slider when the color flyout menu is opened. */
   onFlyoutOpened() {
     // Detect when ENTER/ESC keys was pressed on keyboard to close flyout
     this._keyPressListener = this._renderer.listen(
@@ -463,22 +466,39 @@ export class ColorPickerComponent
    * PUBLIC FUNCTIONS
    *************************************************************************************************************/
 
+  /** Programmatically focuses the color input element via keyboard focus origin. */
   focus(): void {
     this._focusMonitor.focusVia(this._inputElement().nativeElement, 'keyboard');
   }
 
+  /**
+   * Writes a new hex color value to the picker.
+   * @param value Hex color string (e.g. '#6366f1' or '#6366f180' with alpha)
+   */
   writeValue(value: any): void {
     this.value.set(value);
   }
 
+  /**
+   * Registers the change callback for ControlValueAccessor integration.
+   * @param fn Callback invoked on value change
+   */
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
 
+  /**
+   * Registers the touched callback for ControlValueAccessor integration.
+   * @param fn Callback invoked on blur
+   */
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
 
+  /**
+   * Sets the disabled state of the color picker.
+   * @param isDisabled Whether the picker should be disabled
+   */
   setDisabledState(isDisabled: boolean): void {
     this.disabled.set(isDisabled);
   }

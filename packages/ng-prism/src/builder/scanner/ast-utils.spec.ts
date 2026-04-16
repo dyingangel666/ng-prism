@@ -102,6 +102,13 @@ describe('evaluateExpression', () => {
   it('should return undefined for objects with spread', () => {
     expect(evaluateExpression(parseExpression('({ ...base })'))).toBeUndefined();
   });
+
+  it('should evaluate objects with keyword property names', () => {
+    const result = evaluateExpression(
+      parseExpression("({ import: { name: 'Foo', from: 'bar' }, default: 'baz' })"),
+    );
+    expect(result).toEqual({ import: { name: 'Foo', from: 'bar' }, default: 'baz' });
+  });
 });
 
 // --- findDecorator ---

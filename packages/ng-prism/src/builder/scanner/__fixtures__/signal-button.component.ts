@@ -29,6 +29,9 @@ export class SignalButtonComponent {
   /** Required title */
   readonly title = input.required<string>();
 
+  /** Tab index for keyboard navigation */
+  readonly tabIndex = input<number | null>(null);
+
   /** Click event */
   readonly clicked = output<void>();
 

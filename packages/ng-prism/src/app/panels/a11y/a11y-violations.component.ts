@@ -23,35 +23,38 @@ function sortByImpact(results: Result[]): Result[] {
   imports: [Highlight, A11yScoreComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (auditService.running()) {
-      <div class="prism-a11y-v__status">Auditing…</div>
-    } @else if (auditService.error()) {
+    @if (auditService.error()) {
       <div class="prism-a11y-v__error">Audit failed: {{ auditService.error() }}</div>
-    } @else if (auditService.results()) {
-      <div class="prism-a11y-v__hero">
-        <prism-a11y-score [score]="scoreResult()!.score" />
+    } @else if (auditService.results() || auditService.running()) {
+      <div class="prism-a11y-v__hero" [class.prism-a11y-v__hero--loading]="auditService.running()">
+        <prism-a11y-score [score]="scoreResult()?.score ?? 0" />
         <div class="prism-a11y-v__meta">
-          <div class="prism-a11y-v__score-num">{{ scoreResult()!.score }} / 100</div>
+          <div class="prism-a11y-v__score-num">
+            {{ scoreResult()?.score ?? 0 }} / 100
+            @if (auditService.running()) {
+              <span class="prism-a11y-v__auditing">Auditing…</span>
+            }
+          </div>
           <div class="prism-a11y-v__score-detail">
-            {{ scoreResult()!.violations }} Violations · {{ scoreResult()!.passes }} Passes
+            {{ scoreResult()?.violations ?? 0 }} Violations · {{ scoreResult()?.passes ?? 0 }} Passes
           </div>
           <div class="prism-a11y-v__badges">
-            @if (scoreResult()!.critical) {
+            @if (scoreResult()?.critical) {
               <span class="prism-a11y-v__badge prism-a11y-v__badge--critical">
                 {{ scoreResult()!.critical }} critical
               </span>
             }
-            @if (scoreResult()!.serious) {
+            @if (scoreResult()?.serious) {
               <span class="prism-a11y-v__badge prism-a11y-v__badge--serious">
                 {{ scoreResult()!.serious }} serious
               </span>
             }
-            @if (scoreResult()!.moderate) {
+            @if (scoreResult()?.moderate) {
               <span class="prism-a11y-v__badge prism-a11y-v__badge--moderate">
                 {{ scoreResult()!.moderate }} moderate
               </span>
             }
-            @if (!scoreResult()!.violations) {
+            @if (scoreResult() && !scoreResult()!.violations) {
               <span class="prism-a11y-v__badge prism-a11y-v__badge--pass">All clear</span>
             }
           </div>
@@ -171,7 +174,18 @@ function sortByImpact(results: Result[]): Result[] {
       border-bottom: 1px solid var(--prism-border);
       flex-shrink: 0;
     }
+    .prism-a11y-v__hero--loading {
+      opacity: 0.55;
+      transition: opacity 0.2s;
+    }
     prism-a11y-score { width: 54px; height: 54px; flex-shrink: 0; }
+
+    .prism-a11y-v__auditing {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--prism-text-muted);
+      margin-left: 8px;
+    }
 
     .prism-a11y-v__meta { display: flex; flex-direction: column; gap: 2px; }
     .prism-a11y-v__score-num { font-size: 20px; font-weight: 700; color: var(--prism-text); }

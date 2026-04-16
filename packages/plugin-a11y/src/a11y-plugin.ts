@@ -11,6 +11,7 @@ export function a11yPlugin(options?: A11yPluginOptions): NgPrismPlugin {
         loadComponent: () =>
           import('./a11y-panel.component.js').then((m) => m.A11yPanelComponent),
         position: 'bottom',
+        placement: 'addon',
       },
     ],
   };

@@ -51,7 +51,6 @@ export class A11yAuditService {
 
   scheduleAudit(element: Element, config?: A11yCoreConfig, debounceMs = 500): void {
     if (this.timer) clearTimeout(this.timer);
-    this.results.set(null);
     this.running.set(true);
     this.error.set(null);
 

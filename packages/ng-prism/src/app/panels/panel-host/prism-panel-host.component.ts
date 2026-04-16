@@ -103,7 +103,10 @@ export class PrismPanelHostComponent implements OnDestroy {
 
   private readonly builtInPanels = BUILTIN_PANELS;
 
-  protected readonly allPanels = computed(() => [...this.builtInPanels, ...this.pluginService.panels()]);
+  protected readonly allPanels = computed(() => [
+    ...this.builtInPanels.filter((p) => p.placement !== 'view'),
+    ...this.pluginService.addonPanels(),
+  ]);
   protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
   protected readonly panelInputs = computed(() => ({
     activeComponent: this.nav.activeComponent(),

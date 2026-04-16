@@ -4,6 +4,7 @@ export const A11Y_CORE_PANEL: PanelDefinition = {
   id: 'a11y',
   label: 'A11y',
   position: 'bottom',
+  placement: 'addon',
   loadComponent: () =>
     import('./a11y-panel.component.js').then((m) => m.A11yPanelComponent),
   loadOverlayComponent: () =>

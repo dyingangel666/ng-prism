@@ -11,6 +11,7 @@ export function perfPlugin(_options?: PerfPluginOptions): NgPrismPlugin {
         loadComponent: () =>
           import('./perf-panel.component.js').then((m) => m.PerfPanelComponent),
         position: 'bottom',
+        placement: 'view',
       },
     ],
   };

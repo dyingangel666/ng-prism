@@ -7,6 +7,7 @@
     "e2e:registry": "nx run local-registry",
     "e2e:publish": "nx build ng-prism --skip-nx-cache && rm -rf tmp/local-registry/storage/ng-prism && npm cache clean --force && cd packages/ng-prism && npm publish --no-git-checks --registry=http://localhost:4873",
     "e2e:setup": "npx nx build ng-prism --skip-nx-cache && cd test-workspace && npm install --prefer-online && npx ng add file:../packages/ng-prism --project=test-lib --skip-confirmation",
+    "e2e:build": "npx nx build ng-prism",
     "e2e:serve": "cd test-workspace && trap 'lsof -ti:4400 | xargs kill 2>/dev/null' EXIT INT TERM && ng run test-lib:prism",
     "e2e:clean": "rm -rf test-workspace/node_modules test-workspace/package-lock.json test-workspace/ng-prism.config.ts && rm -f test-workspace/projects/test-lib-prism/src/prism-manifest.ts test-workspace/projects/test-lib-prism/src/index.html test-workspace/projects/test-lib-prism/tsconfig.app.json && git checkout -- test-workspace/angular.json && node -e \"const fs=require('fs'),p=JSON.parse(fs.readFileSync('test-workspace/package.json','utf8'));delete (p.devDependencies||{})['ng-prism'];delete (p.dependencies||{})['ng-prism'];fs.writeFileSync('test-workspace/package.json',JSON.stringify(p,null,2)+'\\n')\""
   },
@@ -40,6 +41,7 @@
     "ngx-highlightjs": "^14.0.1",
     "nx": "22.5.2",
     "pixelmatch": "^7.1.0",
+    "playwright": "^1.58.2",
     "prettier": "^2.6.2",
     "reflect-metadata": "^0.2.2",
     "ts-jest": "^29.4.0",

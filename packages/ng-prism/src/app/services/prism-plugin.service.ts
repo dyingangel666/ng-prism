@@ -16,6 +16,14 @@ export class PrismPluginService {
     return result;
   });
 
+  readonly addonPanels = computed<PanelDefinition[]>(() =>
+    this.panels().filter((p) => p.placement !== 'view'),
+  );
+
+  readonly viewPanels = computed<PanelDefinition[]>(() =>
+    this.panels().filter((p) => p.placement === 'view'),
+  );
+
   readonly controls = computed<ControlDefinition[]>(() => {
     const result: ControlDefinition[] = [];
     for (const plugin of this.config.plugins ?? []) {

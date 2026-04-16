@@ -138,9 +138,9 @@ describe('extractInputs (signal-based)', () => {
     const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
     const inputs = extractInputs(classDecl, checker);
 
-    expect(inputs).toHaveLength(4);
+    expect(inputs).toHaveLength(5);
     const names = inputs.map((i) => i.name);
-    expect(names).toEqual(['variant', 'label', 'disabled', 'title']);
+    expect(names).toEqual(['variant', 'label', 'disabled', 'title', 'tabIndex']);
   });
 
   it('should resolve union type from signal type argument', () => {
@@ -197,6 +197,16 @@ describe('extractInputs (signal-based)', () => {
     expect(inputs[1].type).toBe('boolean');
     expect(inputs[1].defaultValue).toBe(false);
     expect(inputs[1].required).toBe(false);
+  });
+
+  it('should resolve nullable number type (number | null) as number', () => {
+    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const inputs = extractInputs(classDecl, checker);
+    const tabIndex = inputs.find((i) => i.name === 'tabIndex')!;
+
+    expect(tabIndex.type).toBe('number');
+    expect(tabIndex.defaultValue).toBeNull();
+    expect(tabIndex.required).toBe(false);
   });
 
   it('should extract JSDoc comments from signal inputs', () => {

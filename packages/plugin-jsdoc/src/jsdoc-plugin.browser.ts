@@ -10,6 +10,7 @@ export function jsDocPlugin(): NgPrismPlugin {
         loadComponent: () =>
           import('./jsdoc-panel.component.js').then((m) => m.JsDocPanelComponent),
         position: 'bottom',
+        placement: 'view',
       },
     ],
   };

@@ -190,6 +190,10 @@ function mapType(
       return { type: 'union', values, rawType };
     }
 
+    if (filtered.length === 1) {
+      return { ...mapType(filtered[0], checker), rawType };
+    }
+
     return { type: 'unknown', rawType };
   }
 

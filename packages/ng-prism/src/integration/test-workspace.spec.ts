@@ -97,7 +97,7 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx);
 
-    expect(result.componentCount).toBe(2);
+    expect(result.componentCount).toBe(14);
   });
 
   it('should write prism-manifest.ts into prism project', async () => {
@@ -119,7 +119,9 @@ describe('test-workspace integration', () => {
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
       'utf-8',
     );
-    expect(content).toContain("import { ButtonComponent, ColorPickerComponent } from 'test-lib'");
+    expect(content).toContain("from 'test-lib'");
+    expect(content).toContain('ButtonComponent');
+    expect(content).toContain('ColorPickerComponent');
   });
 
   it('should include component type references', async () => {
@@ -171,11 +173,11 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx);
 
-    expect(result.componentCount).toBe(2);
+    expect(result.componentCount).toBe(14);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('Running plugin hooks...');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 2 component(s)'),
+      expect.stringContaining('Generated manifest with 14 component(s)'),
     );
   });
 });

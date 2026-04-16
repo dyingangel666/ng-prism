@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Highlight } from 'ngx-highlightjs';
 import type { InputMeta, OutputMeta } from 'ng-prism/plugin';
-import type { JsDocData } from './jsdoc.types.js';
+import type { JsDocData, MethodDoc } from './jsdoc.types.js';
 
 @Component({
   selector: 'prism-jsdoc-panel',
@@ -112,6 +112,52 @@ import type { JsDocData } from './jsdoc.types.js';
                     </td>
                     <td class="prism-jsdoc-panel__cell--doc">
                       {{ memberDocLine(out.name, out.doc) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        @if (methods().length) {
+          <div class="prism-jsdoc-panel__section">
+            <h3 class="prism-jsdoc-panel__heading">Methods</h3>
+            <table class="prism-jsdoc-panel__table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Parameters</th>
+                  <th>Returns</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (method of methods(); track method.name) {
+                  <tr [class.prism-jsdoc-panel__row--deprecated]="!!method.tags.deprecated">
+                    <td class="prism-jsdoc-panel__cell--name">
+                      <code>{{ method.name }}()</code>
+                      @if (method.tags.deprecated) {
+                        <span class="prism-jsdoc-panel__badge prism-jsdoc-panel__badge--deprecated prism-jsdoc-panel__badge--small">deprecated</span>
+                      }
+                    </td>
+                    <td class="prism-jsdoc-panel__cell--type">
+                      @if (method.params.length) {
+                        @for (p of method.params; track p.name) {
+                          <div><code>{{ p.name }}{{ p.type ? ': ' + p.type : '' }}</code></div>
+                        }
+                      } @else {
+                        <span class="prism-jsdoc-panel__muted">—</span>
+                      }
+                    </td>
+                    <td class="prism-jsdoc-panel__cell--type">
+                      @if (method.returnType) {
+                        <code>{{ method.returnType }}</code>
+                      } @else {
+                        <span class="prism-jsdoc-panel__muted">void</span>
+                      }
+                    </td>
+                    <td class="prism-jsdoc-panel__cell--doc">
+                      {{ method.description ?? '' }}
                     </td>
                   </tr>
                 }
@@ -287,6 +333,8 @@ export class JsDocPanelComponent {
   protected readonly seeRefs = computed(() => this.classTags().see ?? []);
 
   protected readonly examples = computed(() => this.classTags().example ?? []);
+
+  protected readonly methods = computed<MethodDoc[]>(() => this.jsdocData()?.methods ?? []);
 
   protected readonly hasTags = computed(
     () => this.isDeprecated() || !!this.since() || this.seeRefs().length > 0,
