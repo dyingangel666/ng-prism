@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, HostListener } from '@angular/core';
+import { Component, computed, effect, inject, untracked, HostListener } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PRISM_DARK_THEME, PRISM_LIGHT_THEME } from '../theme/prism-default-theme.js';
@@ -221,6 +221,15 @@ export class PrismShellComponent {
     effect(() => {
       this.navigationService.activeItem();
       this.panelService.activeViewId.set('renderer');
+    });
+
+    effect(() => {
+      const item = this.navigationService.activeItem();
+      const activeComp = this.navigationService.activeComponent();
+      const activePage = this.navigationService.activePage();
+      if (item !== null && activeComp === null && activePage === null) {
+        untracked(() => this.navigationService.selectFirst());
+      }
     });
   }
 
