@@ -2,22 +2,30 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { NavigationItem } from './navigation-item.types.js';
+import { PrismManifestService } from './prism-manifest.service.js';
 import { PrismSearchService } from './prism-search.service.js';
 
 @Injectable({ providedIn: 'root' })
 export class PrismNavigationService {
   private readonly searchService = inject(PrismSearchService);
+  private readonly manifestService = inject(PrismManifestService);
 
   readonly activeItem = signal<NavigationItem | null>(null);
 
   readonly activeComponent = computed<RuntimeComponent | null>(() => {
     const item = this.activeItem();
-    return item?.kind === 'component' ? item.data : null;
+    if (item?.kind !== 'component') return null;
+    const manifest = this.manifestService.manifest();
+    const relinked = manifest.components.find((c) => c.meta.className === item.data.meta.className);
+    return relinked ?? null;
   });
 
   readonly activePage = computed<StyleguidePage | null>(() => {
     const item = this.activeItem();
-    return item?.kind === 'page' ? item.data : null;
+    if (item?.kind !== 'page') return null;
+    const manifest = this.manifestService.manifest();
+    const relinked = manifest.pages?.find((p) => p.id === item.data.id);
+    return relinked ?? null;
   });
 
   readonly categoryTree = computed<Map<string, NavigationItem[]>>(() => {
