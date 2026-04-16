@@ -1,21 +1,10 @@
 import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
 import type { json } from '@angular-devkit/core';
 import { join } from 'path';
-import { existsSync, utimesSync } from 'fs';
+import { existsSync } from 'fs';
 import type { ServeBuilderSchema } from './schema.js';
 import { runPrismPipeline, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
 import { startWatcher } from '../watcher/index.js';
-
-async function resolveMainTsPath(
-  context: BuilderContext,
-  prismProject: string,
-): Promise<string | null> {
-  const projectMeta = await context.getProjectMetadata(prismProject);
-  const sourceRoot = (projectMeta['sourceRoot'] as string | undefined)
-    ?? join('projects', prismProject, 'src');
-  const mainTs = join(context.workspaceRoot, sourceRoot, 'main.ts');
-  return existsSync(mainTs) ? mainTs : null;
-}
 
 async function createServeBuilder(
   options: ServeBuilderSchema,
@@ -30,7 +19,6 @@ async function createServeBuilder(
 
   await runPrismPipeline(pipelineOptions, context);
 
-  const mainTsPath = await resolveMainTsPath(context, options.prismProject);
   const absoluteEntryPoint = join(context.workspaceRoot, options.entryPoint);
   const configFilePath = join(context.workspaceRoot, pipelineOptions.configFile);
   const absolutePrismProject = join(context.workspaceRoot, options.prismProject);
@@ -41,14 +29,6 @@ async function createServeBuilder(
     debounceMs: 50,
     onRebuild: async () => {
       await runPrismPipeline(pipelineOptions, context);
-      if (mainTsPath) {
-        const now = new Date();
-        try {
-          utimesSync(mainTsPath, now, now);
-        } catch {
-          // noop — if touch fails, Angular will still see the prism-manifest.ts change eventually
-        }
-      }
     },
     logger: {
       info: (msg: string) => console.log(msg),
