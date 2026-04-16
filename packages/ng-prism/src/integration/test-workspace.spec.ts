@@ -9,7 +9,7 @@ import {
 } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { runPrismPipeline } from '../builder/shared/prism-pipeline.js';
+import { runPrismPipeline, createPipelineState } from '../builder/shared/prism-pipeline.js';
 
 const TEST_WORKSPACE_DIR = join(__dirname, '..', '..', '..', '..', 'test-workspace');
 
@@ -95,7 +95,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    const result = await runPrismPipeline(pipelineOptions, ctx);
+    const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     expect(result.componentCount).toBe(14);
   });
@@ -104,7 +104,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    await runPrismPipeline(pipelineOptions, ctx);
+    await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     expect(existsSync(join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'))).toBe(true);
   });
@@ -113,7 +113,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    await runPrismPipeline(pipelineOptions, ctx);
+    await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
@@ -128,7 +128,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    await runPrismPipeline(pipelineOptions, ctx);
+    await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
@@ -141,7 +141,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    await runPrismPipeline(pipelineOptions, ctx);
+    await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
@@ -154,7 +154,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    await runPrismPipeline(pipelineOptions, ctx);
+    await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
@@ -171,7 +171,7 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    const result = await runPrismPipeline(pipelineOptions, ctx);
+    const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     expect(result.componentCount).toBe(14);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
