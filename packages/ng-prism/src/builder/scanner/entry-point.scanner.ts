@@ -12,8 +12,14 @@ export interface EntryPointResult {
 export function resolveEntryPointExports(
   entryPointPath: string,
   compilerOptions: ts.CompilerOptions,
+  previousProgram?: ts.Program,
 ): EntryPointResult {
-  const program = ts.createProgram([entryPointPath], compilerOptions);
+  const program = ts.createProgram(
+    [entryPointPath],
+    compilerOptions,
+    undefined,
+    previousProgram,
+  );
   const checker = program.getTypeChecker();
   const sourceFile = program.getSourceFile(entryPointPath);
 
