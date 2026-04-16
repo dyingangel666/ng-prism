@@ -238,7 +238,7 @@ export class PrismRendererComponent {
       if (!comp) return;
       untracked(() => {
         this.codeVisible.set(false);
-        this.rendererService.resetForComponent(comp);
+        this.rendererService.reconcileForComponent(comp);
         this.createComponent(comp);
       });
     });
