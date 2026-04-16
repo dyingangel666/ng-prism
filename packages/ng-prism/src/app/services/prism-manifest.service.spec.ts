@@ -69,4 +69,58 @@ describe('PrismManifestService', () => {
     expect(service.categories()).toEqual([]);
     expect(service.groupedByCategory().size).toBe(0);
   });
+
+  it('should expose manifest as a readonly signal', () => {
+    const comps = [createComponent()];
+    const service = setup({ components: comps });
+    expect(service.manifest()).toEqual({ components: comps });
+  });
+
+  it('should update components when updateManifest is called', () => {
+    const service = setup({ components: [createComponent({ className: 'Old' })] });
+    const newComps = [createComponent({ className: 'New1' }), createComponent({ className: 'New2' })];
+
+    service.updateManifest({ components: newComps });
+
+    expect(service.components()).toEqual(newComps);
+  });
+
+  it('should update categories computed when updateManifest is called', () => {
+    const service = setup({ components: [createComponent({ category: 'Forms' })] });
+    expect(service.categories()).toEqual(['Forms']);
+
+    service.updateManifest({
+      components: [
+        createComponent({ category: 'Layout', className: 'L1' }),
+        createComponent({ category: 'Data', className: 'D1' }),
+      ],
+    });
+
+    expect(service.categories()).toEqual(['Data', 'Layout']);
+  });
+
+  it('should update groupedByCategory computed when updateManifest is called', () => {
+    const service = setup({ components: [createComponent({ category: 'A', className: 'A1' })] });
+
+    const newComp = createComponent({ category: 'B', className: 'B1' });
+    service.updateManifest({ components: [newComp] });
+
+    const grouped = service.groupedByCategory();
+    expect(grouped.get('B')).toEqual([newComp]);
+    expect(grouped.has('A')).toBe(false);
+  });
+
+  it('should update pages when updateManifest is called', () => {
+    const service = setup({ components: [] });
+    expect(service.pages()).toEqual([]);
+
+    service.updateManifest({
+      components: [],
+      pages: [{ id: 'intro', title: 'Intro', category: 'Docs', component: class {} as any }],
+    });
+
+    expect(service.pages()).toEqual([
+      { id: 'intro', title: 'Intro', category: 'Docs', component: expect.any(Function) },
+    ]);
+  });
 });
