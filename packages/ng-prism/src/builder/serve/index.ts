@@ -1,7 +1,7 @@
 import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
 import type { json } from '@angular-devkit/core';
 import { join } from 'path';
-import { existsSync, appendFileSync } from 'fs';
+import { existsSync } from 'fs';
 import type { ServeBuilderSchema } from './schema.js';
 import { runPrismPipeline, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
 import { startWatcher } from '../watcher/index.js';
@@ -17,7 +17,7 @@ async function createServeBuilder(
     configFile: options.configFile ?? 'ng-prism.config.ts',
   };
 
-  const initialResult = await runPrismPipeline(pipelineOptions, context);
+  await runPrismPipeline(pipelineOptions, context);
 
   const absoluteEntryPoint = join(context.workspaceRoot, options.entryPoint);
   const configFilePath = join(context.workspaceRoot, pipelineOptions.configFile);
@@ -26,9 +26,9 @@ async function createServeBuilder(
     entryPoint: absoluteEntryPoint,
     configFile: existsSync(configFilePath) ? configFilePath : undefined,
     ignorePaths: [absolutePrismProject],
+    debounceMs: 50,
     onRebuild: async () => {
       await runPrismPipeline(pipelineOptions, context);
-      appendFileSync(initialResult.manifestPath, `\n// ng-prism rebuild: ${Date.now()}\n`);
     },
     logger: {
       info: (msg: string) => console.log(msg),
