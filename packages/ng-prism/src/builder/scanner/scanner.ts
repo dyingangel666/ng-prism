@@ -3,9 +3,14 @@ import type { PrismManifest } from '../../plugin/plugin.types.js';
 import { resolveEntryPointExports } from './entry-point.scanner.js';
 import { scanComponents } from './component.scanner.js';
 
-export interface ScanOptions {
+export interface CreateScannerOptions {
   entryPoint: string;
   compilerOptions?: ts.CompilerOptions;
+}
+
+export interface Scanner {
+  /** Scan the entry point. Reuses TypeScript program state from previous scans. */
+  scan(): PrismManifest;
 }
 
 const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
@@ -18,14 +23,26 @@ const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
 };
 
 /**
- * Scan an entry-point file for @Showcase-annotated components
- * and return a PrismManifest.
+ * Create a stateful scanner that retains the previous ts.Program between scans.
+ * TypeScript reuses parsed SourceFile objects from the old program, making incremental scans fast.
  */
-export function scan(options: ScanOptions): PrismManifest {
+export function createScanner(options: CreateScannerOptions): Scanner {
   const compilerOptions = { ...DEFAULT_COMPILER_OPTIONS, ...options.compilerOptions };
-  const { program, exports } = resolveEntryPointExports(options.entryPoint, compilerOptions);
-  const checker = program.getTypeChecker();
-  const components = scanComponents(exports, checker);
+  let previousProgram: ts.Program | undefined;
 
-  return { components };
+  return {
+    scan(): PrismManifest {
+      const { program, exports } = resolveEntryPointExports(
+        options.entryPoint,
+        compilerOptions,
+        previousProgram,
+      );
+      previousProgram = program;
+
+      const checker = program.getTypeChecker();
+      const components = scanComponents(exports, checker);
+
+      return { components };
+    },
+  };
 }
