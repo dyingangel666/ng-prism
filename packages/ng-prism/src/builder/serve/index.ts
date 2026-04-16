@@ -3,7 +3,7 @@ import type { json } from '@angular-devkit/core';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import type { ServeBuilderSchema } from './schema.js';
-import { runPrismPipeline, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
+import { runPrismPipeline, createPipelineState, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
 import { startWatcher } from '../watcher/index.js';
 
 async function createServeBuilder(
@@ -17,7 +17,8 @@ async function createServeBuilder(
     configFile: options.configFile ?? 'ng-prism.config.ts',
   };
 
-  await runPrismPipeline(pipelineOptions, context);
+  const state = createPipelineState();
+  await runPrismPipeline(pipelineOptions, context, state);
 
   const absoluteEntryPoint = join(context.workspaceRoot, options.entryPoint);
   const configFilePath = join(context.workspaceRoot, pipelineOptions.configFile);
@@ -28,7 +29,7 @@ async function createServeBuilder(
     ignorePaths: [absolutePrismProject],
     debounceMs: 50,
     onRebuild: async () => {
-      await runPrismPipeline(pipelineOptions, context);
+      await runPrismPipeline(pipelineOptions, context, state);
     },
     logger: {
       info: (msg: string) => console.log(msg),

@@ -35,6 +35,7 @@ export function createPipelineState(): PrismPipelineState {
 export async function runPrismPipeline(
   options: PrismPipelineOptions,
   context: BuilderContext,
+  state: PrismPipelineState,
 ): Promise<PrismPipelineResult> {
   const { workspaceRoot } = context;
 
@@ -45,7 +46,7 @@ export async function runPrismPipeline(
   });
 
   context.reportStatus('Scanning components...');
-  const scanResult = scanEntryPoints(workspaceRoot, options);
+  const scanResult = scanEntryPoints(workspaceRoot, options, state);
 
   const pages: StyleguidePage[] = config.pages ? [...config.pages] : [];
 
@@ -68,18 +69,14 @@ export async function runPrismPipeline(
   const manifestPath = join(workspaceRoot, sourceRoot, 'prism-manifest.ts');
 
   mkdirSync(join(workspaceRoot, sourceRoot), { recursive: true });
-  const tempPath = manifestPath + '.tmp';
-  writeFileSync(tempPath, source, 'utf-8');
-  if (existsSync(manifestPath)) {
-    unlinkSync(manifestPath);
-  }
-  renameSync(tempPath, manifestPath);
+  const written = writeManifestIfChanged(manifestPath, source);
 
   const pageCount = (manifest.pages ?? []).length;
 
   context.reportStatus('');
   context.logger.info(
-    `ng-prism: Generated manifest with ${manifest.components.length} component(s)` +
+    `ng-prism: ${written ? 'Generated' : 'Verified (unchanged)'} manifest ` +
+    `with ${manifest.components.length} component(s)` +
     (pageCount > 0 ? ` and ${pageCount} page(s)` : '') +
     ` → ${manifestPath}`,
   );
@@ -88,7 +85,25 @@ export async function runPrismPipeline(
     manifestPath,
     componentCount: manifest.components.length,
     pageCount,
+    written,
   };
+}
+
+function writeManifestIfChanged(manifestPath: string, newContent: string): boolean {
+  if (existsSync(manifestPath)) {
+    const currentContent = readFileSync(manifestPath, 'utf-8');
+    if (currentContent === newContent) {
+      return false;
+    }
+  }
+
+  const tempPath = manifestPath + '.tmp';
+  writeFileSync(tempPath, newContent, 'utf-8');
+  if (existsSync(manifestPath)) {
+    unlinkSync(manifestPath);
+  }
+  renameSync(tempPath, manifestPath);
+  return true;
 }
 
 function isDirectory(path: string): boolean {
@@ -102,11 +117,12 @@ function isDirectory(path: string): boolean {
 function scanEntryPoints(
   workspaceRoot: string,
   options: PrismPipelineOptions,
+  state: PrismPipelineState,
 ): PrismManifest {
   const absoluteEntryPoint = join(workspaceRoot, options.entryPoint);
 
   if (!isDirectory(absoluteEntryPoint)) {
-    return scan({ entryPoint: absoluteEntryPoint });
+    return getOrCreateScanner(state, absoluteEntryPoint).scan();
   }
 
   const entryPoints = discoverSecondaryEntryPoints(
@@ -117,7 +133,8 @@ function scanEntryPoints(
   const allComponents: ScannedComponent[] = [];
 
   for (const ep of entryPoints) {
-    const result = scan({ entryPoint: ep.entryFile });
+    const scanner = getOrCreateScanner(state, ep.entryFile);
+    const result = scanner.scan();
     for (const comp of result.components) {
       comp.importPath = ep.importPath;
       allComponents.push(comp);
@@ -125,4 +142,13 @@ function scanEntryPoints(
   }
 
   return { components: allComponents };
+}
+
+function getOrCreateScanner(state: PrismPipelineState, entryFile: string): Scanner {
+  let scanner = state.scanners.get(entryFile);
+  if (!scanner) {
+    scanner = createScanner({ entryPoint: entryFile });
+    state.scanners.set(entryFile, scanner);
+  }
+  return scanner;
 }
