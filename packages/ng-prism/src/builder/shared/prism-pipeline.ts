@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { writeFileSync, mkdirSync, statSync } from 'fs';
+import { writeFileSync, mkdirSync, statSync, renameSync, existsSync, unlinkSync } from 'fs';
 import type { BuilderContext } from '@angular-devkit/architect';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { ScannedComponent, PrismManifest } from '../../plugin/plugin.types.js';
@@ -58,7 +58,12 @@ export async function runPrismPipeline(
   const manifestPath = join(workspaceRoot, sourceRoot, 'prism-manifest.ts');
 
   mkdirSync(join(workspaceRoot, sourceRoot), { recursive: true });
-  writeFileSync(manifestPath, source, 'utf-8');
+  const tempPath = manifestPath + '.tmp';
+  writeFileSync(tempPath, source, 'utf-8');
+  if (existsSync(manifestPath)) {
+    unlinkSync(manifestPath);
+  }
+  renameSync(tempPath, manifestPath);
 
   const pageCount = (manifest.pages ?? []).length;
 
