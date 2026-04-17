@@ -31,6 +31,8 @@ export interface ShowcaseConfig {
   meta?: Record<string, unknown>;
   /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
   host?: string | DirectiveHost;
+  /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
+  renderPage?: string;
 }
 
 export interface Variant {

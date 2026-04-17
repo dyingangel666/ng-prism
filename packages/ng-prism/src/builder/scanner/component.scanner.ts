@@ -79,6 +79,7 @@ function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefi
   if (obj['tags']) config.tags = obj['tags'] as string[];
   if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
   if (obj['host'] !== undefined) config.host = obj['host'] as ShowcaseConfig['host'];
+  if (obj['renderPage']) config.renderPage = obj['renderPage'] as string;
 
   if (Array.isArray(obj['variants'])) {
     config.variants = obj['variants'] as ShowcaseConfig['variants'];

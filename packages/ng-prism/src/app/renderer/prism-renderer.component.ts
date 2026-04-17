@@ -14,7 +14,9 @@ import {
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
 import { Highlight } from 'ngx-highlightjs';
+import type { ComponentPage } from '../../plugin/page.types.js';
 import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.types.js';
+import { PrismManifestService } from '../services/prism-manifest.service.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
 import { A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
 import { PRISM_RENDERER_HOOKS } from '../tokens/prism-tokens.js';
@@ -199,6 +201,7 @@ export class PrismRendererComponent {
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly perspectiveService = inject(A11yPerspectiveService);
   private readonly eventLogService = inject(PrismEventLogService);
+  private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, { optional: true });
@@ -207,6 +210,7 @@ export class PrismRendererComponent {
   private componentRef: ComponentRef<unknown> | null = null;
   private outputSubscriptions: Array<{ unsubscribe(): void }> = [];
   private lastProjectedContent: string | Record<string, string> | undefined = undefined;
+  private isRenderPage = false;
   private readonly panelService = inject(PrismPanelService);
   private readonly pluginService = inject(PrismPluginService);
   private readonly overlayCache = new Map<string, Type<unknown>>();
@@ -248,6 +252,11 @@ export class PrismRendererComponent {
       const content = this.rendererService.activeContent();
       const ref = this.componentRef;
       if (!ref) return;
+
+      if (this.isRenderPage) {
+        ref.changeDetectorRef.detectChanges();
+        return;
+      }
 
       const comp = untracked(() => this.navigationService.activeComponent());
       if (!comp) return;
@@ -304,6 +313,25 @@ export class PrismRendererComponent {
   private createComponent(comp: RuntimeComponent): void {
     this.cleanup();
 
+    const renderPageTitle = comp.meta.showcaseConfig.renderPage;
+    if (renderPageTitle) {
+      const page = this.manifestService.manifest().pages?.find(
+        (p): p is ComponentPage => p.type === 'component' && p.title === renderPageTitle,
+      );
+      if (page) {
+        this.isRenderPage = true;
+        const injector = Injector.create({
+          providers: comp.meta.showcaseConfig.providers ?? [],
+          parent: this.injector,
+        });
+        this.componentRef = this.outlet().createComponent(page.component, { injector });
+        this.componentRef.changeDetectorRef.detectChanges();
+        this.rendererService.renderedElement.set(this.componentRef.location.nativeElement);
+        return;
+      }
+    }
+
+    this.isRenderPage = false;
     const selector = comp.meta.componentMeta.selector;
     const detail = { detail: { selector } };
 

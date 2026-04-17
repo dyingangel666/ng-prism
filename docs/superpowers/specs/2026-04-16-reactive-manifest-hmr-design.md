@@ -236,7 +236,7 @@ Manual verification scenarios documented in `docs/`:
 
 ## Backward Compatibility
 
-- `providePrism(manifest, config?, options?)` signature unchanged
+- `providePrism(manifest, config?, optok, tions?)` signature unchanged
 - `PRISM_MANIFEST` token unchanged
 - All existing `PrismManifestService` methods and computeds preserved
 - Users without HMR setup: no behavior change
