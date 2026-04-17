@@ -3,6 +3,9 @@
 # compiled output
 dist
 tmp
+
+# npm auth tokens (project-level login)
+.npmrc
 out-tsc
 
 # dependencies
