@@ -9,7 +9,7 @@
       "sourceRoot": "projects/test-lib/src",
       "architect": {
         "prism": {
-          "builder": "ng-prism:serve",
+          "builder": "@ng-prism/core:serve",
           "options": {
             "entryPoint": "projects/test-lib/src/public-api.ts",
             "prismProject": "test-lib-prism",
@@ -18,7 +18,7 @@
           }
         },
         "prism-build": {
-          "builder": "ng-prism:build",
+          "builder": "@ng-prism/core:build",
           "options": {
             "entryPoint": "projects/test-lib/src/public-api.ts",
             "prismProject": "test-lib-prism",
