@@ -6,6 +6,8 @@ export interface CustomPage {
   type: 'custom';
   title: string;
   category?: string;
+  categoryOrder?: number;
+  order?: number;
   data: Record<string, unknown>;
 }
 
@@ -13,5 +15,7 @@ export interface ComponentPage {
   type: 'component';
   title: string;
   category?: string;
+  categoryOrder?: number;
+  order?: number;
   component: Type<unknown>;
 }

@@ -47,8 +47,12 @@ export class PrismNavigationService {
 
     for (const items of map.values()) {
       items.sort((a, b) => {
-        const orderA = a.kind === 'component' ? (a.data.meta.showcaseConfig.componentOrder ?? Infinity) : Infinity;
-        const orderB = b.kind === 'component' ? (b.data.meta.showcaseConfig.componentOrder ?? Infinity) : Infinity;
+        const orderA = a.kind === 'component'
+          ? (a.data.meta.showcaseConfig.componentOrder ?? Infinity)
+          : (a.data.order ?? Infinity);
+        const orderB = b.kind === 'component'
+          ? (b.data.meta.showcaseConfig.componentOrder ?? Infinity)
+          : (b.data.order ?? Infinity);
         if (orderA !== orderB) return orderA - orderB;
         const labelA = a.kind === 'component' ? a.data.meta.showcaseConfig.title : a.data.title;
         const labelB = b.kind === 'component' ? b.data.meta.showcaseConfig.title : b.data.title;
@@ -57,12 +61,18 @@ export class PrismNavigationService {
     }
 
     const sorted = [...map.entries()].sort(([catA, itemsA], [catB, itemsB]) => {
-      const orderA = Math.min(...itemsA
-        .filter((i): i is { kind: 'component'; data: RuntimeComponent } => i.kind === 'component')
-        .map((i) => i.data.meta.showcaseConfig.categoryOrder ?? Infinity));
-      const orderB = Math.min(...itemsB
-        .filter((i): i is { kind: 'component'; data: RuntimeComponent } => i.kind === 'component')
-        .map((i) => i.data.meta.showcaseConfig.categoryOrder ?? Infinity));
+      const catOrders = itemsA.map((i) =>
+        i.kind === 'component'
+          ? (i.data.meta.showcaseConfig.categoryOrder ?? Infinity)
+          : (i.data.categoryOrder ?? Infinity),
+      );
+      const orderA = Math.min(...catOrders);
+      const catOrdersB = itemsB.map((i) =>
+        i.kind === 'component'
+          ? (i.data.meta.showcaseConfig.categoryOrder ?? Infinity)
+          : (i.data.categoryOrder ?? Infinity),
+      );
+      const orderB = Math.min(...catOrdersB);
       if (orderA !== orderB) return orderA - orderB;
       return catA.localeCompare(catB);
     });
