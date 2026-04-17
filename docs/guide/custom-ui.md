@@ -7,7 +7,7 @@ ng-prism lets you replace individual UI regions with your own Angular components
 Configure replacements in `prism.config.ts` under the `ui` key:
 
 ```typescript
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { MyHeaderComponent } from './ui/my-header.component.js';
 
 export default defineConfig({
@@ -34,7 +34,7 @@ All slots accept Angular standalone components. The slot component receives no i
 ```typescript
 // projects/my-lib-prism/src/ui/my-header.component.ts
 import { Component, inject } from '@angular/core';
-import { PrismSearchService } from 'ng-prism';
+import { PrismSearchService } from '@ng-prism/core';
 
 @Component({
   selector: 'app-my-header',
@@ -80,7 +80,7 @@ Inject `PrismNavigationService` to read the category tree and handle selection:
 
 ```typescript
 import { Component, inject } from '@angular/core';
-import { PrismNavigationService, PrismManifestService } from 'ng-prism';
+import { PrismNavigationService, PrismManifestService } from '@ng-prism/core';
 
 @Component({
   selector: 'app-my-sidebar',

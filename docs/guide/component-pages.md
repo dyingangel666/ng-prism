@@ -43,8 +43,8 @@ Register pages via the third argument to `providePrism()` in `main.ts`:
 
 ```typescript
 import { bootstrapApplication } from '@angular/platform-browser';
-import { PrismShellComponent, providePrism } from 'ng-prism';
-import { componentPage } from 'ng-prism';
+import { PrismShellComponent, providePrism } from '@ng-prism/core';
+import { componentPage } from '@ng-prism/core';
 import manifest from './prism-manifest.js';
 import config from './prism.config.js';
 import { ButtonPatternsPageComponent } from './pages/button-patterns.page.js';
@@ -114,7 +114,7 @@ A Component Page linked via `renderPage` can inject `PrismRendererService` to re
 
 ```typescript
 import { Component, inject, computed } from '@angular/core';
-import { PrismRendererService } from 'ng-prism';
+import { PrismRendererService } from '@ng-prism/core';
 
 @Component({
   selector: 'app-data-table-demo',
@@ -145,7 +145,7 @@ export class DataTableDemoComponent {
 For pages that don't require Angular components (e.g. static data rendered by a shared page template), use `CustomPage` entries in `prism.config.ts`:
 
 ```typescript
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
   pages: [

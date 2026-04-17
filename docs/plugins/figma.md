@@ -19,7 +19,7 @@ npm install @ng-prism/plugin-figma
 
 ```typescript
 // prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({

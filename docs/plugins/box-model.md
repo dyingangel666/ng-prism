@@ -19,7 +19,7 @@ npm install @ng-prism/plugin-box-model
 
 ```typescript
 // prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { boxModelPlugin } from '@ng-prism/plugin-box-model';
 
 export default defineConfig({

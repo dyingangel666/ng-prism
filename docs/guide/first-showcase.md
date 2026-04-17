@@ -32,7 +32,7 @@ Import `Showcase` from `ng-prism` and add the decorator above `@Component`:
 
 ```typescript
 import { Component, input } from '@angular/core';
-import { Showcase } from 'ng-prism';  // ← add this
+import { Showcase } from '@ng-prism/core';  // ← add this
 
 @Showcase({
   title: 'Button',

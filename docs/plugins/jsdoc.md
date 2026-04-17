@@ -19,7 +19,7 @@ npm install @ng-prism/plugin-jsdoc
 
 ```typescript
 // prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({

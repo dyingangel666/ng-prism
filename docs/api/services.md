@@ -9,7 +9,7 @@ All services are provided in `root` and injectable anywhere in the Prism app or 
 Manages the runtime manifest — the in-memory representation of all discovered components and pages.
 
 ```typescript
-import { PrismManifestService } from 'ng-prism';
+import { PrismManifestService } from '@ng-prism/core';
 
 @Component({ ... })
 export class MyComponent {
@@ -181,7 +181,7 @@ export class MyShellComponent {
 A standalone function (not a service) that integrates with Vite/webpack HMR to hot-reload the manifest without a full page refresh.
 
 ```typescript
-import { enablePrismHmr } from 'ng-prism';
+import { enablePrismHmr } from '@ng-prism/core';
 import type { ApplicationRef } from '@angular/core';
 
 // In your HMR accept handler:

@@ -3,7 +3,7 @@
 `@Showcase` is placed directly on an Angular component (or directive) class to register it with ng-prism. The decorator accepts a `ShowcaseConfig` object.
 
 ```typescript
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'My Component',

@@ -23,14 +23,14 @@ Lightweight, Angular-native component showcase tool. Annotate components with `@
 ### 1. Install
 
 ```bash
-npm install ng-prism
+npm install @ng-prism/core
 ```
 
 ### 2. Add `@Showcase` to a component
 
 ```typescript
 import { Component, input, output } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Button',
@@ -74,7 +74,7 @@ Open `http://localhost:4400` — your component appears in the sidebar with live
 
 ```typescript
 // ng-prism.config.ts
-import { defineConfig } from 'ng-prism/config';
+import { defineConfig } from '@ng-prism/core/config';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({

@@ -148,7 +148,7 @@ The wrapper receives no inputs. Use `inject()` to access services.
 
 ```typescript
 // my-notes-plugin.ts
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 
 export function myNotesPlugin(): NgPrismPlugin {
   return {
@@ -170,7 +170,7 @@ export function myNotesPlugin(): NgPrismPlugin {
 ```typescript
 // notes-panel.component.ts
 import { Component, inject } from '@angular/core';
-import { PrismNavigationService } from 'ng-prism';
+import { PrismNavigationService } from '@ng-prism/core';
 
 @Component({
   selector: 'app-notes-panel',
@@ -194,7 +194,7 @@ export class NotesPanelComponent {
 ## Example: Custom Control Plugin
 
 ```typescript
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { ColorSwatchControlComponent } from './color-swatch-control.component.js';
 
 export function colorSwatchPlugin(): NgPrismPlugin {

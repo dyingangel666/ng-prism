@@ -16,7 +16,7 @@ A lightweight, Angular-native component showcase tool. Annotate your components 
 ## Quick Example
 
 ```typescript
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 import { Component, input } from '@angular/core';
 
 @Showcase({

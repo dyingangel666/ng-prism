@@ -20,7 +20,7 @@ npm install @ng-prism/plugin-perf
 
 ```typescript
 // prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { perfPlugin } from '@ng-prism/plugin-perf';
 
 export default defineConfig({

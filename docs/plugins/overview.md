@@ -19,7 +19,7 @@ Install the plugin package and register it in your config:
 
 ```typescript
 // prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 

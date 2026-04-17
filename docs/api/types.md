@@ -160,7 +160,7 @@ interface ComponentPage {
 Use the `componentPage()` helper to create entries with TypeScript type safety:
 
 ```typescript
-import { componentPage } from 'ng-prism';
+import { componentPage } from '@ng-prism/core';
 
 componentPage({
   title: 'Button Patterns',

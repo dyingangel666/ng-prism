@@ -4,7 +4,7 @@ ng-prism is configured through a `prism.config.ts` file in your showcase app. Th
 
 ```typescript
 // projects/my-lib-prism/prism.config.ts
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({
@@ -41,7 +41,7 @@ The most commonly used fields:
 Use `appProviders` for services that every showcase component needs — for example, a mock API service or router:
 
 ```typescript
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 
 export default defineConfig({
@@ -75,7 +75,7 @@ See [Theming](guide/theming.md) for the full list of available properties.
 Plugins are registered in order. Each is activated during the build pipeline and at runtime:
 
 ```typescript
-import { defineConfig } from 'ng-prism';
+import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
