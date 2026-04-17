@@ -1,5 +1,7 @@
 # ng-prism — SPEC
 
+> **Historisches Dokument.** Diese Spec wurde zu Beginn der Entwicklung als Planungsgrundlage erstellt. Viele Details (Decorator-Mechanismus, Manifest-Format, Rendering, Plugin-Liste) sind veraltet und entsprechen nicht mehr dem aktuellen Stand. Die autoritative Dokumentation ist die Docsify-Site unter `docs/`.
+
 > Leichtgewichtige, Angular-native Alternative zu Storybook.
 > Zero extra files. Ein Decorator. Alles andere wird abgeleitet.
 
