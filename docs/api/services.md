@@ -1,0 +1,191 @@
+# Runtime Services
+
+All services are provided in `root` and injectable anywhere in the Prism app or in your custom UI components. Import from `ng-prism`.
+
+---
+
+## PrismManifestService
+
+Manages the runtime manifest — the in-memory representation of all discovered components and pages.
+
+```typescript
+import { PrismManifestService } from 'ng-prism';
+
+@Component({ ... })
+export class MyComponent {
+  private readonly manifest = inject(PrismManifestService);
+}
+```
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `manifest` | `Signal<RuntimeManifest>` | Full runtime manifest (read-only) |
+| `components` | `Signal<RuntimeComponent[]>` | All registered components |
+| `pages` | `Signal<StyleguidePage[]>` | All registered pages |
+| `categories` | `Signal<string[]>` | Distinct category names, sorted by `categoryOrder` then alphabetically |
+| `groupedByCategory` | `Signal<Map<string, RuntimeComponent[]>>` | Components keyed by category |
+| `updateManifest(manifest)` | `void` | Replace the entire manifest — used by HMR |
+
+---
+
+## PrismNavigationService
+
+Manages which component or page is currently selected in the sidebar.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `activeItem` | `WritableSignal<NavigationItem \| null>` | Currently active navigation item |
+| `activeComponent` | `Signal<RuntimeComponent \| null>` | Derived from `activeItem` if kind is `'component'` |
+| `activePage` | `Signal<StyleguidePage \| null>` | Derived from `activeItem` if kind is `'page'` |
+| `categoryTree` | `Signal<Map<string, NavigationItem[]>>` | Sidebar tree — filtered by search, sorted by order |
+| `select(comp)` | `void` | Select a `RuntimeComponent` |
+| `selectPage(page)` | `void` | Select a `StyleguidePage` |
+| `selectFirst()` | `void` | Select the first component or page in the manifest |
+
+---
+
+## PrismRendererService
+
+Tracks the active variant and input values for the currently rendered component.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `activeVariantIndex` | `WritableSignal<number>` | Index of the active variant tab (0-based) |
+| `inputValues` | `WritableSignal<Record<string, unknown>>` | Current input values (merged defaults + variant + user overrides) |
+| `activeContent` | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas |
+| `renderedElement` | `WritableSignal<Element \| null>` | Reference to the root DOM element of the rendered component |
+| `resetForComponent(comp)` | `void` | Full reset — resets variant index, inputs, and content to variant 0 |
+| `reconcileForComponent(comp)` | `void` | Soft reset — preserves variant index and user-overridden inputs on HMR |
+| `selectVariant(index)` | `void` | Change variant and apply its inputs |
+| `updateInput(name, value)` | `void` | Update a single input value (merges into `inputValues`) |
+
+Use `inputValues()` in Component Pages to react to Controls panel changes:
+
+```typescript
+readonly rowCount = computed(() =>
+  this.renderer.inputValues()['rowCount'] as number ?? 0
+);
+```
+
+---
+
+## PrismSearchService
+
+Provides sidebar search and filtering.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `query` | `Signal<string>` | Current search query |
+| `filteredComponents` | `Signal<RuntimeComponent[]>` | Components matching the query (title, category, tags) |
+| `filteredPages` | `Signal<StyleguidePage[]>` | Pages matching the query (title, category) |
+| `search(q)` | `void` | Set the search query |
+| `clear()` | `void` | Clear the search query |
+
+---
+
+## PrismEventLogService
+
+Records output events emitted by the rendered component for display in the Events panel.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `events` | `Signal<EventLogEntry[]>` | List of logged events (most recent first) |
+| `log(name, value)` | `void` | Append an event entry |
+| `clear()` | `void` | Clear all entries |
+
+`EventLogEntry`:
+
+```typescript
+interface EventLogEntry {
+  id: number;
+  timestamp: number;
+  name: string;
+  value: unknown;
+}
+```
+
+The built-in renderer calls `log()` automatically for all `output()` signals. Use `log()` manually only if you build a custom renderer.
+
+---
+
+## PrismPanelService
+
+Controls which addon panel and view tab are active.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `activePanelId` | `WritableSignal<string>` | ID of the active addon panel tab (default: `'controls'`) |
+| `activeViewId` | `WritableSignal<string>` | ID of the active view tab (default: `'renderer'`) |
+
+---
+
+## PrismLayoutService
+
+Manages sidebar, toolbar, and panel visibility. State is persisted to `localStorage` under the key `ng-prism-layout`.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `sidebarVisible` | `Signal<boolean>` | Whether the sidebar is visible |
+| `addonsVisible` | `Signal<boolean>` | Whether the addon panel area is visible |
+| `toolbarVisible` | `Signal<boolean>` | Whether the renderer toolbar is visible |
+| `addonsOrientation` | `Signal<'bottom' \| 'right'>` | Panel area orientation |
+| `sidebarWidth` | `Signal<number>` | Sidebar width in pixels (160–600) |
+| `panelHeight` | `Signal<number>` | Addon panel height in pixels, used when orientation is `'bottom'` (100–600) |
+| `panelWidth` | `Signal<number>` | Addon panel width in pixels, used when orientation is `'right'` (200–600) |
+| `toggleSidebar()` | `void` | Toggle sidebar visibility |
+| `toggleAddons()` | `void` | Toggle addon panel visibility |
+| `toggleToolbar()` | `void` | Toggle toolbar visibility |
+| `toggleOrientation()` | `void` | Switch between bottom and right orientation |
+| `setSidebarWidth(px)` | `void` | Set sidebar width with clamping |
+| `setPanelHeight(px)` | `void` | Set panel height with clamping |
+| `setPanelWidth(px)` | `void` | Set panel width with clamping |
+
+---
+
+## PrismPluginService
+
+Provides aggregated plugin contributions (panels and controls) derived from `NgPrismConfig.plugins`.
+
+| Member | Type | Description |
+|--------|------|-------------|
+| `panels` | `Signal<PanelDefinition[]>` | All panels from all plugins |
+| `addonPanels` | `Signal<PanelDefinition[]>` | Panels with `placement !== 'view'` |
+| `viewPanels` | `Signal<PanelDefinition[]>` | Panels with `placement === 'view'` |
+| `controls` | `Signal<ControlDefinition[]>` | All controls from all plugins |
+
+---
+
+## PrismUrlStateService
+
+Synchronizes navigation state with URL query parameters. Initialized automatically by `PrismShellComponent`.
+
+| Member | Description |
+|--------|-------------|
+| `init()` | Reads initial state from URL, starts sync effect, and registers `popstate` listener |
+
+When using a custom `appComponent`, call `init()` manually:
+
+```typescript
+@Component({ ... })
+export class MyShellComponent {
+  constructor() {
+    inject(PrismUrlStateService).init();
+  }
+}
+```
+
+---
+
+## enablePrismHmr
+
+A standalone function (not a service) that integrates with Vite/webpack HMR to hot-reload the manifest without a full page refresh.
+
+```typescript
+import { enablePrismHmr } from 'ng-prism';
+import type { ApplicationRef } from '@angular/core';
+
+// In your HMR accept handler:
+enablePrismHmr(appRef, newManifest);
+```
+
+`enablePrismHmr(appRef, newManifest)` calls `PrismManifestService.updateManifest()` via the app's root injector. The showcase UI updates reactively without losing the active selection.

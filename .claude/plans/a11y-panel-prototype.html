@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>ng-prism · A11y Core Panel · Design Prototype</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* ng-prism core tokens */
+    --prism-void:        #0a0b0d;
+    --prism-bg:          #0f1013;
+    --prism-bg-surface:  #141518;
+    --prism-bg-elevated: #18191e;
+    --prism-border:      rgba(255,255,255,0.07);
+    --prism-border-em:   rgba(255,255,255,0.14);
+    --prism-text:        #e2e4e9;
+    --prism-text-2:      #a8adb8;
+    --prism-text-muted:  #5a5f6e;
+    --prism-primary:     #7c9fec;
+    --prism-primary-from:#6e8fe0;
+    --prism-primary-to:  #9b7fe8;
+    --prism-radius:      8px;
+    --prism-radius-xs:   4px;
+    --prism-font-sans:   'Inter', system-ui, sans-serif;
+    --prism-font-mono:   'JetBrains Mono', 'Fira Code', monospace;
+
+    /* a11y semantic tokens */
+    --a11y-red:          #f87171;
+    --a11y-amber:        #fbbf24;
+    --a11y-green:        #4ade80;
+    --a11y-focus:        #818cf8;   /* indigo — keyboard focus */
+    --a11y-voice:        #a78bfa;   /* violet — screen reader */
+  }
+
+  body {
+    background: var(--prism-void);
+    color: var(--prism-text);
+    font-family: var(--prism-font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--prism-text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── Shell Frame ── */
+  .prism-shell {
+    display: flex;
+    height: 600px;
+    border: 1px solid var(--prism-border-em);
+    border-radius: var(--prism-radius);
+    overflow: hidden;
+    background: var(--prism-bg);
+  }
+
+  /* Sidebar */
+  .prism-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--prism-bg);
+    border-right: 1px solid var(--prism-border);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-header {
+    padding: 16px 14px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--prism-text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--prism-border);
+  }
+  .sidebar-item {
+    padding: 7px 14px;
+    font-size: 13px;
+    color: var(--prism-text-2);
+    cursor: pointer;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-item:hover { color: var(--prism-text); }
+  .sidebar-item.active {
+    color: var(--prism-primary);
+    background: rgba(124,159,236,0.06);
+    border-left-color: var(--prism-primary);
+  }
+
+  /* Main area */
+  .prism-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Component header */
+  .prism-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--prism-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--prism-bg-elevated);
+    flex-shrink: 0;
+  }
+  .header-title { font-size: 15px; font-weight: 600; }
+  .header-tag {
+    font-family: var(--prism-font-mono);
+    font-size: 11px;
+    color: var(--prism-text-muted);
+    padding: 2px 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--prism-border);
+    border-radius: 3px;
+  }
+
+  /* Renderer area */
+  .prism-renderer-wrap {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Variant + Perspective Toolbar */
+  .prism-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border-bottom: 1px solid var(--prism-border);
+    flex-shrink: 0;
+    background: var(--prism-bg-elevated);
+  }
+  .toolbar-variants { display: flex; flex: 1; }
+  .toolbar-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: var(--prism-font-sans);
+    border: none;
+    background: none;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+  }
+  .toolbar-btn::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 8px; right: 8px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+    opacity: 0;
+  }
+  .toolbar-btn:hover { color: var(--prism-text-2); }
+  .toolbar-btn.active { color: var(--prism-primary); font-weight: 500; }
+  .toolbar-btn.active::after { opacity: 1; }
+  .toolbar-btn.code-btn { font-family: var(--prism-font-mono); font-size: 12px; }
+
+  /* Perspective toggle — THE SIGNATURE ELEMENT */
+  .perspective-toggle {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--prism-border);
+    border-radius: 6px;
+    margin-right: 8px;
+  }
+  .perspective-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border: none;
+    background: none;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.12s;
+  }
+  .perspective-btn.active-visual {
+    background: rgba(124,159,236,0.12);
+    color: var(--prism-primary);
+  }
+  .perspective-btn.active-sr {
+    background: rgba(167,139,250,0.14);
+    color: var(--a11y-voice);
+  }
+  .perspective-icon { font-size: 13px; }
+
+  /* Canvas */
+  .prism-canvas {
+    flex: 1;
+    min-height: 0;
+    background-color: var(--prism-bg-surface);
+    background-image: radial-gradient(circle, rgba(124,159,236,0.12) 1px, transparent 1px);
+    background-size: 20px 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 40px;
+    position: relative;
+    overflow: auto;
+  }
+  /* Demo component */
+  .demo-comp {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    width: 280px;
+    position: relative;
+  }
+  .demo-comp label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #374151;
+    font-family: system-ui;
+  }
+  .demo-comp input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+  }
+  .demo-comp input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+  .demo-comp button {
+    padding: 9px 20px;
+    background: #6366f1;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: system-ui;
+  }
+
+  /* Keyboard nav overlay badges */
+  .kbd-badge {
+    position: absolute;
+    width: 20px; height: 20px;
+    background: var(--a11y-focus);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 2px white;
+    font-family: var(--prism-font-sans);
+    z-index: 10;
+  }
+  .kbd-line {
+    position: absolute;
+    height: 2px;
+    background: rgba(129,140,248,0.5);
+    transform-origin: left center;
+    z-index: 9;
+    pointer-events: none;
+  }
+  .kbd-badge-1 { top: 68px; left: 152px; }
+  .kbd-badge-2 { top: 108px; left: 152px; }
+  .kbd-badge-3 { top: 152px; left: 220px; }
+
+  /* Screen reader overlay */
+  .sr-badge {
+    position: absolute;
+    height: 18px;
+    padding: 0 6px;
+    background: var(--a11y-voice);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 1.5px white;
+    font-family: var(--prism-font-sans);
+    z-index: 10;
+    white-space: nowrap;
+  }
+  .sr-badge-1 { top: 45px; left: 100px; }
+  .sr-badge-2 { top: 68px; left: 152px; }
+  .sr-badge-3 { top: 108px; left: 152px; }
+  .sr-badge-4 { top: 152px; left: 220px; }
+  .sr-active-outline {
+    position: absolute;
+    top: 60px; left: 100px;
+    width: 170px; height: 40px;
+    border: 2px solid var(--a11y-voice);
+    border-radius: 6px;
+    box-shadow: 0 0 0 3px rgba(167,139,250,0.2);
+    z-index: 8;
+    pointer-events: none;
+  }
+
+  /* Panel Host */
+  .prism-panel-host {
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--prism-border);
+    background: var(--prism-bg-elevated);
+    flex-shrink: 0;
+  }
+
+  /* Panel Tabs */
+  .panel-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--prism-border);
+    padding: 0 8px;
+    flex-shrink: 0;
+  }
+  .panel-tab {
+    padding: 9px 14px;
+    font-size: 13px;
+    border: none;
+    background: none;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    position: relative;
+    margin-bottom: -1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 8px; right: 8px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+    opacity: 0;
+  }
+  .panel-tab.active { color: var(--prism-primary); font-weight: 500; }
+  .panel-tab.active::after { opacity: 1; }
+
+  /* Score badge in A11y tab */
+  .a11y-score-tab-ring {
+    width: 18px; height: 18px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .a11y-score-tab-ring svg { width: 100%; height: 100%; }
+  .score-track { stroke: rgba(255,255,255,0.1); }
+  .score-arc-good { stroke: #4ade80; }
+  .score-arc-warn { stroke: #fbbf24; }
+  .score-arc-bad  { stroke: #f87171; }
+
+  /* Panel Content */
+  .panel-content {
+    flex: 1;
+    overflow: auto;
+    display: none;
+  }
+  .panel-content.active { display: flex; flex-direction: column; }
+
+  /* ── VIOLATIONS VIEW ── */
+  .a11y-score-hero {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--prism-border);
+  }
+  .score-ring-large {
+    width: 54px; height: 54px;
+    flex-shrink: 0;
+  }
+  .score-ring-large svg { width: 100%; height: 100%; }
+  .score-meta { display: flex; flex-direction: column; gap: 2px; }
+  .score-number { font-size: 22px; font-weight: 700; color: var(--prism-text); }
+  .score-detail { font-size: 12px; color: var(--prism-text-muted); }
+  .score-badges { display: flex; gap: 6px; margin-top: 4px; }
+  .score-badge {
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .score-badge-red { background: rgba(248,113,113,0.15); color: var(--a11y-red); }
+  .score-badge-amber { background: rgba(251,191,36,0.12); color: var(--a11y-amber); }
+  .score-badge-green { background: rgba(74,222,128,0.12); color: var(--a11y-green); }
+
+  .section-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px 9px 12px;
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    font-family: var(--prism-font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--prism-text-muted);
+    text-align: left;
+  }
+  .section-header.viol { border-left-color: var(--a11y-red); background: rgba(248,113,113,0.05); color: var(--a11y-red); }
+  .section-header.warn { border-left-color: var(--a11y-amber); }
+  .section-header.pass { border-left-color: var(--a11y-green); }
+  .sec-title { flex: 1; }
+  .sec-count {
+    padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700;
+  }
+  .sec-count-red { background: rgba(248,113,113,0.15); color: var(--a11y-red); }
+  .sec-count-amber { background: rgba(251,191,36,0.12); color: var(--a11y-amber); }
+  .sec-count-green { background: rgba(74,222,128,0.12); color: var(--a11y-green); }
+  .sec-chevron { font-size: 10px; width: 12px; }
+
+  .violation-body { padding: 6px 12px 10px; background: var(--prism-bg); }
+  .violation-item {
+    padding: 10px 12px; margin-bottom: 6px;
+    background: var(--prism-bg-surface);
+    border-radius: var(--prism-radius);
+    border: 1px solid var(--prism-border);
+  }
+  .vi-header { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .impact-badge {
+    padding: 1px 6px; border-radius: 3px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .impact-critical { background: rgba(248,113,113,0.18); color: var(--a11y-red); border: 1px solid rgba(248,113,113,0.3); }
+  .impact-moderate { background: rgba(251,191,36,0.15); color: var(--a11y-amber); border: 1px solid rgba(251,191,36,0.3); }
+  .rule-id { font-family: var(--prism-font-mono); font-size: 12px; color: var(--prism-text-muted); }
+  .vi-desc { font-size: 12px; color: var(--prism-text-2); line-height: 1.4; margin: 0; }
+  .vi-code {
+    margin: 7px 0 0;
+    padding: 8px 12px;
+    background: var(--prism-void);
+    border-radius: 3px;
+    border: 1px solid var(--prism-border);
+    font-family: var(--prism-font-mono);
+    font-size: 11.5px;
+    color: #93c5fd;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ── KEYBOARD VIEW ── */
+  .kbd-panel { padding: 0; }
+  .kbd-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--prism-border);
+    font-size: 12px;
+    color: var(--prism-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kbd-count-badge {
+    padding: 1px 7px; border-radius: 10px;
+    font-size: 11px; font-weight: 700;
+    background: rgba(129,140,248,0.15);
+    color: var(--a11y-focus);
+  }
+  .overlay-active-badge {
+    margin-left: auto;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(129,140,248,0.12);
+    color: var(--a11y-focus);
+    border: 1px solid rgba(129,140,248,0.2);
+  }
+  .kbd-list { display: flex; flex-direction: column; }
+  .kbd-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--prism-border);
+  }
+  .kbd-num {
+    width: 20px; height: 20px;
+    background: var(--a11y-focus);
+    color: white;
+    border-radius: 50%;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .kbd-info { display: flex; flex-direction: column; gap: 2px; }
+  .kbd-el { font-family: var(--prism-font-mono); font-size: 12px; color: var(--prism-primary); }
+  .kbd-name { font-size: 12px; color: var(--prism-text-2); }
+  .kbd-source { font-size: 11px; color: var(--prism-text-muted); }
+  .kbd-states { display: flex; gap: 4px; margin-top: 2px; }
+  .kbd-state {
+    padding: 0px 5px; border-radius: 3px;
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    background: rgba(251,191,36,0.12); color: var(--a11y-amber);
+  }
+
+  /* ── ARIA TREE VIEW ── */
+  .tree-panel { padding: 12px 16px; font-family: var(--prism-font-mono); font-size: 12px; }
+  .tree-node { padding: 2px 0; }
+  .tree-role { color: var(--prism-primary); font-weight: 600; }
+  .tree-name { color: var(--prism-text); }
+  .tree-attr { color: var(--a11y-amber); }
+  .tree-indent { padding-left: 20px; border-left: 1px solid var(--prism-border); margin-left: 8px; }
+  .tree-connector { color: var(--prism-text-muted); margin-right: 4px; }
+
+  /* ── SCREEN READER VIEW ── */
+  .sr-panel { display: flex; flex-direction: column; height: 100%; }
+  .sr-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--prism-border);
+    font-size: 12px;
+    color: var(--prism-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sr-voice-badge {
+    margin-left: auto;
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(167,139,250,0.12);
+    color: var(--a11y-voice);
+    border: 1px solid rgba(167,139,250,0.2);
+  }
+  .sr-list { flex: 1; overflow: auto; }
+  .sr-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--prism-border);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .sr-item:hover { background: rgba(167,139,250,0.04); }
+  .sr-item.active { background: rgba(167,139,250,0.08); }
+  .sr-idx {
+    width: 18px; height: 18px;
+    background: var(--a11y-voice);
+    color: white;
+    border-radius: 9px;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .sr-item.active .sr-idx { box-shadow: 0 0 0 3px rgba(167,139,250,0.3); }
+  .sr-text { display: flex; flex-direction: column; gap: 1px; }
+  .sr-announcement { font-size: 13px; color: var(--prism-text); font-style: italic; }
+  .sr-meta { font-size: 11px; color: var(--prism-text-muted); font-family: var(--prism-font-mono); }
+
+  /* SR Player Mode (in SR perspective) */
+  .sr-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    flex: 1;
+    padding: 20px;
+  }
+  .sr-player-card {
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border-em);
+    border-radius: 10px;
+    padding: 20px 28px;
+    text-align: center;
+    min-width: 200px;
+    border-top: 2px solid var(--a11y-voice);
+  }
+  .sr-player-counter { font-size: 11px; color: var(--prism-text-muted); margin-bottom: 8px; }
+  .sr-player-name { font-size: 18px; font-weight: 600; color: var(--prism-text); margin-bottom: 4px; }
+  .sr-player-role { font-size: 13px; color: var(--a11y-voice); }
+  .sr-player-state { font-size: 12px; color: var(--a11y-amber); margin-top: 4px; }
+  .sr-nav-btns { display: flex; gap: 8px; }
+  .sr-nav-btn {
+    padding: 7px 20px;
+    background: rgba(167,139,250,0.1);
+    border: 1px solid rgba(167,139,250,0.2);
+    border-radius: 6px;
+    color: var(--a11y-voice);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .sr-nav-btn:hover { background: rgba(167,139,250,0.18); }
+  .sr-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .sr-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--prism-text-muted);
+  }
+  .sr-dot.active { background: var(--a11y-voice); width: 16px; border-radius: 3px; }
+
+  /* Tabs within A11y panel */
+  .a11y-sub-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--prism-border);
+    padding: 0 8px;
+    flex-shrink: 0;
+    background: var(--prism-bg-elevated);
+  }
+  .a11y-sub-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+    border: none;
+    background: none;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .a11y-sub-tab::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 6px; right: 6px;
+    height: 2px;
+    background: var(--prism-primary);
+    opacity: 0;
+  }
+  .a11y-sub-tab.active { color: var(--prism-primary); font-weight: 500; }
+  .a11y-sub-tab.active::after { opacity: 1; }
+  .sub-badge {
+    padding: 0px 5px; border-radius: 8px;
+    font-size: 10px; font-weight: 700;
+    background: rgba(248,113,113,0.18); color: var(--a11y-red);
+  }
+  .sub-badge-blue {
+    background: rgba(129,140,248,0.15); color: var(--a11y-focus);
+  }
+</style>
+</head>
+<body>
+
+<p class="section-label">ng-prism · A11y Core Panel · Design Reference</p>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- SCENARIO 1: Visual Mode — Violations selected -->
+<!-- ════════════════════════════════════════════════════ -->
+<div>
+  <p class="section-label">Scenario A — Visual Mode · A11y Panel · Violations Tab</p>
+  <div class="prism-shell">
+    <!-- Sidebar -->
+    <div class="prism-sidebar">
+      <div class="sidebar-header">Komponenten</div>
+      <div class="sidebar-item">ButtonComponent</div>
+      <div class="sidebar-item active">LoginFormComponent</div>
+      <div class="sidebar-item">CardComponent</div>
+      <div class="sidebar-item">BadgeComponent</div>
+    </div>
+    <!-- Main -->
+    <div class="prism-main">
+      <div class="prism-header">
+        <span class="header-title">LoginFormComponent</span>
+        <span class="header-tag">app-login-form</span>
+      </div>
+      <div class="prism-renderer-wrap">
+        <!-- Toolbar -->
+        <div class="prism-toolbar">
+          <div class="toolbar-variants">
+            <button class="toolbar-btn active">Default</button>
+            <button class="toolbar-btn">Error State</button>
+          </div>
+          <button class="toolbar-btn code-btn">&lt;/&gt; Code</button>
+          <!-- Perspective Toggle -->
+          <div class="perspective-toggle">
+            <button class="perspective-btn active-visual">
+              <span class="perspective-icon">👁</span> Visual
+            </button>
+            <button class="perspective-btn">
+              <span class="perspective-icon">🎧</span> SR
+            </button>
+          </div>
+        </div>
+        <!-- Canvas -->
+        <div class="prism-canvas">
+          <div class="demo-comp">
+            <label>
+              E-Mail-Adresse
+              <input type="email" placeholder="max@example.com">
+            </label>
+            <label>
+              Passwort
+              <input type="password" placeholder="••••••••">
+            </label>
+            <button>Anmelden</button>
+          </div>
+        </div>
+        <!-- Panel Host -->
+        <div class="prism-panel-host">
+          <!-- Outer tabs: Controls, Events, A11y (with score ring) -->
+          <div class="panel-tabs">
+            <button class="panel-tab">Controls</button>
+            <button class="panel-tab">Events</button>
+            <button class="panel-tab active">
+              <!-- Score ring inline -->
+              <div class="a11y-score-tab-ring">
+                <svg viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="#fbbf24" stroke-width="3"
+                    stroke-dasharray="44" stroke-dashoffset="14"
+                    stroke-linecap="round" transform="rotate(-90 10 10)"/>
+                </svg>
+              </div>
+              A11y
+            </button>
+          </div>
+          <!-- A11y sub-tabs -->
+          <div class="a11y-sub-tabs">
+            <button class="a11y-sub-tab active">
+              Violations <span class="sub-badge">3</span>
+            </button>
+            <button class="a11y-sub-tab">
+              Keyboard <span class="sub-badge sub-badge-blue">3</span>
+            </button>
+            <button class="a11y-sub-tab">ARIA Tree</button>
+            <button class="a11y-sub-tab">Screen Reader</button>
+          </div>
+          <!-- Violations content -->
+          <div class="panel-content active" style="overflow:auto;">
+            <!-- Score Hero -->
+            <div class="a11y-score-hero">
+              <div class="score-ring-large">
+                <svg viewBox="0 0 54 54">
+                  <circle cx="27" cy="27" r="22" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="5"/>
+                  <circle cx="27" cy="27" r="22" fill="none" stroke="url(#scoreGrad)" stroke-width="5"
+                    stroke-dasharray="138" stroke-dashoffset="38"
+                    stroke-linecap="round" transform="rotate(-90 27 27)"/>
+                  <defs>
+                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stop-color="#fbbf24"/>
+                      <stop offset="100%" stop-color="#4ade80"/>
+                    </linearGradient>
+                  </defs>
+                  <text x="27" y="32" text-anchor="middle" font-size="13" font-weight="700"
+                    fill="#e2e4e9" font-family="system-ui">72</text>
+                </svg>
+              </div>
+              <div class="score-meta">
+                <div class="score-number">72 / 100</div>
+                <div class="score-detail">3 Violations · 1 Review · 14 Passes</div>
+                <div class="score-badges">
+                  <span class="score-badge score-badge-red">1 critical</span>
+                  <span class="score-badge score-badge-amber">2 moderate</span>
+                  <span class="score-badge score-badge-green">14 ✓</span>
+                </div>
+              </div>
+            </div>
+            <!-- Violation section -->
+            <button class="section-header viol">
+              <span class="sec-chevron">▾</span>
+              <span class="sec-title">Violations</span>
+              <span class="sec-count sec-count-red">3</span>
+            </button>
+            <div class="violation-body">
+              <div class="violation-item">
+                <div class="vi-header">
+                  <span class="impact-badge impact-critical">critical</span>
+                  <span class="rule-id">color-contrast</span>
+                </div>
+                <p class="vi-desc">Ensures the contrast ratio between foreground and background colors meets WCAG 2 AA.</p>
+                <div class="vi-code">&lt;button class="btn-primary" style="color:#aaa"&gt;Anmelden&lt;/button&gt;</div>
+              </div>
+              <div class="violation-item">
+                <div class="vi-header">
+                  <span class="impact-badge impact-moderate">moderate</span>
+                  <span class="rule-id">label</span>
+                </div>
+                <p class="vi-desc">Ensures every form element has a label.</p>
+                <div class="vi-code">&lt;input type="password" placeholder="••••••••"&gt;</div>
+              </div>
+            </div>
+            <button class="section-header warn">
+              <span class="sec-chevron">▸</span>
+              <span class="sec-title">Needs Review</span>
+              <span class="sec-count sec-count-amber">1</span>
+            </button>
+            <button class="section-header pass">
+              <span class="sec-chevron">▸</span>
+              <span class="sec-title">Passes</span>
+              <span class="sec-count sec-count-green">14</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- SCENARIO 2: Keyboard Nav View + Canvas Overlay -->
+<!-- ════════════════════════════════════════════════════ -->
+<div>
+  <p class="section-label">Scenario B — Visual Mode · Keyboard Tab · Canvas Overlay aktiv</p>
+  <div class="prism-shell">
+    <div class="prism-sidebar">
+      <div class="sidebar-header">Komponenten</div>
+      <div class="sidebar-item">ButtonComponent</div>
+      <div class="sidebar-item active">LoginFormComponent</div>
+      <div class="sidebar-item">CardComponent</div>
+    </div>
+    <div class="prism-main">
+      <div class="prism-header">
+        <span class="header-title">LoginFormComponent</span>
+        <span class="header-tag">app-login-form</span>
+      </div>
+      <div class="prism-renderer-wrap">
+        <div class="prism-toolbar">
+          <div class="toolbar-variants">
+            <button class="toolbar-btn active">Default</button>
+            <button class="toolbar-btn">Error State</button>
+          </div>
+          <button class="toolbar-btn code-btn">&lt;/&gt; Code</button>
+          <div class="perspective-toggle">
+            <button class="perspective-btn active-visual">
+              <span class="perspective-icon">👁</span> Visual
+            </button>
+            <button class="perspective-btn">
+              <span class="perspective-icon">🎧</span> SR
+            </button>
+          </div>
+        </div>
+        <div class="prism-canvas">
+          <!-- Canvas overlay: keyboard badges -->
+          <div class="kbd-badge kbd-badge-1">1</div>
+          <div class="kbd-badge kbd-badge-2">2</div>
+          <div class="kbd-badge kbd-badge-3">3</div>
+          <div class="demo-comp">
+            <label>
+              E-Mail-Adresse
+              <input type="email" placeholder="max@example.com">
+            </label>
+            <label>
+              Passwort
+              <input type="password" placeholder="••••••••">
+            </label>
+            <button>Anmelden</button>
+          </div>
+        </div>
+        <div class="prism-panel-host">
+          <div class="panel-tabs">
+            <button class="panel-tab">Controls</button>
+            <button class="panel-tab">Events</button>
+            <button class="panel-tab active">
+              <div class="a11y-score-tab-ring">
+                <svg viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="#fbbf24" stroke-width="3"
+                    stroke-dasharray="44" stroke-dashoffset="14"
+                    stroke-linecap="round" transform="rotate(-90 10 10)"/>
+                </svg>
+              </div>
+              A11y
+            </button>
+          </div>
+          <div class="a11y-sub-tabs">
+            <button class="a11y-sub-tab">Violations <span class="sub-badge">3</span></button>
+            <button class="a11y-sub-tab active">Keyboard <span class="sub-badge sub-badge-blue">3</span></button>
+            <button class="a11y-sub-tab">ARIA Tree</button>
+            <button class="a11y-sub-tab">Screen Reader</button>
+          </div>
+          <div class="panel-content active" style="overflow:auto;">
+            <div class="kbd-header">
+              <span>3 fokussierbare Elemente</span>
+              <span class="kbd-count-badge">3</span>
+              <span class="overlay-active-badge">● Canvas-Overlay aktiv</span>
+            </div>
+            <div class="kbd-list">
+              <div class="kbd-item">
+                <div class="kbd-num">1</div>
+                <div class="kbd-info">
+                  <span class="kbd-el">input[type=email]</span>
+                  <span class="kbd-name">"E-Mail-Adresse"</span>
+                  <span class="kbd-source">Name via: &lt;label for&gt;</span>
+                </div>
+              </div>
+              <div class="kbd-item">
+                <div class="kbd-num">2</div>
+                <div class="kbd-info">
+                  <span class="kbd-el">input[type=password]</span>
+                  <span class="kbd-name">"Passwort"</span>
+                  <span class="kbd-source">Name via: &lt;label for&gt;</span>
+                </div>
+              </div>
+              <div class="kbd-item">
+                <div class="kbd-num">3</div>
+                <div class="kbd-info">
+                  <span class="kbd-el">button</span>
+                  <span class="kbd-name">"Anmelden"</span>
+                  <span class="kbd-source">Name via: Textinhalt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- SCENARIO 3: Screen Reader Mode (Perspective toggle) -->
+<!-- ════════════════════════════════════════════════════ -->
+<div>
+  <p class="section-label">Scenario C — Screen Reader Mode · Player-View</p>
+  <div class="prism-shell">
+    <div class="prism-sidebar">
+      <div class="sidebar-header">Komponenten</div>
+      <div class="sidebar-item">ButtonComponent</div>
+      <div class="sidebar-item active">LoginFormComponent</div>
+      <div class="sidebar-item">CardComponent</div>
+    </div>
+    <div class="prism-main">
+      <div class="prism-header">
+        <span class="header-title">LoginFormComponent</span>
+        <span class="header-tag">app-login-form</span>
+      </div>
+      <div class="prism-renderer-wrap">
+        <div class="prism-toolbar">
+          <div class="toolbar-variants">
+            <button class="toolbar-btn active">Default</button>
+            <button class="toolbar-btn">Error State</button>
+          </div>
+          <button class="toolbar-btn code-btn">&lt;/&gt; Code</button>
+          <div class="perspective-toggle">
+            <button class="perspective-btn">
+              <span class="perspective-icon">👁</span> Visual
+            </button>
+            <button class="perspective-btn active-sr">
+              <span class="perspective-icon">🎧</span> SR
+            </button>
+          </div>
+        </div>
+        <!-- Canvas with SR overlay -->
+        <div class="prism-canvas">
+          <div class="sr-badge sr-badge-1">form</div>
+          <div class="sr-badge sr-badge-2">2</div>
+          <div class="sr-badge sr-badge-3">3</div>
+          <div class="sr-badge sr-badge-4">4</div>
+          <div class="sr-active-outline"></div>
+          <div class="demo-comp" style="filter: brightness(0.85);">
+            <label>
+              E-Mail-Adresse
+              <input type="email" placeholder="max@example.com" style="border-color:#a78bfa; box-shadow: 0 0 0 3px rgba(167,139,250,0.2);">
+            </label>
+            <label>
+              Passwort
+              <input type="password" placeholder="••••••••">
+            </label>
+            <button>Anmelden</button>
+          </div>
+        </div>
+        <div class="prism-panel-host">
+          <div class="panel-tabs">
+            <button class="panel-tab">Controls</button>
+            <button class="panel-tab">Events</button>
+            <button class="panel-tab active">
+              <div class="a11y-score-tab-ring">
+                <svg viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="#fbbf24" stroke-width="3"
+                    stroke-dasharray="44" stroke-dashoffset="14"
+                    stroke-linecap="round" transform="rotate(-90 10 10)"/>
+                </svg>
+              </div>
+              A11y
+            </button>
+          </div>
+          <div class="a11y-sub-tabs">
+            <button class="a11y-sub-tab">Violations <span class="sub-badge">3</span></button>
+            <button class="a11y-sub-tab">Keyboard</button>
+            <button class="a11y-sub-tab">ARIA Tree</button>
+            <button class="a11y-sub-tab active">Screen Reader</button>
+          </div>
+          <!-- SR Player mode (active when perspective = SR) -->
+          <div class="panel-content active">
+            <div class="sr-player">
+              <div class="sr-player-card">
+                <div class="sr-player-counter">2 / 4</div>
+                <div class="sr-player-name">"E-Mail-Adresse"</div>
+                <div class="sr-player-role">text field</div>
+                <div class="sr-player-state">required</div>
+              </div>
+              <div class="sr-nav-btns">
+                <button class="sr-nav-btn">◀</button>
+                <button class="sr-nav-btn">▶</button>
+              </div>
+              <div class="sr-dots">
+                <div class="sr-dot"></div>
+                <div class="sr-dot active"></div>
+                <div class="sr-dot"></div>
+                <div class="sr-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
+<!-- SCENARIO 4: ARIA Tree View -->
+<!-- ════════════════════════════════════════════════════ -->
+<div>
+  <p class="section-label">Scenario D — ARIA Tree View</p>
+  <div class="prism-shell">
+    <div class="prism-sidebar">
+      <div class="sidebar-header">Komponenten</div>
+      <div class="sidebar-item active">LoginFormComponent</div>
+    </div>
+    <div class="prism-main">
+      <div class="prism-header">
+        <span class="header-title">LoginFormComponent</span>
+        <span class="header-tag">app-login-form</span>
+      </div>
+      <div class="prism-renderer-wrap">
+        <div class="prism-toolbar">
+          <div class="toolbar-variants">
+            <button class="toolbar-btn active">Default</button>
+          </div>
+          <button class="toolbar-btn code-btn">&lt;/&gt; Code</button>
+          <div class="perspective-toggle">
+            <button class="perspective-btn active-visual"><span class="perspective-icon">👁</span> Visual</button>
+            <button class="perspective-btn"><span class="perspective-icon">🎧</span> SR</button>
+          </div>
+        </div>
+        <div class="prism-canvas">
+          <div class="demo-comp">
+            <label>E-Mail-Adresse<input type="email" placeholder="max@example.com"></label>
+            <label>Passwort<input type="password" placeholder="••••••••"></label>
+            <button>Anmelden</button>
+          </div>
+        </div>
+        <div class="prism-panel-host">
+          <div class="panel-tabs">
+            <button class="panel-tab">Controls</button>
+            <button class="panel-tab">Events</button>
+            <button class="panel-tab active">
+              <div class="a11y-score-tab-ring">
+                <svg viewBox="0 0 20 20">
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="3"/>
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="#fbbf24" stroke-width="3"
+                    stroke-dasharray="44" stroke-dashoffset="14"
+                    stroke-linecap="round" transform="rotate(-90 10 10)"/>
+                </svg>
+              </div>
+              A11y
+            </button>
+          </div>
+          <div class="a11y-sub-tabs">
+            <button class="a11y-sub-tab">Violations <span class="sub-badge">3</span></button>
+            <button class="a11y-sub-tab">Keyboard</button>
+            <button class="a11y-sub-tab active">ARIA Tree</button>
+            <button class="a11y-sub-tab">Screen Reader</button>
+          </div>
+          <div class="panel-content active tree-panel">
+            <div class="tree-node">
+              <span class="tree-role">form</span>
+              <span class="tree-name"> "Anmeldeformular"</span>
+            </div>
+            <div class="tree-indent">
+              <div class="tree-node">
+                <span class="tree-connector">├─</span>
+                <span class="tree-role">group</span>
+                <span class="tree-name"> "E-Mail-Adresse"</span>
+              </div>
+              <div class="tree-indent">
+                <div class="tree-node">
+                  <span class="tree-role">textbox</span>
+                  <span class="tree-name"> "E-Mail-Adresse"</span>
+                  <span class="tree-attr"> · required</span>
+                </div>
+              </div>
+              <div class="tree-node" style="margin-top:4px">
+                <span class="tree-connector">├─</span>
+                <span class="tree-role">group</span>
+                <span class="tree-name"> "Passwort"</span>
+              </div>
+              <div class="tree-indent">
+                <div class="tree-node">
+                  <span class="tree-role">textbox</span>
+                  <span class="tree-name"> "Passwort"</span>
+                  <span class="tree-attr"> · required · type=password</span>
+                </div>
+              </div>
+              <div class="tree-node" style="margin-top:4px">
+                <span class="tree-connector">└─</span>
+                <span class="tree-role">button</span>
+                <span class="tree-name"> "Anmelden"</span>
+              </div>
+            </div>
+            <div class="tree-node" style="margin-top:12px; color: var(--prism-text-muted);">
+              ▸ Versteckte Elemente (aria-hidden) &nbsp;<span style="background:rgba(255,255,255,0.06);padding:0 5px;border-radius:3px;font-size:11px;">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
