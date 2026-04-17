@@ -12,3 +12,4 @@ export { SliderComponent } from './lib/components/slider/slider.component.js';
 export { TextareaComponent } from './lib/components/textarea/textarea.component.js';
 export { TooltipComponent, type TooltipPositionType } from './lib/components/tooltip/tooltip.component.js';
 export { SpinnerComponent, type SpinnerSizeType } from './lib/components/spinner/spinner.component.js';
+export { TooltipDirective, type TooltipDirectivePositionType } from './lib/directives/tooltip/tooltip.directive.js';

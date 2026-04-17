@@ -27,11 +27,19 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
     :host { display: block; flex: 1; overflow-y: auto; }
     .prism-page-renderer__title {
       margin: 0;
-      padding: 16px 24px;
-      font-size: 20px;
+      padding: 16px 20px;
+      font-size: 18px;
       font-weight: 600;
+      letter-spacing: -0.01em;
       color: var(--prism-text);
+      font-family: var(--prism-font-sans);
       border-bottom: 1px solid var(--prism-border);
+      border-left: 3px solid;
+      border-image: linear-gradient(180deg, var(--prism-primary-from), var(--prism-primary-to)) 1;
+      background: var(--prism-bg-surface);
+    }
+    .prism-page-renderer__component {
+      padding: 16px 20px;
     }
     .prism-page-renderer__json {
       margin: 0;
