@@ -149,7 +149,7 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 Full documentation with guides, API reference, plugin development, and architecture:
 
-**[ng-prism.dev](https://ng-prism.dev)** *(coming soon)*
+**[ng-prism Documentation](https://dyingangel666.github.io/ng-prism/)**
 
 Preview the docs locally:
 
