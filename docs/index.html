@@ -367,7 +367,7 @@
       name: '<svg viewBox="0 0 1600 1600" width="24" height="24" style="vertical-align:middle;margin-right:8px"><circle cx="800" cy="800" r="720" fill="none" stroke="rgba(167,139,250,0.2)" stroke-width="2"/><path d="M800 400 L1050 1000 L550 1000 Z" fill="url(#pg)" stroke="rgba(167,139,250,0.4)" stroke-width="2"/><defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7c3aed" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.15"/></linearGradient></defs></svg><span>ng-prism</span>',
       repo: 'https://github.com/dyingangel666/ng-prism',
       loadSidebar: true,
-      basePath: '/ng-prism/',
+      basePath: location.hostname === 'localhost' ? '/' : '/ng-prism/',
       subMaxLevel: 3,
       auto2top: true,
       search: {
