@@ -11,6 +11,9 @@
   - [Directive Hosting](guide/directive-hosting.md)
   - [Component Pages](guide/component-pages.md)
 
+- **Core Panels**
+  - [Accessibility (A11y)](guide/accessibility.md)
+
 - **Customization**
   - [Theming](guide/theming.md)
   - [Custom UI Sections](guide/custom-ui.md)
