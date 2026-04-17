@@ -36,7 +36,7 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
       class="prism-shell"
       [style]="shellStyle()"
       [attr.data-sidebar]="layout.sidebarVisible() ? 'visible' : 'hidden'"
-      [attr.data-addons]="layout.addonsVisible() && panelService.activeViewId() === 'renderer' ? 'visible' : 'hidden'"
+      [attr.data-addons]="layout.addonsVisible() && panelService.activeViewId() === 'renderer' && !navigationService.activeComponent()?.meta?.showcaseConfig?.renderPage ? 'visible' : 'hidden'"
       [attr.data-orientation]="layout.addonsOrientation()"
       [attr.data-toolbar]="layout.toolbarVisible() ? 'visible' : 'hidden'"
     >
@@ -80,7 +80,7 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
         }
       </main>
 
-      @if (layout.addonsVisible() && panelService.activeViewId() === 'renderer') {
+      @if (layout.addonsVisible() && panelService.activeViewId() === 'renderer' && !navigationService.activeComponent()?.meta?.showcaseConfig?.renderPage) {
         <div
           class="prism-shell__panel-handle"
           (mousedown)="startPanelResize($event)"
