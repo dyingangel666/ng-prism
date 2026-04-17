@@ -2,7 +2,13 @@
   "name": "@ng-prism/plugin-figma",
   "version": "21.0.0",
   "description": "Figma design embed panel for ng-prism.",
-  "keywords": ["ng-prism", "figma", "plugin", "angular", "styleguide"],
+  "keywords": [
+    "ng-prism",
+    "figma",
+    "plugin",
+    "angular",
+    "styleguide"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,8 +33,12 @@
     "pixelmatch": ">=6.0.0"
   },
   "peerDependenciesMeta": {
-    "html2canvas": { "optional": true },
-    "pixelmatch": { "optional": true }
+    "html2canvas": {
+      "optional": true
+    },
+    "pixelmatch": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "ng-prism": "*"
@@ -38,7 +48,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/ng-prism.git",
+    "url": "https://github.com/dyingangel666/ng-prism.git",
     "directory": "packages/plugin-figma"
-  }
+  },
+  "homepage": "https://dyingangel666.github.io/ng-prism/",
+  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
 }

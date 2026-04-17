@@ -2,7 +2,15 @@
   "name": "@ng-prism/plugin-a11y",
   "version": "21.0.0",
   "description": "Accessibility audit panel for ng-prism, powered by axe-core.",
-  "keywords": ["ng-prism", "accessibility", "a11y", "axe-core", "plugin", "angular", "styleguide"],
+  "keywords": [
+    "ng-prism",
+    "accessibility",
+    "a11y",
+    "axe-core",
+    "plugin",
+    "angular",
+    "styleguide"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -35,7 +43,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/ng-prism.git",
+    "url": "https://github.com/dyingangel666/ng-prism.git",
     "directory": "packages/plugin-a11y"
-  }
+  },
+  "homepage": "https://dyingangel666.github.io/ng-prism/",
+  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
 }

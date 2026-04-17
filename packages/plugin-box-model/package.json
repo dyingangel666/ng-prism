@@ -2,7 +2,14 @@
   "name": "@ng-prism/plugin-box-model",
   "version": "21.0.0",
   "description": "CSS box model inspector for ng-prism.",
-  "keywords": ["ng-prism", "box-model", "inspector", "plugin", "angular", "styleguide"],
+  "keywords": [
+    "ng-prism",
+    "box-model",
+    "inspector",
+    "plugin",
+    "angular",
+    "styleguide"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -16,7 +23,10 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist", "!**/*.tsbuildinfo"],
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
   "peerDependencies": {
     "ng-prism": ">=21.0.0",
     "@angular/core": ">=20.0.0",
@@ -30,7 +40,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/ng-prism.git",
+    "url": "https://github.com/dyingangel666/ng-prism.git",
     "directory": "packages/plugin-box-model"
-  }
+  },
+  "homepage": "https://dyingangel666.github.io/ng-prism/",
+  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
 }

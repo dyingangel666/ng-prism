@@ -2,7 +2,13 @@
   "name": "ng-prism",
   "version": "21.0.0",
   "description": "Lightweight Angular-native component showcase — no story files needed.",
-  "keywords": ["angular", "storybook-alternative", "component-library", "styleguide", "showcase"],
+  "keywords": [
+    "angular",
+    "storybook-alternative",
+    "component-library",
+    "styleguide",
+    "showcase"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -46,8 +52,12 @@
     "ngx-highlightjs": ">=14.0.0"
   },
   "peerDependenciesMeta": {
-    "@angular-devkit/architect": { "optional": false },
-    "@angular-devkit/schematics": { "optional": false }
+    "@angular-devkit/architect": {
+      "optional": false
+    },
+    "@angular-devkit/schematics": {
+      "optional": false
+    }
   },
   "dependencies": {
     "chokidar": "^5.0.0",
@@ -55,7 +65,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/ng-prism.git",
+    "url": "https://github.com/dyingangel666/ng-prism.git",
     "directory": "packages/ng-prism"
-  }
+  },
+  "homepage": "https://dyingangel666.github.io/ng-prism/",
+  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
 }
