@@ -1,6 +1,8 @@
 # @ng-prism/plugin-figma
 
-Figma design embed panel for [ng-prism](https://github.com/USERNAME/ng-prism). Displays Figma designs as interactive iframes directly in your component styleguide.
+Figma design embed panel for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Displays Figma designs as interactive iframes directly in your component styleguide.
+
+> **Full documentation:** [ng-prism Docs — Figma Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/figma)
 
 Uses Figma's official embed endpoint — no API token required. Works with any publicly shared Figma file.
 
@@ -14,7 +16,7 @@ npm install @ng-prism/plugin-figma
 
 | Package | Version |
 |---|---|
-| `ng-prism` | `>=21.0.0` |
+| `@ng-prism/core` | `>=21.0.0` |
 | `@angular/core` | `>=20.0.0` |
 
 ## Usage
@@ -24,7 +26,7 @@ npm install @ng-prism/plugin-figma
 Add `figmaPlugin()` to your `ng-prism.config.ts`:
 
 ```typescript
-import { defineConfig } from 'ng-prism/config';
+import { defineConfig } from '@ng-prism/core/config';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
@@ -38,7 +40,7 @@ Add a `figma` key to the `meta` field of your `@Showcase` decorator:
 
 ```typescript
 import { Component, input, output } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Button',
