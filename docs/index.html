@@ -8,63 +8,63 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
   <style>
     :root {
-      /* — Prism spectral palette — */
-      --prism-void: #07050f;
-      --prism-deep: #0d0b1c;
-      --prism-surface: #131022;
-      --prism-elevated: #1a1535;
-      --prism-violet: #a78bfa;
+      /* — Prism light palette — */
+      --prism-void: #f0ecff;
+      --prism-deep: #faf8ff;
+      --prism-surface: #f3efff;
+      --prism-elevated: #ffffff;
+      --prism-violet: #6d28d9;
       --prism-violet-deep: #7c3aed;
-      --prism-blue: #3b82f6;
-      --prism-cyan: #7DD4FE;
-      --prism-pink: #ec4899;
-      --prism-rose: #FAC3F2;
-      --prism-text-primary: #ede9f8;
-      --prism-text-secondary: #b0a6c8;
-      --prism-text-muted: #8476a2;
-      --prism-border: rgba(255,255,255,0.07);
-      --prism-glow: rgba(139,92,246,0.18);
-      --prism-glow-strong: rgba(139,92,246,0.35);
+      --prism-blue: #2563eb;
+      --prism-cyan: #0891b2;
+      --prism-pink: #db2777;
+      --prism-rose: #ec4899;
+      --prism-text-primary: #1a0e2e;
+      --prism-text-secondary: #4a3d65;
+      --prism-text-muted: #6b5e80;
+      --prism-border: rgba(109,40,217,0.1);
+      --prism-glow: rgba(109,40,217,0.10);
+      --prism-glow-strong: rgba(109,40,217,0.20);
 
       /* — Docsify theme overrides — */
-      --theme-color: #a78bfa;
-      --base-background-color: #0d0b1c;
-      --base-color: #ede9f8;
+      --theme-color: #6d28d9;
+      --base-background-color: #faf8ff;
+      --base-color: #1a0e2e;
 
-      --sidebar-background: #07050f;
-      --sidebar-nav-link-color: #b0a6c8;
-      --sidebar-nav-link-color--active: #a78bfa;
-      --sidebar-nav-link-color--hover: #ede9f8;
+      --sidebar-background: #f3efff;
+      --sidebar-nav-link-color: #4a3d65;
+      --sidebar-nav-link-color--active: #6d28d9;
+      --sidebar-nav-link-color--hover: #1a0e2e;
       --sidebar-nav-link-border-color--active: #7c3aed;
-      --sidebar-nav-strong-color: #8476a2;
-      --sidebar-name-color: #a78bfa;
+      --sidebar-nav-strong-color: #6b5e80;
+      --sidebar-name-color: #6d28d9;
       --sidebar-width: 280px;
 
-      --link-color: #a78bfa;
-      --link-color--hover: #c4b5fd;
+      --link-color: #6d28d9;
+      --link-color--hover: #7c3aed;
 
-      --heading-color: #ede9f8;
-      --heading-h2-border-color: rgba(167,139,250,0.12);
+      --heading-color: #1a0e2e;
+      --heading-h2-border-color: rgba(109,40,217,0.12);
 
-      --code-theme-background: #131022;
-      --code-inline-background: rgba(167,139,250,0.08);
-      --code-inline-color: #c4b5fd;
+      --code-theme-background: #f3efff;
+      --code-inline-background: rgba(109,40,217,0.06);
+      --code-inline-color: #6d28d9;
 
       --blockquote-border-color: #7c3aed;
 
-      --table-head-background: rgba(167,139,250,0.06);
-      --table-row-even-background: rgba(255,255,255,0.02);
+      --table-head-background: rgba(109,40,217,0.04);
+      --table-row-even-background: rgba(109,40,217,0.02);
 
-      --search-background: #131022;
-      --search-result-heading-color: #a78bfa;
+      --search-background: #ffffff;
+      --search-result-heading-color: #6d28d9;
 
-      --cover-background-color: #07050f;
+      --cover-background-color: #faf8ff;
 
-      --notice-tip-border-color: #a78bfa;
-      --notice-important-border-color: #3b82f6;
+      --notice-tip-border-color: #6d28d9;
+      --notice-important-border-color: #2563eb;
 
       --base-font-family: 'Inter', system-ui, -apple-system, sans-serif;
       --base-font-size: 15px;
@@ -81,7 +81,7 @@
     * { box-sizing: border-box; }
 
     body {
-      background: var(--prism-deep);
+      background: var(--prism-deep) !important;
       color: var(--prism-text-primary);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
@@ -92,7 +92,7 @@
     —————————————————————————————————————— */
     .sidebar {
       border-right: 1px solid var(--prism-border);
-      background: var(--prism-void) !important;
+      background: var(--prism-surface) !important;
     }
 
     /* Spectral gradient line at the top of sidebar */
@@ -209,19 +209,19 @@
 
     .markdown-section a {
       text-decoration: none;
-      border-bottom: 1px solid rgba(167,139,250,0.3);
+      border-bottom: 1px solid rgba(109,40,217,0.25);
       transition: color 0.15s, border-color 0.15s;
     }
     .markdown-section a:hover {
-      color: #c4b5fd;
-      border-bottom-color: #c4b5fd;
+      color: #7c3aed;
+      border-bottom-color: #7c3aed;
     }
 
     /* ——————————————————————————————————————
        Code blocks
     —————————————————————————————————————— */
     .markdown-section pre {
-      background: var(--prism-surface) !important;
+      background: var(--prism-elevated) !important;
       border: 1px solid var(--prism-border);
       border-radius: 8px;
       padding: 20px 24px;
@@ -294,7 +294,7 @@
       padding: 12px 16px !important;
     }
     .search input {
-      background: var(--prism-surface) !important;
+      background: var(--prism-elevated) !important;
       border: 1px solid var(--prism-border) !important;
       border-radius: 6px !important;
       color: var(--prism-text-primary) !important;
@@ -321,7 +321,7 @@
        Copy button
     —————————————————————————————————————— */
     .docsify-copy-code-button {
-      background: var(--prism-elevated) !important;
+      background: var(--prism-surface) !important;
       color: var(--prism-text-muted) !important;
       border: 1px solid var(--prism-border) !important;
       border-radius: 4px !important;
@@ -344,11 +344,11 @@
       background: transparent;
     }
     ::-webkit-scrollbar-thumb {
-      background: rgba(167,139,250,0.15);
+      background: rgba(109,40,217,0.12);
       border-radius: 3px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(167,139,250,0.3);
+      background: rgba(109,40,217,0.25);
     }
 
     /* ——————————————————————————————————————
