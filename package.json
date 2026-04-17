@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "docs": "npx docsify-cli serve docs --port 3000",
     "prism": "nx run-many -t build --projects=ng-prism",
     "e2e:registry": "nx run local-registry",
     "e2e:publish": "nx build ng-prism --skip-nx-cache && rm -rf tmp/local-registry/storage/ng-prism && npm cache clean --force && cd packages/ng-prism && npm publish --no-git-checks --registry=http://localhost:4873",
