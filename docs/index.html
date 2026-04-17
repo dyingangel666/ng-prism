@@ -292,22 +292,40 @@
     .search {
       border-bottom: 1px solid var(--prism-border) !important;
       padding: 12px 16px !important;
+      margin: 0 !important;
+    }
+    .search .input-wrap {
+      display: flex;
+      align-items: center;
+      position: relative;
+      max-width: 100%;
     }
     .search input {
+      width: 100% !important;
+      box-sizing: border-box !important;
       background: var(--prism-elevated) !important;
       border: 1px solid var(--prism-border) !important;
-      border-radius: 6px !important;
+      border-radius: 8px !important;
       color: var(--prism-text-primary) !important;
-      padding: 8px 12px !important;
+      padding: 7px 12px !important;
       font-family: var(--base-font-family) !important;
-      font-size: 14px !important;
+      font-size: 13px !important;
+      outline: none !important;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
     .search input:focus {
-      border-color: rgba(167,139,250,0.4) !important;
+      border-color: rgba(109,40,217,0.35) !important;
       box-shadow: 0 0 0 3px var(--prism-glow) !important;
     }
     .search input::placeholder {
       color: var(--prism-text-muted) !important;
+      font-size: 13px !important;
+    }
+    .search .clear-button {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     .matching-post {
