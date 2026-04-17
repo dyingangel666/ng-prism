@@ -19,7 +19,6 @@
 - **Plugins**
   - [Plugin Overview](plugins/overview.md)
   - [JSDoc — API Docs](plugins/jsdoc.md)
-  - [A11y — Accessibility](plugins/a11y.md)
   - [Figma — Design Embed](plugins/figma.md)
   - [Box Model — Inspector](plugins/box-model.md)
   - [Perf — Performance](plugins/perf.md)

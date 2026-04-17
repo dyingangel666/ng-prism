@@ -26,7 +26,6 @@
     "@angular-devkit/build-angular": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
-    "@ng-prism/plugin-a11y": "file:../packages/plugin-a11y",
     "@ng-prism/plugin-box-model": "file:../packages/plugin-box-model",
     "@ng-prism/plugin-figma": "file:../packages/plugin-figma",
     "@ng-prism/plugin-jsdoc": "file:../packages/plugin-jsdoc",

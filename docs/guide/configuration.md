@@ -77,13 +77,11 @@ Plugins are registered in order. Each is activated during the build pipeline and
 ```typescript
 import { defineConfig } from 'ng-prism';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
-import { a11yPlugin } from '@ng-prism/plugin-a11y';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
   plugins: [
     jsDocPlugin(),
-    a11yPlugin({ runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa'] } }),
     figmaPlugin(),
   ],
 });

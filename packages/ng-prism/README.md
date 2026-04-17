@@ -147,10 +147,11 @@ export class TableComponent { ... }
 | Plugin | Package | Description |
 |---|---|---|
 | JSDoc | `@ng-prism/plugin-jsdoc` | API documentation from JSDoc comments |
-| A11y | `@ng-prism/plugin-a11y` | axe-core accessibility audit per variant |
 | Figma | `@ng-prism/plugin-figma` | Figma design embed + visual diff |
 | Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector |
 | Perf | `@ng-prism/plugin-perf` | Render performance profiling |
+
+> **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
 
 ## Documentation
 

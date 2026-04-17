@@ -36,7 +36,7 @@ Array of `NgPrismPlugin` objects to activate. Plugins run in registration order 
 
 ```typescript
 export default defineConfig({
-  plugins: [jsDocPlugin(), a11yPlugin(), figmaPlugin()],
+  plugins: [jsDocPlugin(), figmaPlugin()],
 });
 ```
 

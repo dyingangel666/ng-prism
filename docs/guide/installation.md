@@ -117,7 +117,7 @@ Some features require additional peer dependencies:
 | Package | Required for |
 |---------|-------------|
 | `highlight.js` + `ngx-highlightjs` | Code snippet highlighting in the renderer |
-| `axe-core` | `@ng-prism/plugin-a11y` |
+| `axe-core` | Built-in accessibility auditing |
 
 Install them only if you use those features:
 

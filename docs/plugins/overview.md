@@ -21,13 +21,11 @@ Install the plugin package and register it in your config:
 // prism.config.ts
 import { defineConfig } from 'ng-prism';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
-import { a11yPlugin } from '@ng-prism/plugin-a11y';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
   plugins: [
     jsDocPlugin(),
-    a11yPlugin(),
     figmaPlugin(),
   ],
 });
@@ -40,10 +38,11 @@ Plugins run in registration order during build-time hooks and are activated in o
 | Package | Description |
 |---------|-------------|
 | [`@ng-prism/plugin-jsdoc`](plugins/jsdoc.md) | Extracts JSDoc comments from source and renders an API documentation panel |
-| [`@ng-prism/plugin-a11y`](plugins/a11y.md) | Runs axe-core accessibility audits per variant and displays violations |
 | [`@ng-prism/plugin-figma`](plugins/figma.md) | Embeds Figma designs as an interactive panel for visual comparison |
 | [`@ng-prism/plugin-box-model`](plugins/box-model.md) | Overlays CSS box model dimensions on the rendered component |
 | [`@ng-prism/plugin-perf`](plugins/perf.md) | Profiles render and re-render timing via the Performance API |
+
+> **Note:** Accessibility auditing (axe-core, keyboard navigation, ARIA tree, screen reader simulation) is built into ng-prism core. No plugin needed.
 
 ## Writing Your Own Plugin
 
