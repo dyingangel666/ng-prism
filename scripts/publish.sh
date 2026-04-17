@@ -21,11 +21,11 @@ RED='\033[0;31m'
 DIM='\033[2m'
 RESET='\033[0m'
 
-info()  { echo -e "${BLUE}▸${RESET} $1"; }
-ok()    { echo -e "${GREEN}✔${RESET} $1"; }
-warn()  { echo -e "${YELLOW}⚠${RESET} $1"; }
-err()   { echo -e "${RED}✘${RESET} $1"; }
-header(){ echo -e "\n${VIOLET}━━━ $1 ━━━${RESET}\n"; }
+info()  { echo -e "${BLUE}▸${RESET} $1" >&2; }
+ok()    { echo -e "${GREEN}✔${RESET} $1" >&2; }
+warn()  { echo -e "${YELLOW}⚠${RESET} $1" >&2; }
+err()   { echo -e "${RED}✘${RESET} $1" >&2; }
+header(){ echo -e "\n${VIOLET}━━━ $1 ━━━${RESET}\n" >&2; }
 
 # ─── Current version ───
 current_version() {
