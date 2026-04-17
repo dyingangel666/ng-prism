@@ -38,5 +38,3 @@
   - [How the Scanner Works](architecture/scanner.md)
   - [Build Pipeline](architecture/pipeline.md)
   - [Plugin Hooks](architecture/plugin-hooks.md)
-
-- **[ADRs](adr/README.md)**
