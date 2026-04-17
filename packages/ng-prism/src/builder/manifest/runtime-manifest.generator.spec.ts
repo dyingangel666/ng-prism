@@ -81,10 +81,10 @@ const THEMED_DIRECTIVE: ScannedComponent = {
 };
 
 describe('generateRuntimeManifest', () => {
-  it('should generate the type import from ng-prism/plugin', () => {
+  it('should generate the type import from @ng-prism/core/plugin', () => {
     const source = generateRuntimeManifest({ components: [BUTTON], libraryImportPath: 'my-lib' });
 
-    expect(source).toContain("import type { RuntimeManifest } from 'ng-prism/plugin';");
+    expect(source).toContain("import type { RuntimeManifest } from '@ng-prism/core/plugin';");
   });
 
   it('should generate named imports from the library', () => {
