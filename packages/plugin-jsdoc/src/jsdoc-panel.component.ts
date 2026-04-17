@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { Highlight } from 'ngx-highlightjs';
-import type { InputMeta, OutputMeta } from 'ng-prism/plugin';
+import type { InputMeta, OutputMeta } from '@ng-prism/core/plugin';
 import type { JsDocData, MethodDoc } from './jsdoc.types.js';
 
 @Component({

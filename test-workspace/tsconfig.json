@@ -15,10 +15,10 @@
       "dom"
     ],
     "paths": {
-      "ng-prism": [
+      "@ng-prism/core": [
         "node_modules/ng-prism"
       ],
-      "ng-prism/*": [
+      "@ng-prism/core/*": [
         "node_modules/ng-prism/*"
       ],
       "ng-prism.config": [

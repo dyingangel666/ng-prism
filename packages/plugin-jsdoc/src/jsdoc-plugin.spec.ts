@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { jsDocPlugin } from './jsdoc-plugin.js';
-import type { ScannedComponent } from 'ng-prism/plugin';
+import type { ScannedComponent } from '@ng-prism/core/plugin';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/documented-button.ts');
 

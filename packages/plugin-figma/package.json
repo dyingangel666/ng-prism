@@ -3,7 +3,7 @@
   "version": "21.0.0",
   "description": "Figma design embed panel for ng-prism.",
   "keywords": [
-    "ng-prism",
+    "@ng-prism/core",
     "figma",
     "plugin",
     "angular",
@@ -27,10 +27,10 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "ng-prism": ">=21.0.0",
     "@angular/core": ">=20.0.0",
     "html2canvas": ">=1.4.0",
-    "pixelmatch": ">=6.0.0"
+    "pixelmatch": ">=6.0.0",
+    "@ng-prism/core": ">=21.0.0"
   },
   "peerDependenciesMeta": {
     "html2canvas": {
@@ -41,7 +41,7 @@
     }
   },
   "devDependencies": {
-    "ng-prism": "*"
+    "@ng-prism/core": "*"
   },
   "dependencies": {
     "tslib": "^2.3.0"

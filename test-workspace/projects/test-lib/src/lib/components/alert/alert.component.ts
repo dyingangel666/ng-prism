@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, model, output, ViewEncapsulation } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 export type AlertSeverityType = 'info' | 'success' | 'warning' | 'error';
 

@@ -1,5 +1,5 @@
 import { signal, computed } from '@angular/core';
-import type { PrismRendererHooks } from 'ng-prism/plugin';
+import type { PrismRendererHooks } from '@ng-prism/core/plugin';
 
 export interface HeapSnapshot {
   label: string;

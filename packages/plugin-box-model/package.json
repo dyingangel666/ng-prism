@@ -3,7 +3,7 @@
   "version": "21.0.0",
   "description": "CSS box model inspector for ng-prism.",
   "keywords": [
-    "ng-prism",
+    "@ng-prism/core",
     "box-model",
     "inspector",
     "plugin",
@@ -28,12 +28,12 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "ng-prism": ">=21.0.0",
     "@angular/core": ">=20.0.0",
-    "rxjs": ">=7.0.0"
+    "rxjs": ">=7.0.0",
+    "@ng-prism/core": ">=21.0.0"
   },
   "devDependencies": {
-    "ng-prism": "*"
+    "@ng-prism/core": "*"
   },
   "dependencies": {
     "tslib": "^2.3.0"

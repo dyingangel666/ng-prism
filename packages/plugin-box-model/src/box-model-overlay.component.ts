@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
-import { PrismRendererService } from 'ng-prism';
+import { PrismRendererService } from '@ng-prism/core';
 import { getBoxModel } from './box-model-utils.js';
 import { BoxModelStateService } from './box-model-state.service.js';
 

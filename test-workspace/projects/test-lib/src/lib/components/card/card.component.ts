@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 /**
  * A versatile card container with optional header, image, and action footer.

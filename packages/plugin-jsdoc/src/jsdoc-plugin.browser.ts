@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 
 export function jsDocPlugin(): NgPrismPlugin {
   return {

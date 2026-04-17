@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { FIGMA_PLUGIN_CONFIG, type FigmaPluginOptions } from './figma-config.token.js';
 import { FigmaPanelComponent } from './figma-panel.component.js';
 

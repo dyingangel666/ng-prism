@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, model, output, ViewEncapsulation } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 /**
  * A range slider input for selecting numeric values within a defined range.

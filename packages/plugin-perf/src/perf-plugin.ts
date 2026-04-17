@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { scanBundle } from './bundle/bundle-scanner.js';
 import type { PerfPluginOptions } from './perf.types.js';
 

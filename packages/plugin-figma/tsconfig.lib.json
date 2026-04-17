@@ -10,8 +10,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
     "paths": {
-      "ng-prism": ["../ng-prism/dist/index.d.ts"],
-      "ng-prism/*": ["../ng-prism/dist/*/index.d.ts"]
+      "@ng-prism/core": ["../ng-prism/dist/index.d.ts"],
+      "@ng-prism/core/*": ["../ng-prism/dist/*/index.d.ts"]
     }
   },
   "angularCompilerOptions": {

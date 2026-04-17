@@ -31,7 +31,7 @@ import { Subscription } from 'rxjs';
 import { ColorPickerChangeEvent } from './typings/color-picker-change-event';
 import { ColorPickerUtils } from './typings/color-picker.utils';
 import { ColorPickerColorInterface } from './typings/color.interface';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Color Picker',

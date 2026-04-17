@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { extractJsDocData } from './jsdoc-extractor.js';
 
 export function jsDocPlugin(): NgPrismPlugin {

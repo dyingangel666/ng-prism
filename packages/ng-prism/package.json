@@ -1,5 +1,5 @@
 {
-  "name": "ng-prism",
+  "name": "@ng-prism/core",
   "version": "21.0.0",
   "description": "Lightweight Angular-native component showcase — no story files needed.",
   "keywords": [

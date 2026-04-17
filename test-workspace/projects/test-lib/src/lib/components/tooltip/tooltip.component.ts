@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, signal, ViewEncapsulation } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 export type TooltipPositionType = 'top' | 'bottom' | 'left' | 'right';
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { PrismNavigationService, PrismRendererService } from 'ng-prism';
+import { PrismNavigationService, PrismRendererService } from '@ng-prism/core';
 import { FIGMA_PLUGIN_CONFIG } from '../figma-config.token.js';
 import { type DiffMode, type DiffResult, type DiffState, extractFileKey, parseFigmaMeta } from './figma-diff.types.js';
 

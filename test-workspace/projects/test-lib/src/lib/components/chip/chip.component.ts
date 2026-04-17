@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, ViewEncapsulation } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 /**
  * A compact chip element for tags, filters, or selections with optional remove action.

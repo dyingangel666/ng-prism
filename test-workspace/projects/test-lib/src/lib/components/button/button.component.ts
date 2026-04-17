@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { Showcase } from 'ng-prism';
+import { Showcase } from '@ng-prism/core';
 
 export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-only';
 

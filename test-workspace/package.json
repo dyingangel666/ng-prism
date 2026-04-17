@@ -33,8 +33,8 @@
     "@types/node": "^25.5.0",
     "axe-core": "^4.10.0",
     "highlight.js": "^11.11.1",
-    "ng-prism": "file:../packages/ng-prism",
     "ngx-highlightjs": "^14.0.0",
-    "typescript": "~5.9.0"
+    "typescript": "~5.9.0",
+    "@ng-prism/core": "file:../packages/ng-prism"
   }
 }

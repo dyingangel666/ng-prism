@@ -3,7 +3,7 @@
   "version": "21.0.0",
   "description": "Performance profiling panel for ng-prism — bundle size, render time, memory footprint.",
   "keywords": [
-    "ng-prism",
+    "@ng-prism/core",
     "performance",
     "profiling",
     "plugin",
@@ -29,12 +29,12 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "ng-prism": ">=21.0.0",
     "@angular/core": ">=20.0.0",
-    "typescript": ">=5.0.0"
+    "typescript": ">=5.0.0",
+    "@ng-prism/core": ">=21.0.0"
   },
   "devDependencies": {
-    "ng-prism": "*"
+    "@ng-prism/core": "*"
   },
   "dependencies": {
     "tslib": "^2.3.0"

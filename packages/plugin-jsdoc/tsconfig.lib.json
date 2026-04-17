@@ -9,8 +9,8 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
     "paths": {
-      "ng-prism": ["../ng-prism/dist/index.d.ts"],
-      "ng-prism/*": ["../ng-prism/dist/*/index.d.ts"]
+      "@ng-prism/core": ["../ng-prism/dist/index.d.ts"],
+      "@ng-prism/core/*": ["../ng-prism/dist/*/index.d.ts"]
     }
   },
   "angularCompilerOptions": {

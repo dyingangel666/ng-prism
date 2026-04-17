@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from 'ng-prism/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import type { PerfPluginOptions } from './perf.types.js';
 
 export function perfPlugin(_options?: PerfPluginOptions): NgPrismPlugin {
