@@ -2,7 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
 import type { RuntimeComponent, RuntimeManifest, NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
-import { PrismManifestService } from './prism-manifest.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismPanelService } from './prism-panel.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';

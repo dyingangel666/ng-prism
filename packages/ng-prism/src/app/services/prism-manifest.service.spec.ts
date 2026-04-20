@@ -116,11 +116,11 @@ describe('PrismManifestService', () => {
 
     service.updateManifest({
       components: [],
-      pages: [{ id: 'intro', title: 'Intro', category: 'Docs', component: class {} as any }],
+      pages: [{ type: 'component', title: 'Intro', category: 'Docs', component: class {} as any }],
     });
 
     expect(service.pages()).toEqual([
-      { id: 'intro', title: 'Intro', category: 'Docs', component: expect.any(Function) },
+      { type: 'component', title: 'Intro', category: 'Docs', component: expect.any(Function) },
     ]);
   });
 });

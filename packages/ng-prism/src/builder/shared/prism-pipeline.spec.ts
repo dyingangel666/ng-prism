@@ -1,6 +1,7 @@
 import { mkdtempSync, cpSync, rmSync, existsSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import type { BuilderContext } from '@angular-devkit/architect';
 import { runPrismPipeline, createPipelineState } from './prism-pipeline.js';
 
 const FIXTURES_DIR = join(__dirname, '..', 'scanner', '__fixtures__');
@@ -29,7 +30,7 @@ function createMockContext(workspaceRoot: string, sourceRoot?: string) {
     getProjectMetadata: jest.fn().mockResolvedValue(
       sourceRoot !== undefined ? { sourceRoot } : {},
     ),
-  } as never;
+  } as unknown as BuilderContext;
 }
 
 describe('runPrismPipeline integration', () => {

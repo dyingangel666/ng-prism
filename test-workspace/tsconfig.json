@@ -10,23 +10,12 @@
     "skipLibCheck": true,
     "importHelpers": true,
     "sourceMap": true,
-    "lib": [
-      "ES2022",
-      "dom"
-    ],
+    "lib": ["ES2022", "dom"],
     "paths": {
-      "@ng-prism/core": [
-        "node_modules/ng-prism"
-      ],
-      "@ng-prism/core/*": [
-        "node_modules/ng-prism/*"
-      ],
-      "ng-prism.config": [
-        "ng-prism.config.ts"
-      ],
-      "test-lib": [
-        "projects/test-lib/src/public-api.ts"
-      ]
+      "@ng-prism/core": ["node_modules/ng-prism"],
+      "@ng-prism/core/*": ["node_modules/ng-prism/*"],
+      "ng-prism.config": ["ng-prism.config.ts"],
+      "test-lib": ["projects/test-lib/src/public-api.ts"]
     }
   },
   "angularCompilerOptions": {
@@ -34,5 +23,10 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "references": [
+    {
+      "path": "../packages/ng-prism"
+    }
+  ]
 }

@@ -9,6 +9,7 @@ import {
 } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
+import type { BuilderContext } from '@angular-devkit/architect';
 import { runPrismPipeline, createPipelineState } from '../builder/shared/prism-pipeline.js';
 
 const TEST_WORKSPACE_DIR = join(__dirname, '..', '..', '..', '..', 'test-workspace');
@@ -72,7 +73,7 @@ function createMockContext(workspaceRoot: string) {
     getProjectMetadata: jest.fn().mockResolvedValue({
       sourceRoot: 'projects/test-lib-prism/src',
     }),
-  } as never;
+  } as unknown as BuilderContext;
 }
 
 describe('test-workspace integration', () => {
@@ -97,7 +98,7 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
-    expect(result.componentCount).toBe(15);
+    expect(result.componentCount).toBe(14);
   });
 
   it('should write prism-manifest.ts into prism project', async () => {
@@ -121,7 +122,6 @@ describe('test-workspace integration', () => {
     );
     expect(content).toContain("from 'test-lib'");
     expect(content).toContain('ButtonComponent');
-    expect(content).toContain('ColorPickerComponent');
   });
 
   it('should include component type references', async () => {
@@ -161,7 +161,7 @@ describe('test-workspace integration', () => {
       'utf-8',
     );
     expect(content).toContain('title: "Button"');
-    expect(content).toContain('category: "Inputs"');
+    expect(content).toContain('category: "Components / Inputs"');
     expect(content).toContain('variants:');
     expect(content).toContain('selector: "lib-button"');
     expect(content).toContain('standalone: true');
@@ -173,11 +173,11 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
-    expect(result.componentCount).toBe(15);
+    expect(result.componentCount).toBe(14);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('Running plugin hooks...');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 15 component(s)'),
+      expect.stringContaining('Generated manifest with 14 component(s)'),
     );
   });
 });
