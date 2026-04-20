@@ -383,28 +383,33 @@
     }
 
     /* ——————————————————————————————————————
-       Version badge
+       Version badge — anchored to GitHub corner
     —————————————————————————————————————— */
+    .github-corner {
+      position: relative;
+    }
     .prism-version-badge {
-      position: fixed;
-      top: 8px;
-      right: 84px;
-      z-index: 100;
-      padding: 3px 10px;
-      font-size: 12px;
+      position: absolute;
+      top: 46px;
+      right: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
       font-weight: 600;
       font-family: var(--code-font-family);
-      color: var(--prism-violet) !important;
-      background: rgba(109,40,217,0.08);
-      border: 1px solid rgba(109,40,217,0.15);
-      border-radius: 12px;
+      color: #fff !important;
+      background: var(--prism-violet);
+      border-radius: 8px;
       text-decoration: none !important;
       letter-spacing: 0.02em;
-      transition: background 0.15s, border-color 0.15s;
+      transform: rotate(45deg);
+      transform-origin: center;
+      z-index: 100;
+      transition: background 0.15s;
+      white-space: nowrap;
+      line-height: 1.4;
     }
     .prism-version-badge:hover {
-      background: rgba(109,40,217,0.14);
-      border-color: rgba(109,40,217,0.3);
+      background: var(--prism-violet-deep);
     }
 
     /* ——————————————————————————————————————
@@ -447,12 +452,17 @@
     fetch('https://registry.npmjs.org/@ng-prism/core/latest')
       .then(r => r.json())
       .then(d => {
-        const el = document.createElement('a');
-        el.href = 'https://www.npmjs.com/package/@ng-prism/core';
-        el.target = '_blank';
-        el.textContent = 'v' + d.version;
-        el.className = 'prism-version-badge';
-        document.body.appendChild(el);
+        const poll = setInterval(() => {
+          const corner = document.querySelector('.github-corner');
+          if (!corner) return;
+          clearInterval(poll);
+          const el = document.createElement('a');
+          el.href = 'https://www.npmjs.com/package/@ng-prism/core';
+          el.target = '_blank';
+          el.textContent = 'v' + d.version;
+          el.className = 'prism-version-badge';
+          corner.appendChild(el);
+        }, 100);
       })
       .catch(() => {});
   </script>
