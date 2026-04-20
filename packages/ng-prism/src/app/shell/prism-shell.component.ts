@@ -208,8 +208,10 @@ export class PrismShellComponent {
   ]);
 
   protected readonly shellStyle = computed(() => {
-    const base = this.themeService.isDark() ? PRISM_DARK_THEME : PRISM_LIGHT_THEME;
-    const merged = { ...base, ...(this.config.theme ?? {}) };
+    const isDark = this.themeService.isDark();
+    const base = isDark ? PRISM_DARK_THEME : PRISM_LIGHT_THEME;
+    const specific = isDark ? (this.config.darkTheme ?? {}) : (this.config.lightTheme ?? {});
+    const merged = { ...base, ...specific, ...(this.config.theme ?? {}) };
     const tokens = Object.entries(merged).map(([k, v]) => `${k}: ${v}`).join('; ');
     const sw = this.layout.sidebarVisible() ? this.layout.sidebarWidth() : 0;
     const ph = this.layout.addonsOrientation() === 'bottom' ? this.layout.panelHeight() : 0;
