@@ -1,4 +1,4 @@
-- **[Live Demo](demo/ ':target=_blank')**
+- **[Live Demo](/ng-prism/demo/ ':ignore :target=_blank')**
 
 - **Getting Started**
   - [Introduction](/)
