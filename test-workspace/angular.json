@@ -36,7 +36,10 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/test-lib-prism",
+            "outputPath": {
+              "base": "dist/test-lib-prism",
+              "browser": ""
+            },
             "index": "projects/test-lib-prism/src/index.html",
             "browser": "projects/test-lib-prism/src/main.ts",
             "tsConfig": "projects/test-lib-prism/tsconfig.app.json",

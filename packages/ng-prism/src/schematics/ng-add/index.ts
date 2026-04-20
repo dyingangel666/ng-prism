@@ -114,7 +114,10 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         build: {
           builder: '@angular-devkit/build-angular:application',
           options: {
-            outputPath: `dist/${prismProjectName}`,
+            outputPath: {
+              base: `dist/${prismProjectName}`,
+              browser: '',
+            },
             index: `${prismSrc}/index.html`,
             browser: `${prismSrc}/main.ts`,
             tsConfig: `${prismRoot}/tsconfig.app.json`,

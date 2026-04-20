@@ -122,6 +122,10 @@ describe('ng-add schematic', () => {
     const opts = buildTarget['options'] as Record<string, unknown>;
     expect(opts['entryPoint']).toBe('projects/my-lib/src/public-api.ts');
     expect(opts['outputPath']).toBe('dist/my-lib-prism');
+
+    const prismAppBuild = workspace.projects['my-lib-prism'].architect['build'];
+    const prismOpts = prismAppBuild['options'] as Record<string, unknown>;
+    expect(prismOpts['outputPath']).toEqual({ base: 'dist/my-lib-prism', browser: '' });
   });
 
   it('should create ng-prism.config.ts at workspace root', async () => {

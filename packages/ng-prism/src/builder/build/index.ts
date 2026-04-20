@@ -18,7 +18,7 @@ async function createBuildBuilder(
 
   const run = await context.scheduleTarget(
     { project: options.prismProject, target: 'build', configuration: '' },
-    options.outputPath ? { outputPath: options.outputPath } : {},
+    options.outputPath ? { outputPath: { base: options.outputPath, browser: '' } } : {},
   );
 
   return run.result;
