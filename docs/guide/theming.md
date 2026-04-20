@@ -21,6 +21,29 @@ export default defineConfig({
 
 Values in `theme` are merged on top of the built-in defaults. You only need to specify the properties you want to change.
 
+## Theme-Specific Overrides
+
+Use `darkTheme` and `lightTheme` to set values that only apply in one mode:
+
+```typescript
+export default defineConfig({
+  theme: {
+    '--prism-primary': '#0056CE',
+    '--prism-font-sans': "'Inter', system-ui, sans-serif",
+  },
+  darkTheme: {
+    '--prism-bg': '#0a1628',
+    '--prism-bg-surface': '#112240',
+  },
+  lightTheme: {
+    '--prism-bg': '#ffffff',
+    '--prism-bg-surface': '#f5f6f7',
+  },
+});
+```
+
+**Merge order:** `built-in defaults → darkTheme/lightTheme → theme`. The `theme` property always wins when the same key appears in both.
+
 ## Custom Stylesheet
 
 For more complex theming (custom fonts, additional utilities, SCSS variables), point `themeStylesheet` at a file in your showcase app:

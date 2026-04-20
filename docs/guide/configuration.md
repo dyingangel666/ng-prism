@@ -70,6 +70,24 @@ export default defineConfig({
 
 See [Theming](guide/theming.md) for the full list of available properties.
 
+## Branding
+
+Replace the default ng-prism logo and title in the header:
+
+```typescript
+export default defineConfig({
+  title: 'My Component Library',
+  logo: {
+    light: 'assets/logo-dark.svg',
+    dark: 'assets/logo-light.svg',
+  },
+});
+```
+
+If only one logo variant is provided, it is used for both themes.
+
+> **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
+
 ## Plugins
 
 Plugins are registered in order. Each is activated during the build pipeline and at runtime:
