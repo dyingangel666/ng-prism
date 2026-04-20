@@ -97,7 +97,7 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
-    expect(result.componentCount).toBe(14);
+    expect(result.componentCount).toBe(15);
   });
 
   it('should write prism-manifest.ts into prism project', async () => {
@@ -173,11 +173,11 @@ describe('test-workspace integration', () => {
 
     const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
-    expect(result.componentCount).toBe(14);
+    expect(result.componentCount).toBe(15);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('Running plugin hooks...');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 14 component(s)'),
+      expect.stringContaining('Generated manifest with 15 component(s)'),
     );
   });
 });
