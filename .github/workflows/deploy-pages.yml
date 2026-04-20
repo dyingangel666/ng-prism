@@ -36,9 +36,16 @@ jobs:
           npm_config_registry: https://registry.npmjs.org
         run: npm install
 
-      - name: Build demo app
+      - name: Set base-href for demo and build
         working-directory: test-workspace
-        run: npx ng run test-lib:prism-build -- --base-href /ng-prism/demo/
+        run: |
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('angular.json','utf-8'));
+            cfg.projects['test-lib-prism'].architect.build.options.baseHref = '/ng-prism/demo/';
+            fs.writeFileSync('angular.json', JSON.stringify(cfg, null, 2));
+          "
+          npx ng run test-lib:prism-build
 
       - name: Assemble site
         run: |
