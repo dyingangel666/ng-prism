@@ -88,6 +88,17 @@ If only one logo variant is provided, it is used for both themes.
 
 > **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
 
+## Category Groups
+
+Organize categories into collapsible parent groups using ` / ` in the `@Showcase` category:
+
+```typescript
+@Showcase({ title: 'Button', category: 'Components / Atoms' })
+@Showcase({ title: 'Dialog', category: 'Components / Overlays' })
+```
+
+Categories without a separator remain top-level. See [Showcase Decorator](guide/showcase-decorator.md#category) for details.
+
 ## Plugins
 
 Plugins are registered in order. Each is activated during the build pipeline and at runtime:

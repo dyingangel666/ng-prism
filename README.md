@@ -2,7 +2,7 @@
 
 Lightweight, Angular-native component showcase tool. Annotate components with `@Showcase` — no separate story files needed.
 
-[![Angular](https://img.shields.io/badge/Angular-21+-dd0031)](https://angular.dev)
+[![Angular](https://img.shields.io/badge/Angular-19+-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 

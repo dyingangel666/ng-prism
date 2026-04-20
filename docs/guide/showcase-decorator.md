@@ -51,6 +51,16 @@ Groups the component in the sidebar. Components without a category land in "Unca
 @Showcase({ title: 'Card', category: 'Molecules' })
 ```
 
+Use ` / ` (space-slash-space) to nest categories under a parent group:
+
+```typescript
+@Showcase({ title: 'Button', category: 'Components / Atoms' })
+@Showcase({ title: 'Dialog', category: 'Components / Overlays' })
+@Showcase({ title: 'Color Tokens', category: 'Foundations' })
+```
+
+This creates a collapsible **Components** group in the sidebar containing **Atoms** and **Overlays** as sub-categories, while **Foundations** remains a top-level category.
+
 ### `categoryOrder`
 
 Controls the order of this _category_ in the sidebar. Lower numbers appear first. Categories without this property sort alphabetically after ordered ones.

@@ -1,35 +1,77 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 
 const STORAGE_KEY = 'ng-prism-sidebar-expanded';
 
+interface SidebarCategory {
+  name: string;
+  items: NavigationItem[];
+}
+
+interface SidebarGroup {
+  name: string | null;
+  categories: SidebarCategory[];
+}
+
 @Component({
   selector: 'prism-sidebar',
   standalone: true,
+  imports: [NgTemplateOutlet],
   template: `
     <nav class="prism-sidebar">
-      @for (entry of entries(); track entry[0]; let idx = $index) {
-        <div class="prism-sidebar__category">
+      @for (group of groups(); track group.name ?? '__ungrouped'; let gi = $index) {
+        @if (group.name) {
+          <div class="prism-sidebar__group">
+            <button
+              class="prism-sidebar__group-title"
+              (click)="toggle('group:' + group.name, gi)"
+            >
+              <svg
+                class="prism-sidebar__chevron"
+                [class.prism-sidebar__chevron--expanded]="isExpanded('group:' + group.name, gi)"
+                viewBox="0 0 16 16"
+              >
+                <path d="M6 4l4 4-4 4"/>
+              </svg>
+              {{ group.name }}
+            </button>
+            @if (isExpanded('group:' + group.name, gi)) {
+              @for (cat of group.categories; track cat.name) {
+                <ng-container *ngTemplateOutlet="categoryTpl; context: { cat, nested: true }" />
+              }
+            }
+          </div>
+        } @else {
+          @for (cat of group.categories; track cat.name) {
+            <ng-container *ngTemplateOutlet="categoryTpl; context: { cat, nested: false }" />
+          }
+        }
+      }
+
+      <ng-template #categoryTpl let-cat="cat" let-nested="nested">
+        <div class="prism-sidebar__category" [class.prism-sidebar__category--nested]="nested">
           <button
             class="prism-sidebar__category-title"
-            (click)="toggleCategory(entry[0], idx)"
+            [class.prism-sidebar__category-title--nested]="nested"
+            (click)="toggle('cat:' + cat.name, 0)"
           >
             <svg
               class="prism-sidebar__chevron"
-              [class.prism-sidebar__chevron--expanded]="isExpanded(entry[0], idx)"
+              [class.prism-sidebar__chevron--expanded]="isExpanded('cat:' + cat.name, 0)"
               viewBox="0 0 16 16"
-              fill="currentColor"
             >
               <path d="M6 4l4 4-4 4"/>
             </svg>
-            {{ entry[0] }}
+            {{ cat.name }}
           </button>
-          @if (isExpanded(entry[0], idx)) {
-            @for (item of entry[1]; track itemKey(item)) {
+          @if (isExpanded('cat:' + cat.name, 0)) {
+            @for (item of cat.items; track itemKey(item)) {
               <button
                 class="prism-sidebar__item"
                 [class.prism-sidebar__item--active]="isActive(item)"
+                [class.prism-sidebar__item--nested]="nested"
                 [class.prism-sidebar__item--page]="item.kind === 'page'"
                 (click)="onSelect(item)"
               >
@@ -41,7 +83,7 @@ const STORAGE_KEY = 'ng-prism-sidebar-expanded';
             }
           }
         </div>
-      }
+      </ng-template>
     </nav>
   `,
   styles: `
@@ -56,6 +98,35 @@ const STORAGE_KEY = 'ng-prism-sidebar-expanded';
     .prism-sidebar::-webkit-scrollbar { width: 4px; }
     .prism-sidebar::-webkit-scrollbar-track { background: transparent; }
     .prism-sidebar::-webkit-scrollbar-thumb { background: var(--prism-border-strong); border-radius: 2px; }
+
+    .prism-sidebar__group { margin-bottom: 2px; }
+
+    .prism-sidebar__group-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      margin: 0;
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--prism-text-2);
+      font-family: var(--prism-font-sans);
+      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
+      border: none;
+      border-left: 2px solid color-mix(in srgb, var(--prism-primary) 50%, transparent);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+    }
+
+    .prism-sidebar__group-title:hover {
+      background: color-mix(in srgb, var(--prism-primary) 16%, transparent);
+      color: var(--prism-text);
+      border-left-color: var(--prism-primary);
+    }
 
     .prism-sidebar__category { margin-bottom: 2px; }
 
@@ -86,6 +157,18 @@ const STORAGE_KEY = 'ng-prism-sidebar-expanded';
       border-left-color: var(--prism-primary);
     }
 
+    .prism-sidebar__category-title--nested {
+      padding-left: 28px;
+      font-weight: 500;
+      font-size: 11px;
+      background: color-mix(in srgb, var(--prism-primary) 4%, transparent);
+      border-left-color: color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    }
+
+    .prism-sidebar__category-title--nested:hover {
+      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
+    }
+
     .prism-sidebar__chevron {
       width: 10px;
       height: 10px;
@@ -99,6 +182,7 @@ const STORAGE_KEY = 'ng-prism-sidebar-expanded';
       opacity: 0.5;
     }
 
+    .prism-sidebar__group-title:hover .prism-sidebar__chevron,
     .prism-sidebar__category-title:hover .prism-sidebar__chevron {
       opacity: 0.8;
     }
@@ -122,6 +206,10 @@ const STORAGE_KEY = 'ng-prism-sidebar-expanded';
       border-left: 2px solid transparent;
       text-align: left;
       transition: background 0.1s, color 0.1s, border-color 0.1s;
+    }
+
+    .prism-sidebar__item--nested {
+      padding-left: 36px;
     }
 
     .prism-sidebar__item:hover {
@@ -151,30 +239,61 @@ export class PrismSidebarComponent {
 
   private readonly expandedSet = signal<Set<string>>(this.loadExpanded());
 
-  protected readonly entries = computed(() =>
-    [...this.navigationService.categoryTree().entries()]);
+  protected readonly groups = computed<SidebarGroup[]>(() => {
+    const tree = this.navigationService.categoryTree();
+    const groupMap = new Map<string | null, SidebarCategory[]>();
 
-  protected isExpanded(category: string, index: number): boolean {
+    for (const [fullCategory, items] of tree.entries()) {
+      const sepIdx = fullCategory.indexOf(' / ');
+      let groupName: string | null;
+      let catName: string;
+
+      if (sepIdx !== -1) {
+        groupName = fullCategory.substring(0, sepIdx).trim();
+        catName = fullCategory.substring(sepIdx + 3).trim();
+      } else {
+        groupName = null;
+        catName = fullCategory;
+      }
+
+      const cats = groupMap.get(groupName) ?? [];
+      cats.push({ name: catName, items });
+      groupMap.set(groupName, cats);
+    }
+
+    const result: SidebarGroup[] = [];
+    const ungrouped = groupMap.get(null);
+    if (ungrouped) {
+      result.push({ name: null, categories: ungrouped });
+      groupMap.delete(null);
+    }
+    for (const [name, categories] of groupMap.entries()) {
+      result.push({ name, categories });
+    }
+    return result;
+  });
+
+  protected isExpanded(key: string, index: number): boolean {
     const set = this.expandedSet();
-    if (set.has(category)) return true;
-    if (set.has(`__collapsed:${category}`)) return false;
+    if (set.has(key)) return true;
+    if (set.has(`__collapsed:${key}`)) return false;
     return index === 0;
   }
 
-  protected toggleCategory(category: string, index: number): void {
+  protected toggle(key: string, index: number): void {
     this.expandedSet.update(prev => {
       const next = new Set(prev);
-      const collapsedKey = `__collapsed:${category}`;
-      if (next.has(category)) {
-        next.delete(category);
+      const collapsedKey = `__collapsed:${key}`;
+      if (next.has(key)) {
+        next.delete(key);
         next.add(collapsedKey);
       } else if (next.has(collapsedKey)) {
         next.delete(collapsedKey);
-        next.add(category);
+        next.add(key);
       } else if (index === 0) {
         next.add(collapsedKey);
       } else {
-        next.add(category);
+        next.add(key);
       }
       this.saveExpanded(next);
       return next;
