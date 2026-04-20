@@ -30,6 +30,12 @@ jobs:
       - name: Build ng-prism core + plugins
         run: npx nx run-many -t build --projects=ng-prism,plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf
 
+      - name: Install test-workspace deps
+        working-directory: test-workspace
+        env:
+          npm_config_registry: https://registry.npmjs.org
+        run: npm install
+
       - name: Build demo app
         working-directory: test-workspace
         run: npx ng run test-lib:prism-build -- --base-href /ng-prism/demo/
