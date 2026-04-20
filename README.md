@@ -159,7 +159,7 @@ npx docsify-cli serve docs
 
 ## Requirements
 
-- Angular >= 21
+- Angular >= 19
 - TypeScript >= 5.9
 - Components must use `input()` / `output()` signals
 

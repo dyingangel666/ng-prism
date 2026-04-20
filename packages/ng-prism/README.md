@@ -161,7 +161,7 @@ Full documentation with API reference, plugin guide, and advanced configuration:
 
 ## Requirements
 
-- Angular >= 21
+- Angular >= 19
 - TypeScript >= 5.9
 - Components must use `input()` / `output()` signals (not `@Input()` / `@Output()` decorators)
 

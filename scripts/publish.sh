@@ -157,7 +157,7 @@ publish_all() {
   done
 }
 
-# ─── Git tag + push ���──
+# ─── Git tag + push + GitHub release ───
 tag_and_push() {
   local version="$1"
 
@@ -172,9 +172,45 @@ tag_and_push() {
   if [[ "$answer" == "y" ]]; then
     git push origin main --tags
     ok "Pushed v$version to origin"
+
+    create_github_release "$version"
   else
     warn "Skipped push. Run manually: git push origin main --tags"
   fi
+}
+
+# ─── GitHub Release ───
+create_github_release() {
+  local version="$1"
+  local tag="v$version"
+
+  if ! command -v gh &>/dev/null; then
+    warn "gh CLI not found — skipping GitHub release"
+    return
+  fi
+
+  header "Creating GitHub release"
+
+  local prev_tag
+  prev_tag=$(git tag --sort=-v:refname | grep -E '^v[0-9]' | sed -n '2p')
+
+  local notes
+  if [[ -n "$prev_tag" ]]; then
+    notes=$(git log --pretty=format:"- %s" "$prev_tag..$tag" -- . ':!node_modules' | grep -v "^- release:")
+  else
+    notes=$(git log --pretty=format:"- %s" "$tag" -- . ':!node_modules' | head -20 | grep -v "^- release:")
+  fi
+
+  if [[ -z "$notes" ]]; then
+    notes="Release $tag"
+  fi
+
+  gh release create "$tag" \
+    --title "$tag" \
+    --notes "$notes" \
+    --latest
+
+  ok "GitHub release $tag created"
 }
 
 # ─── Main ───
