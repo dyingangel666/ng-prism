@@ -1,3 +1,5 @@
+- **[Live Demo](demo/ ':target=_blank')**
+
 - **Getting Started**
   - [Introduction](/)
   - [Installation & Setup](guide/installation.md)

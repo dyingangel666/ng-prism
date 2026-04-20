@@ -6,6 +6,8 @@ Lightweight, Angular-native component showcase tool. Annotate components with `@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
+**[Live Demo](https://dyingangel666.github.io/ng-prism/demo/)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
+
 ## Features
 
 - **Zero-config discovery** — TypeScript Compiler API scans your library at build time
@@ -144,18 +146,6 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 | Perf | `@ng-prism/plugin-perf` | Render performance profiling |
 
 > **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
-
-## Documentation
-
-Full documentation with guides, API reference, plugin development, and architecture:
-
-**[ng-prism Documentation](https://dyingangel666.github.io/ng-prism/)**
-
-Preview the docs locally:
-
-```bash
-npx docsify-cli serve docs
-```
 
 ## Requirements
 
