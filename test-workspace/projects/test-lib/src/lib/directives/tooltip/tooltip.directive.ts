@@ -5,7 +5,7 @@ export type TooltipDirectivePositionType = 'top' | 'bottom' | 'left' | 'right';
 
 @Showcase({
   title: 'Tooltip Directive',
-  category: 'Overlay',
+  category: 'Directives / Overlay',
   description: 'Attribute directive that adds a hover tooltip to any host element.',
   host: {
     selector: 'lib-button',

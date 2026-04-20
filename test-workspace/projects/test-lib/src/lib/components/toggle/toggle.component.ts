@@ -8,7 +8,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Toggle',
-  category: 'Inputs',
+  category: 'Components / Inputs',
   description: 'Binary toggle switch with optional label and disabled state.',
   variants: [
     { name: 'Default Off', inputs: { checked: false, label: 'Notifications' } },

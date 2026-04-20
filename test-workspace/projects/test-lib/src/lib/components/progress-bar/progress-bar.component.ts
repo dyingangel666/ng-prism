@@ -9,7 +9,7 @@ export type ProgressBarVariantType = 'default' | 'success' | 'warning' | 'error'
  */
 @Showcase({
   title: 'Progress Bar',
-  category: 'Feedback',
+  category: 'Components / Feedback',
   description: 'Horizontal progress indicator with semantic color variants and optional label.',
   variants: [
     { name: '25%', inputs: { value: 25, label: 'Uploading...' } },

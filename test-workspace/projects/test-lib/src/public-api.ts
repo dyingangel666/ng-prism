@@ -1,5 +1,4 @@
 export { ButtonComponent, type ButtonVariantType } from './lib/components/button/button.component.js';
-export { ColorPickerComponent } from './lib/components/color-picker/color-picker.component.js';
 export { ToggleComponent } from './lib/components/toggle/toggle.component.js';
 export { BadgeComponent, type BadgeVariantType } from './lib/components/badge/badge.component.js';
 export { AvatarComponent, type AvatarSizeType } from './lib/components/avatar/avatar.component.js';

@@ -7,7 +7,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Card',
-  category: 'Layout',
+  category: 'Components / Layout',
   description: 'Content card with optional title, subtitle, image placeholder, and interactive state.',
   variants: [
     { name: 'Basic', inputs: { title: 'Card Title', subtitle: 'A brief description of the content.' } },

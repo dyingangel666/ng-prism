@@ -8,7 +8,8 @@
     "build:all": "nx build ng-prism && nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf'",
     "test": "nx test ng-prism",
     "publish": "./scripts/publish.sh",
-    "test:workspace:setup": "nx build ng-prism --skip-nx-cache && cd test-workspace && npm install --prefer-online",
+    "test:workspace:setup": "nx build ng-prism",
+    "test:workspace:setup:nocache": "nx build ng-prism --skip-nx-cache && cd test-workspace && npm install --prefer-online",
     "test:workspace:serve": "cd test-workspace && ng run test-lib:prism",
     "test:workspace:clean": "cd test-workspace && rm -rf node_modules package-lock.json ng-prism.config.ts && git checkout -- angular.json package.json"
   },

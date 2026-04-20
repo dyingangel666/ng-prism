@@ -9,7 +9,7 @@ export type TooltipPositionType = 'top' | 'bottom' | 'left' | 'right';
  */
 @Showcase({
   title: 'Tooltip',
-  category: 'Overlay',
+  category: 'Components / Overlay',
   description: 'Hover-triggered tooltip with configurable position and text.',
   variants: [
     { name: 'Top', inputs: { text: 'Helpful hint', position: 'top', triggerLabel: 'Hover me' } },
