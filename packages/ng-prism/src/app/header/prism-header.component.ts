@@ -1,4 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import type { NgPrismConfig } from '../../plugin/plugin.types.js';
+import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
 import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.component.js';
@@ -10,6 +12,9 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
   template: `
     <header class="prism-header">
       <div class="prism-header__brand">
+        @if (logoUrl()) {
+          <img class="prism-header__logo-img" [src]="logoUrl()" [alt]="title()" />
+        } @else {
         <svg class="prism-header__logo-svg" viewBox="0 0 1600 1600" xmlns="http://www.w3.org/2000/svg">
           <path transform="translate(817,276)" d="m0 0h2l10 18 13 23 11 21 6 10v2h2l4 8 12 20 10 17 7 14 13 23 14 25 4 7 4 8v2h2l8 16 2 6h2l6 12 10 17 7 13 11 19 8 14 9 15 10 18v2h2l6 12v2h2l6 14v2h2l6 12 12 20 6 11 3 5 12 23 16 27 3 4 2 5 5 9v2h2l8 16 10 18 8 13 8 15 5 11 4 7 6 9 10 18 18 32 15 26 8 13 14 24 8 16 13 23 8 14 8 13 14 25 12 20 25 45 12 21 14 24 24 40v3h-10l-8-2-9-5-11-4-12-5-49-23v-2l-10-3-17-7v-2l-9-2-7-4-9-3-4-2v-2l-5-1-20-8-31-13v-2h-5v-2l-7-1-3-1v-2l-10-2-2-1v-2l-8-1v-2l-7-1-5-2v-2l-8-1-3-1v-2h-5v-2l-7-1-31-12v-2l-9-1-15-6-12-4-48-18-13-5v-2h-6l-41-16-29-10-7-3-17-6-28-11-35-12-5-2h-7l-6 2-3 4-1 6-7 12-10 11-9 11-7 7-9 11-14 15-11 12-7 9-12 12-7 8-10 11-9 11-12 13-9 11-9 10-9 11-12 14-8 11-7 10v3l-3 2h-275l-6-2 2-6 11-21 13-23 9-16 12-20 14-25 10-17 14-25 12-20 14-24 11-19 9-15 15-27 17-28 15-27 14-25 8-13 13-24 17-28 14-25 8-13 10-18 14-25 13-23 13-21 12-22 8-12 18-33 6-10 12-19 8-13 3-7 13-23 10-18 6-10 9-16 12-18 5-8 6-10 8-16 11-20 13-22 12-19 2-5h2l1-6 4-5 8-13h2l1-4 6-12 10-16 8-15 12-21z" fill="#FBF9FE"/>
           <path transform="translate(804,308)" d="m0 0 10 1 2 6v25l-1 46-2 133-2 76-2 67-3 8-2 9-7 10-9 10-8 9-10 13-12 16-8 10-7 11-8 11-7 10-6 10-9 14-12 20-11 16-11 17-8 11-16 24-11 16-7 11-6 8-9 14-8 10-6 10-12 16-7 11-16 24-8 11-8 12-7 9-6 9-8 9-6 7-8 5-9 5-36 18-21 9-10 7-18 8-10 6-16 8-19 10-12 6-10 6-14 6-19 10-17 10-10 8-1 3 7-2 17-10 16-8 19-9 16-9 16-8 42-22 45-22 31-16 10-4 9-5 13-5 16-8 34-16 18-8 19-9 21-9 17-8 17-9 28-13 33-15 5-2v3l-3 9-7 11-9 10-9 11-7 7-9 11-14 15-11 12-7 9-12 12-7 8-10 11-9 11-12 13-9 11-9 10-9 11-12 14-8 11-7 10v3l-3 2h-275l-6-2 2-6 11-21 13-23 9-16 12-20 14-25 10-17 14-25 12-20 14-24 11-19 9-15 15-27 17-28 15-27 14-25 8-13 13-24 17-28 14-25 8-13 10-18 14-25 13-23 13-21 12-22 8-12 18-33 6-10 12-19 8-13 3-7 13-23 10-18 6-10 9-16 12-18 5-8 6-10 8-16 11-20 13-22 7-11 1 2-8 15-12 20-7 12-1 3 6-2 4-1 16-24 10-19 6-12 8-13 4-9 4-14 2-1 3-9 5-11 3-6 4-5z" fill="#E13990"/>
@@ -162,7 +167,8 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
           <path transform="translate(836,889)" d="m0 0 1 4-7 6-2-1 6-5-4-3z" fill="#9A9EFC"/>
           <path transform="translate(931,813)" d="m0 0h1l2 15-2-2-3-8 1-4z" fill="#F0BAF4"/>
         </svg>
-        <span class="prism-header__logo-text">ng-prism</span>
+        }
+        <span class="prism-header__logo-text">{{ title() }}</span>
       </div>
       <div class="prism-header__search">
         <input
@@ -221,6 +227,12 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
     .prism-header__logo-svg {
       width: 60px;
       height: 60px;
+    }
+
+    .prism-header__logo-img {
+      height: 36px;
+      width: auto;
+      object-fit: contain;
     }
 
     .prism-header__logo-text {
@@ -282,6 +294,16 @@ import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.compo
   `,
 })
 export class PrismHeaderComponent {
+  private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
   protected readonly searchService = inject(PrismSearchService);
   protected readonly themeService = inject(PrismThemeService);
+
+  protected readonly logoUrl = computed(() => {
+    const logo = this.config.logo;
+    if (!logo) return null;
+    const isDark = this.themeService.isDark();
+    return (isDark ? (logo.dark ?? logo.light) : (logo.light ?? logo.dark)) ?? null;
+  });
+
+  protected readonly title = computed(() => this.config.title ?? 'ng-prism');
 }
