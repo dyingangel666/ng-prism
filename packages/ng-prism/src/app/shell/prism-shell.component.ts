@@ -45,6 +45,13 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
       <aside class="prism-shell__sidebar">
         <prism-sidebar />
       </aside>
+      <div class="prism-shell__powered-by">
+        <svg class="prism-shell__powered-by-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L4 14h16L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M4 14l4 8h8l4-8" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        <span>Powered by ng-prism</span>
+      </div>
       <div
         class="prism-shell__sidebar-handle"
         (mousedown)="startSidebarResize($event)"
@@ -190,6 +197,32 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
       margin: 0;
       font-size: 13px;
       color: var(--prism-text-ghost);
+    }
+
+    .prism-shell__powered-by {
+      grid-area: sidebar;
+      align-self: end;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 11px;
+      color: var(--prism-text-ghost);
+      font-family: var(--prism-font-sans);
+      border-right: 1px solid var(--prism-border);
+      background: var(--prism-bg);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .prism-shell__powered-by-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    .prism-shell[data-sidebar="hidden"] .prism-shell__powered-by {
+      display: none;
     }
   `,
 })
