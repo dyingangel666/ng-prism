@@ -100,6 +100,13 @@ export interface NgPrismConfig {
   /** Providers added to the Prism app bootstrap — for library-wide services */
   appProviders?: Provider[];
   theme?: Record<string, string>;
+  darkTheme?: Record<string, string>;
+  lightTheme?: Record<string, string>;
+  logo?: {
+    light?: string;
+    dark?: string;
+  };
+  title?: string;
   themeStylesheet?: string;
   ui?: {
     header?: Type<unknown>;
