@@ -32,6 +32,8 @@ export interface PanelDefinition {
   placement?: 'addon' | 'view';
   /** Providers injected into a child EnvironmentInjector scoped to this panel */
   providers?: Provider[];
+  /** When provided, the panel tab is only shown if this returns true for the active component */
+  isVisible?: (component: RuntimeComponent) => boolean;
 }
 
 export interface ControlDefinition {
