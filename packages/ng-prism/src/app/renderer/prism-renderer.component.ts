@@ -52,7 +52,11 @@ import { generateSnippet } from './snippet-generator.js';
       <div class="prism-renderer__canvas" [class.prism-renderer__canvas--sr]="perspectiveService.mode() === 'screen-reader'">
         <ng-container #outlet />
         @if (activeOverlay()) {
-          <ng-container *ngComponentOutlet="activeOverlay()!" />
+          <ng-container
+            *ngComponentOutlet="activeOverlay()!;
+              inputs: overlayInputs;
+              injector: overlayInjector()"
+          />
         }
       </div>
       @if (snippet()) {
@@ -215,6 +219,12 @@ export class PrismRendererComponent {
   private readonly pluginService = inject(PrismPluginService);
   private readonly overlayCache = new Map<string, Type<unknown>>();
   readonly activeOverlay = signal<Type<unknown> | null>(null);
+  protected readonly overlayInputs = { rendererService: this.rendererService };
+
+  protected readonly overlayInjector = computed(() => {
+    const panelInjector = this.panelService.activePanelInjector();
+    return panelInjector ?? this.injector;
+  });
 
   readonly codeVisible = signal(false);
 

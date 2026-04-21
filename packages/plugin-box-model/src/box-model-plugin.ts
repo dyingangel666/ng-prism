@@ -1,4 +1,5 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import { BoxModelStateService } from './box-model-state.service.js';
 
 export function boxModelPlugin(): NgPrismPlugin {
   return {
@@ -12,6 +13,7 @@ export function boxModelPlugin(): NgPrismPlugin {
         loadOverlayComponent: () =>
           import('./box-model-overlay.component.js').then((m) => m.BoxModelOverlayComponent),
         position: 'bottom',
+        providers: [BoxModelStateService],
       },
     ],
   };

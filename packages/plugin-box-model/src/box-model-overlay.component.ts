@@ -6,10 +6,11 @@ import {
   DestroyRef,
   ElementRef,
   inject,
+  input,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { fromEvent } from 'rxjs';
-import { PrismRendererService } from '@ng-prism/core';
+import type { PrismRendererService } from '@ng-prism/core';
 import { getBoxModel } from './box-model-utils.js';
 import { BoxModelStateService } from './box-model-state.service.js';
 
@@ -95,8 +96,8 @@ interface BoxStyles {
 export class BoxModelOverlayComponent {
   private readonly el = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly rendererService = inject(PrismRendererService);
   private readonly stateService = inject(BoxModelStateService);
+  readonly rendererService = input.required<PrismRendererService>();
 
   readonly boxStyles = computed<BoxStyles | null>(() => {
     const bm = this.stateService.hoveredBoxModel();
@@ -184,7 +185,7 @@ export class BoxModelOverlayComponent {
   }
 
   private handleMouseMove(event: MouseEvent): void {
-    const renderedEl = this.rendererService.renderedElement();
+    const renderedEl = this.rendererService()?.renderedElement();
     if (!renderedEl) {
       this.stateService.hoveredBoxModel.set(null);
       return;

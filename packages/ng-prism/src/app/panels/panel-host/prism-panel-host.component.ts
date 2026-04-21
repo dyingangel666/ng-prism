@@ -128,7 +128,10 @@ export class PrismPanelHostComponent implements OnDestroy {
   protected readonly activeInjector = computed(() => {
     const panelId = this.panelService.activePanelId();
     const panel = this.allPanels().find((p) => p.id === panelId);
-    if (!panel?.providers?.length) return this.envInjector;
+    if (!panel?.providers?.length) {
+      this.panelService.activePanelInjector.set(null);
+      return this.envInjector;
+    }
 
     if (!this.injectorCache.has(panel.id)) {
       this.injectorCache.set(
@@ -136,7 +139,9 @@ export class PrismPanelHostComponent implements OnDestroy {
         createEnvironmentInjector(panel.providers, this.envInjector, `PrismPanel[${panel.id}]`),
       );
     }
-    return this.injectorCache.get(panel.id)!;
+    const injector = this.injectorCache.get(panel.id)!;
+    this.panelService.activePanelInjector.set(injector);
+    return injector;
   });
 
   constructor() {
