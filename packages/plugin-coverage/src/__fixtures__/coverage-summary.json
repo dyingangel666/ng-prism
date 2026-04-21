@@ -1,0 +1,20 @@
+{
+  "total": {
+    "lines": { "total": 100, "covered": 80, "skipped": 0, "pct": 80 },
+    "statements": { "total": 120, "covered": 96, "skipped": 0, "pct": 80 },
+    "functions": { "total": 30, "covered": 27, "skipped": 0, "pct": 90 },
+    "branches": { "total": 40, "covered": 28, "skipped": 0, "pct": 70 }
+  },
+  "/workspace/src/app/button/button.component.ts": {
+    "lines": { "total": 20, "covered": 18, "skipped": 0, "pct": 90 },
+    "statements": { "total": 25, "covered": 20, "skipped": 0, "pct": 80 },
+    "functions": { "total": 5, "covered": 5, "skipped": 0, "pct": 100 },
+    "branches": { "total": 8, "covered": 6, "skipped": 0, "pct": 75 }
+  },
+  "/workspace/src/app/card/card.component.ts": {
+    "lines": { "total": 10, "covered": 5, "skipped": 0, "pct": 50 },
+    "statements": { "total": 12, "covered": 6, "skipped": 0, "pct": 50 },
+    "functions": { "total": 3, "covered": 1, "skipped": 0, "pct": 33.33 },
+    "branches": { "total": 4, "covered": 1, "skipped": 0, "pct": 25 }
+  }
+}
