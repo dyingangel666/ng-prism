@@ -1,16 +1,20 @@
+import { NgComponentOutlet } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { BooleanControlComponent } from '../../controls/boolean-control.component.js';
 import { JsonControlComponent } from '../../controls/json-control.component.js';
 import { NumberControlComponent } from '../../controls/number-control.component.js';
 import { StringControlComponent } from '../../controls/string-control.component.js';
 import { UnionControlComponent } from '../../controls/union-control.component.js';
+import type { ControlDefinition, InputMeta } from '../../../plugin/plugin.types.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
+import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
 
 @Component({
   selector: 'prism-controls-panel',
   standalone: true,
   imports: [
+    NgComponentOutlet,
     BooleanControlComponent,
     StringControlComponent,
     NumberControlComponent,
@@ -22,47 +26,54 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
       <div class="prism-controls-panel">
         @for (input of comp.meta.inputs; track input.name) {
           <div class="prism-controls-panel__row">
-            @switch (input.type) {
-              @case ('boolean') {
-                <prism-boolean-control
-                  [value]="asBoolean(rendererService.inputValues()[input.name])"
-                  [label]="input.name"
-                  [typeName]="input.rawType ?? ''"
-                  (valueChange)="rendererService.updateInput(input.name, $event)"
-                />
-              }
-              @case ('number') {
-                <prism-number-control
-                  [value]="asNumber(rendererService.inputValues()[input.name])"
-                  [label]="input.name"
-                  [typeName]="input.rawType ?? ''"
-                  (valueChange)="rendererService.updateInput(input.name, $event)"
-                />
-              }
-              @case ('union') {
-                <prism-union-control
-                  [value]="asString(rendererService.inputValues()[input.name])"
-                  [label]="input.name"
-                  [typeName]="input.rawType ?? ''"
-                  [options]="input.values ?? []"
-                  (valueChange)="rendererService.updateInput(input.name, $event)"
-                />
-              }
-              @case ('string') {
-                <prism-string-control
-                  [value]="asString(rendererService.inputValues()[input.name])"
-                  [label]="input.name"
-                  [typeName]="input.rawType ?? ''"
-                  (valueChange)="rendererService.updateInput(input.name, $event)"
-                />
-              }
-              @default {
-                <prism-json-control
-                  [value]="rendererService.inputValues()[input.name]"
-                  [label]="input.name"
-                  [typeName]="input.rawType ?? ''"
-                  (valueChange)="rendererService.updateInput(input.name, $event)"
-                />
+            @if (getCustomControl(input); as customCtrl) {
+              <ng-container
+                [ngComponentOutlet]="customCtrl.component"
+                [ngComponentOutletInputs]="{ inputMeta: input }"
+              />
+            } @else {
+              @switch (input.type) {
+                @case ('boolean') {
+                  <prism-boolean-control
+                    [value]="asBoolean(rendererService.inputValues()[input.name])"
+                    [label]="input.name"
+                    [typeName]="input.rawType ?? ''"
+                    (valueChange)="rendererService.updateInput(input.name, $event)"
+                  />
+                }
+                @case ('number') {
+                  <prism-number-control
+                    [value]="asNumber(rendererService.inputValues()[input.name])"
+                    [label]="input.name"
+                    [typeName]="input.rawType ?? ''"
+                    (valueChange)="rendererService.updateInput(input.name, $event)"
+                  />
+                }
+                @case ('union') {
+                  <prism-union-control
+                    [value]="asString(rendererService.inputValues()[input.name])"
+                    [label]="input.name"
+                    [typeName]="input.rawType ?? ''"
+                    [options]="input.values ?? []"
+                    (valueChange)="rendererService.updateInput(input.name, $event)"
+                  />
+                }
+                @case ('string') {
+                  <prism-string-control
+                    [value]="asString(rendererService.inputValues()[input.name])"
+                    [label]="input.name"
+                    [typeName]="input.rawType ?? ''"
+                    (valueChange)="rendererService.updateInput(input.name, $event)"
+                  />
+                }
+                @default {
+                  <prism-json-control
+                    [value]="rendererService.inputValues()[input.name]"
+                    [label]="input.name"
+                    [typeName]="input.rawType ?? ''"
+                    (valueChange)="rendererService.updateInput(input.name, $event)"
+                  />
+                }
               }
             }
           </div>
@@ -99,6 +110,11 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
 export class PrismControlsPanelComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
+  private readonly pluginService = inject(PrismPluginService);
+
+  protected getCustomControl(input: InputMeta): ControlDefinition | null {
+    return this.pluginService.controls().find((ctrl) => ctrl.matchType(input)) ?? null;
+  }
 
   protected asBoolean(val: unknown): boolean {
     return Boolean(val);
