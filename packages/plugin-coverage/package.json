@@ -1,0 +1,48 @@
+{
+  "name": "@ng-prism/plugin-coverage",
+  "version": "21.3.0",
+  "description": "Test coverage panel for ng-prism.",
+  "keywords": [
+    "@ng-prism/core",
+    "coverage",
+    "testing",
+    "plugin",
+    "angular",
+    "styleguide"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "!**/*.tsbuildinfo"
+  ],
+  "peerDependencies": {
+    "@angular/core": ">=20.0.0",
+    "@ng-prism/core": ">=21.0.0"
+  },
+  "devDependencies": {
+    "@ng-prism/core": "*"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dyingangel666/ng-prism.git",
+    "directory": "packages/plugin-coverage"
+  },
+  "homepage": "https://dyingangel666.github.io/ng-prism/",
+  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
+}
