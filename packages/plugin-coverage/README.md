@@ -1,0 +1,69 @@
+# @ng-prism/plugin-coverage
+
+Test coverage plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Reads Istanbul/v8 coverage reports at build time and displays per-component test coverage metrics with a score circle in the tab bar.
+
+> **Full documentation:** [ng-prism Docs — Coverage Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/coverage)
+
+## Installation
+
+```bash
+npm install @ng-prism/plugin-coverage
+```
+
+### Peer Dependencies
+
+| Package | Version |
+|---|---|
+| `@ng-prism/core` | `>=21.0.0` |
+| `@angular/core` | `>=20.0.0` |
+
+## Setup
+
+```typescript
+// ng-prism.config.ts
+import { defineConfig } from '@ng-prism/core/config';
+import { coveragePlugin } from '@ng-prism/plugin-coverage';
+
+export default defineConfig({
+  plugins: [
+    coveragePlugin({
+      coveragePath: 'coverage/coverage-summary.json',
+    }),
+  ],
+});
+```
+
+## What It Does
+
+- Adds a **Coverage** panel to the addon tab bar
+- Shows a **score circle** with the average coverage percentage (like the A11y panel)
+- Displays 4 metric bars: Statements, Branches, Functions, Lines
+- Color-coded thresholds: green (>= 80%), yellow (>= 50%), red (< 50%)
+- Works with any test runner that outputs Istanbul-compatible coverage (Jest, Karma, Vitest, nyc, c8)
+
+## Options
+
+| Option | Default | Description |
+|---|---|---|
+| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root) |
+
+## Example
+
+Generate coverage with your test runner, then start the showcase:
+
+```bash
+npx nx test my-lib --coverage
+ng run my-lib:prism
+```
+
+Each component's Coverage tab shows its statement, branch, function, and line coverage with a score circle in the tab bar.
+
+## How It Works
+
+**Build time:** The `onComponentScanned` hook reads `coverage-summary.json` (cached per build run, with mtime-based invalidation) and matches entries to components by file path. Coverage data is injected into `showcaseConfig.meta.coverage`.
+
+**Runtime:** The `CoveragePanelComponent` reads the metadata and renders the metric bars. The score circle is rendered in `PrismPanelHostComponent` using the same `A11yScoreComponent`. The panel component is lazy-loaded via `loadComponent`.
+
+## License
+
+MIT
