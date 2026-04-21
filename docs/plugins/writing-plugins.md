@@ -212,7 +212,7 @@ export function colorSwatchPlugin(): NgPrismPlugin {
 }
 ```
 
-The `ColorSwatchControlComponent` receives the current value and updates via `PrismRendererService.updateInput()`:
+The `ColorSwatchControlComponent` receives `inputMeta` and `rendererService` as inputs from the Controls panel — no need to `inject()` the service:
 
 ```typescript
 @Component({
@@ -223,15 +223,16 @@ The `ColorSwatchControlComponent` receives the current value and updates via `Pr
   `,
 })
 export class ColorSwatchControlComponent {
-  @Input() inputMeta!: InputMeta;
+  readonly inputMeta = input.required<InputMeta>();
+  readonly rendererService = input.required<PrismRendererService>();
 
-  private readonly renderer = inject(PrismRendererService);
-
-  currentValue = computed(() => this.renderer.inputValues()[this.inputMeta.name] as string ?? '#000000');
+  currentValue = computed(() =>
+    this.rendererService().inputValues()[this.inputMeta().name] as string ?? '#000000',
+  );
 
   onChange(event: Event) {
     const value = (event.target as HTMLInputElement).value;
-    this.renderer.updateInput(this.inputMeta.name, value);
+    this.rendererService().updateInput(this.inputMeta().name, value);
   }
 }
 ```

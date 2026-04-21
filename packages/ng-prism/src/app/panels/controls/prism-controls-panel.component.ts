@@ -29,7 +29,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
             @if (getCustomControl(input); as customCtrl) {
               <ng-container
                 [ngComponentOutlet]="customCtrl.component"
-                [ngComponentOutletInputs]="{ inputMeta: input }"
+                [ngComponentOutletInputs]="{ inputMeta: input, rendererService: rendererService }"
               />
             } @else {
               @switch (input.type) {
