@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-jsdoc",
-  "version": "21.3.0",
+  "version": "21.4.0",
   "description": "JSDoc API documentation panel for ng-prism.",
   "keywords": [
     "@ng-prism/core",
