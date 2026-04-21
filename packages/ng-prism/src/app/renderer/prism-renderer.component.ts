@@ -4,6 +4,7 @@ import {
   computed,
   DestroyRef,
   effect,
+  ElementRef,
   inject,
   Injector,
   signal,
@@ -208,6 +209,7 @@ export class PrismRendererComponent {
   private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly host = inject(ElementRef<HTMLElement>);
   private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, { optional: true });
 
   private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
@@ -251,6 +253,7 @@ export class PrismRendererComponent {
       const comp = this.navigationService.activeComponent();
       if (!comp) return;
       untracked(() => {
+        this.host.nativeElement.scrollTop = 0;
         this.codeVisible.set(false);
         this.rendererService.reconcileForComponent(comp);
         this.createComponent(comp);
