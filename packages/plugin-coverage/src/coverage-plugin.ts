@@ -1,5 +1,4 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import { readCoverageForFile } from './coverage-reader.js';
 import type { CoveragePluginOptions } from './coverage.types.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
@@ -10,6 +9,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
   return {
     name: '@ng-prism/plugin-coverage',
     async onComponentScanned(component) {
+      const { readCoverageForFile } = await import('./coverage-reader.js');
       const coverage = readCoverageForFile(coveragePath, component.filePath);
       return {
         ...component,

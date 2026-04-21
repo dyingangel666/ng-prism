@@ -8,7 +8,7 @@ A lightweight, Angular-native component showcase tool. Annotate your components 
 
 - **Zero story files** — decorator lives on the component itself
 - **Signal-native** — built for Angular 20+ with `input()` / `output()` signals
-- **Plugin architecture** — extend with JSDoc, A11y, Figma, Perf panels and more
+- **Plugin architecture** — extend with JSDoc, A11y, Figma, Perf, Coverage panels and more
 - **Custom Angular Builder** — `ng-prism:serve` and `ng-prism:build` integrate into your existing workspace
 - **No iframe** — components render in the same document, so dialogs, overlays, and CDK portals work out of the box
 - **TypeScript Compiler API** — inputs, outputs, and types are extracted at build time, no runtime reflection

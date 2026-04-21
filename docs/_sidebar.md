@@ -27,6 +27,7 @@
   - [Figma — Design Embed](plugins/figma.md)
   - [Box Model — Inspector](plugins/box-model.md)
   - [Perf — Performance](plugins/perf.md)
+  - [Coverage — Test Coverage](plugins/coverage.md)
   - [Writing a Plugin](plugins/writing-plugins.md)
 
 - **API Reference**

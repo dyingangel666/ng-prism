@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "prism": "ng run test-lib:prism"
+    "prism": "ng run test-lib:prism",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs --coverage"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",
@@ -27,6 +29,7 @@
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
     "@ng-prism/plugin-box-model": "file:../packages/plugin-box-model",
+    "@ng-prism/plugin-coverage": "file:../packages/plugin-coverage",
     "@ng-prism/plugin-figma": "file:../packages/plugin-figma",
     "@ng-prism/plugin-jsdoc": "file:../packages/plugin-jsdoc",
     "@ng-prism/plugin-perf": "file:../packages/plugin-perf",

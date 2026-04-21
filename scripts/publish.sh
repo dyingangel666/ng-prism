@@ -7,6 +7,7 @@ cd "$ROOT_DIR"
 PACKAGES=(
   "packages/ng-prism"
   "packages/plugin-box-model"
+  "packages/plugin-coverage"
   "packages/plugin-figma"
   "packages/plugin-jsdoc"
   "packages/plugin-perf"
@@ -121,7 +122,7 @@ build_all() {
   npx nx build ng-prism 2>&1 | tail -1
 
   info "Building plugins..."
-  npx nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf' 2>&1 | tail -1
+  npx nx run-many -t build --projects='plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf' 2>&1 | tail -1
 
   ok "All packages built"
 }

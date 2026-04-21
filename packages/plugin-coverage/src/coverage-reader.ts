@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import type { CoverageData, IstanbulSummary } from './coverage.types.js';
 
 const EMPTY_METRIC = { total: 0, covered: 0, skipped: 0, pct: 0 };
@@ -12,19 +12,21 @@ const EMPTY_COVERAGE: CoverageData = {
   found: false,
 };
 
-const cache = new Map<string, IstanbulSummary>();
+const cache = new Map<string, { mtime: number; data: IstanbulSummary }>();
 
 function normalizePath(p: string): string {
   return p.replace(/\\/g, '/');
 }
 
 function loadSummary(coveragePath: string): IstanbulSummary | null {
-  if (cache.has(coveragePath)) return cache.get(coveragePath)!;
-
   try {
+    const mtime = statSync(coveragePath).mtimeMs;
+    const cached = cache.get(coveragePath);
+    if (cached && cached.mtime === mtime) return cached.data;
+
     const raw = readFileSync(coveragePath, 'utf-8');
     const parsed = JSON.parse(raw) as IstanbulSummary;
-    cache.set(coveragePath, parsed);
+    cache.set(coveragePath, { mtime, data: parsed });
     return parsed;
   } catch {
     return null;

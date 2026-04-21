@@ -89,9 +89,12 @@ interface MetricRow {
       font-size: 16px;
     }
 
-    [data-level="good"] { color: #4ade80; }
-    [data-level="warn"] { color: #fbbf24; }
-    [data-level="bad"] { color: #f87171; }
+    .prism-coverage__score[data-level="good"],
+    .prism-coverage__pct[data-level="good"] { color: #4ade80; }
+    .prism-coverage__score[data-level="warn"],
+    .prism-coverage__pct[data-level="warn"] { color: #fbbf24; }
+    .prism-coverage__score[data-level="bad"],
+    .prism-coverage__pct[data-level="bad"] { color: #f87171; }
 
     .prism-coverage__metrics {
       display: flex;

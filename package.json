@@ -5,7 +5,7 @@
   "scripts": {
     "docs": "npx docsify-cli serve docs --port 3000",
     "build": "nx build ng-prism",
-    "build:all": "nx build ng-prism && nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf'",
+    "build:all": "nx build ng-prism && nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perfm,plugin-coverage'",
     "test": "nx test ng-prism",
     "publish": "./scripts/publish.sh",
     "test:workspace:setup": "nx build ng-prism",
