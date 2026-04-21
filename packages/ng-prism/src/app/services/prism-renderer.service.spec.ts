@@ -156,7 +156,10 @@ describe('PrismRendererService', () => {
 
   it('should reset variant-managed inputs even without scanned defaultValue', () => {
     const comp = createComponent({
-      inputs: [],
+      inputs: [
+        { name: 'variant', type: 'string', required: false },
+        { name: 'disabled', type: 'boolean', required: false },
+      ],
       variants: [
         { name: 'Default', inputs: { variant: 'filled' } },
         { name: 'Disabled', inputs: { variant: 'filled', disabled: true } },
@@ -170,6 +173,25 @@ describe('PrismRendererService', () => {
 
     renderer.selectVariant(0);
     expect(renderer.inputValues()['disabled']).toBeUndefined();
+  });
+
+  it('should filter out unknown variant inputs and warn', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const comp = createComponent({
+      inputs: [{ name: 'label', type: 'string', defaultValue: 'Default', required: false }],
+      variants: [
+        { name: 'With Unknown', inputs: { label: 'Test', nonExistent: true } },
+      ],
+    });
+    const { renderer, navigation } = setup({ components: [comp] });
+    navigation.select(comp);
+
+    renderer.selectVariant(0);
+
+    expect(renderer.inputValues()).toEqual({ label: 'Test' });
+    expect(renderer.inputValues()['nonExistent']).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('nonExistent'));
+    warnSpy.mockRestore();
   });
 
   it('should not reset required inputs', () => {

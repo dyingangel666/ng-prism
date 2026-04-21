@@ -277,7 +277,12 @@ export class PrismRendererComponent {
       }
 
       performance.mark('prism:rerender:start');
+      const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
       for (const [key, value] of Object.entries(inputs)) {
+        if (!knownInputs.has(key)) {
+          console.warn(`[ng-prism] Unknown input "${key}" on <${comp.meta.componentMeta.selector}> — skipping. Remove it from @Showcase variants.`);
+          continue;
+        }
         ref.setInput(key, value);
       }
       ref.changeDetectorRef.detectChanges();
@@ -368,7 +373,12 @@ export class PrismRendererComponent {
       }
     }
 
+    const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
     for (const [key, value] of Object.entries(this.rendererService.inputValues())) {
+      if (!knownInputs.has(key)) {
+        console.warn(`[ng-prism] Unknown input "${key}" on <${selector}> — skipping. Remove it from @Showcase variants.`);
+        continue;
+      }
       this.componentRef.setInput(key, value);
     }
     this.componentRef.changeDetectorRef.detectChanges();

@@ -87,7 +87,17 @@ export class PrismRendererService {
     }
 
     const variant = comp.meta.showcaseConfig.variants?.[index];
-    const values = { ...reset, ...defaults, ...(variant?.inputs ?? {}) };
+    const variantInputs = variant?.inputs ?? {};
+    const validInputNames = new Set(comp.meta.inputs.map((i) => i.name));
+    for (const key of Object.keys(variantInputs)) {
+      if (!validInputNames.has(key)) {
+        console.warn(`[ng-prism] Variant "${variant?.name ?? index}" references unknown input "${key}" on ${comp.meta.className} — ignoring.`);
+      }
+    }
+    const filteredVariantInputs = Object.fromEntries(
+      Object.entries(variantInputs).filter(([key]) => validInputNames.has(key)),
+    );
+    const values = { ...reset, ...defaults, ...filteredVariantInputs };
 
     if (comp.meta.componentMeta.isDirective && variant?.content) {
       values['__prismContent__'] = typeof variant.content === 'string' ? variant.content : '';
