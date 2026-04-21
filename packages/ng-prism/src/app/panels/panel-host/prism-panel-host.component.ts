@@ -25,6 +25,9 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
             @if (panel.id === 'a11y' && a11yScore() !== null) {
               <prism-a11y-score [score]="a11yScore()!" [compact]="true" style="width:18px;height:18px;" />
             }
+            @if (panel.id === 'coverage' && coverageScore() !== null) {
+              <prism-a11y-score [score]="coverageScore()!" [compact]="true" style="width:18px;height:18px;" />
+            }
             {{ panel.label }}
           </button>
         }
@@ -100,6 +103,13 @@ export class PrismPanelHostComponent implements OnDestroy {
   private readonly rendererService = inject(PrismRendererService);
 
   protected readonly a11yScore = computed(() => this.auditService.scoreResult()?.score ?? null);
+
+  protected readonly coverageScore = computed(() => {
+    const comp = this.nav.activeComponent() as any;
+    const coverage = comp?.meta?.showcaseConfig?.meta?.['coverage'];
+    if (!coverage?.found) return null;
+    return coverage.score as number;
+  });
 
   private readonly builtInPanels = BUILTIN_PANELS;
 
