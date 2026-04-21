@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-perf",
-  "version": "21.4.1",
+  "version": "21.4.2",
   "description": "Performance profiling panel for ng-prism — bundle size, render time, memory footprint.",
   "keywords": [
     "@ng-prism/core",
