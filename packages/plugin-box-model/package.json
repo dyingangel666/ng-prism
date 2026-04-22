@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-box-model",
-  "version": "21.4.4",
+  "version": "21.4.5",
   "description": "CSS box model inspector for ng-prism.",
   "keywords": [
     "@ng-prism/core",
