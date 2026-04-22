@@ -214,6 +214,18 @@ describe('ng-add schematic', () => {
     expect(result.read('/projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')).toBe('custom tsconfig');
   });
 
+  it('should handle tsconfig.json with comments (JSONC)', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.overwrite('tsconfig.json', '/* To learn more about this file see: https://angular.dev */\n{\n  "compilerOptions": {}\n}\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfig = readJson(result, '/tsconfig.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual(['ng-prism.config.ts']);
+  });
+
   it('should throw if project does not exist in angular.json', async () => {
     const tree = createTree(defaultLibProject());
 

@@ -5,6 +5,7 @@ import {
   type Tree,
   SchematicsException,
 } from '@angular-devkit/schematics';
+import { parse as parseJsonc } from 'jsonc-parser';
 import type { NgAddSchemaOptions } from './schema.js';
 
 interface WorkspaceProject {
@@ -191,7 +192,7 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
       return tree;
     }
 
-    const tsConfig = JSON.parse(buffer.toString('utf-8')) as TsConfigSchema;
+    const tsConfig = parseJsonc(buffer.toString('utf-8')) as TsConfigSchema;
 
     if (!tsConfig.compilerOptions) {
       tsConfig.compilerOptions = {};
