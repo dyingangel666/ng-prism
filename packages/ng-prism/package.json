@@ -43,11 +43,11 @@
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
-    "@angular/core": ">=19.0.0",
-    "@angular/common": ">=19.0.0",
-    "@angular-devkit/architect": ">=0.1900.0",
-    "@angular-devkit/core": ">=19.0.0",
-    "@angular-devkit/schematics": ">=19.0.0",
+    "@angular/core": ">=21.0.0",
+    "@angular/common": ">=21.0.0",
+    "@angular-devkit/architect": ">=0.2100.0",
+    "@angular-devkit/core": ">=21.0.0",
+    "@angular-devkit/schematics": ">=21.0.0",
     "typescript": ">=5.5.0",
     "highlight.js": ">=11.0.0",
     "ngx-highlightjs": ">=14.0.0"

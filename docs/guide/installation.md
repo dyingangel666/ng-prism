@@ -10,7 +10,7 @@
 The fastest path is the `ng add` schematic. It creates a showcase app project, wires up the Angular builder targets, and generates a config file in one command.
 
 ```bash
-ng add ng-prism
+ng add @ng-prism/core
 ```
 
 The schematic prompts for:

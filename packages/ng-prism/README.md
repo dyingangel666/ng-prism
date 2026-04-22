@@ -57,7 +57,7 @@ export class ButtonComponent {
 ### 3. Run the schematic
 
 ```bash
-ng add ng-prism
+ng add @ng-prism/core
 ```
 
 This creates the prism app project, configures Angular builders, and generates `ng-prism.config.ts`.
