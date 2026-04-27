@@ -8,10 +8,11 @@ export function perfPlugin(_options?: PerfPluginOptions): NgPrismPlugin {
       {
         id: 'perf',
         label: 'Performance',
+        icon: 'activity',
         loadComponent: () =>
           import('./perf-panel.component.js').then((m) => m.PerfPanelComponent),
         position: 'bottom',
-        placement: 'view',
+        placement: 'addon',
       },
     ],
   };

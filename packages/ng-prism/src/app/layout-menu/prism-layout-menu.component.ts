@@ -13,55 +13,69 @@ import { PrismLayoutService } from '../services/prism-layout.service.js';
         title="Layout options"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-          <circle cx="8" cy="3" r="1.25" fill="currentColor"/>
-          <circle cx="8" cy="8" r="1.25" fill="currentColor"/>
-          <circle cx="8" cy="13" r="1.25" fill="currentColor"/>
+          <circle cx="8" cy="3" r="1.25" fill="currentColor" />
+          <circle cx="8" cy="8" r="1.25" fill="currentColor" />
+          <circle cx="8" cy="13" r="1.25" fill="currentColor" />
         </svg>
       </button>
       @if (open()) {
-        <div class="layout-menu__backdrop" (click)="open.set(false)"></div>
-        <div class="layout-menu__dropdown">
-          <button class="layout-menu__item" (click)="toggle('sidebar')">
-            <span class="layout-menu__check" [class.layout-menu__check--on]="layout.sidebarVisible()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="layout-menu__label">Show sidebar</span>
-            <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>S</kbd></span>
-          </button>
-          <button class="layout-menu__item" (click)="toggle('toolbar')">
-            <span class="layout-menu__check" [class.layout-menu__check--on]="layout.toolbarVisible()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="layout-menu__label">Show toolbar</span>
-            <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>T</kbd></span>
-          </button>
-          <button class="layout-menu__item" (click)="toggle('addons')">
-            <span class="layout-menu__check" [class.layout-menu__check--on]="layout.addonsVisible()">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </span>
-            <span class="layout-menu__label">Show addons panel</span>
-            <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>A</kbd></span>
-          </button>
-          <div class="layout-menu__divider"></div>
-          <button class="layout-menu__item" (click)="toggle('orientation')">
-            <span class="layout-menu__icon">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/>
-                <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.2"/>
-              </svg>
-            </span>
-            <span class="layout-menu__label">
-              Panel: {{ layout.addonsOrientation() === 'bottom' ? 'bottom → right' : 'right → bottom' }}
-            </span>
-            <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>D</kbd></span>
-          </button>
-        </div>
+      <div class="layout-menu__backdrop" (click)="open.set(false)"></div>
+      <div class="layout-menu__dropdown">
+        <button class="layout-menu__item" (click)="toggle('sidebar')">
+          <span
+            class="layout-menu__check"
+            [class.layout-menu__check--on]="layout.sidebarVisible()"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6l3 3 5-5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="layout-menu__label">Show sidebar</span>
+          <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>S</kbd></span>
+        </button>
+        <button class="layout-menu__item" (click)="toggle('toolbar')">
+          <span
+            class="layout-menu__check"
+            [class.layout-menu__check--on]="layout.toolbarVisible()"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6l3 3 5-5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="layout-menu__label">Show toolbar</span>
+          <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>T</kbd></span>
+        </button>
+        <button class="layout-menu__item" (click)="toggle('addons')">
+          <span
+            class="layout-menu__check"
+            [class.layout-menu__check--on]="layout.addonsVisible()"
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path
+                d="M2 6l3 3 5-5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <span class="layout-menu__label">Show addons panel</span>
+          <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>A</kbd></span>
+        </button>
+      </div>
       }
     </div>
   `,
@@ -180,13 +194,23 @@ export class PrismLayoutMenuComponent {
   protected readonly layout = inject(PrismLayoutService);
   protected readonly open = signal(false);
 
-  protected toggle(target: 'sidebar' | 'toolbar' | 'addons' | 'orientation'): void {
+  protected toggle(
+    target: 'sidebar' | 'toolbar' | 'addons' | 'orientation'
+  ): void {
     this.open.set(false);
     switch (target) {
-      case 'sidebar': this.layout.toggleSidebar(); break;
-      case 'toolbar': this.layout.toggleToolbar(); break;
-      case 'addons': this.layout.toggleAddons(); break;
-      case 'orientation': this.layout.toggleOrientation(); break;
+      case 'sidebar':
+        this.layout.toggleSidebar();
+        break;
+      case 'toolbar':
+        this.layout.toggleToolbar();
+        break;
+      case 'addons':
+        this.layout.toggleAddons();
+        break;
+      case 'orientation':
+        this.layout.toggleOrientation();
+        break;
     }
   }
 }

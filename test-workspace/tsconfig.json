@@ -28,5 +28,8 @@
     {
       "path": "../packages/ng-prism"
     }
-  ]
+  ],
+  "nx": {
+    "addTypecheckTarget": false
+  }
 }

@@ -7,6 +7,7 @@ export const EVENTS_PLUGIN: NgPrismPlugin = {
     {
       id: 'events',
       label: 'Events',
+      icon: 'zap',
       component: PrismEventsPanelComponent,
       position: 'bottom',
     },

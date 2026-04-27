@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import type { CoverageData, MetricDetail } from './coverage.types.js';
-
-interface MetricRow {
-  label: string;
-  detail: MetricDetail;
-  level: 'good' | 'warn' | 'bad';
-}
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
+import type { CoverageData, FileCoverageDetail } from './coverage.types.js';
 
 @Component({
   selector: 'prism-coverage-panel',
@@ -13,134 +12,151 @@ interface MetricRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (coverage()?.found) {
-      <div class="prism-coverage">
-        <div class="prism-coverage__header">
-          <span class="prism-coverage__title">Test Coverage</span>
-          <span class="prism-coverage__score" [attr.data-level]="scoreLevel()">{{ coverage()!.score }}%</span>
+    <div class="cov-body">
+      <div class="cov-summary">
+        @for (stat of summaryStats(); track stat.label) {
+        <div class="cov-stat">
+          <div class="cov-stat-k">{{ stat.label }}</div>
+          <div class="cov-stat-v">{{ stat.pct }}<small>%</small></div>
+          <div class="cov-bar">
+            <div class="cov-bar-fill" [style.width.%]="stat.pct"></div>
+          </div>
         </div>
-        <div class="prism-coverage__metrics">
-          @for (row of metricRows(); track row.label) {
-            <div class="prism-coverage__row">
-              <span class="prism-coverage__label">{{ row.label }}</span>
-              <div class="prism-coverage__bar-track">
-                <div
-                  class="prism-coverage__bar-fill"
-                  [attr.data-level]="row.level"
-                  [style.width.%]="row.detail.pct"
-                ></div>
-              </div>
-              <span class="prism-coverage__pct" [attr.data-level]="row.level">{{ row.detail.pct }}%</span>
-              <span class="prism-coverage__ratio">{{ row.detail.covered }}/{{ row.detail.total }}</span>
-            </div>
-          }
-        </div>
+        }
       </div>
+
+      @if (files().length) {
+      <div class="cov-files">
+        <div class="cov-file cov-file--header">
+          <span>File</span>
+          <span>Lines</span>
+          <span>Branch</span>
+          <span>Func</span>
+          <span>Stmt</span>
+        </div>
+        @for (file of files(); track file.path) {
+        <div class="cov-file">
+          <span class="cov-file-name">{{ fileName(file.path) }}</span>
+          <span class="cov-file-val" [class.bad]="file.lines.pct < 80"
+            >{{ file.lines.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.branches.pct < 80"
+            >{{ file.branches.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.functions.pct < 80"
+            >{{ file.functions.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.statements.pct < 80"
+            >{{ file.statements.pct }}%</span
+          >
+        </div>
+        }
+      </div>
+      }
+    </div>
     } @else {
-      <div class="prism-coverage prism-coverage--empty">
-        <p class="prism-coverage__hint">
-          Keine Coverage-Daten gefunden.<br />
-          Fuehre <code>nx test &lt;project&gt; --coverage</code> aus und rebuilde den Styleguide.
-        </p>
-      </div>
+    <div class="cov-empty">
+      <p>No coverage data. Run tests with coverage enabled.</p>
+    </div>
     }
   `,
   styles: `
-    .prism-coverage {
-      padding: 16px;
-      font-family: var(--prism-font-sans, system-ui, sans-serif);
-      font-size: 13px;
-      color: var(--prism-text, #e2e4e9);
+    :host { display: block; height: 100%; overflow: auto; }
+
+    .cov-body { padding: 20px 24px; }
+
+    .cov-summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
-    .prism-coverage--empty {
+    .cov-stat {
+      padding: 12px 14px;
+      background: var(--prism-bg-surface);
+      border: 1px solid var(--prism-border);
+      border-radius: 8px;
+    }
+    .cov-stat-k {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--prism-text-ghost);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .cov-stat-v {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--prism-text);
+      letter-spacing: -0.02em;
+    }
+    .cov-stat-v small {
+      font-size: 13px;
+      color: var(--prism-text-muted);
+      font-weight: 500;
+    }
+    .cov-bar {
+      margin-top: 8px;
+      height: 4px;
+      background: var(--prism-input-bg);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .cov-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      border-radius: 2px;
+      transition: width 0.6s;
+    }
+
+    .cov-files {
+      padding: 12px;
+      background: var(--prism-bg-surface);
+      border: 1px solid var(--prism-border);
+      border-radius: 8px;
+    }
+
+    .cov-file {
+      display: grid;
+      grid-template-columns: 1fr auto auto auto auto;
+      align-items: center;
+      gap: 16px;
+      padding: 7px 4px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      border-bottom: 1px solid var(--prism-border);
+    }
+    .cov-file:last-child { border-bottom: 0; }
+
+    .cov-file--header {
+      border-bottom: 1px solid var(--prism-border-strong);
+      padding-bottom: 8px;
+      color: var(--prism-text-ghost);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+    }
+
+    .cov-file-name { color: var(--prism-text-2); }
+    .cov-file-val {
+      color: var(--prism-text);
+      min-width: 54px;
+      text-align: right;
+    }
+    .cov-file-val.bad { color: var(--prism-warn); }
+
+    .cov-empty {
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 120px;
-    }
-
-    .prism-coverage__hint {
-      color: var(--prism-text-muted, #8b8fa3);
+      color: var(--prism-text-muted);
+      font-size: 13px;
       text-align: center;
-      line-height: 1.6;
-    }
-
-    .prism-coverage__hint code {
-      background: rgba(255, 255, 255, 0.06);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 12px;
-    }
-
-    .prism-coverage__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-
-    .prism-coverage__title {
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .prism-coverage__score {
-      font-weight: 700;
-      font-size: 16px;
-    }
-
-    .prism-coverage__score[data-level="good"],
-    .prism-coverage__pct[data-level="good"] { color: #4ade80; }
-    .prism-coverage__score[data-level="warn"],
-    .prism-coverage__pct[data-level="warn"] { color: #fbbf24; }
-    .prism-coverage__score[data-level="bad"],
-    .prism-coverage__pct[data-level="bad"] { color: #f87171; }
-
-    .prism-coverage__metrics {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .prism-coverage__row {
-      display: grid;
-      grid-template-columns: 90px 1fr 50px 70px;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .prism-coverage__label {
-      color: var(--prism-text-muted, #8b8fa3);
-      font-size: 12px;
-    }
-
-    .prism-coverage__bar-track {
-      height: 6px;
-      border-radius: 3px;
-      background: rgba(255, 255, 255, 0.06);
-      overflow: hidden;
-    }
-
-    .prism-coverage__bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.3s ease;
-    }
-
-    .prism-coverage__bar-fill[data-level="good"] { background: #4ade80; }
-    .prism-coverage__bar-fill[data-level="warn"] { background: #fbbf24; }
-    .prism-coverage__bar-fill[data-level="bad"] { background: #f87171; }
-
-    .prism-coverage__pct {
-      text-align: right;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    .prism-coverage__ratio {
-      text-align: right;
-      font-size: 11px;
-      color: var(--prism-text-muted, #8b8fa3);
     }
   `,
 })
@@ -149,31 +165,28 @@ export class CoveragePanelComponent {
 
   protected readonly coverage = computed<CoverageData | null>(() => {
     const comp = this.activeComponent() as any;
-    return (comp?.meta?.showcaseConfig?.meta?.['coverage'] as CoverageData) ?? null;
+    return (
+      (comp?.meta?.showcaseConfig?.meta?.['coverage'] as CoverageData) ?? null
+    );
   });
 
-  protected readonly scoreLevel = computed(() => {
-    const s = this.coverage()?.score ?? 0;
-    if (s >= 80) return 'good';
-    if (s >= 50) return 'warn';
-    return 'bad';
-  });
-
-  protected readonly metricRows = computed<MetricRow[]>(() => {
+  protected readonly summaryStats = computed(() => {
     const c = this.coverage();
     if (!c?.found) return [];
-
-    const toLevel = (pct: number): 'good' | 'warn' | 'bad' => {
-      if (pct >= 80) return 'good';
-      if (pct >= 50) return 'warn';
-      return 'bad';
-    };
-
     return [
-      { label: 'Statements', detail: c.statements, level: toLevel(c.statements.pct) },
-      { label: 'Branches', detail: c.branches, level: toLevel(c.branches.pct) },
-      { label: 'Functions', detail: c.functions, level: toLevel(c.functions.pct) },
-      { label: 'Lines', detail: c.lines, level: toLevel(c.lines.pct) },
+      { label: 'Lines', pct: c.lines.pct },
+      { label: 'Branches', pct: c.branches.pct },
+      { label: 'Functions', pct: c.functions.pct },
+      { label: 'Statements', pct: c.statements.pct },
     ];
   });
+
+  protected readonly files = computed<FileCoverageDetail[]>(() => {
+    return this.coverage()?.files ?? [];
+  });
+
+  protected fileName(path: string): string {
+    const parts = path.split('/');
+    return parts[parts.length - 1];
+  }
 }

@@ -1,301 +1,422 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import { PrismSearchService } from '../services/prism-search.service.js';
+import { PrismManifestService } from '../services/prism-manifest.service.js';
 
-const STORAGE_KEY = 'ng-prism-sidebar-expanded';
+const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
+
+const CATEGORY_COLORS: Record<string, string> = {
+  'Data Display': '#f472b6',
+  Feedback: '#fbbf24',
+  Inputs: '#a78bfa',
+  Layout: '#34d399',
+  Navigation: '#60a5fa',
+  Overlay: '#c084fc',
+  Directives: '#ec4899',
+};
+
+function categoryColor(name: string): string {
+  if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++)
+    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 65%)`;
+}
 
 interface SidebarCategory {
   name: string;
+  color: string;
   items: NavigationItem[];
-}
-
-interface SidebarGroup {
-  name: string | null;
-  categories: SidebarCategory[];
 }
 
 @Component({
   selector: 'prism-sidebar',
   standalone: true,
-  imports: [NgTemplateOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PrismIconComponent],
   template: `
     <nav class="prism-sidebar">
-      @for (group of groups(); track group.name ?? '__ungrouped'; let gi = $index) {
-        @if (group.name) {
-          <div class="prism-sidebar__group">
-            <button
-              class="prism-sidebar__group-title"
-              (click)="toggle('group:' + group.name, gi)"
-            >
-              <svg
-                class="prism-sidebar__chevron"
-                [class.prism-sidebar__chevron--expanded]="isExpanded('group:' + group.name, gi)"
-                viewBox="0 0 16 16"
-              >
-                <path d="M6 4l4 4-4 4"/>
-              </svg>
-              {{ group.name }}
-            </button>
-            @if (isExpanded('group:' + group.name, gi)) {
-              @for (cat of group.categories; track cat.name) {
-                <ng-container *ngTemplateOutlet="categoryTpl; context: { cat, nested: true }" />
-              }
-            }
-          </div>
-        } @else {
-          @for (cat of group.categories; track cat.name) {
-            <ng-container *ngTemplateOutlet="categoryTpl; context: { cat, nested: false }" />
-          }
-        }
-      }
+      <div class="sb-filter">
+        <prism-icon name="search" [size]="12" />
+        <input
+          placeholder="Filter components…"
+          [value]="searchService.query()"
+          (input)="searchService.search($any($event.target).value)"
+        />
+        <kbd>/</kbd>
+      </div>
 
-      <ng-template #categoryTpl let-cat="cat" let-nested="nested">
-        <div class="prism-sidebar__category" [class.prism-sidebar__category--nested]="nested">
-          <button
-            class="prism-sidebar__category-title"
-            [class.prism-sidebar__category-title--nested]="nested"
-            (click)="toggle('cat:' + cat.name, 0)"
+      <div class="sb-scroll">
+        @if (pageCategories().length > 0) {
+        <div class="sb-pinned">
+          <div class="sb-pinned-head">
+            <span class="sb-pinned-head-l">
+              <prism-icon name="pin" [size]="10" class="sb-pinned-pin" />
+              Pages
+            </span>
+            <span>{{ totalPages() }}</span>
+          </div>
+          @for (cat of pageCategories(); track cat.name) {
+          <div
+            class="sb-group"
+            [class.sb-group--collapsed]="isCollapsed('page:' + cat.name)"
           >
-            <svg
-              class="prism-sidebar__chevron"
-              [class.prism-sidebar__chevron--expanded]="isExpanded('cat:' + cat.name, 0)"
-              viewBox="0 0 16 16"
+            <button
+              class="sb-group-head"
+              (click)="toggleCollapse('page:' + cat.name)"
+              [attr.aria-expanded]="!isCollapsed('page:' + cat.name)"
             >
-              <path d="M6 4l4 4-4 4"/>
-            </svg>
-            {{ cat.name }}
-          </button>
-          @if (isExpanded('cat:' + cat.name, 0)) {
-            @for (item of cat.items; track itemKey(item)) {
+              <prism-icon name="chevron-down" [size]="10" />
+              <span class="sb-group-chip" [style.--chip]="cat.color"></span>
+              {{ cat.name }}
+            </button>
+            @if (!isCollapsed('page:' + cat.name)) {
+            <div class="sb-group-body">
+              @for (item of cat.items; track itemKey(item)) {
               <button
-                class="prism-sidebar__item"
-                [class.prism-sidebar__item--active]="isActive(item)"
-                [class.prism-sidebar__item--nested]="nested"
-                [class.prism-sidebar__item--page]="item.kind === 'page'"
+                class="sb-item"
+                [class.sb-item--active]="isActive(item)"
                 (click)="onSelect(item)"
               >
-                @if (item.kind === 'page') {
-                  <span class="prism-sidebar__page-icon">◈</span>
-                }
-                {{ itemLabel(item) }}
+                <span class="sb-item-name">{{ itemLabel(item) }}</span>
               </button>
+              }
+            </div>
             }
+          </div>
           }
         </div>
-      </ng-template>
+        } @if (componentCategories().length > 0) {
+        <div class="sb-section-head">
+          <span class="sb-section-head-l">
+            <prism-icon name="box" [size]="10" class="sb-section-icon" />
+            Components
+          </span>
+          <span>{{ stats().components }}</span>
+        </div>
+        } @for (cat of componentCategories(); track cat.name) {
+        <div
+          class="sb-group"
+          [class.sb-group--collapsed]="isCollapsed('comp:' + cat.name)"
+        >
+          <button
+            class="sb-group-head"
+            (click)="toggleCollapse('comp:' + cat.name)"
+            [attr.aria-expanded]="!isCollapsed('comp:' + cat.name)"
+          >
+            <prism-icon name="chevron-down" [size]="10" />
+            <span class="sb-group-chip" [style.--chip]="cat.color"></span>
+            {{ cat.name }}
+          </button>
+          @if (!isCollapsed('comp:' + cat.name)) {
+          <div class="sb-group-body">
+            @for (item of cat.items; track itemKey(item)) {
+            <button
+              class="sb-item"
+              [class.sb-item--active]="isActive(item)"
+              (click)="onSelect(item)"
+            >
+              <prism-icon name="box" [size]="12" class="sb-item-icon" />
+              <span class="sb-item-name">{{ itemLabel(item) }}</span>
+              @if (item.kind === 'component') {
+              <span class="sb-item-count">{{
+                item.data.meta.showcaseConfig.variants?.length ?? 0
+              }}</span>
+              }
+            </button>
+            @if (isActive(item) && item.kind === 'component' &&
+            item.data.meta.showcaseConfig.variants?.length) { @for (variant of
+            item.data.meta.showcaseConfig.variants; track variant.name) {
+            <button class="sb-sub" (click)="onSelect(item)">
+              <span class="sb-sub-dot"></span>
+              {{ variant.name }}
+            </button>
+            } } }
+          </div>
+          }
+        </div>
+        }
+      </div>
     </nav>
   `,
   styles: `
     .prism-sidebar {
-      background: var(--prism-sidebar-bg, var(--prism-bg));
-      border-right: 1px solid var(--prism-border);
-      overflow-y: auto;
-      overflow-x: hidden;
-      padding: 4px 0;
+      display: flex;
+      flex-direction: column;
       height: 100%;
+      min-height: 0;
+      overflow: hidden;
     }
-    .prism-sidebar::-webkit-scrollbar { width: 4px; }
-    .prism-sidebar::-webkit-scrollbar-track { background: transparent; }
-    .prism-sidebar::-webkit-scrollbar-thumb { background: var(--prism-border-strong); border-radius: 2px; }
 
-    .prism-sidebar__group { margin-bottom: 2px; }
-
-    .prism-sidebar__group-title {
+    .sb-filter {
       display: flex;
       align-items: center;
-      gap: 6px;
-      width: 100%;
-      margin: 0;
-      padding: 8px 16px;
-      font-size: 11px;
+      gap: 8px;
+      margin: 12px;
+      padding: 0 10px;
+      height: 30px;
+      background: var(--prism-input-bg);
+      border: 1px solid var(--prism-border);
+      border-radius: 6px;
+      color: var(--prism-text-muted);
+    }
+    .sb-filter input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: 0;
+      outline: none;
+      font-size: var(--fs-md);
+      color: var(--prism-text);
+      font-family: var(--font-sans);
+    }
+    .sb-filter input::placeholder { color: var(--prism-text-muted); }
+    .sb-filter kbd {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--prism-text-ghost);
+      padding: 1px 5px;
+      border: 1px solid var(--prism-border);
+      border-radius: 3px;
+    }
+
+    .sb-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 0 16px;
+      padding-top: 0;
+    }
+    .sb-scroll::-webkit-scrollbar { width: 8px; }
+    .sb-scroll::-webkit-scrollbar-thumb { background: var(--prism-border-strong); border-radius: 4px; }
+    .sb-scroll::-webkit-scrollbar-track { background: transparent; }
+
+    .sb-pinned {
+      padding: 0 0 10px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--prism-border);
+      border-top: 1px solid var(--prism-border);
+    }
+    .sb-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px 6px;
+      font-size: 10.5px;
       font-weight: 700;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--prism-text-2);
-      font-family: var(--prism-font-sans);
-      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      border: none;
-      border-left: 2px solid color-mix(in srgb, var(--prism-primary) 50%, transparent);
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      color: var(--prism-text-ghost);
+      margin-top: 6px;
     }
-
-    .prism-sidebar__group-title:hover {
-      background: color-mix(in srgb, var(--prism-primary) 16%, transparent);
-      color: var(--prism-text);
-      border-left-color: var(--prism-primary);
+    .sb-section-head-l { display: flex; align-items: center; gap: 6px; }
+    .sb-section-icon { color: var(--prism-primary); }
+    .sb-pinned-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px 6px;
+      margin-top: 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--prism-text-ghost);
     }
+    .sb-pinned-head-l { display: flex; align-items: center; gap: 6px; }
+    .sb-pinned-pin { color: var(--prism-accent); }
 
-    .prism-sidebar__category { margin-bottom: 2px; }
-
-    .prism-sidebar__category-title {
+    .sb-group { margin-bottom: 4px; }
+    .sb-group-head {
       display: flex;
       align-items: center;
       gap: 6px;
       width: 100%;
-      margin: 0;
-      padding: 7px 16px;
-      font-size: 11px;
-      font-weight: 600;
+      padding: 8px 14px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--prism-text-2);
-      font-family: var(--prism-font-sans);
-      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
-      border: none;
-      border-left: 2px solid color-mix(in srgb, var(--prism-primary) 40%, transparent);
+      color: var(--prism-text-ghost);
       cursor: pointer;
-      text-align: left;
-      transition: background 0.12s, color 0.12s, border-color 0.12s;
-    }
-
-    .prism-sidebar__category-title:hover {
-      background: color-mix(in srgb, var(--prism-primary) 14%, transparent);
-      color: var(--prism-text);
-      border-left-color: var(--prism-primary);
-    }
-
-    .prism-sidebar__category-title--nested {
-      padding-left: 28px;
-      font-weight: 500;
-      font-size: 11px;
-      background: color-mix(in srgb, var(--prism-primary) 4%, transparent);
-      border-left-color: color-mix(in srgb, var(--prism-primary) 25%, transparent);
-    }
-
-    .prism-sidebar__category-title--nested:hover {
-      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-    }
-
-    .prism-sidebar__chevron {
-      width: 10px;
-      height: 10px;
-      flex-shrink: 0;
-      transition: transform 0.15s;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0.5;
-    }
-
-    .prism-sidebar__group-title:hover .prism-sidebar__chevron,
-    .prism-sidebar__category-title:hover .prism-sidebar__chevron {
-      opacity: 0.8;
-    }
-
-    .prism-sidebar__chevron--expanded {
-      transform: rotate(90deg);
-    }
-
-    .prism-sidebar__item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      width: 100%;
-      padding: 6px 14px 6px 24px;
-      font-size: 13px;
-      font-family: var(--prism-font-sans);
-      border: none;
+      user-select: none;
       background: none;
+      border: none;
+      text-align: left;
+      font-family: var(--font-sans);
+    }
+    .sb-group-head prism-icon {
+      transition: transform var(--dur-fast);
+      color: var(--prism-text-ghost);
+    }
+    .sb-group--collapsed .sb-group-head prism-icon { transform: rotate(-90deg); }
+
+    .sb-group-chip {
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      background: var(--chip, var(--prism-primary));
+      box-shadow: 0 0 6px var(--chip, var(--prism-primary));
+    }
+
+    .sb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 30px;
+      padding: 0 14px 0 28px;
+      font-size: 13px;
+      color: var(--prism-text-2);
+      cursor: pointer;
+      border: none;
+      border-left: 2px solid transparent;
+      background: none;
+      position: relative;
+      transition: background var(--dur-fast), color var(--dur-fast);
+      text-align: left;
+      font-family: var(--font-sans);
+    }
+    .sb-item:hover {
+      background: color-mix(in srgb, var(--prism-primary) 5%, transparent);
+      color: var(--prism-text);
+    }
+    .sb-item--active {
+      border-left-color: var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
+      color: var(--prism-text);
+      font-weight: 500;
+    }
+    .sb-item--active::before {
+      content: '';
+      position: absolute;
+      left: -1px;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--prism-primary-from), var(--prism-primary-to));
+    }
+    .sb-item-icon { flex: 0 0 12px; opacity: 0.7; }
+    .sb-item-name {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sb-item-count {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--prism-text-ghost);
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: var(--prism-input-bg);
+    }
+    .sb-item--active .sb-item-count {
+      color: var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
+    }
+
+    .sb-sub {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding-left: 44px;
+      height: 24px;
+      font-size: 12px;
       color: var(--prism-text-muted);
       cursor: pointer;
+      border: none;
       border-left: 2px solid transparent;
+      background: none;
       text-align: left;
-      transition: background 0.1s, color 0.1s, border-color 0.1s;
+      font-family: var(--font-sans);
+    }
+    .sb-sub:hover { color: var(--prism-text-2); }
+    .sb-sub-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
-    .prism-sidebar__item--nested {
-      padding-left: 36px;
-    }
-
-    .prism-sidebar__item:hover {
-      background: color-mix(in srgb, var(--prism-primary) 6%, transparent);
-      color: var(--prism-text-2);
-    }
-
-    .prism-sidebar__item--active {
-      border-left-color: var(--prism-primary);
-      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      color: var(--prism-text);
-      font-weight: 500;
-    }
-
-    .prism-sidebar__item--active:hover {
-      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
-    }
-
-    .prism-sidebar__page-icon {
-      font-size: 10px;
-      opacity: 0.6;
+    :focus-visible {
+      outline: 2px solid var(--prism-primary);
+      outline-offset: 2px;
     }
   `,
 })
 export class PrismSidebarComponent {
   protected readonly navigationService = inject(PrismNavigationService);
+  protected readonly searchService = inject(PrismSearchService);
+  private readonly manifestService = inject(PrismManifestService);
 
-  private readonly expandedSet = signal<Set<string>>(this.loadExpanded());
+  private readonly collapsedSet = signal<Set<string>>(this.loadCollapsed());
 
-  protected readonly groups = computed<SidebarGroup[]>(() => {
+  protected readonly totalPages = computed(() => {
+    return this.searchService.filteredPages().length;
+  });
+
+  protected readonly pageCategories = computed<SidebarCategory[]>(() => {
+    const pages = this.searchService.filteredPages();
+    const catMap = new Map<string, NavigationItem[]>();
+    for (const page of pages) {
+      const cat = page.category ?? 'Docs';
+      const list = catMap.get(cat) ?? [];
+      list.push({ kind: 'page', data: page });
+      catMap.set(cat, list);
+    }
+    return [...catMap.entries()].map(([name, items]) => ({
+      name,
+      color: categoryColor(name),
+      items,
+    }));
+  });
+
+  protected readonly componentCategories = computed<SidebarCategory[]>(() => {
     const tree = this.navigationService.categoryTree();
-    const groupMap = new Map<string | null, SidebarCategory[]>();
-
-    for (const [fullCategory, items] of tree.entries()) {
-      const sepIdx = fullCategory.indexOf(' / ');
-      let groupName: string | null;
-      let catName: string;
-
-      if (sepIdx !== -1) {
-        groupName = fullCategory.substring(0, sepIdx).trim();
-        catName = fullCategory.substring(sepIdx + 3).trim();
-      } else {
-        groupName = null;
-        catName = fullCategory;
-      }
-
-      const cats = groupMap.get(groupName) ?? [];
-      cats.push({ name: catName, items });
-      groupMap.set(groupName, cats);
-    }
-
-    const result: SidebarGroup[] = [];
-    const ungrouped = groupMap.get(null);
-    if (ungrouped) {
-      result.push({ name: null, categories: ungrouped });
-      groupMap.delete(null);
-    }
-    for (const [name, categories] of groupMap.entries()) {
-      result.push({ name, categories });
+    const result: SidebarCategory[] = [];
+    for (const [catName, items] of tree.entries()) {
+      const compItems = items.filter((i) => i.kind === 'component');
+      if (compItems.length === 0) continue;
+      result.push({
+        name: catName,
+        color: categoryColor(catName),
+        items: compItems,
+      });
     }
     return result;
   });
 
-  protected isExpanded(key: string, index: number): boolean {
-    const set = this.expandedSet();
-    if (set.has(key)) return true;
-    if (set.has(`__collapsed:${key}`)) return false;
-    return index === 0;
+  protected readonly stats = computed(() => {
+    const manifest = this.manifestService.manifest();
+    const components = manifest.components.length;
+    const variants = manifest.components.reduce(
+      (sum, c) => sum + (c.meta.showcaseConfig.variants?.length ?? 0),
+      0
+    );
+    return { components, variants };
+  });
+
+  protected isCollapsed(key: string): boolean {
+    return this.collapsedSet().has(key);
   }
 
-  protected toggle(key: string, index: number): void {
-    this.expandedSet.update(prev => {
+  protected toggleCollapse(key: string): void {
+    this.collapsedSet.update((prev) => {
       const next = new Set(prev);
-      const collapsedKey = `__collapsed:${key}`;
-      if (next.has(key)) {
-        next.delete(key);
-        next.add(collapsedKey);
-      } else if (next.has(collapsedKey)) {
-        next.delete(collapsedKey);
-        next.add(key);
-      } else if (index === 0) {
-        next.add(collapsedKey);
-      } else {
-        next.add(key);
-      }
-      this.saveExpanded(next);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      this.saveCollapsed(next);
       return next;
     });
   }
@@ -316,7 +437,9 @@ export class PrismSidebarComponent {
     const active = this.navigationService.activeItem();
     if (!active || active.kind !== item.kind) return false;
     if (item.kind === 'component') {
-      return item.data.meta.className === (active as typeof item).data.meta.className;
+      return (
+        item.data.meta.className === (active as typeof item).data.meta.className
+      );
     }
     return item.data.title === (active as typeof item).data.title;
   }
@@ -329,7 +452,7 @@ export class PrismSidebarComponent {
     }
   }
 
-  private loadExpanded(): Set<string> {
+  private loadCollapsed(): Set<string> {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       return stored ? new Set(JSON.parse(stored)) : new Set();
@@ -338,9 +461,9 @@ export class PrismSidebarComponent {
     }
   }
 
-  private saveExpanded(set: Set<string>): void {
+  private saveCollapsed(set: Set<string>): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
-    } catch { /* ignore */ }
+    } catch {}
   }
 }

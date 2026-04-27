@@ -25,16 +25,18 @@ See [NgPrismConfig](api/ng-prism-config.md) for the complete interface.
 
 The most commonly used fields:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `plugins` | `NgPrismPlugin[]` | List of plugins to activate |
-| `pages` | `StyleguidePage[]` | Config-declared custom pages |
-| `appProviders` | `Provider[]` | Angular providers added to the Prism app bootstrap |
-| `theme` | `Record<string, string>` | CSS custom property overrides |
-| `themeStylesheet` | `string` | Path to a custom SCSS file loaded by the Prism app |
-| `ui` | object | Replace individual UI sections with custom components |
-| `headless` | `boolean` | Strip all built-in chrome — render only the component canvas |
-| `urlState` | `boolean` | Disable URL state sync (default: `true`) |
+| Field             | Type                     | Description                                                  |
+| ----------------- | ------------------------ | ------------------------------------------------------------ |
+| `title`           | `string`                 | Header title text (default: `'ng-prism'`)                    |
+| `subtitle`        | `string`                 | Secondary text below the title (monospace, muted)            |
+| `plugins`         | `NgPrismPlugin[]`        | List of plugins to activate                                  |
+| `pages`           | `StyleguidePage[]`       | Config-declared custom pages                                 |
+| `appProviders`    | `Provider[]`             | Angular providers added to the Prism app bootstrap           |
+| `theme`           | `Record<string, string>` | CSS custom property overrides                                |
+| `themeStylesheet` | `string`                 | Path to a custom SCSS file loaded by the Prism app           |
+| `ui`              | object                   | Replace individual UI sections with custom components        |
+| `headless`        | `boolean`                | Strip all built-in chrome — render only the component canvas |
+| `urlState`        | `boolean`                | Disable URL state sync (default: `true`)                     |
 
 ## Adding Global Providers
 
@@ -72,11 +74,12 @@ See [Theming](guide/theming.md) for the full list of available properties.
 
 ## Branding
 
-Replace the default ng-prism logo and title in the header:
+Replace the default ng-prism logo, title, and subtitle in the header:
 
 ```typescript
 export default defineConfig({
   title: 'My Component Library',
+  subtitle: 'acme/design-system',
   logo: {
     light: 'assets/logo-dark.svg',
     dark: 'assets/logo-light.svg',
@@ -84,13 +87,20 @@ export default defineConfig({
 });
 ```
 
-If only one logo variant is provided, it is used for both themes.
+| Field        | Type     | Description                                                |
+| ------------ | -------- | ---------------------------------------------------------- |
+| `title`      | `string` | Header title (gradient text). Default: `'ng-prism'`        |
+| `subtitle`   | `string` | Smaller text below the title (monospace, muted). Optional. |
+| `logo.light` | `string` | Logo image URL for light theme                             |
+| `logo.dark`  | `string` | Logo image URL for dark theme                              |
+
+If only one logo variant is provided, it is used for both themes. If no logo is configured, a default prism icon is shown.
 
 > **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
 
 ## Category Groups
 
-Organize categories into collapsible parent groups using ` / ` in the `@Showcase` category:
+Organize categories into collapsible parent groups using `/` in the `@Showcase` category:
 
 ```typescript
 @Showcase({ title: 'Button', category: 'Components / Atoms' })
@@ -109,10 +119,7 @@ import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
-  plugins: [
-    jsDocPlugin(),
-    figmaPlugin(),
-  ],
+  plugins: [jsDocPlugin(), figmaPlugin()],
 });
 ```
 

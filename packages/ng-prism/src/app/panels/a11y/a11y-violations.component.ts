@@ -1,6 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import type { Result } from 'axe-core';
-import { Highlight } from 'ngx-highlightjs';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { A11yAuditService } from './a11y-audit.service.js';
 import { A11yScoreComponent } from './a11y-score.component.js';
 
@@ -11,355 +14,173 @@ const IMPACT_ORDER: Record<string, number> = {
   minor: 3,
 };
 
-function sortByImpact(results: Result[]): Result[] {
-  return [...results].sort(
-    (a, b) => (IMPACT_ORDER[a.impact ?? ''] ?? 4) - (IMPACT_ORDER[b.impact ?? ''] ?? 4),
-  );
+const IMPACT_COLOR: Record<string, string> = {
+  critical: 'var(--prism-danger)',
+  serious: '#fb923c',
+  moderate: 'var(--prism-warn)',
+  minor: 'var(--prism-text-muted)',
+};
+
+function sevColor(impact: string | undefined): string {
+  return IMPACT_COLOR[impact ?? ''] ?? 'var(--prism-success)';
 }
 
 @Component({
   selector: 'prism-a11y-violations',
   standalone: true,
-  imports: [Highlight, A11yScoreComponent],
+  imports: [A11yScoreComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (auditService.error()) {
-      <div class="prism-a11y-v__error">Audit failed: {{ auditService.error() }}</div>
+    <div class="a11y-status a11y-status--error">
+      Audit failed: {{ auditService.error() }}
+    </div>
     } @else if (auditService.results() || auditService.running()) {
-      <div class="prism-a11y-v__hero" [class.prism-a11y-v__hero--loading]="auditService.running()">
+    <div class="a11y-body" [class.a11y-body--loading]="auditService.running()">
+      <div class="score-wrap">
         <prism-a11y-score [score]="scoreResult()?.score ?? 0" />
-        <div class="prism-a11y-v__meta">
-          <div class="prism-a11y-v__score-num">
-            {{ scoreResult()?.score ?? 0 }} / 100
-            @if (auditService.running()) {
-              <span class="prism-a11y-v__auditing">Auditing…</span>
-            }
-          </div>
-          <div class="prism-a11y-v__score-detail">
-            {{ scoreResult()?.violations ?? 0 }} Violations · {{ scoreResult()?.passes ?? 0 }} Passes
-          </div>
-          <div class="prism-a11y-v__badges">
-            @if (scoreResult()?.critical) {
-              <span class="prism-a11y-v__badge prism-a11y-v__badge--critical">
-                {{ scoreResult()!.critical }} critical
-              </span>
-            }
-            @if (scoreResult()?.serious) {
-              <span class="prism-a11y-v__badge prism-a11y-v__badge--serious">
-                {{ scoreResult()!.serious }} serious
-              </span>
-            }
-            @if (scoreResult()?.moderate) {
-              <span class="prism-a11y-v__badge prism-a11y-v__badge--moderate">
-                {{ scoreResult()!.moderate }} moderate
-              </span>
-            }
-            @if (scoreResult() && !scoreResult()!.violations) {
-              <span class="prism-a11y-v__badge prism-a11y-v__badge--pass">All clear</span>
-            }
-          </div>
+        <div class="score-label">axe-core audit</div>
+        <div class="score-meta">
+          @if (scoreResult()?.critical) {
+          <span
+            ><i style="background: var(--prism-danger)"></i
+            >{{ scoreResult()!.critical }} critical</span
+          >
+          } @if (scoreResult()?.moderate) {
+          <span
+            ><i style="background: var(--prism-warn)"></i
+            >{{ scoreResult()!.moderate }} moderate</span
+          >
+          }
+          <span
+            ><i style="background: var(--prism-success)"></i
+            >{{ scoreResult()?.passes ?? 0 }} pass</span
+          >
         </div>
       </div>
-
-      <div class="prism-a11y-v__sections">
-        <div class="prism-a11y-v__section">
-          <button
-            class="prism-a11y-v__sec-hdr prism-a11y-v__sec-hdr--violation"
-            [class.prism-a11y-v__sec-hdr--open]="openSections().has('violations')"
-            (click)="toggle('violations')"
-          >
-            <span class="prism-a11y-v__chevron">{{ openSections().has('violations') ? '▾' : '▸' }}</span>
-            <span class="prism-a11y-v__sec-title">Violations</span>
-            <span class="prism-a11y-v__count prism-a11y-v__count--violation">{{ violations().length }}</span>
-          </button>
-          @if (openSections().has('violations')) {
-            <div class="prism-a11y-v__sec-body">
-              @if (!violations().length) {
-                <div class="prism-a11y-v__empty">No violations found.</div>
-              }
-              @for (item of violations(); track item.id) {
-                <div class="prism-a11y-v__item">
-                  <div class="prism-a11y-v__item-hdr">
-                    <span class="prism-a11y-v__impact prism-a11y-v__impact--{{ item.impact }}">{{ item.impact }}</span>
-                    <span class="prism-a11y-v__rule-id">{{ item.id }}</span>
-                  </div>
-                  <p class="prism-a11y-v__desc">{{ item.description }}</p>
-                  @for (node of item.nodes; track $index) {
-                    <div class="prism-a11y-v__code">
-                      <pre><code [highlight]="node.html" language="xml"></code></pre>
-                    </div>
-                  }
-                  <a class="prism-a11y-v__link" [href]="item.helpUrl" target="_blank" rel="noopener">
-                    Learn more ↗
-                  </a>
-                </div>
-              }
-            </div>
-          }
+      <div class="viol-list">
+        @for (item of allResults(); track item.id + item.impact) {
+        <div class="viol" [style.--sev-color]="sevColor(item.impact)">
+          <span class="viol-sev">{{ item.impact ?? 'pass' }}</span>
+          <div class="viol-text">
+            <b>{{ item.description }}</b>
+            @if (item.help) {
+            <span>{{ item.help }}</span>
+            }
+          </div>
+          <span class="viol-rule">{{ item.id }}</span>
         </div>
-
-        <div class="prism-a11y-v__section">
-          <button
-            class="prism-a11y-v__sec-hdr prism-a11y-v__sec-hdr--incomplete"
-            [class.prism-a11y-v__sec-hdr--open]="openSections().has('incomplete')"
-            (click)="toggle('incomplete')"
-          >
-            <span class="prism-a11y-v__chevron">{{ openSections().has('incomplete') ? '▾' : '▸' }}</span>
-            <span class="prism-a11y-v__sec-title">Needs Review</span>
-            <span class="prism-a11y-v__count prism-a11y-v__count--incomplete">{{ incomplete().length }}</span>
-          </button>
-          @if (openSections().has('incomplete')) {
-            <div class="prism-a11y-v__sec-body">
-              @if (!incomplete().length) {
-                <div class="prism-a11y-v__empty">Nothing to review.</div>
-              }
-              @for (item of incomplete(); track item.id) {
-                <div class="prism-a11y-v__item">
-                  <div class="prism-a11y-v__item-hdr">
-                    <span class="prism-a11y-v__impact prism-a11y-v__impact--{{ item.impact }}">{{ item.impact }}</span>
-                    <span class="prism-a11y-v__rule-id">{{ item.id }}</span>
-                  </div>
-                  <p class="prism-a11y-v__desc">{{ item.description }}</p>
-                </div>
-              }
-            </div>
-          }
-        </div>
-
-        <div class="prism-a11y-v__section">
-          <button
-            class="prism-a11y-v__sec-hdr prism-a11y-v__sec-hdr--pass"
-            [class.prism-a11y-v__sec-hdr--open]="openSections().has('passes')"
-            (click)="toggle('passes')"
-          >
-            <span class="prism-a11y-v__chevron">{{ openSections().has('passes') ? '▾' : '▸' }}</span>
-            <span class="prism-a11y-v__sec-title">Passes</span>
-            <span class="prism-a11y-v__count prism-a11y-v__count--pass">{{ passes().length }}</span>
-          </button>
-          @if (openSections().has('passes')) {
-            <div class="prism-a11y-v__sec-body">
-              @if (!passes().length) {
-                <div class="prism-a11y-v__empty">No passing rules.</div>
-              }
-              @for (item of passes(); track item.id) {
-                <div class="prism-a11y-v__item prism-a11y-v__item--pass">
-                  <span class="prism-a11y-v__rule-id">{{ item.id }}</span>
-                  <span class="prism-a11y-v__desc">{{ item.description }}</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
+        } @empty { @if (!auditService.running()) {
+        <div class="a11y-status">No results yet.</div>
+        } }
       </div>
+    </div>
     } @else {
-      <div class="prism-a11y-v__status">Select a component to run accessibility audit.</div>
+    <div class="a11y-status">
+      Select a component to run accessibility audit.
+    </div>
     }
   `,
   styles: `
-    :host {
+    :host { display: flex; flex-direction: column; height: 100%; overflow: auto; }
+
+    .a11y-body {
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 20px;
+      min-height: 0;
+    }
+    .a11y-body--loading { opacity: 0.55; transition: opacity var(--dur-base); }
+
+    .score-wrap {
       display: flex;
       flex-direction: column;
-      height: 100%;
-      overflow: auto;
-      --a11y-red: #f87171;
-      --a11y-amber: #fbbf24;
-      --a11y-green: #4ade80;
-    }
-
-    .prism-a11y-v__hero {
-      display: flex;
       align-items: center;
-      gap: 16px;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--prism-border);
-      flex-shrink: 0;
-    }
-    .prism-a11y-v__hero--loading {
-      opacity: 0.55;
-      transition: opacity 0.2s;
-    }
-    prism-a11y-score { width: 54px; height: 54px; flex-shrink: 0; }
-
-    .prism-a11y-v__auditing {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--prism-text-muted);
-      margin-left: 8px;
-    }
-
-    .prism-a11y-v__meta { display: flex; flex-direction: column; gap: 2px; }
-    .prism-a11y-v__score-num { font-size: 20px; font-weight: 700; color: var(--prism-text); }
-    .prism-a11y-v__score-detail { font-size: 12px; color: var(--prism-text-muted); }
-    .prism-a11y-v__badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
-
-    .prism-a11y-v__badge {
-      padding: 1px 7px; border-radius: 10px;
-      font-size: 11px; font-weight: 600;
-    }
-    .prism-a11y-v__badge--critical {
-      background: color-mix(in srgb, var(--a11y-red) 15%, transparent);
-      color: var(--a11y-red);
-    }
-    .prism-a11y-v__badge--serious {
-      background: color-mix(in srgb, #fb923c 15%, transparent);
-      color: #fb923c;
-    }
-    .prism-a11y-v__badge--moderate {
-      background: color-mix(in srgb, var(--a11y-amber) 12%, transparent);
-      color: var(--a11y-amber);
-    }
-    .prism-a11y-v__badge--pass {
-      background: color-mix(in srgb, var(--a11y-green) 12%, transparent);
-      color: var(--a11y-green);
-    }
-
-    .prism-a11y-v__sections { display: flex; flex-direction: column; }
-    .prism-a11y-v__section { border-bottom: 1px solid var(--prism-border); }
-
-    .prism-a11y-v__sec-hdr {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 16px 9px 12px;
-      background: none;
-      border: none;
-      border-left: 3px solid transparent;
-      cursor: pointer;
-      font-family: var(--prism-font-sans, system-ui, sans-serif);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--prism-text-muted);
-      text-align: left;
-      transition: background 0.1s, color 0.1s;
-      user-select: none;
-    }
-    .prism-a11y-v__sec-hdr--violation { border-left-color: var(--a11y-red); }
-    .prism-a11y-v__sec-hdr--violation:hover,
-    .prism-a11y-v__sec-hdr--violation.prism-a11y-v__sec-hdr--open {
-      background: color-mix(in srgb, var(--a11y-red) 7%, transparent);
-      color: var(--a11y-red);
-    }
-    .prism-a11y-v__sec-hdr--incomplete { border-left-color: var(--a11y-amber); }
-    .prism-a11y-v__sec-hdr--incomplete:hover,
-    .prism-a11y-v__sec-hdr--incomplete.prism-a11y-v__sec-hdr--open {
-      background: color-mix(in srgb, var(--a11y-amber) 7%, transparent);
-      color: var(--a11y-amber);
-    }
-    .prism-a11y-v__sec-hdr--pass { border-left-color: var(--a11y-green); }
-    .prism-a11y-v__sec-hdr--pass:hover,
-    .prism-a11y-v__sec-hdr--pass.prism-a11y-v__sec-hdr--open {
-      background: color-mix(in srgb, var(--a11y-green) 7%, transparent);
-      color: var(--a11y-green);
-    }
-
-    .prism-a11y-v__chevron { font-size: 10px; width: 12px; flex-shrink: 0; opacity: 0.7; }
-    .prism-a11y-v__sec-title { flex: 1; }
-    .prism-a11y-v__count { padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; }
-    .prism-a11y-v__count--violation {
-      background: color-mix(in srgb, var(--a11y-red) 15%, transparent);
-      color: var(--a11y-red);
-    }
-    .prism-a11y-v__count--incomplete {
-      background: color-mix(in srgb, var(--a11y-amber) 12%, transparent);
-      color: var(--a11y-amber);
-    }
-    .prism-a11y-v__count--pass {
-      background: color-mix(in srgb, var(--a11y-green) 12%, transparent);
-      color: var(--a11y-green);
-    }
-
-    .prism-a11y-v__sec-body {
-      padding: 8px 12px 12px;
-      background: var(--prism-bg);
-    }
-    .prism-a11y-v__empty { padding: 6px 4px; font-size: 12px; color: var(--prism-text-muted); }
-
-    .prism-a11y-v__item {
-      padding: 10px 12px;
-      margin-bottom: 6px;
+      gap: 10px;
+      padding: 14px;
       background: var(--prism-bg-surface);
-      border-radius: var(--prism-radius, 8px);
       border: 1px solid var(--prism-border);
+      border-radius: 10px;
+      align-self: start;
     }
-    .prism-a11y-v__item--pass {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 12px;
-    }
-    .prism-a11y-v__item-hdr { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 
-    .prism-a11y-v__impact {
-      padding: 1px 6px;
-      border-radius: var(--prism-radius-xs, 3px);
+    .score-label {
       font-size: 11px;
-      font-weight: 600;
+      color: var(--prism-text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
+      font-weight: 600;
     }
-    .prism-a11y-v__impact--critical {
-      background: color-mix(in srgb, var(--a11y-red) 18%, transparent);
-      color: var(--a11y-red);
-      border: 1px solid color-mix(in srgb, var(--a11y-red) 30%, transparent);
-    }
-    .prism-a11y-v__impact--serious {
-      background: color-mix(in srgb, #fb923c 18%, transparent);
-      color: #fb923c;
-      border: 1px solid color-mix(in srgb, #fb923c 30%, transparent);
-    }
-    .prism-a11y-v__impact--moderate {
-      background: color-mix(in srgb, var(--a11y-amber) 18%, transparent);
-      color: var(--a11y-amber);
-      border: 1px solid color-mix(in srgb, var(--a11y-amber) 30%, transparent);
-    }
-    .prism-a11y-v__impact--minor {
-      background: color-mix(in srgb, var(--prism-text-muted) 10%, transparent);
-      color: var(--prism-text-muted);
-      border: 1px solid var(--prism-border);
-    }
-
-    .prism-a11y-v__rule-id {
-      font-family: var(--prism-font-mono, monospace);
-      font-size: 12px;
+    .score-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 2px;
+      font-size: 11px;
       color: var(--prism-text-muted);
     }
-    .prism-a11y-v__desc { margin: 3px 0; font-size: 12px; line-height: 1.4; color: var(--prism-text-2); }
+    .score-meta span { display: flex; align-items: center; gap: 4px; }
+    .score-meta i { width: 6px; height: 6px; border-radius: 50%; display: block; }
 
-    .prism-a11y-v__code {
-      margin: 7px 0 0;
-      border-radius: var(--prism-radius-xs, 3px);
-      overflow: hidden;
+    .viol-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .viol {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      background: var(--prism-bg-surface);
       border: 1px solid var(--prism-border);
-      background: var(--prism-void);
+      border-radius: 8px;
+      border-left: 3px solid var(--sev-color, var(--prism-primary));
+      transition: border-color var(--dur-fast);
     }
-    .prism-a11y-v__code pre {
-      margin: 0;
-      padding: 10px 14px;
-      font-size: 12px;
-      line-height: 1.6;
-      font-family: var(--prism-font-mono, monospace);
-      overflow: auto;
-    }
-    .prism-a11y-v__code code { font-family: inherit; }
-    :host ::ng-deep .prism-a11y-v__code .hljs { background: transparent; color: var(--prism-text-2); }
-    :host ::ng-deep .prism-a11y-v__code .hljs-tag { color: var(--prism-text-muted); }
-    :host ::ng-deep .prism-a11y-v__code .hljs-name { color: var(--prism-primary); }
-    :host ::ng-deep .prism-a11y-v__code .hljs-attr { color: #93c5fd; }
-    :host ::ng-deep .prism-a11y-v__code .hljs-string { color: #7dd3fc; }
+    .viol:hover { border-color: var(--prism-border-strong); }
 
-    .prism-a11y-v__link {
-      display: inline-block;
-      margin-top: 5px;
-      font-size: 12px;
-      color: var(--prism-primary);
-      text-decoration: none;
+    .viol-sev {
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: var(--radius-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: color-mix(in srgb, var(--sev-color) 15%, transparent);
+      color: var(--sev-color);
     }
-    .prism-a11y-v__link:hover { text-decoration: underline; }
 
-    .prism-a11y-v__status {
+    .viol-text {
+      font-size: 12.5px;
+      color: var(--prism-text);
+      min-width: 0;
+    }
+    .viol-text b {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 1px;
+    }
+    .viol-text span {
+      color: var(--prism-text-muted);
+      font-size: 11.5px;
+    }
+
+    .viol-rule {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--prism-text-ghost);
+      padding: 2px 7px;
+      background: var(--prism-input-bg);
+      border-radius: var(--radius-xs);
+      white-space: nowrap;
+    }
+
+    .a11y-status {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -367,33 +188,33 @@ function sortByImpact(results: Result[]): Result[] {
       color: var(--prism-text-muted);
       font-size: 13px;
     }
-    .prism-a11y-v__error {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100px;
-      color: var(--a11y-red);
-      font-size: 13px;
+    .a11y-status--error { color: var(--prism-danger); }
+
+    @media (max-width: 1100px) {
+      .a11y-body { grid-template-columns: 1fr; }
     }
   `,
 })
 export class A11yViolationsComponent {
   protected readonly auditService = inject(A11yAuditService);
 
-  protected readonly scoreResult = computed(() => this.auditService.scoreResult());
-  protected readonly violations = computed(() =>
-    sortByImpact(this.auditService.results()?.violations ?? []),
+  protected readonly scoreResult = computed(() =>
+    this.auditService.scoreResult()
   );
-  protected readonly incomplete = computed(() => this.auditService.results()?.incomplete ?? []);
-  protected readonly passes = computed(() => this.auditService.results()?.passes ?? []);
-  protected readonly openSections = signal<Set<string>>(new Set(['violations']));
 
-  protected toggle(section: string): void {
-    this.openSections.update((current) => {
-      const next = new Set(current);
-      if (next.has(section)) next.delete(section);
-      else next.add(section);
-      return next;
-    });
+  protected readonly allResults = computed(() => {
+    const results = this.auditService.results();
+    if (!results) return [];
+    const violations = [...results.violations].sort(
+      (a, b) =>
+        (IMPACT_ORDER[a.impact ?? ''] ?? 4) -
+        (IMPACT_ORDER[b.impact ?? ''] ?? 4)
+    );
+    const passes = results.passes.slice(0, 4);
+    return [...violations, ...passes];
+  });
+
+  protected sevColor(impact: string | undefined): string {
+    return sevColor(impact);
   }
 }

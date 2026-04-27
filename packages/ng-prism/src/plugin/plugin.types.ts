@@ -6,9 +6,15 @@ export interface NgPrismPlugin {
   name: string;
 
   // Build-time hooks (run inside the Angular builder / Node.js)
-  onComponentScanned?: (component: ScannedComponent) => ScannedComponent | void | Promise<ScannedComponent | void>;
-  onPageScanned?: (page: StyleguidePage) => StyleguidePage | void | Promise<StyleguidePage | void>;
-  onManifestReady?: (manifest: PrismManifest) => PrismManifest | void | Promise<PrismManifest | void>;
+  onComponentScanned?: (
+    component: ScannedComponent
+  ) => ScannedComponent | void | Promise<ScannedComponent | void>;
+  onPageScanned?: (
+    page: StyleguidePage
+  ) => StyleguidePage | void | Promise<StyleguidePage | void>;
+  onManifestReady?: (
+    manifest: PrismManifest
+  ) => PrismManifest | void | Promise<PrismManifest | void>;
 
   // Runtime contributions (embedded into the Prism app)
   panels?: PanelDefinition[];
@@ -69,7 +75,14 @@ export interface ScannedComponent {
 
 export interface InputMeta {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'union' | 'array' | 'object' | 'unknown';
+  type:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'union'
+    | 'array'
+    | 'object'
+    | 'unknown';
   rawType?: string;
   values?: string[];
   defaultValue?: unknown;
@@ -109,6 +122,7 @@ export interface NgPrismConfig {
     dark?: string;
   };
   title?: string;
+  subtitle?: string;
   themeStylesheet?: string;
   ui?: {
     header?: Type<unknown>;

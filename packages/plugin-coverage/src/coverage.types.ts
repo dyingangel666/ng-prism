@@ -5,6 +5,14 @@ export interface MetricDetail {
   pct: number;
 }
 
+export interface FileCoverageDetail {
+  path: string;
+  statements: MetricDetail;
+  branches: MetricDetail;
+  functions: MetricDetail;
+  lines: MetricDetail;
+}
+
 export interface CoverageData {
   score: number;
   statements: MetricDetail;
@@ -12,6 +20,7 @@ export interface CoverageData {
   functions: MetricDetail;
   lines: MetricDetail;
   found: boolean;
+  files?: FileCoverageDetail[];
 }
 
 export interface CoveragePluginOptions {
