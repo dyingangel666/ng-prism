@@ -161,7 +161,7 @@ describe('test-workspace integration', () => {
       'utf-8',
     );
     expect(content).toContain('title: "Button"');
-    expect(content).toContain('category: "Components / Inputs"');
+    expect(content).toContain('category: "Inputs"');
     expect(content).toContain('variants:');
     expect(content).toContain('selector: "lib-button"');
     expect(content).toContain('standalone: true');
