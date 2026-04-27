@@ -1,5 +1,6 @@
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { writeFileSync, readFileSync, mkdirSync, statSync, renameSync, existsSync, unlinkSync } from 'fs';
+import ts from 'typescript';
 import type { BuilderContext } from '@angular-devkit/architect';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { ScannedComponent, PrismManifest } from '../../plugin/plugin.types.js';
@@ -114,15 +115,30 @@ function isDirectory(path: string): boolean {
   }
 }
 
+function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
+  const configPath = ts.findConfigFile(entryPointDir, ts.sys.fileExists, 'tsconfig.json');
+  if (!configPath) return {};
+
+  const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+  if (configFile.error) return {};
+
+  const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configPath));
+  const result: ts.CompilerOptions = {};
+  if (parsed.options.paths) result.paths = parsed.options.paths;
+  if (parsed.options.baseUrl) result.baseUrl = parsed.options.baseUrl;
+  return result;
+}
+
 function scanEntryPoints(
   workspaceRoot: string,
   options: PrismPipelineOptions,
   state: PrismPipelineState,
 ): PrismManifest {
   const absoluteEntryPoint = join(workspaceRoot, options.entryPoint);
+  const pathOptions = resolveTsconfigPaths(dirname(absoluteEntryPoint));
 
   if (!isDirectory(absoluteEntryPoint)) {
-    return getOrCreateScanner(state, absoluteEntryPoint).scan();
+    return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
   }
 
   const entryPoints = discoverSecondaryEntryPoints(
@@ -133,7 +149,7 @@ function scanEntryPoints(
   const allComponents: ScannedComponent[] = [];
 
   for (const ep of entryPoints) {
-    const scanner = getOrCreateScanner(state, ep.entryFile);
+    const scanner = getOrCreateScanner(state, ep.entryFile, pathOptions);
     const result = scanner.scan();
     for (const comp of result.components) {
       comp.importPath = ep.importPath;
@@ -144,10 +160,14 @@ function scanEntryPoints(
   return { components: allComponents };
 }
 
-function getOrCreateScanner(state: PrismPipelineState, entryFile: string): Scanner {
+function getOrCreateScanner(
+  state: PrismPipelineState,
+  entryFile: string,
+  compilerOptions: ts.CompilerOptions,
+): Scanner {
   let scanner = state.scanners.get(entryFile);
   if (!scanner) {
-    scanner = createScanner({ entryPoint: entryFile });
+    scanner = createScanner({ entryPoint: entryFile, compilerOptions });
     state.scanners.set(entryFile, scanner);
   }
   return scanner;
