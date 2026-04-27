@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-coverage",
-  "version": "21.5.1",
+  "version": "21.5.2",
   "description": "Test coverage panel for ng-prism.",
   "keywords": [
     "@ng-prism/core",

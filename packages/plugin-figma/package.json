@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-figma",
-  "version": "21.5.1",
+  "version": "21.5.2",
   "description": "Figma design embed panel for ng-prism.",
   "keywords": [
     "@ng-prism/core",
