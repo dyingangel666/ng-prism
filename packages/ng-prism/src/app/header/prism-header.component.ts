@@ -107,7 +107,7 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
       font-weight: 700;
       font-size: var(--fs-xl);
       letter-spacing: -0.01em;
-      background: linear-gradient(90deg, #a78bfa, #ec4899 60%, #3b82f6);
+      background: linear-gradient(90deg, #a78bfa, var(--prism-accent) 60%, #3b82f6);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;

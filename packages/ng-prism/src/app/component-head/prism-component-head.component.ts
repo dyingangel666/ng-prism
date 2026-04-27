@@ -81,7 +81,7 @@ import { PrismStatComponent } from './prism-stat.component.js';
       top: 0;
       bottom: 0;
       width: 6px;
-      background: linear-gradient(180deg, var(--prism-primary-from) 0%, #ec4899 50%, var(--prism-primary-to) 100%);
+      background: linear-gradient(180deg, var(--prism-primary-from) 0%, var(--prism-accent) 50%, var(--prism-primary-to) 100%);
     }
 
     .comp-head-top {
