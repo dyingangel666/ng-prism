@@ -10,15 +10,18 @@ import { PrismJsonNodeComponent } from './prism-json-node.component.js';
   template: `
     <div class="ev-panel">
       <div class="ev-body">
-        @for (entry of eventLogService.events(); track entry.id; let i = $index) {
-          <div class="ev">
-            <span class="ev-time">{{ formatTime(entry.timestamp) }}</span>
-            <span class="ev-idx">#{{ padIdx(eventLogService.events().length - i) }}</span>
-            <span class="ev-name">{{ entry.name }}</span>
-            <span class="ev-args"><prism-json-node [value]="entry.value" /></span>
-          </div>
+        @for (entry of eventLogService.events(); track entry.id; let i = $index)
+        {
+        <div class="ev">
+          <span class="ev-time">{{ formatTime(entry.timestamp) }}</span>
+          <span class="ev-idx"
+            >#{{ padIdx(eventLogService.events().length - i) }}</span
+          >
+          <span class="ev-name">{{ entry.name }}</span>
+          <span class="ev-args"><prism-json-node [value]="entry.value" /></span>
+        </div>
         } @empty {
-          <p class="ev-empty">No events recorded</p>
+        <p class="ev-empty">No events recorded</p>
         }
       </div>
     </div>
@@ -83,7 +86,10 @@ export class PrismEventsPanelComponent {
 
   protected formatTime(ts: number): string {
     const d = new Date(ts);
-    return d.toLocaleTimeString('en-US', { hour12: false, fractionalSecondDigits: 3 });
+    return d.toLocaleTimeString('en-US', {
+      hour12: false,
+      fractionalSecondDigits: 3,
+    });
   }
 
   protected padIdx(n: number): string {

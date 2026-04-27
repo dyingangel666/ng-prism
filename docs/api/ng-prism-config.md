@@ -90,8 +90,8 @@ Map of CSS custom property overrides. Applied on top of the built-in default the
 ```typescript
 export default defineConfig({
   theme: {
-    '--prism-primary':   '#0ea5e9',
-    '--prism-bg':        '#0f172a',
+    '--prism-primary': '#0ea5e9',
+    '--prism-bg': '#0f172a',
     '--prism-font-sans': '"Inter", system-ui, sans-serif',
   },
 });
@@ -117,15 +117,15 @@ export default defineConfig({
 
 Replace individual UI sections with custom Angular standalone components. All fields are optional — omit any slot to keep the built-in component.
 
-| Key | Replaces |
-|-----|----------|
-| `header` | Top header bar (logo, toolbar, theme toggle) |
-| `sidebar` | Left navigation sidebar |
-| `componentHeader` | Title and description area above the canvas |
-| `renderer` | Entire renderer region (canvas + variant tabs + snippet) |
-| `controlsPanel` | Built-in Controls addon panel |
-| `eventsPanel` | Built-in Events addon panel |
-| `footer` | Footer area below addon panels |
+| Key               | Replaces                                                 |
+| ----------------- | -------------------------------------------------------- |
+| `header`          | Top header bar (logo, toolbar, theme toggle)             |
+| `sidebar`         | Left navigation sidebar                                  |
+| `componentHeader` | Title and description area above the canvas              |
+| `renderer`        | Entire renderer region (canvas + variant tabs + snippet) |
+| `controlsPanel`   | Built-in Controls addon panel                            |
+| `eventsPanel`     | Built-in Events addon panel                              |
+| `footer`          | Footer area below addon panels                           |
 
 ```typescript
 export default defineConfig({

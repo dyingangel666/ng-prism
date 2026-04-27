@@ -1,4 +1,9 @@
-import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  input,
+  output,
+} from '@angular/core';
 
 @Component({
   selector: 'prism-union-control',
@@ -7,11 +12,13 @@ import { Component, ChangeDetectionStrategy, input, output } from '@angular/core
   template: `
     <div class="ctl-pills" role="group">
       @for (option of options(); track option) {
-        <button
-          class="ctl-pill"
-          [class.ctl-pill--active]="option === value()"
-          (click)="valueChange.emit(option)"
-        >{{ option }}</button>
+      <button
+        class="ctl-pill"
+        [class.ctl-pill--active]="option === value()"
+        (click)="valueChange.emit(option)"
+      >
+        {{ option }}
+      </button>
       }
     </div>
   `,

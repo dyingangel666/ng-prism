@@ -1,4 +1,10 @@
-import { Component, computed, inject, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  ChangeDetectionStrategy,
+  HostListener,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.component.js';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';

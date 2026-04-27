@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import type { CoverageData, FileCoverageDetail } from './coverage.types.js';
 
 @Component({
@@ -7,44 +12,52 @@ import type { CoverageData, FileCoverageDetail } from './coverage.types.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (coverage()?.found) {
-      <div class="cov-body">
-        <div class="cov-summary">
-          @for (stat of summaryStats(); track stat.label) {
-            <div class="cov-stat">
-              <div class="cov-stat-k">{{ stat.label }}</div>
-              <div class="cov-stat-v">{{ stat.pct }}<small>%</small></div>
-              <div class="cov-bar">
-                <div class="cov-bar-fill" [style.width.%]="stat.pct"></div>
-              </div>
-            </div>
-          }
-        </div>
-
-        @if (files().length) {
-          <div class="cov-files">
-            <div class="cov-file cov-file--header">
-              <span>File</span>
-              <span>Lines</span>
-              <span>Branch</span>
-              <span>Func</span>
-              <span>Stmt</span>
-            </div>
-            @for (file of files(); track file.path) {
-              <div class="cov-file">
-                <span class="cov-file-name">{{ fileName(file.path) }}</span>
-                <span class="cov-file-val" [class.bad]="file.lines.pct < 80">{{ file.lines.pct }}%</span>
-                <span class="cov-file-val" [class.bad]="file.branches.pct < 80">{{ file.branches.pct }}%</span>
-                <span class="cov-file-val" [class.bad]="file.functions.pct < 80">{{ file.functions.pct }}%</span>
-                <span class="cov-file-val" [class.bad]="file.statements.pct < 80">{{ file.statements.pct }}%</span>
-              </div>
-            }
+    <div class="cov-body">
+      <div class="cov-summary">
+        @for (stat of summaryStats(); track stat.label) {
+        <div class="cov-stat">
+          <div class="cov-stat-k">{{ stat.label }}</div>
+          <div class="cov-stat-v">{{ stat.pct }}<small>%</small></div>
+          <div class="cov-bar">
+            <div class="cov-bar-fill" [style.width.%]="stat.pct"></div>
           </div>
+        </div>
         }
       </div>
-    } @else {
-      <div class="cov-empty">
-        <p>No coverage data. Run tests with coverage enabled.</p>
+
+      @if (files().length) {
+      <div class="cov-files">
+        <div class="cov-file cov-file--header">
+          <span>File</span>
+          <span>Lines</span>
+          <span>Branch</span>
+          <span>Func</span>
+          <span>Stmt</span>
+        </div>
+        @for (file of files(); track file.path) {
+        <div class="cov-file">
+          <span class="cov-file-name">{{ fileName(file.path) }}</span>
+          <span class="cov-file-val" [class.bad]="file.lines.pct < 80"
+            >{{ file.lines.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.branches.pct < 80"
+            >{{ file.branches.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.functions.pct < 80"
+            >{{ file.functions.pct }}%</span
+          >
+          <span class="cov-file-val" [class.bad]="file.statements.pct < 80"
+            >{{ file.statements.pct }}%</span
+          >
+        </div>
+        }
       </div>
+      }
+    </div>
+    } @else {
+    <div class="cov-empty">
+      <p>No coverage data. Run tests with coverage enabled.</p>
+    </div>
     }
   `,
   styles: `
@@ -152,7 +165,9 @@ export class CoveragePanelComponent {
 
   protected readonly coverage = computed<CoverageData | null>(() => {
     const comp = this.activeComponent() as any;
-    return (comp?.meta?.showcaseConfig?.meta?.['coverage'] as CoverageData) ?? null;
+    return (
+      (comp?.meta?.showcaseConfig?.meta?.['coverage'] as CoverageData) ?? null
+    );
   });
 
   protected readonly summaryStats = computed(() => {

@@ -30,10 +30,12 @@ export class PrismResizerDirective {
     this.el.nativeElement.classList.add('active');
 
     const onMove = (ev: MouseEvent) => {
-      const delta = this.axis() === 'x'
-        ? ev.clientX - startPos
-        : startPos - ev.clientY;
-      const next = Math.max(this.min(), Math.min(this.max(), startVal + (invert ? delta : delta)));
+      const delta =
+        this.axis() === 'x' ? ev.clientX - startPos : startPos - ev.clientY;
+      const next = Math.max(
+        this.min(),
+        Math.min(this.max(), startVal + (invert ? delta : delta))
+      );
       this.valueChange.emit(next);
     };
 

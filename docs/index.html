@@ -1,468 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>ng-prism — Documentation</title>
-  <meta name="description" content="Lightweight, Angular-native component showcase tool — documentation">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css">
-  <style>
-    :root {
-      /* — Prism light palette — */
-      --prism-void: #f0ecff;
-      --prism-deep: #faf8ff;
-      --prism-surface: #f3efff;
-      --prism-elevated: #ffffff;
-      --prism-violet: #6d28d9;
-      --prism-violet-deep: #7c3aed;
-      --prism-blue: #2563eb;
-      --prism-cyan: #0891b2;
-      --prism-pink: #db2777;
-      --prism-rose: #ec4899;
-      --prism-text-primary: #1a0e2e;
-      --prism-text-secondary: #4a3d65;
-      --prism-text-muted: #6b5e80;
-      --prism-border: rgba(109,40,217,0.1);
-      --prism-glow: rgba(109,40,217,0.10);
-      --prism-glow-strong: rgba(109,40,217,0.20);
+  <head>
+    <meta charset="UTF-8" />
+    <title>ng-prism — Documentation</title>
+    <meta
+      name="description"
+      content="Lightweight, Angular-native component showcase tool — documentation"
+    />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, minimum-scale=1.0"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"
+    />
+    <style>
+      :root {
+        /* — Prism light palette — */
+        --prism-void: #f0ecff;
+        --prism-deep: #faf8ff;
+        --prism-surface: #f3efff;
+        --prism-elevated: #ffffff;
+        --prism-violet: #6d28d9;
+        --prism-violet-deep: #7c3aed;
+        --prism-blue: #2563eb;
+        --prism-cyan: #0891b2;
+        --prism-pink: #db2777;
+        --prism-rose: #ec4899;
+        --prism-text-primary: #1a0e2e;
+        --prism-text-secondary: #4a3d65;
+        --prism-text-muted: #6b5e80;
+        --prism-border: rgba(109, 40, 217, 0.1);
+        --prism-glow: rgba(109, 40, 217, 0.1);
+        --prism-glow-strong: rgba(109, 40, 217, 0.2);
 
-      /* — Docsify theme overrides — */
-      --theme-color: #6d28d9;
-      --base-background-color: #faf8ff;
-      --base-color: #1a0e2e;
+        /* — Docsify theme overrides — */
+        --theme-color: #6d28d9;
+        --base-background-color: #faf8ff;
+        --base-color: #1a0e2e;
 
-      --sidebar-background: #f3efff;
-      --sidebar-nav-link-color: #4a3d65;
-      --sidebar-nav-link-color--active: #6d28d9;
-      --sidebar-nav-link-color--hover: #1a0e2e;
-      --sidebar-nav-link-border-color--active: #7c3aed;
-      --sidebar-nav-strong-color: #6b5e80;
-      --sidebar-name-color: #6d28d9;
-      --sidebar-width: 280px;
+        --sidebar-background: #f3efff;
+        --sidebar-nav-link-color: #4a3d65;
+        --sidebar-nav-link-color--active: #6d28d9;
+        --sidebar-nav-link-color--hover: #1a0e2e;
+        --sidebar-nav-link-border-color--active: #7c3aed;
+        --sidebar-nav-strong-color: #6b5e80;
+        --sidebar-name-color: #6d28d9;
+        --sidebar-width: 280px;
 
-      --link-color: #6d28d9;
-      --link-color--hover: #7c3aed;
+        --link-color: #6d28d9;
+        --link-color--hover: #7c3aed;
 
-      --heading-color: #1a0e2e;
-      --heading-h2-border-color: rgba(109,40,217,0.12);
+        --heading-color: #1a0e2e;
+        --heading-h2-border-color: rgba(109, 40, 217, 0.12);
 
-      --code-theme-background: #f3efff;
-      --code-inline-background: rgba(109,40,217,0.06);
-      --code-inline-color: #6d28d9;
+        --code-theme-background: #f3efff;
+        --code-inline-background: rgba(109, 40, 217, 0.06);
+        --code-inline-color: #6d28d9;
 
-      --blockquote-border-color: #7c3aed;
+        --blockquote-border-color: #7c3aed;
 
-      --table-head-background: rgba(109,40,217,0.04);
-      --table-row-even-background: rgba(109,40,217,0.02);
+        --table-head-background: rgba(109, 40, 217, 0.04);
+        --table-row-even-background: rgba(109, 40, 217, 0.02);
 
-      --search-background: #ffffff;
-      --search-result-heading-color: #6d28d9;
+        --search-background: #ffffff;
+        --search-result-heading-color: #6d28d9;
 
-      --cover-background-color: #faf8ff;
+        --cover-background-color: #faf8ff;
 
-      --notice-tip-border-color: #6d28d9;
-      --notice-important-border-color: #2563eb;
+        --notice-tip-border-color: #6d28d9;
+        --notice-important-border-color: #2563eb;
 
-      --base-font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      --base-font-size: 15px;
-      --base-line-height: 1.7;
-      --code-font-family: 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
-      --code-font-size: 0.875em;
+        --base-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        --base-font-size: 15px;
+        --base-line-height: 1.7;
+        --code-font-family: 'Fira Code', ui-monospace, 'Cascadia Code',
+          monospace;
+        --code-font-size: 0.875em;
 
-      --content-max-width: 860px;
-    }
+        --content-max-width: 860px;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Global & Body
     —————————————————————————————————————— */
-    * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      background: var(--prism-deep) !important;
-      color: var(--prism-text-primary);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+      body {
+        background: var(--prism-deep) !important;
+        color: var(--prism-text-primary);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Sidebar — spectral accent line
     —————————————————————————————————————— */
-    .sidebar {
-      border-right: 1px solid var(--prism-border);
-      background: var(--prism-surface) !important;
-    }
+      .sidebar {
+        border-right: 1px solid var(--prism-border);
+        background: var(--prism-surface) !important;
+      }
 
-    /* Spectral gradient line at the top of sidebar */
-    .sidebar::before {
-      content: '';
-      display: block;
-      height: 2px;
-      margin: 0 20px 16px;
-      background: linear-gradient(90deg, #7c3aed, #3b82f6, #7DD4FE, #ec4899, #FAC3F2);
-      border-radius: 1px;
-      opacity: 0.6;
-    }
+      /* Spectral gradient line at the top of sidebar */
+      .sidebar::before {
+        content: '';
+        display: block;
+        height: 2px;
+        margin: 0 20px 16px;
+        background: linear-gradient(
+          90deg,
+          #7c3aed,
+          #3b82f6,
+          #7dd4fe,
+          #ec4899,
+          #fac3f2
+        );
+        border-radius: 1px;
+        opacity: 0.6;
+      }
 
-    .sidebar .search {
+      .sidebar .search {
         background: transparent;
         padding-left: 0 !important;
         padding-right: 0 !important;
-    }
+      }
 
-    .sidebar .app-name {
+      .sidebar .app-name {
         margin-top: 0 !important;
-    }
+      }
 
-        /* Sidebar app name — logo treatment */
-    .sidebar .app-name-link {
-      font-weight: 700;
-      font-size: 22px;
-      letter-spacing: -0.03em;
-      color: var(--prism-text-primary) !important;
-      padding: 0;
-      display: flex;
-      align-items: flex-start;
+      /* Sidebar app name — logo treatment */
+      .sidebar .app-name-link {
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+        color: var(--prism-text-primary) !important;
+        padding: 0;
+        display: flex;
+        align-items: flex-start;
         margin-left: -12px;
-    }
+      }
 
-    /* Category headers in sidebar */
-    .sidebar nav > ul > li > strong,
-    .sidebar nav > ul > li > p > strong {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--prism-text-muted);
-      margin-top: 20px;
-      padding: 4px 0;
-    }
+      /* Category headers in sidebar */
+      .sidebar nav > ul > li > strong,
+      .sidebar nav > ul > li > p > strong {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--prism-text-muted);
+        margin-top: 20px;
+        padding: 4px 0;
+      }
 
-    /* Sidebar links */
-    .sidebar ul li a {
-      font-size: 14px;
-      font-weight: 400;
-      padding: 5px 0;
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .sidebar ul li a:hover {
-      text-decoration: none;
-      color: var(--prism-text-primary);
-    }
-    .sidebar ul li.active > a {
-      font-weight: 500;
-      color: var(--prism-violet);
-      border-right: 2px solid var(--prism-violet-deep);
-    }
+      /* Sidebar links */
+      .sidebar ul li a {
+        font-size: 14px;
+        font-weight: 400;
+        padding: 5px 0;
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .sidebar ul li a:hover {
+        text-decoration: none;
+        color: var(--prism-text-primary);
+      }
+      .sidebar ul li.active > a {
+        font-weight: 500;
+        color: var(--prism-violet);
+        border-right: 2px solid var(--prism-violet-deep);
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Content
     —————————————————————————————————————— */
-    .content {
-      padding-top: 32px;
-    }
+      .content {
+        padding-top: 32px;
+      }
 
-    .markdown-section {
-      color: var(--prism-text-secondary);
-    }
+      .markdown-section {
+        color: var(--prism-text-secondary);
+      }
 
-    .markdown-section h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: var(--prism-text-primary);
-      margin: 0 0 8px;
-      padding: 0;
-      border: none;
-    }
+      .markdown-section h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        color: var(--prism-text-primary);
+        margin: 0 0 8px;
+        padding: 0;
+        border: none;
+      }
 
-    /* Spectral underline on h1 */
-    .markdown-section h1::after {
-      content: '';
-      display: block;
-      height: 2px;
-      width: 64px;
-      margin-top: 12px;
-      background: linear-gradient(90deg, var(--prism-violet-deep), var(--prism-blue));
-      border-radius: 1px;
-    }
+      /* Spectral underline on h1 */
+      .markdown-section h1::after {
+        content: '';
+        display: block;
+        height: 2px;
+        width: 64px;
+        margin-top: 12px;
+        background: linear-gradient(
+          90deg,
+          var(--prism-violet-deep),
+          var(--prism-blue)
+        );
+        border-radius: 1px;
+      }
 
-    .markdown-section h2 {
-      font-size: 1.35rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      color: var(--prism-text-primary);
-      margin: 2em 0 0.6em;
-      padding-bottom: 0.4em;
-      border-bottom: 1px solid rgba(167,139,250,0.1);
-    }
+      .markdown-section h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        color: var(--prism-text-primary);
+        margin: 2em 0 0.6em;
+        padding-bottom: 0.4em;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+      }
 
-    .markdown-section h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--prism-text-primary);
-      margin: 1.6em 0 0.4em;
-    }
+      .markdown-section h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--prism-text-primary);
+        margin: 1.6em 0 0.4em;
+      }
 
-    .markdown-section p,
-    .markdown-section li {
-      line-height: 1.75;
-      color: var(--prism-text-secondary);
-    }
+      .markdown-section p,
+      .markdown-section li {
+        line-height: 1.75;
+        color: var(--prism-text-secondary);
+      }
 
-    .markdown-section strong {
-      color: var(--prism-text-primary);
-      font-weight: 600;
-    }
+      .markdown-section strong {
+        color: var(--prism-text-primary);
+        font-weight: 600;
+      }
 
-    .markdown-section a {
-      text-decoration: none;
-      border-bottom: 1px solid rgba(109,40,217,0.25);
-      transition: color 0.15s, border-color 0.15s;
-    }
-    .markdown-section a:hover {
-      color: #7c3aed;
-      border-bottom-color: #7c3aed;
-    }
+      .markdown-section a {
+        text-decoration: none;
+        border-bottom: 1px solid rgba(109, 40, 217, 0.25);
+        transition: color 0.15s, border-color 0.15s;
+      }
+      .markdown-section a:hover {
+        color: #7c3aed;
+        border-bottom-color: #7c3aed;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Code blocks
     —————————————————————————————————————— */
-    .markdown-section pre {
-      background: var(--prism-elevated) !important;
-      border: 1px solid var(--prism-border);
-      border-radius: 8px;
-      padding: 20px 24px;
-      font-size: 13px;
-      line-height: 1.7;
-      overflow-x: auto;
-    }
+      .markdown-section pre {
+        background: var(--prism-elevated) !important;
+        border: 1px solid var(--prism-border);
+        border-radius: 8px;
+        padding: 20px 24px;
+        font-size: 13px;
+        line-height: 1.7;
+        overflow-x: auto;
+      }
 
-    .markdown-section code {
-      font-family: var(--code-font-family);
-      font-size: var(--code-font-size);
-    }
+      .markdown-section code {
+        font-family: var(--code-font-family);
+        font-size: var(--code-font-size);
+      }
 
-    .markdown-section p code,
-    .markdown-section li code,
-    .markdown-section td code {
-      background: rgba(167,139,250,0.08);
-      color: #c4b5fd;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 0.85em;
-    }
+      .markdown-section p code,
+      .markdown-section li code,
+      .markdown-section td code {
+        background: rgba(167, 139, 250, 0.08);
+        color: #c4b5fd;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Tables
     —————————————————————————————————————— */
-    .markdown-section table {
-      border-collapse: collapse;
-      width: 100%;
-    }
-    .markdown-section table thead {
-      background: rgba(167,139,250,0.05);
-    }
-    .markdown-section table th {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--prism-text-muted);
-      text-align: left;
-      padding: 10px 14px;
-      border-bottom: 1px solid rgba(167,139,250,0.12);
-    }
-    .markdown-section table td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--prism-border);
-      font-size: 14px;
-    }
-    .markdown-section table tr:hover td {
-      background: rgba(167,139,250,0.03);
-    }
+      .markdown-section table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .markdown-section table thead {
+        background: rgba(167, 139, 250, 0.05);
+      }
+      .markdown-section table th {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--prism-text-muted);
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(167, 139, 250, 0.12);
+      }
+      .markdown-section table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--prism-border);
+        font-size: 14px;
+      }
+      .markdown-section table tr:hover td {
+        background: rgba(167, 139, 250, 0.03);
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Blockquotes — violet left border
     —————————————————————————————————————— */
-    .markdown-section blockquote {
-      border-left: 3px solid var(--prism-violet-deep);
-      background: rgba(167,139,250,0.04);
-      padding: 12px 20px;
-      border-radius: 0 6px 6px 0;
-      margin: 1.2em 0;
-      color: var(--prism-text-secondary);
-    }
+      .markdown-section blockquote {
+        border-left: 3px solid var(--prism-violet-deep);
+        background: rgba(167, 139, 250, 0.04);
+        padding: 12px 20px;
+        border-radius: 0 6px 6px 0;
+        margin: 1.2em 0;
+        color: var(--prism-text-secondary);
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Search
     —————————————————————————————————————— */
-    .search {
-      border-bottom: 1px solid var(--prism-border) !important;
-      padding: 12px 16px !important;
-      margin: 0 !important;
-    }
-    .search .input-wrap {
-      display: flex;
-      align-items: center;
-      position: relative;
-      max-width: 100%;
-      margin: 0 !important;
-      background: transparent !important;
-    }
-    .search input {
-      width: 100% !important;
-      box-sizing: border-box !important;
-      background: var(--prism-elevated) !important;
-      border: 1px solid var(--prism-border) !important;
-      border-radius: 8px !important;
-      color: var(--prism-text-primary) !important;
-      padding: 7px 12px !important;
-      font-family: var(--base-font-family) !important;
-      font-size: 13px !important;
-      outline: none !important;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .search input:focus {
-      border-color: rgba(109,40,217,0.35) !important;
-      box-shadow: 0 0 0 3px var(--prism-glow) !important;
-    }
-    .search input::placeholder {
-      color: var(--prism-text-muted) !important;
-      font-size: 13px !important;
-    }
-    .search .clear-button {
-      position: absolute;
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+      .search {
+        border-bottom: 1px solid var(--prism-border) !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+      }
+      .search .input-wrap {
+        display: flex;
+        align-items: center;
+        position: relative;
+        max-width: 100%;
+        margin: 0 !important;
+        background: transparent !important;
+      }
+      .search input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: var(--prism-elevated) !important;
+        border: 1px solid var(--prism-border) !important;
+        border-radius: 8px !important;
+        color: var(--prism-text-primary) !important;
+        padding: 7px 12px !important;
+        font-family: var(--base-font-family) !important;
+        font-size: 13px !important;
+        outline: none !important;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .search input:focus {
+        border-color: rgba(109, 40, 217, 0.35) !important;
+        box-shadow: 0 0 0 3px var(--prism-glow) !important;
+      }
+      .search input::placeholder {
+        color: var(--prism-text-muted) !important;
+        font-size: 13px !important;
+      }
+      .search .clear-button {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
 
-    .matching-post {
-      border-bottom: 1px solid var(--prism-border) !important;
-    }
-    .matching-post h2 {
-      color: var(--prism-violet) !important;
-    }
+      .matching-post {
+        border-bottom: 1px solid var(--prism-border) !important;
+      }
+      .matching-post h2 {
+        color: var(--prism-violet) !important;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Copy button
     —————————————————————————————————————— */
-    .docsify-copy-code-button {
-      background: var(--prism-surface) !important;
-      color: var(--prism-text-muted) !important;
-      border: 1px solid var(--prism-border) !important;
-      border-radius: 4px !important;
-      font-size: 12px !important;
-      font-family: var(--base-font-family) !important;
-    }
-    .docsify-copy-code-button:hover {
-      color: var(--prism-text-primary) !important;
-      border-color: rgba(167,139,250,0.3) !important;
-    }
+      .docsify-copy-code-button {
+        background: var(--prism-surface) !important;
+        color: var(--prism-text-muted) !important;
+        border: 1px solid var(--prism-border) !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-family: var(--base-font-family) !important;
+      }
+      .docsify-copy-code-button:hover {
+        color: var(--prism-text-primary) !important;
+        border-color: rgba(167, 139, 250, 0.3) !important;
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Scrollbar
     —————————————————————————————————————— */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(109,40,217,0.12);
-      border-radius: 3px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(109,40,217,0.25);
-    }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(109, 40, 217, 0.12);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(109, 40, 217, 0.25);
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Version badge — anchored to GitHub corner
     —————————————————————————————————————— */
 
-    .prism-version-badge {
-      position: absolute;
+      .prism-version-badge {
+        position: absolute;
         top: 34px;
         right: 12px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      font-family: var(--code-font-family);
-      color: #fff !important;
-      background: var(--prism-violet);
-      border-radius: 8px;
-      text-decoration: none !important;
-      letter-spacing: 0.02em;
-      transform: rotate(45deg);
-      transform-origin: center;
-      z-index: 100;
-      transition: background 0.15s;
-      white-space: nowrap;
-      line-height: 1.4;
-    }
-    .prism-version-badge:hover {
-      background: var(--prism-violet-deep);
-    }
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: 600;
+        font-family: var(--code-font-family);
+        color: #fff !important;
+        background: var(--prism-violet);
+        border-radius: 8px;
+        text-decoration: none !important;
+        letter-spacing: 0.02em;
+        transform: rotate(45deg);
+        transform-origin: center;
+        z-index: 100;
+        transition: background 0.15s;
+        white-space: nowrap;
+        line-height: 1.4;
+      }
+      .prism-version-badge:hover {
+        background: var(--prism-violet-deep);
+      }
 
-    /* ——————————————————————————————————————
+      /* ——————————————————————————————————————
        Mobile
     —————————————————————————————————————— */
-    @media (max-width: 768px) {
-      .markdown-section h1 { font-size: 1.6rem; }
-      .markdown-section h2 { font-size: 1.15rem; }
-    }
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    window.$docsify = {
-      name: '<div style="display:flex;align-items:center;"><img style="margin-left: 14px; margin-right: 6px" src="prism_logo_small.png" width="50" alt="ng-prism logo"><span style="font-size:26px;font-weight:700;letter-spacing:-0.03em;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">ng-prism</span></div>',
-      repo: 'https://github.com/dyingangel666/ng-prism',
-      loadSidebar: true,
-      basePath: location.hostname === 'localhost' ? '/' : '/ng-prism/',
-      subMaxLevel: 3,
-      auto2top: true,
-      search: {
-        placeholder: 'Search docs...',
-        noData: 'No results',
-        paths: 'auto',
-      },
-      copyCode: {
-        buttonText: 'Copy',
-        successText: 'Copied',
-      },
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
-  <script>
-    fetch('https://registry.npmjs.org/@ng-prism/core/latest')
-      .then(r => r.json())
-      .then(d => {
-        const poll = setInterval(() => {
-          const corner = document.querySelector('.github-corner');
-          if (!corner) return;
-          clearInterval(poll);
-          const el = document.createElement('a');
-          el.href = 'https://www.npmjs.com/package/@ng-prism/core';
-          el.target = '_blank';
-          el.textContent = 'v' + d.version;
-          el.className = 'prism-version-badge';
-          corner.appendChild(el);
-        }, 100);
-      })
-      .catch(() => {});
-  </script>
-</body>
+      @media (max-width: 768px) {
+        .markdown-section h1 {
+          font-size: 1.6rem;
+        }
+        .markdown-section h2 {
+          font-size: 1.15rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      window.$docsify = {
+        name: '<div style="display:flex;align-items:center;"><img style="margin-left: 14px; margin-right: 6px" src="prism_logo_small.png" width="50" alt="ng-prism logo"><span style="font-size:26px;font-weight:700;letter-spacing:-0.03em;background:linear-gradient(135deg,#7c3aed,#2563eb);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">ng-prism</span></div>',
+        repo: 'https://github.com/dyingangel666/ng-prism',
+        loadSidebar: true,
+        basePath: location.hostname === 'localhost' ? '/' : '/ng-prism/',
+        subMaxLevel: 3,
+        auto2top: true,
+        search: {
+          placeholder: 'Search docs...',
+          noData: 'No results',
+          paths: 'auto',
+        },
+        copyCode: {
+          buttonText: 'Copy',
+          successText: 'Copied',
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docsify-copy-code@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-typescript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+    <script>
+      fetch('https://registry.npmjs.org/@ng-prism/core/latest')
+        .then((r) => r.json())
+        .then((d) => {
+          const poll = setInterval(() => {
+            const corner = document.querySelector('.github-corner');
+            if (!corner) return;
+            clearInterval(poll);
+            const el = document.createElement('a');
+            el.href = 'https://www.npmjs.com/package/@ng-prism/core';
+            el.target = '_blank';
+            el.textContent = 'v' + d.version;
+            el.className = 'prism-version-badge';
+            corner.appendChild(el);
+          }, 100);
+        })
+        .catch(() => {});
+    </script>
+  </body>
 </html>

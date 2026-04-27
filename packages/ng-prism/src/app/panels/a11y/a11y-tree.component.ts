@@ -18,25 +18,29 @@ import type { A11yNode } from './a11y.types.js';
     <div class="aria-tree-line" [class.aria-tree-line--hidden]="node().hidden">
       <span class="indent" [style.width.px]="depth() * 20">
         @if (depth() > 0) {
-          {{ isLast() ? '└─' : '├─' }}
+        {{ isLast() ? '└─' : '├─' }}
         }
       </span>
       @if (node().children.length) {
-        <button class="tree-toggle" (click)="toggleExpanded()">{{ expanded() ? '▾' : '▸' }}</button>
+      <button class="tree-toggle" (click)="toggleExpanded()">
+        {{ expanded() ? '▾' : '▸' }}
+      </button>
       }
       <span class="role">{{ node().role }}</span>
       @if (node().name) {
-        <span class="name">"{{ node().name }}"</span>
-      }
-      @for (entry of stateEntries(); track entry.key) {
-        <span class="attr">[{{ entry.label }}]</span>
+      <span class="name">"{{ node().name }}"</span>
+      } @for (entry of stateEntries(); track entry.key) {
+      <span class="attr">[{{ entry.label }}]</span>
       }
     </div>
-    @if (expanded() && node().children.length) {
-      @for (child of node().children; track $index; let last = $last) {
-        <prism-a11y-tree-node [node]="child" [depth]="depth() + 1" [isLast]="last" />
-      }
-    }
+    @if (expanded() && node().children.length) { @for (child of node().children;
+    track $index; let last = $last) {
+    <prism-a11y-tree-node
+      [node]="child"
+      [depth]="depth() + 1"
+      [isLast]="last"
+    />
+    } }
   `,
   styles: `
     :host { display: block; }
@@ -110,11 +114,13 @@ export class A11yTreeNodeComponent {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!rendererService.renderedElement()) {
-      <div class="tree-empty">Select a component to inspect the accessibility tree.</div>
+    <div class="tree-empty">
+      Select a component to inspect the accessibility tree.
+    </div>
     } @else if (tree()) {
-      <div class="aria-tree">
-        <prism-a11y-tree-node [node]="tree()!" [depth]="0" [isLast]="true" />
-      </div>
+    <div class="aria-tree">
+      <prism-a11y-tree-node [node]="tree()!" [depth]="0" [isLast]="true" />
+    </div>
     }
   `,
   styles: `
@@ -142,7 +148,7 @@ export class A11yTreeComponent {
     const doc = (root as HTMLElement).ownerDocument;
     return this.treeService.buildTree(
       root,
-      doc ? (id) => doc.getElementById(id) : undefined,
+      doc ? (id) => doc.getElementById(id) : undefined
     );
   });
 }

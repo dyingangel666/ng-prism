@@ -9,7 +9,9 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
       <div class="stat-val">
         {{ value() }}
         @if (pill()) {
-          <span class="pill" [class.warn]="pillVariant() === 'warn'">{{ pill() }}</span>
+        <span class="pill" [class.warn]="pillVariant() === 'warn'">{{
+          pill()
+        }}</span>
         }
       </div>
       <div class="stat-lbl">{{ label() }}</div>

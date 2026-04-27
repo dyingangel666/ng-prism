@@ -1,4 +1,10 @@
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
@@ -9,18 +15,19 @@ const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
 
 const CATEGORY_COLORS: Record<string, string> = {
   'Data Display': '#f472b6',
-  'Feedback': '#fbbf24',
-  'Inputs': '#a78bfa',
-  'Layout': '#34d399',
-  'Navigation': '#60a5fa',
-  'Overlay': '#c084fc',
-  'Directives': '#ec4899',
+  Feedback: '#fbbf24',
+  Inputs: '#a78bfa',
+  Layout: '#34d399',
+  Navigation: '#60a5fa',
+  Overlay: '#c084fc',
+  Directives: '#ec4899',
 };
 
 function categoryColor(name: string): string {
   if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
+  for (let i = 0; i < name.length; i++)
+    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue}, 70%, 65%)`;
 }

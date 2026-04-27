@@ -9,40 +9,56 @@ import type { BoxModelData } from './box-model.types.js';
   template: `
     <div class="prism-bmp">
       @if (stateService.hoveredBoxModel(); as bm) {
-        <div class="prism-bmp__diagram">
-          <div class="prism-bmp__region prism-bmp__region--margin">
-            <span class="prism-bmp__region-label">margin</span>
-            <div class="prism-bmp__sides">
-              <span class="prism-bmp__side">{{ fmt(bm.margin.top) }}</span>
-              <div class="prism-bmp__inner-row">
-                <span class="prism-bmp__side">{{ fmt(bm.margin.left) }}</span>
-                <div class="prism-bmp__region prism-bmp__region--border">
-                  <span class="prism-bmp__region-label">border</span>
-                  <div class="prism-bmp__inner-row">
-                    <span class="prism-bmp__side prism-bmp__side--dim">{{ fmt(bm.border.left) }}</span>
-                    <div class="prism-bmp__region prism-bmp__region--padding">
-                      <span class="prism-bmp__region-label">padding</span>
-                      <div class="prism-bmp__sides">
-                        <span class="prism-bmp__side">{{ fmt(bm.padding.top) }}</span>
-                        <div class="prism-bmp__inner-row">
-                          <span class="prism-bmp__side">{{ fmt(bm.padding.left) }}</span>
-                          <div class="prism-bmp__content-box">{{ contentW(bm) }} × {{ contentH(bm) }}</div>
-                          <span class="prism-bmp__side">{{ fmt(bm.padding.right) }}</span>
+      <div class="prism-bmp__diagram">
+        <div class="prism-bmp__region prism-bmp__region--margin">
+          <span class="prism-bmp__region-label">margin</span>
+          <div class="prism-bmp__sides">
+            <span class="prism-bmp__side">{{ fmt(bm.margin.top) }}</span>
+            <div class="prism-bmp__inner-row">
+              <span class="prism-bmp__side">{{ fmt(bm.margin.left) }}</span>
+              <div class="prism-bmp__region prism-bmp__region--border">
+                <span class="prism-bmp__region-label">border</span>
+                <div class="prism-bmp__inner-row">
+                  <span class="prism-bmp__side prism-bmp__side--dim">{{
+                    fmt(bm.border.left)
+                  }}</span>
+                  <div class="prism-bmp__region prism-bmp__region--padding">
+                    <span class="prism-bmp__region-label">padding</span>
+                    <div class="prism-bmp__sides">
+                      <span class="prism-bmp__side">{{
+                        fmt(bm.padding.top)
+                      }}</span>
+                      <div class="prism-bmp__inner-row">
+                        <span class="prism-bmp__side">{{
+                          fmt(bm.padding.left)
+                        }}</span>
+                        <div class="prism-bmp__content-box">
+                          {{ contentW(bm) }} × {{ contentH(bm) }}
                         </div>
-                        <span class="prism-bmp__side">{{ fmt(bm.padding.bottom) }}</span>
+                        <span class="prism-bmp__side">{{
+                          fmt(bm.padding.right)
+                        }}</span>
                       </div>
+                      <span class="prism-bmp__side">{{
+                        fmt(bm.padding.bottom)
+                      }}</span>
                     </div>
-                    <span class="prism-bmp__side prism-bmp__side--dim">{{ fmt(bm.border.right) }}</span>
                   </div>
+                  <span class="prism-bmp__side prism-bmp__side--dim">{{
+                    fmt(bm.border.right)
+                  }}</span>
                 </div>
-                <span class="prism-bmp__side">{{ fmt(bm.margin.right) }}</span>
               </div>
-              <span class="prism-bmp__side">{{ fmt(bm.margin.bottom) }}</span>
+              <span class="prism-bmp__side">{{ fmt(bm.margin.right) }}</span>
             </div>
+            <span class="prism-bmp__side">{{ fmt(bm.margin.bottom) }}</span>
           </div>
         </div>
+      </div>
       } @else {
-        <div class="prism-bmp__empty">Hover over an element to inspect its box model.</div>
+      <div class="prism-bmp__empty">
+        Hover over an element to inspect its box model.
+      </div>
       }
     </div>
   `,
@@ -113,10 +129,26 @@ export class BoxModelPanelComponent {
   }
 
   contentW(bm: BoxModelData): string {
-    return String(Math.round(bm.content.width - bm.border.left - bm.border.right - bm.padding.left - bm.padding.right));
+    return String(
+      Math.round(
+        bm.content.width -
+          bm.border.left -
+          bm.border.right -
+          bm.padding.left -
+          bm.padding.right
+      )
+    );
   }
 
   contentH(bm: BoxModelData): string {
-    return String(Math.round(bm.content.height - bm.border.top - bm.border.bottom - bm.padding.top - bm.padding.bottom));
+    return String(
+      Math.round(
+        bm.content.height -
+          bm.border.top -
+          bm.border.bottom -
+          bm.padding.top -
+          bm.padding.bottom
+      )
+    );
   }
 }

@@ -16,7 +16,12 @@ import type { A11yCoreConfig } from './a11y.types.js';
 @Component({
   selector: 'prism-a11y-panel',
   standalone: true,
-  imports: [A11yViolationsComponent, A11yKeyboardComponent, A11yTreeComponent, A11ySrComponent],
+  imports: [
+    A11yViolationsComponent,
+    A11yKeyboardComponent,
+    A11yTreeComponent,
+    A11ySrComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="a11y-panel">
@@ -26,41 +31,50 @@ import type { A11yCoreConfig } from './a11y.types.js';
           [class.st-tab--active]="state.activeTab() === 'violations'"
           (click)="state.activeTab.set('violations')"
         >
-          Violations
-          @if (violationCount() !== null) {
-            <span class="st-badge" [class.st-badge--ok]="violationCount() === 0" [class.st-badge--warn]="violationCount()! > 0">
-              {{ violationCount() }}
-            </span>
+          Violations @if (violationCount() !== null) {
+          <span
+            class="st-badge"
+            [class.st-badge--ok]="violationCount() === 0"
+            [class.st-badge--warn]="violationCount()! > 0"
+          >
+            {{ violationCount() }}
+          </span>
           }
         </button>
         <button
           class="st-tab"
           [class.st-tab--active]="state.activeTab() === 'keyboard'"
           (click)="state.activeTab.set('keyboard')"
-        >Keyboard</button>
+        >
+          Keyboard
+        </button>
         <button
           class="st-tab"
           [class.st-tab--active]="state.activeTab() === 'tree'"
           (click)="state.activeTab.set('tree')"
-        >ARIA Tree</button>
+        >
+          ARIA Tree
+        </button>
         <button
           class="st-tab"
           [class.st-tab--active]="state.activeTab() === 'sr'"
           (click)="state.activeTab.set('sr')"
-        >Screen Reader</button>
+        >
+          Screen Reader
+        </button>
       </div>
 
       <div class="a11y-content">
         @if (disabled()) {
-          <div class="a11y-disabled">Accessibility audit disabled for this component.</div>
-        } @else {
-          @switch (state.activeTab()) {
-            @case ('violations') { <prism-a11y-violations /> }
-            @case ('keyboard')   { <prism-a11y-keyboard [activeComponent]="activeComponent()" /> }
-            @case ('tree')       { <prism-a11y-tree [activeComponent]="activeComponent()" /> }
-            @case ('sr')         { <prism-a11y-sr [activeComponent]="activeComponent()" /> }
-          }
-        }
+        <div class="a11y-disabled">
+          Accessibility audit disabled for this component.
+        </div>
+        } @else { @switch (state.activeTab()) { @case ('violations') {
+        <prism-a11y-violations /> } @case ('keyboard') {
+        <prism-a11y-keyboard [activeComponent]="activeComponent()" /> } @case
+        ('tree') { <prism-a11y-tree [activeComponent]="activeComponent()" /> }
+        @case ('sr') { <prism-a11y-sr [activeComponent]="activeComponent()" /> }
+        } }
       </div>
     </div>
   `,
@@ -151,7 +165,8 @@ export class A11yPanelComponent {
 
   protected readonly disabled = computed(() => {
     const comp = this.activeComponent() as any;
-    const config: A11yCoreConfig | undefined = comp?.meta?.showcaseConfig?.meta?.['a11y'];
+    const config: A11yCoreConfig | undefined =
+      comp?.meta?.showcaseConfig?.meta?.['a11y'];
     return config?.disable === true;
   });
 

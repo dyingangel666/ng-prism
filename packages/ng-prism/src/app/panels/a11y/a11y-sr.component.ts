@@ -14,26 +14,26 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!rendererService.renderedElement()) {
-      <div class="sr-empty">Select a component to simulate screen reader output.</div>
+    <div class="sr-empty">
+      Select a component to simulate screen reader output.
+    </div>
     } @else if (!announcements().length) {
-      <div class="sr-empty">No announced elements found.</div>
+    <div class="sr-empty">No announced elements found.</div>
     } @else {
-      <div class="sr-body">
-        @for (a of announcements(); track a.index) {
-          <div class="sr-line">
-            <div class="sr-step">VO · {{ a.index }}</div>
-            <div class="sr-text">
-              @if (a.name) {
-                "<span class="sr-name">{{ a.name }}</span>",
-              }
-              <code>{{ a.role }}</code>
-              @if (a.states.length) {
-                · {{ a.states.join(', ') }}
-              }
-            </div>
-          </div>
-        }
+    <div class="sr-body">
+      @for (a of announcements(); track a.index) {
+      <div class="sr-line">
+        <div class="sr-step">VO · {{ a.index }}</div>
+        <div class="sr-text">
+          @if (a.name) { "<span class="sr-name">{{ a.name }}</span
+          >", }
+          <code>{{ a.role }}</code>
+          @if (a.states.length) { · {{ a.states.join(', ') }}
+          }
+        </div>
       </div>
+      }
+    </div>
     }
   `,
   styles: `
@@ -102,7 +102,7 @@ export class A11ySrComponent {
     const doc = (root as HTMLElement).ownerDocument;
     return this.srService.buildAnnouncementList(
       root,
-      doc ? (id) => doc.getElementById(id) : undefined,
+      doc ? (id) => doc.getElementById(id) : undefined
     );
   });
 }

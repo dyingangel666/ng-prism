@@ -10,19 +10,23 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
     <div class="prism-view-tab-bar">
       <button
         class="prism-view-tab-bar__tab"
-        [class.prism-view-tab-bar__tab--active]="panelService.activeViewId() === 'renderer'"
+        [class.prism-view-tab-bar__tab--active]="
+          panelService.activeViewId() === 'renderer'
+        "
         (click)="panelService.activeViewId.set('renderer')"
       >
         Playground
       </button>
       @for (panel of viewPanels(); track panel.id) {
-        <button
-          class="prism-view-tab-bar__tab"
-          [class.prism-view-tab-bar__tab--active]="panelService.activeViewId() === panel.id"
-          (click)="panelService.activeViewId.set(panel.id)"
-        >
-          {{ panel.label }}
-        </button>
+      <button
+        class="prism-view-tab-bar__tab"
+        [class.prism-view-tab-bar__tab--active]="
+          panelService.activeViewId() === panel.id
+        "
+        (click)="panelService.activeViewId.set(panel.id)"
+      >
+        {{ panel.label }}
+      </button>
       }
     </div>
   `,

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+} from '@angular/core';
 import { A11yKeyboardService } from './a11y-keyboard.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
 
@@ -8,26 +14,34 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (!rendererService.renderedElement()) {
-      <div class="kb-empty">Select a component to inspect keyboard navigation.</div>
+    <div class="kb-empty">
+      Select a component to inspect keyboard navigation.
+    </div>
     } @else if (!items().length) {
-      <div class="kb-empty">No focusable elements found.</div>
+    <div class="kb-empty">No focusable elements found.</div>
     } @else {
-      <div class="kb-body">
-        @for (item of items(); track item.index) {
-          <div class="kb-row">
-            <div class="kb-keys">
-              <kbd>Tab {{ item.index }}</kbd>
-            </div>
-            <div class="kb-desc">
-              {{ item.name ? '"' + item.name + '"' : item.element.tagName.toLowerCase() + typeAttr(item.element) }}
-              @if (item.states.length) {
-                · {{ item.states.join(', ') }}
-              }
-            </div>
-            <span class="kb-tgt">{{ item.element.tagName.toLowerCase() }}{{ typeAttr(item.element) }}</span>
-          </div>
-        }
+    <div class="kb-body">
+      @for (item of items(); track item.index) {
+      <div class="kb-row">
+        <div class="kb-keys">
+          <kbd>Tab {{ item.index }}</kbd>
+        </div>
+        <div class="kb-desc">
+          {{
+            item.name
+              ? '"' + item.name + '"'
+              : item.element.tagName.toLowerCase() + typeAttr(item.element)
+          }}
+          @if (item.states.length) { · {{ item.states.join(', ') }}
+          }
+        </div>
+        <span class="kb-tgt"
+          >{{ item.element.tagName.toLowerCase()
+          }}{{ typeAttr(item.element) }}</span
+        >
       </div>
+      }
+    </div>
     }
   `,
   styles: `
@@ -94,7 +108,7 @@ export class A11yKeyboardComponent {
     const doc = (root as HTMLElement).ownerDocument;
     return this.keyboardService.extractTabOrder(
       root,
-      doc ? (id) => doc.getElementById(id) : undefined,
+      doc ? (id) => doc.getElementById(id) : undefined
     );
   });
 

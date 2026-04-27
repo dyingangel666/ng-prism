@@ -1,4 +1,9 @@
-import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { A11yAuditService } from '../panels/a11y/a11y-audit.service.js';
@@ -11,55 +16,53 @@ import { PrismStatComponent } from './prism-stat.component.js';
   imports: [PrismIconComponent, PrismStatComponent],
   template: `
     @if (comp(); as c) {
-      <section class="comp-head">
-        <div class="comp-head-top">
-          <div>
-            <div class="comp-crumb">
-              <span>{{ category() }}</span>
-              <prism-icon name="chevron-right" [size]="10" />
-              <span>{{ c.meta.showcaseConfig.title }}</span>
-            </div>
-            <h1 class="comp-title">
-              {{ c.meta.showcaseConfig.title }}
-              <span class="comp-selector">&lt;{{ c.meta.componentMeta.selector }}&gt;</span>
-            </h1>
-            @if (c.meta.showcaseConfig.description) {
-              <p class="comp-desc">{{ c.meta.showcaseConfig.description }}</p>
-            }
-            @if (c.meta.showcaseConfig.tags?.length) {
-              <div class="comp-tags">
-                @for (tag of c.meta.showcaseConfig.tags; track tag) {
-                  <span class="comp-tag">{{ tag }}</span>
-                }
-              </div>
+    <section class="comp-head">
+      <div class="comp-head-top">
+        <div>
+          <div class="comp-crumb">
+            <span>{{ category() }}</span>
+            <prism-icon name="chevron-right" [size]="10" />
+            <span>{{ c.meta.showcaseConfig.title }}</span>
+          </div>
+          <h1 class="comp-title">
+            {{ c.meta.showcaseConfig.title }}
+            <span class="comp-selector"
+              >&lt;{{ c.meta.componentMeta.selector }}&gt;</span
+            >
+          </h1>
+          @if (c.meta.showcaseConfig.description) {
+          <p class="comp-desc">{{ c.meta.showcaseConfig.description }}</p>
+          } @if (c.meta.showcaseConfig.tags?.length) {
+          <div class="comp-tags">
+            @for (tag of c.meta.showcaseConfig.tags; track tag) {
+            <span class="comp-tag">{{ tag }}</span>
             }
           </div>
-          <div class="comp-head-stats">
-            @if (variantCount() > 0) {
-              <prism-stat [value]="variantCount()" label="Variants" />
-            }
-            @if (coveragePercent() !== null) {
-              <prism-stat
-                [value]="coveragePercent()! + '%'"
-                label="Coverage"
-                [pill]="coveragePercent()! >= 90 ? 'OK' : 'WARN'"
-                [pillVariant]="coveragePercent()! >= 90 ? 'ok' : 'warn'"
-              />
-            }
-            @if (bundleSize() !== null) {
-              <prism-stat [value]="bundleSize()!" label="Bundle" />
-            }
-            @if (a11yScore() !== null) {
-              <prism-stat
-                [value]="a11yScore()!"
-                label="Score"
-                pill="A11y"
-                [pillVariant]="a11yScore()! >= 90 ? 'ok' : 'warn'"
-              />
-            }
-          </div>
+          }
         </div>
-      </section>
+        <div class="comp-head-stats">
+          @if (variantCount() > 0) {
+          <prism-stat [value]="variantCount()" label="Variants" />
+          } @if (coveragePercent() !== null) {
+          <prism-stat
+            [value]="coveragePercent()! + '%'"
+            label="Coverage"
+            [pill]="coveragePercent()! >= 90 ? 'OK' : 'WARN'"
+            [pillVariant]="coveragePercent()! >= 90 ? 'ok' : 'warn'"
+          />
+          } @if (bundleSize() !== null) {
+          <prism-stat [value]="bundleSize()!" label="Bundle" />
+          } @if (a11yScore() !== null) {
+          <prism-stat
+            [value]="a11yScore()!"
+            label="Score"
+            pill="A11y"
+            [pillVariant]="a11yScore()! >= 90 ? 'ok' : 'warn'"
+          />
+          }
+        </div>
+      </div>
+    </section>
     }
   `,
   styles: `
@@ -158,7 +161,9 @@ export class PrismComponentHeadComponent {
   private readonly navigationService = inject(PrismNavigationService);
   private readonly auditService = inject(A11yAuditService);
 
-  protected readonly comp = computed(() => this.navigationService.activeComponent());
+  protected readonly comp = computed(() =>
+    this.navigationService.activeComponent()
+  );
 
   protected readonly category = computed(() => {
     const c = this.comp();
@@ -173,7 +178,8 @@ export class PrismComponentHeadComponent {
   protected readonly coveragePercent = computed<number | null>(() => {
     const meta = this.componentMeta();
     const coverage = meta?.['coverage'] as Record<string, unknown> | undefined;
-    if (coverage?.['found'] && typeof coverage['score'] === 'number') return coverage['score'];
+    if (coverage?.['found'] && typeof coverage['score'] === 'number')
+      return coverage['score'];
     return null;
   });
 
@@ -181,8 +187,10 @@ export class PrismComponentHeadComponent {
     const meta = this.componentMeta();
     const perf = meta?.['perf'] as Record<string, unknown> | undefined;
     const bundle = perf?.['bundle'] as Record<string, unknown> | undefined;
-    if (bundle && typeof bundle['gzipKb'] === 'number') return bundle['gzipKb'] + ' kb';
-    if (bundle && typeof bundle['sizeKb'] === 'number') return bundle['sizeKb'] + ' kb';
+    if (bundle && typeof bundle['gzipKb'] === 'number')
+      return bundle['gzipKb'] + ' kb';
+    if (bundle && typeof bundle['sizeKb'] === 'number')
+      return bundle['sizeKb'] + ' kb';
     return null;
   });
 
@@ -193,6 +201,8 @@ export class PrismComponentHeadComponent {
   private readonly componentMeta = computed(() => {
     const c = this.comp();
     const meta = c?.meta.showcaseConfig.meta;
-    return (meta && typeof meta === 'object') ? meta as Record<string, unknown> : null;
+    return meta && typeof meta === 'object'
+      ? (meta as Record<string, unknown>)
+      : null;
   });
 }

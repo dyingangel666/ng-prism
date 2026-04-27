@@ -91,8 +91,8 @@ export const PRISM_BASE_TOKENS: Record<string, string> = {
 
   '--prism-header-height': '52px',
 
-  '--prism-font-sans': "var(--font-sans)",
-  '--prism-font-mono': "var(--font-mono)",
+  '--prism-font-sans': 'var(--font-sans)',
+  '--prism-font-mono': 'var(--font-mono)',
 };
 
 export const PRISM_DEFAULT_THEME = PRISM_DARK_THEME;

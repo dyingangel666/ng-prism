@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 
 const R = 54;
 const CIRCUMFERENCE = 2 * Math.PI * R;
@@ -12,24 +17,25 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
       <svg viewBox="0 0 128 128">
         <defs>
           <linearGradient id="prism-sg" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#a78bfa"/>
-            <stop offset="100%" stop-color="#3b82f6"/>
+            <stop offset="0%" stop-color="#a78bfa" />
+            <stop offset="100%" stop-color="#3b82f6" />
           </linearGradient>
         </defs>
         <circle class="track" cx="64" cy="64" [attr.r]="R" />
         <circle
           class="fill"
-          cx="64" cy="64"
+          cx="64"
+          cy="64"
           [attr.r]="R"
           [attr.stroke-dasharray]="CIRC"
           [attr.stroke-dashoffset]="dashOffset()"
         />
       </svg>
       @if (!compact()) {
-        <div class="score-val">
-          <div class="score-num">{{ score() }}</div>
-          <div class="score-max">/ 100</div>
-        </div>
+      <div class="score-val">
+        <div class="score-num">{{ score() }}</div>
+        <div class="score-max">/ 100</div>
+      </div>
       }
     </div>
   `,
@@ -98,6 +104,6 @@ export class A11yScoreComponent {
   protected readonly CIRC = CIRCUMFERENCE;
 
   protected readonly dashOffset = computed(
-    () => CIRCUMFERENCE - (this.score() / 100) * CIRCUMFERENCE,
+    () => CIRCUMFERENCE - (this.score() / 100) * CIRCUMFERENCE
   );
 }

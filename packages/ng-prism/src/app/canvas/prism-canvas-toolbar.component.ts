@@ -1,6 +1,9 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
-import { PrismCanvasService, type CanvasBg } from '../services/prism-canvas.service.js';
+import {
+  PrismCanvasService,
+  type CanvasBg,
+} from '../services/prism-canvas.service.js';
 
 @Component({
   selector: 'prism-canvas-toolbar',
@@ -12,22 +15,26 @@ import { PrismCanvasService, type CanvasBg } from '../services/prism-canvas.serv
       <span class="tool-label">Canvas</span>
       <div class="tool-group">
         @for (bg of bgs; track bg) {
-          <button
-            class="tool-btn"
-            [class.tool-btn--active]="canvas.bg() === bg"
-            (click)="canvas.setBg(bg)"
-          >{{ capitalize(bg) }}</button>
+        <button
+          class="tool-btn"
+          [class.tool-btn--active]="canvas.bg() === bg"
+          (click)="canvas.setBg(bg)"
+        >
+          {{ capitalize(bg) }}
+        </button>
         }
       </div>
       <div class="tool-sep"></div>
       <span class="tool-label">Zoom</span>
       <div class="tool-group">
         @for (z of zooms; track z.value) {
-          <button
-            class="tool-btn"
-            [class.tool-btn--active]="canvas.zoom() === z.value"
-            (click)="canvas.setZoom(z.value)"
-          >{{ z.label }}</button>
+        <button
+          class="tool-btn"
+          [class.tool-btn--active]="canvas.zoom() === z.value"
+          (click)="canvas.setZoom(z.value)"
+        >
+          {{ z.label }}
+        </button>
         }
       </div>
       <div class="tool-sep"></div>
@@ -51,7 +58,6 @@ import { PrismCanvasService, type CanvasBg } from '../services/prism-canvas.serv
         <prism-icon name="move" [size]="13" />
         Rulers
       </button>
-
     </div>
   `,
   styles: `
@@ -122,7 +128,13 @@ import { PrismCanvasService, type CanvasBg } from '../services/prism-canvas.serv
 export class PrismCanvasToolbarComponent {
   protected readonly canvas = inject(PrismCanvasService);
 
-  protected readonly bgs: CanvasBg[] = ['dots', 'plain', 'light', 'dark', 'checker'];
+  protected readonly bgs: CanvasBg[] = [
+    'dots',
+    'plain',
+    'light',
+    'dark',
+    'checker',
+  ];
   protected readonly zooms = [
     { value: 0.75, label: '75%' },
     { value: 1, label: '100%' },

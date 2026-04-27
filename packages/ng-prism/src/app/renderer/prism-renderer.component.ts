@@ -15,7 +15,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
-import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.types.js';
+import type {
+  PanelDefinition,
+  RuntimeComponent,
+} from '../../plugin/plugin.types.js';
 import type { ComponentPage } from '../../plugin/page.types.js';
 import { PrismManifestService } from '../services/prism-manifest.service.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
@@ -35,24 +38,28 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismCanvasRulersComponent, NgComponentOutlet],
   template: `
-    <div
-      class="prism-canvas-stage"
-      [attr.data-bg]="canvasService.bg()"
-    >
+    <div class="prism-canvas-stage" [attr.data-bg]="canvasService.bg()">
       <div class="canvas-badges">
-        <span class="c-badge">{{ Math.round(canvasService.zoom() * 100) }}%</span>
+        <span class="c-badge"
+          >{{ Math.round(canvasService.zoom() * 100) }}%</span
+        >
       </div>
-      <div class="stage-crosshair" [class.visible]="canvasService.guides()"></div>
+      <div
+        class="stage-crosshair"
+        [class.visible]="canvasService.guides()"
+      ></div>
       <prism-canvas-rulers />
 
       <div class="demo-wrap" [style.--zoom]="canvasService.zoom()">
         <ng-container #outlet />
         @if (activeOverlay()) {
-          <ng-container
-            *ngComponentOutlet="activeOverlay()!;
-              inputs: overlayInputs;
-              injector: overlayInjector()"
-          />
+        <ng-container
+          *ngComponentOutlet="
+            activeOverlay()!;
+            inputs: overlayInputs;
+            injector: overlayInjector()
+          "
+        />
         }
       </div>
     </div>
@@ -150,15 +157,20 @@ export class PrismRendererComponent {
   private readonly injector = inject(Injector);
   private readonly destroyRef = inject(DestroyRef);
   private readonly host = inject(ElementRef<HTMLElement>);
-  private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, { optional: true });
+  private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, {
+    optional: true,
+  });
 
   private readonly panelService = inject(PrismPanelService);
   private readonly pluginService = inject(PrismPluginService);
 
-  private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
+  private readonly outlet = viewChild.required('outlet', {
+    read: ViewContainerRef,
+  });
   private componentRef: ComponentRef<unknown> | null = null;
   private outputSubscriptions: Array<{ unsubscribe(): void }> = [];
-  private lastProjectedContent: string | Record<string, string> | undefined = undefined;
+  private lastProjectedContent: string | Record<string, string> | undefined =
+    undefined;
   private isRenderPage = false;
 
   private readonly overlayCache = new Map<string, Type<unknown>>();
@@ -203,26 +215,44 @@ export class PrismRendererComponent {
       const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
       for (const [key, value] of Object.entries(inputs)) {
         if (!knownInputs.has(key)) {
-          console.warn(`[ng-prism] Unknown input "${key}" on <${comp.meta.componentMeta.selector}> — skipping. Remove it from @Showcase variants.`);
+          console.warn(
+            `[ng-prism] Unknown input "${key}" on <${comp.meta.componentMeta.selector}> — skipping. Remove it from @Showcase variants.`
+          );
           continue;
         }
         ref.setInput(key, value);
       }
       ref.changeDetectorRef.detectChanges();
       performance.mark('prism:rerender:end');
-      performance.measure('prism:rerender', 'prism:rerender:start', 'prism:rerender:end');
+      performance.measure(
+        'prism:rerender',
+        'prism:rerender:start',
+        'prism:rerender:end'
+      );
     });
 
     effect(() => {
       const panelId = this.panelService.activePanelId();
-      const allPanels: PanelDefinition[] = [...BUILTIN_PANELS, ...this.pluginService.panels()];
+      const allPanels: PanelDefinition[] = [
+        ...BUILTIN_PANELS,
+        ...this.pluginService.panels(),
+      ];
       const panel = allPanels.find((p) => p.id === panelId) ?? null;
 
-      if (!panel) { this.activeOverlay.set(null); return; }
-      if (panel.overlayComponent) { this.activeOverlay.set(panel.overlayComponent); return; }
+      if (!panel) {
+        this.activeOverlay.set(null);
+        return;
+      }
+      if (panel.overlayComponent) {
+        this.activeOverlay.set(panel.overlayComponent);
+        return;
+      }
       if (panel.loadOverlayComponent) {
         const cached = this.overlayCache.get(panel.id);
-        if (cached) { this.activeOverlay.set(cached); return; }
+        if (cached) {
+          this.activeOverlay.set(cached);
+          return;
+        }
         this.activeOverlay.set(null);
         panel.loadOverlayComponent().then((c) => {
           this.overlayCache.set(panel.id, c);
@@ -241,18 +271,25 @@ export class PrismRendererComponent {
 
     const renderPageTitle = comp.meta.showcaseConfig.renderPage;
     if (renderPageTitle) {
-      const page = this.manifestService.manifest().pages?.find(
-        (p): p is ComponentPage => p.type === 'component' && p.title === renderPageTitle,
-      );
+      const page = this.manifestService
+        .manifest()
+        .pages?.find(
+          (p): p is ComponentPage =>
+            p.type === 'component' && p.title === renderPageTitle
+        );
       if (page) {
         this.isRenderPage = true;
         const injector = Injector.create({
           providers: comp.meta.showcaseConfig.providers ?? [],
           parent: this.injector,
         });
-        this.componentRef = this.outlet().createComponent(page.component, { injector });
+        this.componentRef = this.outlet().createComponent(page.component, {
+          injector,
+        });
         this.componentRef.changeDetectorRef.detectChanges();
-        this.rendererService.renderedElement.set(this.componentRef.location.nativeElement);
+        this.rendererService.renderedElement.set(
+          this.componentRef.location.nativeElement
+        );
         return;
       }
     }
@@ -273,21 +310,36 @@ export class PrismRendererComponent {
     this.lastProjectedContent = content;
     const projectableNodes = content ? parseContentToNodes(content) : undefined;
 
-    this.componentRef = this.outlet().createComponent(comp.type, { injector, projectableNodes });
+    this.componentRef = this.outlet().createComponent(comp.type, {
+      injector,
+      projectableNodes,
+    });
 
     for (const output of comp.meta.outputs) {
-      const emitter = (this.componentRef.instance as Record<string, unknown>)[output.name];
-      if (emitter && typeof (emitter as { subscribe?: unknown }).subscribe === 'function') {
-        const sub = (emitter as { subscribe(fn: (v: unknown) => void): { unsubscribe(): void } })
-          .subscribe((v: unknown) => this.eventLogService.log(output.name, v));
+      const emitter = (this.componentRef.instance as Record<string, unknown>)[
+        output.name
+      ];
+      if (
+        emitter &&
+        typeof (emitter as { subscribe?: unknown }).subscribe === 'function'
+      ) {
+        const sub = (
+          emitter as {
+            subscribe(fn: (v: unknown) => void): { unsubscribe(): void };
+          }
+        ).subscribe((v: unknown) => this.eventLogService.log(output.name, v));
         this.outputSubscriptions.push(sub);
       }
     }
 
     const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
-    for (const [key, value] of Object.entries(this.rendererService.inputValues())) {
+    for (const [key, value] of Object.entries(
+      this.rendererService.inputValues()
+    )) {
       if (!knownInputs.has(key)) {
-        console.warn(`[ng-prism] Unknown input "${key}" on <${selector}> — skipping. Remove it from @Showcase variants.`);
+        console.warn(
+          `[ng-prism] Unknown input "${key}" on <${selector}> — skipping. Remove it from @Showcase variants.`
+        );
         continue;
       }
       this.componentRef.setInput(key, value);
@@ -295,9 +347,15 @@ export class PrismRendererComponent {
     this.componentRef.changeDetectorRef.detectChanges();
 
     performance.mark('prism:render:end', detail);
-    performance.measure('prism:render', 'prism:render:start', 'prism:render:end');
+    performance.measure(
+      'prism:render',
+      'prism:render:start',
+      'prism:render:end'
+    );
 
-    this.rendererService.renderedElement.set(this.componentRef.location.nativeElement);
+    this.rendererService.renderedElement.set(
+      this.componentRef.location.nativeElement
+    );
     this.rendererHooks?.onAfterCreate?.(selector);
   }
 
@@ -317,12 +375,16 @@ export class PrismRendererComponent {
   }
 }
 
-function parseContentToNodes(content: string | Record<string, string>): Node[][] {
+function parseContentToNodes(
+  content: string | Record<string, string>
+): Node[][] {
   if (typeof content === 'string') {
     return [htmlToNodes(content)];
   }
 
-  const defaultNodes = content['default'] ? htmlToNodes(content['default']) : [];
+  const defaultNodes = content['default']
+    ? htmlToNodes(content['default'])
+    : [];
   const result: Node[][] = [defaultNodes];
 
   for (const [selector, html] of Object.entries(content)) {

@@ -1,4 +1,10 @@
-import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
@@ -9,7 +15,8 @@ function esc(s: string): string {
 }
 
 function tokenizeXml(code: string): string {
-  const re = /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
+  const re =
+    /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
   let out = '';
   let m: RegExpExecArray | null;
   while ((m = re.exec(code)) !== null) {
@@ -144,8 +151,13 @@ export class PrismCodeDrawerComponent {
   protected readonly snippet = computed(() => {
     const comp = this.navigationService.activeComponent();
     if (!comp) return '';
-    const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
-    const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
+    const variant =
+      comp.meta.showcaseConfig.variants?.[
+        this.rendererService.activeVariantIndex()
+      ];
+    const explicitKeys = variant?.inputs
+      ? new Set(Object.keys(variant.inputs))
+      : undefined;
     const directiveOptions = comp.meta.componentMeta.isDirective
       ? { host: comp.meta.showcaseConfig.host }
       : undefined;
@@ -155,7 +167,7 @@ export class PrismCodeDrawerComponent {
       this.rendererService.inputValues(),
       explicitKeys,
       this.rendererService.activeContent(),
-      directiveOptions,
+      directiveOptions
     );
   });
 

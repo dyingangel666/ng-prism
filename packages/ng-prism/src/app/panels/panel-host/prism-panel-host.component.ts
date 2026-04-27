@@ -1,5 +1,16 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, createEnvironmentInjector, effect, EnvironmentInjector, inject, OnDestroy, signal, type Type, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  computed,
+  createEnvironmentInjector,
+  effect,
+  EnvironmentInjector,
+  inject,
+  OnDestroy,
+  signal,
+  type Type,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PrismIconComponent } from '../../icons/prism-icon.component.js';
 import { BUILTIN_PANELS } from '../builtin-panels.js';
 import { A11yAuditService } from '../a11y/a11y-audit.service.js';
@@ -18,32 +29,43 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
     <div class="panel">
       <nav class="panel-tabs" role="tablist">
         @for (panel of allPanels(); track panel.id) {
-          <button
-            class="p-tab"
-            [class.p-tab--active]="panelService.activePanelId() === panel.id"
-            (click)="panelService.activePanelId.set(panel.id)"
-            role="tab"
-            [attr.aria-selected]="panelService.activePanelId() === panel.id"
-            [attr.aria-controls]="'panel-' + panel.id"
+        <button
+          class="p-tab"
+          [class.p-tab--active]="panelService.activePanelId() === panel.id"
+          (click)="panelService.activePanelId.set(panel.id)"
+          role="tab"
+          [attr.aria-selected]="panelService.activePanelId() === panel.id"
+          [attr.aria-controls]="'panel-' + panel.id"
+        >
+          @if (panel.icon) {
+          <prism-icon [name]="panel.icon" [size]="13" />
+          }
+          {{ panel.label }}
+          @if (panelBadge(panel.id); as badge) {
+          <span
+            class="p-tab-badge"
+            [class.ok]="badge.variant === 'ok'"
+            [class.warn]="badge.variant === 'warn'"
+            [class.danger]="badge.variant === 'danger'"
+            >{{ badge.text }}</span
           >
-            @if (panel.icon) {
-              <prism-icon [name]="panel.icon" [size]="13" />
-            }
-            {{ panel.label }}
-            @if (panelBadge(panel.id); as badge) {
-              <span
-                class="p-tab-badge"
-                [class.ok]="badge.variant === 'ok'"
-                [class.warn]="badge.variant === 'warn'"
-                [class.danger]="badge.variant === 'danger'"
-              >{{ badge.text }}</span>
-            }
-          </button>
+          }
+        </button>
         }
       </nav>
-      <div class="panel-body" [id]="'panel-' + panelService.activePanelId()" role="tabpanel">
+      <div
+        class="panel-body"
+        [id]="'panel-' + panelService.activePanelId()"
+        role="tabpanel"
+      >
         @if (resolvedComponent()) {
-          <ng-container *ngComponentOutlet="resolvedComponent(); inputs: panelInputs(); injector: activeInjector()" />
+        <ng-container
+          *ngComponentOutlet="
+            resolvedComponent();
+            inputs: panelInputs();
+            injector: activeInjector()
+          "
+        />
         }
       </div>
     </div>
@@ -177,7 +199,9 @@ export class PrismPanelHostComponent implements OnDestroy {
   private readonly auditService = inject(A11yAuditService);
   private readonly rendererService = inject(PrismRendererService);
 
-  private readonly a11yScore = computed(() => this.auditService.scoreResult()?.score ?? null);
+  private readonly a11yScore = computed(
+    () => this.auditService.scoreResult()?.score ?? null
+  );
 
   private readonly coverageScore = computed(() => {
     const comp = this.nav.activeComponent() as any;
@@ -191,7 +215,9 @@ export class PrismPanelHostComponent implements OnDestroy {
     return comp?.meta.inputs.length ?? 0;
   });
 
-  protected panelBadge(panelId: string): { text: string; variant: 'default' | 'ok' | 'warn' | 'danger' } | null {
+  protected panelBadge(
+    panelId: string
+  ): { text: string; variant: 'default' | 'ok' | 'warn' | 'danger' } | null {
     if (panelId === 'controls') {
       const count = this.inputCount();
       return count > 0 ? { text: String(count), variant: 'default' } : null;
@@ -243,7 +269,11 @@ export class PrismPanelHostComponent implements OnDestroy {
     if (!this.injectorCache.has(panel.id)) {
       this.injectorCache.set(
         panel.id,
-        createEnvironmentInjector(panel.providers, this.envInjector, `PrismPanel[${panel.id}]`),
+        createEnvironmentInjector(
+          panel.providers,
+          this.envInjector,
+          `PrismPanel[${panel.id}]`
+        )
       );
     }
     return this.injectorCache.get(panel.id)!;
@@ -253,7 +283,7 @@ export class PrismPanelHostComponent implements OnDestroy {
     effect(() => {
       const injector = this.activeInjector();
       this.panelService.activePanelInjector.set(
-        injector === this.envInjector ? null : injector,
+        injector === this.envInjector ? null : injector
       );
     });
 
@@ -268,7 +298,8 @@ export class PrismPanelHostComponent implements OnDestroy {
         return;
       }
 
-      const a11yConfig: A11yCoreConfig | undefined = comp.meta?.showcaseConfig?.meta?.['a11y'];
+      const a11yConfig: A11yCoreConfig | undefined =
+        comp.meta?.showcaseConfig?.meta?.['a11y'];
       if (a11yConfig?.disable === true) {
         this.auditService.clear();
         return;
@@ -278,7 +309,10 @@ export class PrismPanelHostComponent implements OnDestroy {
     });
 
     effect(() => {
-      const panel = this.allPanels().find((p) => p.id === this.panelService.activePanelId()) ?? null;
+      const panel =
+        this.allPanels().find(
+          (p) => p.id === this.panelService.activePanelId()
+        ) ?? null;
       if (!panel) {
         this.resolvedComponent.set(null);
         return;

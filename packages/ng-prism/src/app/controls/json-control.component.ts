@@ -1,4 +1,13 @@
-import { Component, ChangeDetectionStrategy, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  ElementRef,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 
 function highlightJson(json: string): string {
   return json.replace(
@@ -10,7 +19,7 @@ function highlightJson(json: string): string {
       if (nil) return `<span class="jh-null">${nil}</span>`;
       if (num) return `<span class="jh-number">${num}</span>`;
       return match;
-    },
+    }
   );
 }
 
@@ -21,7 +30,10 @@ function highlightJson(json: string): string {
   template: `
     <div class="json-editor">
       <div class="json-overlay">
-        <pre class="json-pre" #preEl><code [innerHTML]="highlightedHtml()"></code></pre>
+        <pre
+          class="json-pre"
+          #preEl
+        ><code [innerHTML]="highlightedHtml()"></code></pre>
         <textarea
           #textareaEl
           class="json-input"
@@ -32,7 +44,7 @@ function highlightJson(json: string): string {
         ></textarea>
       </div>
       @if (parseError()) {
-        <span class="json-error">Invalid JSON</span>
+      <span class="json-error">Invalid JSON</span>
       }
     </div>
   `,
@@ -107,7 +119,8 @@ export class JsonControlComponent {
   readonly parseError = signal(false);
   readonly localText = signal<string | null>(null);
 
-  private readonly textareaEl = viewChild<ElementRef<HTMLTextAreaElement>>('textareaEl');
+  private readonly textareaEl =
+    viewChild<ElementRef<HTMLTextAreaElement>>('textareaEl');
   private readonly preEl = viewChild<ElementRef<HTMLPreElement>>('preEl');
 
   readonly displayText = computed(() => {

@@ -26,12 +26,12 @@ export class PrismCanvasService {
   }
 
   toggleGuides(): void {
-    this.guides.update(v => !v);
+    this.guides.update((v) => !v);
     this.save();
   }
 
   toggleRulers(): void {
-    this.rulers.update(v => !v);
+    this.rulers.update((v) => !v);
     this.save();
   }
 
@@ -40,7 +40,11 @@ export class PrismCanvasService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const d = JSON.parse(raw) as Record<string, unknown>;
-      if (['dots', 'plain', 'light', 'dark', 'checker'].includes(d['bg'] as string)) {
+      if (
+        ['dots', 'plain', 'light', 'dark', 'checker'].includes(
+          d['bg'] as string
+        )
+      ) {
         this.bg.set(d['bg'] as CanvasBg);
       }
       if (typeof d['zoom'] === 'number') this.zoom.set(d['zoom']);
@@ -51,12 +55,15 @@ export class PrismCanvasService {
 
   private save(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        bg: this.bg(),
-        zoom: this.zoom(),
-        guides: this.guides(),
-        rulers: this.rulers(),
-      }));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          bg: this.bg(),
+          zoom: this.zoom(),
+          guides: this.guides(),
+          rulers: this.rulers(),
+        })
+      );
     } catch {}
   }
 }

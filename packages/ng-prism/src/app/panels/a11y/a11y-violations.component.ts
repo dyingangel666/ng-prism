@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
 import { A11yAuditService } from './a11y-audit.service.js';
 import { A11yScoreComponent } from './a11y-score.component.js';
 
@@ -27,43 +32,53 @@ function sevColor(impact: string | undefined): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (auditService.error()) {
-      <div class="a11y-status a11y-status--error">Audit failed: {{ auditService.error() }}</div>
+    <div class="a11y-status a11y-status--error">
+      Audit failed: {{ auditService.error() }}
+    </div>
     } @else if (auditService.results() || auditService.running()) {
-      <div class="a11y-body" [class.a11y-body--loading]="auditService.running()">
-        <div class="score-wrap">
-          <prism-a11y-score [score]="scoreResult()?.score ?? 0" />
-          <div class="score-label">axe-core audit</div>
-          <div class="score-meta">
-            @if (scoreResult()?.critical) {
-              <span><i style="background: var(--prism-danger)"></i>{{ scoreResult()!.critical }} critical</span>
-            }
-            @if (scoreResult()?.moderate) {
-              <span><i style="background: var(--prism-warn)"></i>{{ scoreResult()!.moderate }} moderate</span>
-            }
-            <span><i style="background: var(--prism-success)"></i>{{ scoreResult()?.passes ?? 0 }} pass</span>
-          </div>
-        </div>
-        <div class="viol-list">
-          @for (item of allResults(); track item.id + item.impact) {
-            <div class="viol" [style.--sev-color]="sevColor(item.impact)">
-              <span class="viol-sev">{{ item.impact ?? 'pass' }}</span>
-              <div class="viol-text">
-                <b>{{ item.description }}</b>
-                @if (item.help) {
-                  <span>{{ item.help }}</span>
-                }
-              </div>
-              <span class="viol-rule">{{ item.id }}</span>
-            </div>
-          } @empty {
-            @if (!auditService.running()) {
-              <div class="a11y-status">No results yet.</div>
-            }
+    <div class="a11y-body" [class.a11y-body--loading]="auditService.running()">
+      <div class="score-wrap">
+        <prism-a11y-score [score]="scoreResult()?.score ?? 0" />
+        <div class="score-label">axe-core audit</div>
+        <div class="score-meta">
+          @if (scoreResult()?.critical) {
+          <span
+            ><i style="background: var(--prism-danger)"></i
+            >{{ scoreResult()!.critical }} critical</span
+          >
+          } @if (scoreResult()?.moderate) {
+          <span
+            ><i style="background: var(--prism-warn)"></i
+            >{{ scoreResult()!.moderate }} moderate</span
+          >
           }
+          <span
+            ><i style="background: var(--prism-success)"></i
+            >{{ scoreResult()?.passes ?? 0 }} pass</span
+          >
         </div>
       </div>
+      <div class="viol-list">
+        @for (item of allResults(); track item.id + item.impact) {
+        <div class="viol" [style.--sev-color]="sevColor(item.impact)">
+          <span class="viol-sev">{{ item.impact ?? 'pass' }}</span>
+          <div class="viol-text">
+            <b>{{ item.description }}</b>
+            @if (item.help) {
+            <span>{{ item.help }}</span>
+            }
+          </div>
+          <span class="viol-rule">{{ item.id }}</span>
+        </div>
+        } @empty { @if (!auditService.running()) {
+        <div class="a11y-status">No results yet.</div>
+        } }
+      </div>
+    </div>
     } @else {
-      <div class="a11y-status">Select a component to run accessibility audit.</div>
+    <div class="a11y-status">
+      Select a component to run accessibility audit.
+    </div>
     }
   `,
   styles: `
@@ -183,13 +198,17 @@ function sevColor(impact: string | undefined): string {
 export class A11yViolationsComponent {
   protected readonly auditService = inject(A11yAuditService);
 
-  protected readonly scoreResult = computed(() => this.auditService.scoreResult());
+  protected readonly scoreResult = computed(() =>
+    this.auditService.scoreResult()
+  );
 
   protected readonly allResults = computed(() => {
     const results = this.auditService.results();
     if (!results) return [];
     const violations = [...results.violations].sort(
-      (a, b) => (IMPACT_ORDER[a.impact ?? ''] ?? 4) - (IMPACT_ORDER[b.impact ?? ''] ?? 4),
+      (a, b) =>
+        (IMPACT_ORDER[a.impact ?? ''] ?? 4) -
+        (IMPACT_ORDER[b.impact ?? ''] ?? 4)
     );
     const passes = results.passes.slice(0, 4);
     return [...violations, ...passes];

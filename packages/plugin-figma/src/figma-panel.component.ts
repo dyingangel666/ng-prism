@@ -16,15 +16,13 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (figmaUrl()) {
-      <iframe
-        #iframe
-        class="prism-figma-panel__iframe"
-        allowfullscreen
-      ></iframe>
+    <iframe #iframe class="prism-figma-panel__iframe" allowfullscreen></iframe>
     } @else {
-      <div class="prism-figma-panel__empty">
-        No Figma design linked. Add <code>meta: {{ '{' }} figma: 'https://...' {{ '}' }}</code> to &#64;Showcase.
-      </div>
+    <div class="prism-figma-panel__empty">
+      No Figma design linked. Add
+      <code>meta: {{ '{' }} figma: 'https://...' {{ '}' }}</code> to
+      &#64;Showcase.
+    </div>
     }
   `,
   styles: `
@@ -67,7 +65,9 @@ export class FigmaPanelComponent {
         this.renderer.setAttribute(
           el,
           'src',
-          `https://www.figma.com/embed?embed_host=ng-prism&url=${encodeURIComponent(url)}`,
+          `https://www.figma.com/embed?embed_host=ng-prism&url=${encodeURIComponent(
+            url
+          )}`
         );
       }
     });

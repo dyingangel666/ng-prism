@@ -1,10 +1,24 @@
-import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  computed,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 
 function variantColor(name: string, index: number): string {
-  const palette = ['#a78bfa', '#60a5fa', '#34d399', '#fbbf24', '#f472b6', '#8476a2', '#ec4899', '#06b6d4'];
+  const palette = [
+    '#a78bfa',
+    '#60a5fa',
+    '#34d399',
+    '#fbbf24',
+    '#f472b6',
+    '#8476a2',
+    '#ec4899',
+    '#06b6d4',
+  ];
   return palette[index % palette.length];
 }
 
@@ -15,39 +29,45 @@ function variantColor(name: string, index: number): string {
   imports: [PrismIconComponent],
   template: `
     @if (variants().length > 0) {
-      <nav class="variant-ribbon">
-        @for (v of variants(); track v.name; let i = $index) {
-          <button
-            class="v-tab"
-            [class.v-tab--active]="rendererService.activeVariantIndex() === i"
-            [style.--vc]="variantColor(v.name, i)"
-            (click)="rendererService.selectVariant(i)"
-          >
-            <span class="v-dot"></span>
-            {{ v.name }}
-          </button>
-        }
-        <div class="variant-ribbon-right">
-          <button
-            class="tool-btn"
-            title="Previous variant"
-            aria-label="Previous variant"
-            [disabled]="rendererService.activeVariantIndex() === 0"
-            (click)="prev()"
-          >
-            <prism-icon name="chevron-right" [size]="14" style="transform: rotate(180deg)" />
-          </button>
-          <button
-            class="tool-btn"
-            title="Next variant"
-            aria-label="Next variant"
-            [disabled]="rendererService.activeVariantIndex() >= variants().length - 1"
-            (click)="next()"
-          >
-            <prism-icon name="chevron-right" [size]="14" />
-          </button>
-        </div>
-      </nav>
+    <nav class="variant-ribbon">
+      @for (v of variants(); track v.name; let i = $index) {
+      <button
+        class="v-tab"
+        [class.v-tab--active]="rendererService.activeVariantIndex() === i"
+        [style.--vc]="variantColor(v.name, i)"
+        (click)="rendererService.selectVariant(i)"
+      >
+        <span class="v-dot"></span>
+        {{ v.name }}
+      </button>
+      }
+      <div class="variant-ribbon-right">
+        <button
+          class="tool-btn"
+          title="Previous variant"
+          aria-label="Previous variant"
+          [disabled]="rendererService.activeVariantIndex() === 0"
+          (click)="prev()"
+        >
+          <prism-icon
+            name="chevron-right"
+            [size]="14"
+            style="transform: rotate(180deg)"
+          />
+        </button>
+        <button
+          class="tool-btn"
+          title="Next variant"
+          aria-label="Next variant"
+          [disabled]="
+            rendererService.activeVariantIndex() >= variants().length - 1
+          "
+          (click)="next()"
+        >
+          <prism-icon name="chevron-right" [size]="14" />
+        </button>
+      </div>
+    </nav>
     }
   `,
   styles: `
@@ -168,6 +188,7 @@ export class PrismVariantRibbonComponent {
 
   protected next(): void {
     const idx = this.rendererService.activeVariantIndex();
-    if (idx < this.variants().length - 1) this.rendererService.selectVariant(idx + 1);
+    if (idx < this.variants().length - 1)
+      this.rendererService.selectVariant(idx + 1);
   }
 }

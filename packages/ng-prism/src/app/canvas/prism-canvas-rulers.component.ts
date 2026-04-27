@@ -16,11 +16,11 @@ const R = 20;
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (canvas.rulers()) {
-      <div class="ruler-wrap">
-        <canvas #rulerTop class="ruler ruler--top"></canvas>
-        <canvas #rulerLeft class="ruler ruler--left"></canvas>
-        <div class="ruler-corner"></div>
-      </div>
+    <div class="ruler-wrap">
+      <canvas #rulerTop class="ruler ruler--top"></canvas>
+      <canvas #rulerLeft class="ruler ruler--left"></canvas>
+      <div class="ruler-corner"></div>
+    </div>
     }
   `,
   styles: `
@@ -63,8 +63,10 @@ const R = 20;
 export class PrismCanvasRulersComponent {
   protected readonly canvas = inject(PrismCanvasService);
 
-  private readonly rulerTop = viewChild<ElementRef<HTMLCanvasElement>>('rulerTop');
-  private readonly rulerLeft = viewChild<ElementRef<HTMLCanvasElement>>('rulerLeft');
+  private readonly rulerTop =
+    viewChild<ElementRef<HTMLCanvasElement>>('rulerTop');
+  private readonly rulerLeft =
+    viewChild<ElementRef<HTMLCanvasElement>>('rulerLeft');
 
   private ro: ResizeObserver | null = null;
 
@@ -120,7 +122,8 @@ export class PrismCanvasRulersComponent {
     const cs = getComputedStyle(document.documentElement);
     const bg = cs.getPropertyValue('--prism-bg').trim() || '#0d0b1c';
     const fg = cs.getPropertyValue('--prism-text-ghost').trim() || '#6a5d87';
-    const border = cs.getPropertyValue('--prism-border').trim() || 'rgba(255,255,255,0.08)';
+    const border =
+      cs.getPropertyValue('--prism-border').trim() || 'rgba(255,255,255,0.08)';
 
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);
@@ -179,7 +182,8 @@ export class PrismCanvasRulersComponent {
     const cs = getComputedStyle(document.documentElement);
     const bg = cs.getPropertyValue('--prism-bg').trim() || '#0d0b1c';
     const fg = cs.getPropertyValue('--prism-text-ghost').trim() || '#6a5d87';
-    const border = cs.getPropertyValue('--prism-border').trim() || 'rgba(255,255,255,0.08)';
+    const border =
+      cs.getPropertyValue('--prism-border').trim() || 'rgba(255,255,255,0.08)';
 
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, w, h);

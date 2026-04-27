@@ -1,4 +1,12 @@
-import { Component, computed, effect, inject, untracked, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  untracked,
+  HostListener,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';

@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  signal,
+} from '@angular/core';
 import type { BundleMetrics, PerfThresholds } from './perf.types.js';
 import { DEFAULT_THRESHOLDS } from './perf.types.js';
 import { PerfRenderService } from './render/perf-render.service.js';
@@ -12,81 +18,102 @@ type SubTab = 'bundle' | 'render' | 'memory';
 @Component({
   selector: 'prism-perf-panel',
   standalone: true,
-  imports: [BundleSectionComponent, RenderSectionComponent, MemorySectionComponent],
+  imports: [
+    BundleSectionComponent,
+    RenderSectionComponent,
+    MemorySectionComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="prism-perf-panel">
       <div class="prism-perf-subtabs">
-        <button class="prism-perf-subtab" [class.active]="activeTab() === 'bundle'" (click)="activeTab.set('bundle')">
+        <button
+          class="prism-perf-subtab"
+          [class.active]="activeTab() === 'bundle'"
+          (click)="activeTab.set('bundle')"
+        >
           <span class="prism-perf-subtab-icon">&#128230;</span> Bundle
         </button>
-        <button class="prism-perf-subtab" [class.active]="activeTab() === 'render'" (click)="activeTab.set('render')">
+        <button
+          class="prism-perf-subtab"
+          [class.active]="activeTab() === 'render'"
+          (click)="activeTab.set('render')"
+        >
           <span class="prism-perf-subtab-icon">&#9201;</span> Render
         </button>
-        <button class="prism-perf-subtab" [class.active]="activeTab() === 'memory'" (click)="activeTab.set('memory')">
+        <button
+          class="prism-perf-subtab"
+          [class.active]="activeTab() === 'memory'"
+          (click)="activeTab.set('memory')"
+        >
           <span class="prism-perf-subtab-icon">&#129504;</span> Memory
         </button>
         @if (renderService.cdRunCount() > 0) {
-          <div class="prism-perf-cd-badge">{{ renderService.cdRunCount() }} CD runs</div>
+        <div class="prism-perf-cd-badge">
+          {{ renderService.cdRunCount() }} CD runs
+        </div>
         }
       </div>
 
       @if (activeTab() === 'render') {
-        <div class="prism-perf-toolbar">
-          @if (renderService.isRecording()) {
-            <button class="prism-perf-btn prism-perf-btn--primary" (click)="renderService.stopRecording()">
-              <i class="prism-perf-btn-icon">&#9208;</i> Pause
-            </button>
-          } @else {
-            <button class="prism-perf-btn prism-perf-btn--primary" (click)="renderService.startRecording()">
-              <i class="prism-perf-btn-icon">&#9654;</i> Profile
-            </button>
-          }
-          <button class="prism-perf-btn" (click)="renderService.clear()">
-            <i class="prism-perf-btn-icon">&#10005;</i> Clear
-          </button>
-          <div class="prism-perf-toolbar-spacer"></div>
-          @if (renderService.isRecording()) {
-            <div class="prism-perf-status">
-              <div class="prism-perf-status-dot"></div>
-              live · {{ renderService.sampleCount() }} samples
-            </div>
-          }
+      <div class="prism-perf-toolbar">
+        @if (renderService.isRecording()) {
+        <button
+          class="prism-perf-btn prism-perf-btn--primary"
+          (click)="renderService.stopRecording()"
+        >
+          <i class="prism-perf-btn-icon">&#9208;</i> Pause
+        </button>
+        } @else {
+        <button
+          class="prism-perf-btn prism-perf-btn--primary"
+          (click)="renderService.startRecording()"
+        >
+          <i class="prism-perf-btn-icon">&#9654;</i> Profile
+        </button>
+        }
+        <button class="prism-perf-btn" (click)="renderService.clear()">
+          <i class="prism-perf-btn-icon">&#10005;</i> Clear
+        </button>
+        <div class="prism-perf-toolbar-spacer"></div>
+        @if (renderService.isRecording()) {
+        <div class="prism-perf-status">
+          <div class="prism-perf-status-dot"></div>
+          live · {{ renderService.sampleCount() }} samples
         </div>
-      }
-
-      @if (activeTab() === 'memory') {
-        <div class="prism-perf-toolbar">
-          <button class="prism-perf-btn prism-perf-btn--primary" (click)="captureMemorySnapshots()">
-            <i class="prism-perf-btn-icon">&#9654;</i> Snapshot
-          </button>
-          <button class="prism-perf-btn" (click)="memoryService.clear()">
-            <i class="prism-perf-btn-icon">&#10005;</i> Clear
-          </button>
-          <div class="prism-perf-toolbar-spacer"></div>
-        </div>
+        }
+      </div>
+      } @if (activeTab() === 'memory') {
+      <div class="prism-perf-toolbar">
+        <button
+          class="prism-perf-btn prism-perf-btn--primary"
+          (click)="captureMemorySnapshots()"
+        >
+          <i class="prism-perf-btn-icon">&#9654;</i> Snapshot
+        </button>
+        <button class="prism-perf-btn" (click)="memoryService.clear()">
+          <i class="prism-perf-btn-icon">&#10005;</i> Clear
+        </button>
+        <div class="prism-perf-toolbar-spacer"></div>
+      </div>
       }
 
       <div class="prism-perf-content">
-        @switch (activeTab()) {
-          @case ('bundle') {
-            <perf-bundle-section
-              [metrics]="bundleMetrics()"
-              [warnKb]="thresholds.bundleWarnKb"
-              [critKb]="thresholds.bundleCritKb"
-            />
-          }
-          @case ('render') {
-            <perf-render-section
-              [renderService]="renderService"
-              [warnMs]="thresholds.renderWarnMs"
-              [critMs]="thresholds.renderCritMs"
-            />
-          }
-          @case ('memory') {
-            <perf-memory-section [memoryService]="memoryService" />
-          }
-        }
+        @switch (activeTab()) { @case ('bundle') {
+        <perf-bundle-section
+          [metrics]="bundleMetrics()"
+          [warnKb]="thresholds.bundleWarnKb"
+          [critKb]="thresholds.bundleCritKb"
+        />
+        } @case ('render') {
+        <perf-render-section
+          [renderService]="renderService"
+          [warnMs]="thresholds.renderWarnMs"
+          [critMs]="thresholds.renderCritMs"
+        />
+        } @case ('memory') {
+        <perf-memory-section [memoryService]="memoryService" />
+        } }
       </div>
     </div>
   `,
@@ -187,7 +214,11 @@ export class PerfPanelComponent {
   }
 
   readonly bundleMetrics = computed<BundleMetrics | null>(() => {
-    const comp = this.activeComponent() as { meta?: { showcaseConfig?: { meta?: { perf?: { bundle?: BundleMetrics } } } } } | null;
+    const comp = this.activeComponent() as {
+      meta?: {
+        showcaseConfig?: { meta?: { perf?: { bundle?: BundleMetrics } } };
+      };
+    } | null;
     return comp?.meta?.showcaseConfig?.meta?.perf?.bundle ?? null;
   });
 }
