@@ -8,8 +8,6 @@
     "useDefineForClassFields": false,
     "strict": true,
     "skipLibCheck": true,
-    "composite": true,
-    "declaration": true,
     "importHelpers": true,
     "sourceMap": true,
     "lib": ["ES2022", "dom"],
@@ -30,5 +28,8 @@
     {
       "path": "../packages/ng-prism"
     }
-  ]
+  ],
+  "nx": {
+    "addTypecheckTarget": false
+  }
 }
