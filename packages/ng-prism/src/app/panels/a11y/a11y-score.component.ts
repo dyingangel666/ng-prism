@@ -7,6 +7,7 @@ import {
 
 const R = 54;
 const CIRCUMFERENCE = 2 * Math.PI * R;
+let nextId = 0;
 
 @Component({
   selector: 'prism-a11y-score',
@@ -16,7 +17,7 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
     <div class="score-ring">
       <svg viewBox="0 0 128 128">
         <defs>
-          <linearGradient id="prism-sg" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient [id]="gradientId" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#a78bfa" />
             <stop offset="100%" stop-color="#3b82f6" />
           </linearGradient>
@@ -29,6 +30,7 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
           [attr.r]="R"
           [attr.stroke-dasharray]="CIRC"
           [attr.stroke-dashoffset]="dashOffset()"
+          [attr.stroke]="'url(#' + gradientId + ')'"
         />
       </svg>
       @if (!compact()) {
@@ -65,7 +67,6 @@ const CIRCUMFERENCE = 2 * Math.PI * R;
     }
     .track { stroke: var(--prism-input-bg); }
     .fill {
-      stroke: url(#prism-sg);
       stroke-linecap: round;
       transition: stroke-dashoffset 0.5s ease;
     }
@@ -100,6 +101,7 @@ export class A11yScoreComponent {
   readonly score = input.required<number>();
   readonly compact = input(false);
 
+  protected readonly gradientId = `prism-sg-${nextId++}`;
   protected readonly R = R;
   protected readonly CIRC = CIRCUMFERENCE;
 

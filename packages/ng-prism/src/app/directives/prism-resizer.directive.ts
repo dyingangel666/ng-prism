@@ -25,17 +25,13 @@ export class PrismResizerDirective {
     e.preventDefault();
     const startPos = this.axis() === 'x' ? e.clientX : e.clientY;
     const startVal = this.value();
-    const invert = this.axis() === 'y';
 
     this.el.nativeElement.classList.add('active');
 
     const onMove = (ev: MouseEvent) => {
       const delta =
         this.axis() === 'x' ? ev.clientX - startPos : startPos - ev.clientY;
-      const next = Math.max(
-        this.min(),
-        Math.min(this.max(), startVal + (invert ? delta : delta))
-      );
+      const next = Math.max(this.min(), Math.min(this.max(), startVal + delta));
       this.valueChange.emit(next);
     };
 

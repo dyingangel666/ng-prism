@@ -23,7 +23,30 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
     </div>
     }
   `,
-  styles: `:host { display: contents; }`,
+  styles: `
+    :host { display: contents; }
+    .a11y-mark {
+      position: absolute;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .outline {
+      border: 2px solid rgba(59, 130, 246, 0.95);
+      border-radius: 4px;
+      background: rgba(59, 130, 246, 0.08);
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(17, 24, 39, 0.92);
+      color: #fff;
+      font: 11px/1.4 var(--font-mono);
+      white-space: nowrap;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    }
+    .kb .tag { background: rgba(5, 150, 105, 0.95); }
+  `,
 })
 export class A11yOverlayHostComponent {
   private readonly rendererService = inject(PrismRendererService);

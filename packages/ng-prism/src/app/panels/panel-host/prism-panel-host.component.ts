@@ -35,7 +35,11 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
           (click)="panelService.activePanelId.set(panel.id)"
           role="tab"
           [attr.aria-selected]="panelService.activePanelId() === panel.id"
-          [attr.aria-controls]="'panel-' + panel.id"
+          [attr.aria-controls]="
+            panelService.activePanelId() === panel.id
+              ? 'panel-' + panel.id
+              : null
+          "
         >
           @if (panel.icon) {
           <prism-icon [name]="panel.icon" [size]="13" />
