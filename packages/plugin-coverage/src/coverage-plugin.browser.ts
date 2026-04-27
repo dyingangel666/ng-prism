@@ -8,6 +8,7 @@ export function coveragePlugin(_options?: CoveragePluginOptions): NgPrismPlugin 
       {
         id: 'coverage',
         label: 'Coverage',
+        icon: 'shield-check',
         loadComponent: () =>
           import('./coverage-panel.component.js').then((m) => m.CoveragePanelComponent),
         position: 'bottom',

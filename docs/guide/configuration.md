@@ -27,6 +27,8 @@ The most commonly used fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `title` | `string` | Header title text (default: `'ng-prism'`) |
+| `subtitle` | `string` | Secondary text below the title (monospace, muted) |
 | `plugins` | `NgPrismPlugin[]` | List of plugins to activate |
 | `pages` | `StyleguidePage[]` | Config-declared custom pages |
 | `appProviders` | `Provider[]` | Angular providers added to the Prism app bootstrap |
@@ -72,11 +74,12 @@ See [Theming](guide/theming.md) for the full list of available properties.
 
 ## Branding
 
-Replace the default ng-prism logo and title in the header:
+Replace the default ng-prism logo, title, and subtitle in the header:
 
 ```typescript
 export default defineConfig({
   title: 'My Component Library',
+  subtitle: 'acme/design-system',
   logo: {
     light: 'assets/logo-dark.svg',
     dark: 'assets/logo-light.svg',
@@ -84,7 +87,14 @@ export default defineConfig({
 });
 ```
 
-If only one logo variant is provided, it is used for both themes.
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Header title (gradient text). Default: `'ng-prism'` |
+| `subtitle` | `string` | Smaller text below the title (monospace, muted). Optional. |
+| `logo.light` | `string` | Logo image URL for light theme |
+| `logo.dark` | `string` | Logo image URL for dark theme |
+
+If only one logo variant is provided, it is used for both themes. If no logo is configured, a default prism icon is shown.
 
 > **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
 

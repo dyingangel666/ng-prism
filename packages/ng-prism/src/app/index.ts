@@ -3,7 +3,8 @@ export { PRISM_MANIFEST, PRISM_CONFIG, PRISM_RENDERER_HOOKS } from './tokens/pri
 export type { PrismRendererHooks } from './tokens/prism-tokens.js';
 
 // Theme
-export { PRISM_DEFAULT_THEME } from './theme/prism-default-theme.js';
+export { PRISM_DEFAULT_THEME, PRISM_DARK_THEME, PRISM_LIGHT_THEME, PRISM_BASE_TOKENS } from './theme/prism-default-theme.js';
+export { PrismThemeService } from './services/prism-theme.service.js';
 
 // Types
 export type { NavigationItem } from './services/navigation-item.types.js';

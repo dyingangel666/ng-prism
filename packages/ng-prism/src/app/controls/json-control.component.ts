@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
 
 function highlightJson(json: string): string {
   return json.replace(
@@ -17,88 +17,44 @@ function highlightJson(json: string): string {
 @Component({
   selector: 'prism-json-control',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="prism-json-control">
-      <div class="prism-json-control__label">
-        <span class="prism-json-control__label-text">{{ label() }}</span>
-        @if (typeName()) { <code class="prism-json-control__type">{{ typeName() }}</code> }
+    <div class="json-editor">
+      <div class="json-overlay">
+        <pre class="json-pre" #preEl><code [innerHTML]="highlightedHtml()"></code></pre>
+        <textarea
+          #textareaEl
+          class="json-input"
+          [value]="displayText()"
+          (input)="onInput($any($event.target).value)"
+          (scroll)="syncScroll()"
+          spellcheck="false"
+        ></textarea>
       </div>
-      <div class="prism-json-control__editor">
-        <div class="prism-json-control__overlay">
-          <pre class="prism-json-control__pre" #preEl><code [innerHTML]="highlightedHtml()"></code></pre>
-          <textarea
-            #textareaEl
-            class="prism-json-control__input"
-            [value]="displayText()"
-            (input)="onInput($any($event.target).value)"
-            (scroll)="syncScroll()"
-            spellcheck="false"
-          ></textarea>
-        </div>
-        @if (parseError()) {
-          <span class="prism-json-control__error">Invalid JSON</span>
-        }
-      </div>
+      @if (parseError()) {
+        <span class="json-error">Invalid JSON</span>
+      }
     </div>
   `,
   styles: `
-    .prism-json-control {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 6px 16px;
-      min-height: 36px;
-    }
+    .json-editor { flex: 1; min-width: 0; }
 
-    .prism-json-control__label {
-      flex-shrink: 0;
-      width: 140px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      padding-top: 4px;
-    }
-    .prism-json-control__label-text {
-      font-size: 13px;
-      font-family: var(--prism-font-sans);
-      color: var(--prism-text-muted);
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .prism-json-control__type {
-      font-size: 10px;
-      font-family: var(--prism-font-mono, monospace);
-      color: var(--prism-text-ghost);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .prism-json-control__editor {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .prism-json-control__overlay {
+    .json-overlay {
       position: relative;
       border: 1px solid var(--prism-border);
-      border-radius: var(--prism-radius-sm);
+      border-radius: var(--radius-sm);
       overflow: hidden;
-      transition: border-color 0.15s;
+      transition: border-color var(--dur-fast);
     }
-    .prism-json-control__overlay:focus-within {
+    .json-overlay:focus-within {
       border-color: var(--prism-primary);
-      box-shadow: 0 0 0 2px var(--prism-glow);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--prism-primary) 30%, transparent);
     }
 
-    .prism-json-control__pre,
-    .prism-json-control__input {
+    .json-pre, .json-input {
       margin: 0;
       padding: 4px 8px;
-      font-family: var(--prism-font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 12px;
       line-height: 1.4;
       white-space: pre-wrap;
@@ -106,24 +62,19 @@ function highlightJson(json: string): string {
       tab-size: 2;
     }
 
-    .prism-json-control__pre {
+    .json-pre {
       min-height: 56px;
       pointer-events: none;
     }
-
-    .prism-json-control__pre code {
-      font-family: inherit;
-      font-size: inherit;
-      line-height: inherit;
-    }
+    .json-pre code { font-family: inherit; }
 
     :host ::ng-deep .jh-key { color: #93c5fd; }
-    :host ::ng-deep .jh-string { color: #7dd3fc; }
+    :host ::ng-deep .jh-string { color: #86efac; }
     :host ::ng-deep .jh-number { color: #fbbf24; }
     :host ::ng-deep .jh-bool { color: #a78bfa; }
     :host ::ng-deep .jh-null { color: var(--prism-text-ghost); }
 
-    .prism-json-control__input {
+    .json-input {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -136,16 +87,12 @@ function highlightJson(json: string): string {
       overflow: auto;
       box-sizing: border-box;
     }
-    .prism-json-control__input:focus {
-      outline: none;
-    }
-    .prism-json-control__input::selection {
-      background: rgba(99, 102, 241, 0.3);
-    }
+    .json-input:focus { outline: none; }
+    .json-input::selection { background: rgba(99, 102, 241, 0.3); }
 
-    .prism-json-control__error {
+    .json-error {
       font-size: 11px;
-      color: #ef4444;
+      color: var(--prism-danger);
       display: block;
       margin-top: 2px;
     }

@@ -8,10 +8,15 @@ import type { NgPrismPlugin } from './plugin.types.js';
 import type { StyleguidePage } from './page.types.js';
 
 interface NgPrismConfig {
+  title?: string;
+  subtitle?: string;
+  logo?: { light?: string; dark?: string };
   plugins?: NgPrismPlugin[];
   pages?: StyleguidePage[];
   appProviders?: Provider[];
   theme?: Record<string, string>;
+  darkTheme?: Record<string, string>;
+  lightTheme?: Record<string, string>;
   themeStylesheet?: string;
   ui?: {
     header?: Type<unknown>;

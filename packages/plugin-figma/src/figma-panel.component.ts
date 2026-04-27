@@ -28,35 +28,21 @@ import {
     }
   `,
   styles: `
-    :host {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
+    :host { display: block; width: 100%; height: 100%; }
     .prism-figma-panel__iframe {
-      width: 100%;
-      height: 100%;
-      min-height: 400px;
-      border: none;
+      width: 100%; height: 100%; min-height: 400px; border: none;
     }
-
     .prism-figma-panel__empty {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      min-height: 200px;
-      color: var(--prism-text-muted, #6b7280);
-      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; min-height: 200px;
+      color: var(--prism-text-muted); font-size: 14px;
     }
-
     .prism-figma-panel__empty code {
-      font-family: var(--prism-font-mono, monospace);
-      background: var(--prism-bg-surface, #f3f4f6);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 13px;
+      font-family: var(--font-mono);
+      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+      color: var(--prism-primary);
+      padding: 2px 6px; border-radius: var(--radius-xs);
+      font-size: var(--fs-lg);
     }
   `,
 })

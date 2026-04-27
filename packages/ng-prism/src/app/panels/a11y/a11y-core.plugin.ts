@@ -3,6 +3,7 @@ import type { PanelDefinition } from '../../../plugin/plugin.types.js';
 export const A11Y_CORE_PANEL: PanelDefinition = {
   id: 'a11y',
   label: 'A11y',
+  icon: 'accessibility',
   position: 'bottom',
   placement: 'addon',
   loadComponent: () =>

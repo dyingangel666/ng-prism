@@ -48,19 +48,6 @@ import { PrismLayoutService } from '../services/prism-layout.service.js';
             <span class="layout-menu__label">Show addons panel</span>
             <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>A</kbd></span>
           </button>
-          <div class="layout-menu__divider"></div>
-          <button class="layout-menu__item" (click)="toggle('orientation')">
-            <span class="layout-menu__icon">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <rect x="1" y="1" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.2"/>
-                <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" stroke-width="1.2"/>
-              </svg>
-            </span>
-            <span class="layout-menu__label">
-              Panel: {{ layout.addonsOrientation() === 'bottom' ? 'bottom → right' : 'right → bottom' }}
-            </span>
-            <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>D</kbd></span>
-          </button>
         </div>
       }
     </div>

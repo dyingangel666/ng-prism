@@ -1,60 +1,92 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
-const CIRCUMFERENCE = 2 * Math.PI * 14;
+const R = 54;
+const CIRCUMFERENCE = 2 * Math.PI * R;
 
 @Component({
   selector: 'prism-a11y-score',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg
-      class="prism-score-ring"
-      viewBox="0 0 36 36"
-      [attr.data-level]="level()"
-      [attr.aria-label]="'Accessibility score: ' + score() + ' out of 100'"
-      role="img"
-    >
-      <circle
-        class="prism-score-ring__track"
-        cx="18" cy="18" r="14"
-        fill="none" stroke-width="3.5"
-      />
-      <circle
-        class="prism-score-ring__arc"
-        cx="18" cy="18" r="14"
-        fill="none" stroke-width="3.5"
-        stroke-linecap="round"
-        transform="rotate(-90 18 18)"
-        [attr.stroke-dasharray]="CIRC + ' ' + CIRC"
-        [attr.stroke-dashoffset]="dashOffset()"
-      />
+    <div class="score-ring">
+      <svg viewBox="0 0 128 128">
+        <defs>
+          <linearGradient id="prism-sg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#a78bfa"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+        <circle class="track" cx="64" cy="64" [attr.r]="R" />
+        <circle
+          class="fill"
+          cx="64" cy="64"
+          [attr.r]="R"
+          [attr.stroke-dasharray]="CIRC"
+          [attr.stroke-dashoffset]="dashOffset()"
+        />
+      </svg>
       @if (!compact()) {
-        <text x="18" y="23" class="prism-score-ring__label" text-anchor="middle">{{ score() }}</text>
+        <div class="score-val">
+          <div class="score-num">{{ score() }}</div>
+          <div class="score-max">/ 100</div>
+        </div>
       }
-    </svg>
+    </div>
   `,
   styles: `
     :host { display: inline-flex; }
 
-    .prism-score-ring { overflow: visible; }
-
-    .prism-score-ring__track {
-      stroke: rgba(255, 255, 255, 0.08);
+    .score-ring {
+      position: relative;
+      width: 128px;
+      height: 128px;
+    }
+    :host-context(.compact) .score-ring,
+    :host([style*="width:18px"]) .score-ring {
+      width: 100%;
+      height: 100%;
     }
 
-    .prism-score-ring__arc {
-      transition: stroke-dashoffset 0.4s ease, stroke 0.3s ease;
+    .score-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
     }
 
-    [data-level="good"]  .prism-score-ring__arc { stroke: #4ade80; }
-    [data-level="warn"]  .prism-score-ring__arc { stroke: #fbbf24; }
-    [data-level="bad"]   .prism-score-ring__arc { stroke: #f87171; }
+    .score-ring circle {
+      fill: none;
+      stroke-width: 10;
+    }
+    .track { stroke: var(--prism-input-bg); }
+    .fill {
+      stroke: url(#prism-sg);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
 
-    .prism-score-ring__label {
-      fill: var(--prism-text, #e2e4e9);
-      font-size: 9px;
+    .score-val {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+    }
+    .score-num {
+      font-size: 30px;
       font-weight: 700;
-      font-family: var(--prism-font-sans, system-ui, sans-serif);
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #a78bfa, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-family: var(--font-mono);
+    }
+    .score-max {
+      font-size: 11px;
+      color: var(--prism-text-ghost);
+      font-weight: 500;
     }
   `,
 })
@@ -62,16 +94,10 @@ export class A11yScoreComponent {
   readonly score = input.required<number>();
   readonly compact = input(false);
 
+  protected readonly R = R;
   protected readonly CIRC = CIRCUMFERENCE;
 
   protected readonly dashOffset = computed(
     () => CIRCUMFERENCE - (this.score() / 100) * CIRCUMFERENCE,
   );
-
-  protected readonly level = computed(() => {
-    const s = this.score();
-    if (s >= 80) return 'good';
-    if (s >= 50) return 'warn';
-    return 'bad';
-  });
 }

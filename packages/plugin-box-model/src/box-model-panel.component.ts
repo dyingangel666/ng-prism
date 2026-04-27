@@ -49,8 +49,8 @@ import type { BoxModelData } from './box-model.types.js';
   styles: `
     :host { display: block; height: 100%; overflow: auto; }
     .prism-bmp {
-      padding: 16px;
-      font-family: var(--prism-font-sans, system-ui);
+      padding: 24px;
+      font-family: var(--font-sans);
       font-size: 12px;
       display: flex;
       align-items: center;
@@ -58,45 +58,51 @@ import type { BoxModelData } from './box-model.types.js';
       min-height: 100%;
     }
     .prism-bmp__diagram { width: 100%; max-width: 340px; }
-    .prism-bmp__region { padding: 6px; border-radius: 4px; position: relative; }
-    .prism-bmp__region--margin  { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); }
-    .prism-bmp__region--border  { background: rgba(234, 179, 8, 0.2);   border: 1px solid rgba(234, 179, 8, 0.5); flex: 1; }
-    .prism-bmp__region--padding { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); flex: 1; }
+    .prism-bmp__region {
+      border: 1px dashed; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+    }
+    .prism-bmp__region--margin {
+      border-color: color-mix(in srgb, #fbbf24 70%, transparent);
+      background: color-mix(in srgb, #fbbf24 8%, transparent);
+      padding: 32px; color: #fbbf24;
+    }
+    .prism-bmp__region--border {
+      border-color: color-mix(in srgb, #f472b6 70%, transparent);
+      background: color-mix(in srgb, #f472b6 8%, transparent);
+      padding: 14px; color: #f472b6; flex: 1;
+    }
+    .prism-bmp__region--padding {
+      border-color: color-mix(in srgb, #34d399 70%, transparent);
+      background: color-mix(in srgb, #34d399 10%, transparent);
+      padding: 20px; color: #34d399; flex: 1;
+    }
     .prism-bmp__region-label {
-      position: absolute;
-      top: 3px;
-      left: 6px;
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--prism-text-muted, #6b7280);
-      opacity: 0.8;
+      position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.08em; color: inherit; opacity: 0.8;
     }
     .prism-bmp__sides { display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 14px; }
     .prism-bmp__inner-row { display: flex; align-items: center; gap: 2px; width: 100%; }
     .prism-bmp__inner-row > .prism-bmp__region { flex: 1; }
     .prism-bmp__side {
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--prism-text, #1f2937);
-      min-width: 28px;
-      text-align: center;
-      padding: 1px 4px;
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--prism-text-muted);
+      min-width: 28px; text-align: center; padding: 1px 4px;
     }
-    .prism-bmp__side--dim { color: var(--prism-text-muted, #6b7280); }
+    .prism-bmp__side--dim { color: var(--prism-text-ghost); }
     .prism-bmp__content-box {
-      flex: 1;
-      text-align: center;
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--prism-text, #1f2937);
-      background: rgba(59, 130, 246, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.4);
-      border-radius: 3px;
-      padding: 6px 4px;
+      flex: 1; text-align: center;
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--prism-primary);
+      border: 1px solid var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
+      border-radius: var(--radius-xs); padding: 22px 36px;
+      text-transform: none; letter-spacing: 0; font-weight: 500;
     }
-    .prism-bmp__empty { color: var(--prism-text-muted, #6b7280); font-size: 13px; }
+    .prism-bmp__empty { color: var(--prism-text-muted); font-size: 13px; }
   `,
 })
 export class BoxModelPanelComponent {

@@ -13,7 +13,7 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
         [class.prism-view-tab-bar__tab--active]="panelService.activeViewId() === 'renderer'"
         (click)="panelService.activeViewId.set('renderer')"
       >
-        Renderer
+        Playground
       </button>
       @for (panel of viewPanels(); track panel.id) {
         <button

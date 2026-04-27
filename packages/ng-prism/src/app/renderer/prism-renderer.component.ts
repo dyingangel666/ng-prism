@@ -1,5 +1,6 @@
 import {
   Component,
+  ChangeDetectionStrategy,
   type ComponentRef,
   computed,
   DestroyRef,
@@ -14,12 +15,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { NgComponentOutlet } from '@angular/common';
-import { Highlight } from 'ngx-highlightjs';
-import type { ComponentPage } from '../../plugin/page.types.js';
 import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.types.js';
+import type { ComponentPage } from '../../plugin/page.types.js';
 import { PrismManifestService } from '../services/prism-manifest.service.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
-import { A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
 import { PRISM_RENDERER_HOOKS } from '../tokens/prism-tokens.js';
 
 import { PrismEventLogService } from '../services/prism-event-log.service.js';
@@ -27,30 +26,26 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
 import { PrismPanelService } from '../services/prism-panel.service.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-import { generateSnippet } from './snippet-generator.js';
+import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 
 @Component({
   selector: 'prism-renderer',
   standalone: true,
-  imports: [Highlight, NgComponentOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PrismCanvasRulersComponent, NgComponentOutlet],
   template: `
-    <div class="prism-renderer">
-      @if (navigationService.activeComponent(); as comp) {
-        @if (comp.meta.showcaseConfig.variants?.length) {
-          <div class="prism-renderer__toolbar">
-            @for (variant of comp.meta.showcaseConfig.variants!; track variant.name; let i = $index) {
-              <button
-                class="prism-renderer__variant"
-                [class.prism-renderer__variant--active]="rendererService.activeVariantIndex() === i"
-                (click)="rendererService.selectVariant(i)"
-              >
-                {{ variant.name }}
-              </button>
-            }
-          </div>
-        }
-      }
-      <div class="prism-renderer__canvas" [class.prism-renderer__canvas--sr]="perspectiveService.mode() === 'screen-reader'">
+    <div
+      class="prism-canvas-stage"
+      [attr.data-bg]="canvasService.bg()"
+    >
+      <div class="canvas-badges">
+        <span class="c-badge">{{ Math.round(canvasService.zoom() * 100) }}%</span>
+      </div>
+      <div class="stage-crosshair" [class.visible]="canvasService.guides()"></div>
+      <prism-canvas-rulers />
+
+      <div class="demo-wrap" [style.--zoom]="canvasService.zoom()">
         <ng-container #outlet />
         @if (activeOverlay()) {
           <ng-container
@@ -60,151 +55,96 @@ import { generateSnippet } from './snippet-generator.js';
           />
         }
       </div>
-      @if (snippet()) {
-        <div class="prism-renderer__code-bar">
-          <button
-            class="prism-renderer__code-button"
-            [class.prism-renderer__code-button--active]="codeVisible()"
-            (click)="codeVisible.set(!codeVisible())"
-          >
-            &lt;/&gt; Code
-          </button>
-        </div>
-      }
-      @if (codeVisible()) {
-        <div class="prism-renderer__code">
-          <pre><code [highlight]="snippet()" language="xml"></code></pre>
-        </div>
-      }
     </div>
   `,
   styles: `
-    .prism-renderer {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-    }
+    :host { display: block; min-height: 0; flex: 1; }
 
-    .prism-renderer__toolbar {
+    .prism-canvas-stage {
+      position: relative;
+      overflow: auto;
       display: flex;
       align-items: center;
-      padding: 0 8px;
-      border-bottom: 1px solid var(--prism-border);
-      flex-shrink: 0;
-      background: var(--prism-bg-elevated);
-    }
-    .prism-renderer__variant {
-      padding: 8px 14px;
-      font-size: 13px;
-      font-family: var(--prism-font-sans);
-      border: none;
-      background: none;
-      color: var(--prism-text-muted);
-      cursor: pointer;
-      position: relative;
-      margin-bottom: -1px;
-      transition: color 0.12s;
-    }
-    .prism-renderer__variant::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
-      opacity: 0;
-      transition: opacity 0.12s;
-    }
-    .prism-renderer__variant:hover { color: var(--prism-text); }
-    .prism-renderer__variant--active { color: var(--prism-primary); }
-    .prism-renderer__variant--active::after { opacity: 1; }
-
-    .prism-renderer__canvas {
-      position: relative;
-      flex: 1;
-      padding: 48px 40px;
-      overflow: auto;
-      background-color: var(--prism-bg-surface);
-      background-image: radial-gradient(
-        circle,
-        color-mix(in srgb, var(--prism-primary) 15%, transparent) 1px,
-        transparent 1px
-      );
-      background-size: 20px 20px;
-      display: flex;
-      align-items: flex-start;
       justify-content: center;
-      transition: filter 0.2s;
-    }
-    .prism-renderer__canvas--sr {
-      filter: brightness(0.82) saturate(0.7);
+      padding: 32px;
+      min-height: 200px;
+      height: 100%;
+      background-color: var(--prism-bg-surface);
+      background-image: radial-gradient(circle, var(--prism-dot) 1px, transparent 1px);
+      background-size: 20px 20px;
+      transition: filter var(--dur-base);
     }
 
-    .prism-renderer__code-bar {
-      display: flex;
-      align-items: center;
-      padding: 0 12px;
-      border-top: 1px solid var(--prism-border);
-      flex-shrink: 0;
-      background: var(--prism-bg-elevated);
+    .prism-canvas-stage[data-bg="plain"] {
+      background-image: none;
     }
-    .prism-renderer__code-button {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 8px;
-      font-size: 11.5px;
-      font-family: var(--prism-font-mono, monospace);
-      border: none;
-      background: none;
-      color: var(--prism-text-muted);
-      cursor: pointer;
-      position: relative;
-      transition: color 0.12s;
-      margin-bottom: -1px;
+    .prism-canvas-stage[data-bg="light"] {
+      background-color: #f7f5fc;
+      background-image: radial-gradient(circle, rgba(124, 58, 237, 0.15) 1px, transparent 1px);
     }
-    .prism-renderer__code-button::after {
+    .prism-canvas-stage[data-bg="dark"] {
+      background-color: #07050f;
+      background-image: radial-gradient(circle, rgba(167, 139, 250, 0.18) 1px, transparent 1px);
+    }
+    .prism-canvas-stage[data-bg="checker"] {
+      background-image:
+        linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--prism-border) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--prism-border) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    }
+
+    .stage-crosshair {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity var(--dur-base);
+    }
+    .stage-crosshair.visible { opacity: 1; }
+    .stage-crosshair::before,
+    .stage-crosshair::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 4px; right: 4px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
-      opacity: 0;
-      transition: opacity 0.12s;
+      background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
     }
-    .prism-renderer__code-button:hover { color: var(--prism-text-2); }
-    .prism-renderer__code-button--active { color: var(--prism-primary); }
-    .prism-renderer__code-button--active::after { opacity: 1; }
+    .stage-crosshair::before { left: 0; right: 0; top: 50%; height: 1px; }
+    .stage-crosshair::after { top: 0; bottom: 0; left: 50%; width: 1px; }
 
-    .prism-renderer__code {
-      border-top: 1px solid var(--prism-border);
-      overflow: auto;
-      flex-shrink: 0;
-      max-height: 240px;
-      background: var(--prism-void);
+    .canvas-badges {
+      position: absolute;
+      top: 12px;
+      left: 20px;
+      display: flex;
+      gap: 6px;
+      pointer-events: none;
     }
-    .prism-renderer__code pre {
-      margin: 0;
-      padding: 20px 24px;
-      font-size: 12.5px;
-      line-height: 1.65;
-      font-family: var(--prism-font-mono);
+    .c-badge {
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      padding: 3px 7px;
+      border-radius: 4px;
+      background: color-mix(in srgb, var(--prism-bg-elevated) 90%, transparent);
+      border: 1px solid var(--prism-border);
+      color: var(--prism-text-muted);
+      backdrop-filter: blur(8px);
     }
-    .prism-renderer__code code { font-family: inherit; }
-    :host ::ng-deep .prism-renderer__code .hljs {
-      background: transparent;
-      color: var(--prism-text-2);
+
+    .demo-wrap {
+      position: relative;
+      transform: scale(var(--zoom, 1));
+      transition: transform 0.18s;
     }
-    :host ::ng-deep .prism-renderer__code .hljs-tag { color: var(--prism-text-muted); }
-    :host ::ng-deep .prism-renderer__code .hljs-name { color: var(--prism-primary); }
-    :host ::ng-deep .prism-renderer__code .hljs-attr { color: #93c5fd; }
-    :host ::ng-deep .prism-renderer__code .hljs-string { color: #7dd3fc; }
+
   `,
 })
 export class PrismRendererComponent {
+  protected readonly Math = Math;
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
-  protected readonly perspectiveService = inject(A11yPerspectiveService);
+  protected readonly canvasService = inject(PrismCanvasService);
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);
@@ -212,40 +152,21 @@ export class PrismRendererComponent {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly rendererHooks = inject(PRISM_RENDERER_HOOKS, { optional: true });
 
+  private readonly panelService = inject(PrismPanelService);
+  private readonly pluginService = inject(PrismPluginService);
+
   private readonly outlet = viewChild.required('outlet', { read: ViewContainerRef });
   private componentRef: ComponentRef<unknown> | null = null;
   private outputSubscriptions: Array<{ unsubscribe(): void }> = [];
   private lastProjectedContent: string | Record<string, string> | undefined = undefined;
   private isRenderPage = false;
-  private readonly panelService = inject(PrismPanelService);
-  private readonly pluginService = inject(PrismPluginService);
+
   private readonly overlayCache = new Map<string, Type<unknown>>();
   readonly activeOverlay = signal<Type<unknown> | null>(null);
   protected readonly overlayInputs = { rendererService: this.rendererService };
-
   protected readonly overlayInjector = computed(() => {
     const panelInjector = this.panelService.activePanelInjector();
     return panelInjector ?? this.injector;
-  });
-
-  readonly codeVisible = signal(false);
-
-  readonly snippet = computed(() => {
-    const comp = this.navigationService.activeComponent();
-    if (!comp) return '';
-    const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
-    const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
-    const directiveOptions = comp.meta.componentMeta.isDirective
-      ? { host: comp.meta.showcaseConfig.host }
-      : undefined;
-    return generateSnippet(
-      comp.meta.componentMeta.selector,
-      comp.meta.inputs,
-      this.rendererService.inputValues(),
-      explicitKeys,
-      this.rendererService.activeContent(),
-      directiveOptions,
-    );
   });
 
   constructor() {
@@ -254,7 +175,6 @@ export class PrismRendererComponent {
       if (!comp) return;
       untracked(() => {
         this.host.nativeElement.scrollTop = 0;
-        this.codeVisible.set(false);
         this.rendererService.reconcileForComponent(comp);
         this.createComponent(comp);
       });
@@ -298,30 +218,18 @@ export class PrismRendererComponent {
       const allPanels: PanelDefinition[] = [...BUILTIN_PANELS, ...this.pluginService.panels()];
       const panel = allPanels.find((p) => p.id === panelId) ?? null;
 
-      if (!panel) {
-        this.activeOverlay.set(null);
-        return;
-      }
-
-      if (panel.overlayComponent) {
-        this.activeOverlay.set(panel.overlayComponent);
-        return;
-      }
-
+      if (!panel) { this.activeOverlay.set(null); return; }
+      if (panel.overlayComponent) { this.activeOverlay.set(panel.overlayComponent); return; }
       if (panel.loadOverlayComponent) {
         const cached = this.overlayCache.get(panel.id);
-        if (cached) {
-          this.activeOverlay.set(cached);
-          return;
-        }
+        if (cached) { this.activeOverlay.set(cached); return; }
         this.activeOverlay.set(null);
-        panel.loadOverlayComponent().then((comp) => {
-          this.overlayCache.set(panel.id, comp);
-          this.activeOverlay.set(comp);
+        panel.loadOverlayComponent().then((c) => {
+          this.overlayCache.set(panel.id, c);
+          this.activeOverlay.set(c);
         });
         return;
       }
-
       this.activeOverlay.set(null);
     });
 

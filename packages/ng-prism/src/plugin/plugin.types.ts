@@ -109,6 +109,7 @@ export interface NgPrismConfig {
     dark?: string;
   };
   title?: string;
+  subtitle?: string;
   themeStylesheet?: string;
   ui?: {
     header?: Type<unknown>;
