@@ -5,7 +5,7 @@ export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'i
 
 @Showcase({
   title: 'Button',
-  category: 'Components / Inputs',
+  category: 'Inputs',
   categoryOrder: 1,
   componentOrder: 1,
   description: 'Flexible button with five visual variants.',

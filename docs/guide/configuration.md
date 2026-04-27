@@ -103,8 +103,8 @@ If only one logo variant is provided, it is used for both themes. If no logo is 
 Organize categories into collapsible parent groups using `/` in the `@Showcase` category:
 
 ```typescript
-@Showcase({ title: 'Button', category: 'Components / Atoms' })
-@Showcase({ title: 'Dialog', category: 'Components / Overlays' })
+@Showcase({ title: 'Button', category: 'Atoms' })
+@Showcase({ title: 'Dialog', category: 'Overlays' })
 ```
 
 Categories without a separator remain top-level. See [Showcase Decorator](guide/showcase-decorator.md#category) for details.

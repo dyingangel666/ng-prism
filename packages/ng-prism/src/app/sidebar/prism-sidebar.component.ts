@@ -3,6 +3,9 @@ import {
   computed,
   inject,
   signal,
+  viewChild,
+  ElementRef,
+  HostListener,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
@@ -48,6 +51,7 @@ interface SidebarCategory {
       <div class="sb-filter">
         <prism-icon name="search" [size]="12" />
         <input
+          #filterInput
           placeholder="Filter components…"
           [value]="searchService.query()"
           (input)="searchService.search($any($event.target).value)"
@@ -101,7 +105,7 @@ interface SidebarCategory {
             <prism-icon name="box" [size]="10" class="sb-section-icon" />
             Components
           </span>
-          <span>{{ stats().components }}</span>
+          <span>{{ totalComponents() }}</span>
         </div>
         } @for (cat of componentCategories(); track cat.name) {
         <div
@@ -116,6 +120,7 @@ interface SidebarCategory {
             <prism-icon name="chevron-down" [size]="10" />
             <span class="sb-group-chip" [style.--chip]="cat.color"></span>
             {{ cat.name }}
+            <span class="sb-group-count">{{ cat.items.length }}</span>
           </button>
           @if (!isCollapsed('comp:' + cat.name)) {
           <div class="sb-group-body">
@@ -127,20 +132,8 @@ interface SidebarCategory {
             >
               <prism-icon name="box" [size]="12" class="sb-item-icon" />
               <span class="sb-item-name">{{ itemLabel(item) }}</span>
-              @if (item.kind === 'component') {
-              <span class="sb-item-count">{{
-                item.data.meta.showcaseConfig.variants?.length ?? 0
-              }}</span>
-              }
             </button>
-            @if (isActive(item) && item.kind === 'component' &&
-            item.data.meta.showcaseConfig.variants?.length) { @for (variant of
-            item.data.meta.showcaseConfig.variants; track variant.name) {
-            <button class="sb-sub" (click)="onSelect(item)">
-              <span class="sb-sub-dot"></span>
-              {{ variant.name }}
-            </button>
-            } } }
+            }
           </div>
           }
         </div>
@@ -266,6 +259,13 @@ interface SidebarCategory {
       background: var(--chip, var(--prism-primary));
       box-shadow: 0 0 6px var(--chip, var(--prism-primary));
     }
+    .sb-group-count {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--prism-text-ghost);
+      font-weight: 500;
+    }
 
     .sb-item {
       display: flex;
@@ -312,42 +312,7 @@ interface SidebarCategory {
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .sb-item-count {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--prism-text-ghost);
-      padding: 1px 5px;
-      border-radius: 3px;
-      background: var(--prism-input-bg);
-    }
-    .sb-item--active .sb-item-count {
-      color: var(--prism-primary);
-      background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
-    }
 
-    .sb-sub {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      width: 100%;
-      padding-left: 44px;
-      height: 24px;
-      font-size: 12px;
-      color: var(--prism-text-muted);
-      cursor: pointer;
-      border: none;
-      border-left: 2px solid transparent;
-      background: none;
-      text-align: left;
-      font-family: var(--font-sans);
-    }
-    .sb-sub:hover { color: var(--prism-text-2); }
-    .sb-sub-dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: currentColor;
-    }
 
     :focus-visible {
       outline: 2px solid var(--prism-primary);
@@ -359,6 +324,16 @@ export class PrismSidebarComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly searchService = inject(PrismSearchService);
   private readonly manifestService = inject(PrismManifestService);
+  private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
+
+  @HostListener('document:keydown', ['$event'])
+  protected onGlobalKey(e: KeyboardEvent): void {
+    if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
+    e.preventDefault();
+    this.filterInput()?.nativeElement.focus();
+  }
 
   private readonly collapsedSet = signal<Set<string>>(this.loadCollapsed());
 
@@ -397,15 +372,9 @@ export class PrismSidebarComponent {
     return result;
   });
 
-  protected readonly stats = computed(() => {
-    const manifest = this.manifestService.manifest();
-    const components = manifest.components.length;
-    const variants = manifest.components.reduce(
-      (sum, c) => sum + (c.meta.showcaseConfig.variants?.length ?? 0),
-      0
-    );
-    return { components, variants };
-  });
+  protected readonly totalComponents = computed(
+    () => this.manifestService.manifest().components.length,
+  );
 
   protected isCollapsed(key: string): boolean {
     return this.collapsedSet().has(key);

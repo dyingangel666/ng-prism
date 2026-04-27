@@ -338,16 +338,16 @@ export class PrismShellComponent {
   @HostListener('document:keydown', ['$event'])
   protected onKeyDown(e: KeyboardEvent): void {
     if (!e.altKey) return;
-    switch (e.key.toLowerCase()) {
-      case 's':
+    switch (e.code) {
+      case 'KeyS':
         e.preventDefault();
         this.layout.toggleSidebar();
         break;
-      case 't':
+      case 'KeyT':
         e.preventDefault();
         this.layout.toggleToolbar();
         break;
-      case 'a':
+      case 'KeyA':
         e.preventDefault();
         this.layout.toggleAddons();
         break;

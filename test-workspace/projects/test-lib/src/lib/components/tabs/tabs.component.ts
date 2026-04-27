@@ -13,7 +13,7 @@ export interface TabItem {
  */
 @Showcase({
   title: 'Tabs',
-  category: 'Components / Navigation',
+  category: 'Navigation',
   description: 'Horizontal tab navigation with active state tracking and disabled tabs.',
   variants: [
     {

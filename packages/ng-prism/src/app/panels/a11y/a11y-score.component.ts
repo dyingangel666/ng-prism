@@ -84,7 +84,7 @@ let nextId = 0;
       font-size: 30px;
       font-weight: 700;
       letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #a78bfa, var(--prism-accent));
+      background: linear-gradient(135deg, var(--prism-primary), var(--prism-accent));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;

@@ -54,8 +54,8 @@ Groups the component in the sidebar. Components without a category land in "Unca
 Use ` / ` (space-slash-space) to nest categories under a parent group:
 
 ```typescript
-@Showcase({ title: 'Button', category: 'Components / Atoms' })
-@Showcase({ title: 'Dialog', category: 'Components / Overlays' })
+@Showcase({ title: 'Button', category: 'Atoms' })
+@Showcase({ title: 'Dialog', category: 'Overlays' })
 @Showcase({ title: 'Color Tokens', category: 'Foundations' })
 ```
 

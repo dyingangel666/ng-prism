@@ -26,7 +26,7 @@ bootstrapApplication(PrismShellComponent, {
         },
         {
           title: 'Button Patterns',
-          category: 'Components / Inputs',
+          category: 'Inputs',
           component: ButtonPatternsPageComponent,
         },
         {

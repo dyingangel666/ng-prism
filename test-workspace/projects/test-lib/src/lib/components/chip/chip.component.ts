@@ -7,7 +7,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Chip',
-  category: 'Components / Data Display',
+  category: 'Data Display',
   description: 'Compact element for tags and filters with optional removable state.',
   variants: [
     { name: 'Default', inputs: { label: 'Angular' } },

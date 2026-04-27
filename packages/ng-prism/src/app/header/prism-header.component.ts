@@ -67,7 +67,7 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
     .prism-header {
       height: 52px;
       display: grid;
-      grid-template-columns: var(--sw, 264px) 1fr auto;
+      grid-template-columns: minmax(min-content, var(--sw, 264px)) 1fr auto;
       align-items: center;
       padding: 0 14px 0 0;
       background: var(--prism-bg);
@@ -80,6 +80,7 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
       gap: 10px;
       padding: 0 16px;
       cursor: pointer;
+      white-space: nowrap;
     }
 
     .prism-header__logo-default {
