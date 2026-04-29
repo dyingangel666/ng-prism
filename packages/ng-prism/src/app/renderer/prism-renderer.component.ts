@@ -86,12 +86,12 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
       background-image: none;
     }
     .prism-canvas-stage[data-bg="light"] {
-      background-color: #f7f5fc;
-      background-image: radial-gradient(circle, rgba(124, 58, 237, 0.15) 1px, transparent 1px);
+      background-color: var(--prism-void-light, #f7f5fc);
+      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary-from) 15%, transparent) 1px, transparent 1px);
     }
     .prism-canvas-stage[data-bg="dark"] {
-      background-color: #07050f;
-      background-image: radial-gradient(circle, rgba(167, 139, 250, 0.18) 1px, transparent 1px);
+      background-color: var(--prism-void-dark, #07050f);
+      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary) 18%, transparent) 1px, transparent 1px);
     }
     .prism-canvas-stage[data-bg="checker"] {
       background-image:

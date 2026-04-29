@@ -65,6 +65,8 @@ function buildTagsFromList(tags: readonly ts.JSDocTag[]): JsDocTags {
       result.deprecated = comment || true;
     } else if (tagName === 'since') {
       result.since = comment;
+    } else if (tagName === 'version') {
+      result.version = comment;
     } else if (tagName === 'see') {
       const seeRef = extractSeeReference(tag, comment);
       if (seeRef) result.see = [...(result.see ?? []), seeRef];

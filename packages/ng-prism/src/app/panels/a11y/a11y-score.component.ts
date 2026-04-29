@@ -18,8 +18,8 @@ let nextId = 0;
       <svg viewBox="0 0 128 128">
         <defs>
           <linearGradient [id]="gradientId" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#a78bfa" />
-            <stop offset="100%" stop-color="#3b82f6" />
+            <stop offset="0%" class="gradient-start" />
+            <stop offset="100%" class="gradient-end" />
           </linearGradient>
         </defs>
         <circle class="track" cx="64" cy="64" [attr.r]="R" />
@@ -66,6 +66,8 @@ let nextId = 0;
       stroke-width: 10;
     }
     .track { stroke: var(--prism-input-bg); }
+    .gradient-start { stop-color: var(--prism-primary); }
+    .gradient-end { stop-color: var(--prism-accent); }
     .fill {
       stroke-linecap: round;
       transition: stroke-dashoffset 0.5s ease;

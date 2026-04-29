@@ -155,13 +155,13 @@ function getType(val: unknown): JsonNodeType {
       color: var(--prism-text-muted);
     }
     .json-string {
-      color: #7dd3fc;
+      color: var(--prism-code-attr);
     }
     .json-number {
-      color: #fb923c;
+      color: var(--prism-warn);
     }
     .json-boolean {
-      color: #c084fc;
+      color: var(--prism-primary);
     }
     .json-null,
     .json-undefined {

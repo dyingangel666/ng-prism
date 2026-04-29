@@ -56,7 +56,7 @@ interface SrBadgePosition {
 
     .prism-a11y-sr-ov__focus {
       position: absolute;
-      border: 2px solid #a78bfa;
+      border: 2px solid var(--prism-primary);
       border-radius: 4px;
       background: rgba(167, 139, 250, 0.08);
       box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.12);
@@ -67,7 +67,7 @@ interface SrBadgePosition {
       height: 18px;
       padding: 0 5px;
       min-width: 18px;
-      background: #a78bfa;
+      background: var(--prism-primary);
       color: white;
       border-radius: 9px;
       font-size: 9px;
@@ -80,7 +80,7 @@ interface SrBadgePosition {
     }
 
     .prism-a11y-sr-ov__badge--active {
-      background: #7c3aed;
+      background: var(--prism-primary-from);
       box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(124, 58, 237, 0.4);
     }
   `,

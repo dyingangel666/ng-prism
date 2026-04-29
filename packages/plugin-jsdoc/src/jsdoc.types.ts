@@ -1,6 +1,7 @@
 export interface JsDocTags {
   deprecated?: string | true;
   since?: string;
+  version?: string;
   see?: string[];
   example?: string[];
 }

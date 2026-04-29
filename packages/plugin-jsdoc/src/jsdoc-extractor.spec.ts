@@ -24,6 +24,11 @@ describe('extractJsDocData', () => {
     expect(result?.classTags.since).toBe('1.0.0');
   });
 
+  it('should extract @version tag', () => {
+    const result = extractJsDocData(FIXTURE_PATH, 'DocumentedButtonComponent');
+    expect(result?.classTags.version).toBe('1.0.0');
+  });
+
   it('should extract @see tag', () => {
     const result = extractJsDocData(FIXTURE_PATH, 'DocumentedButtonComponent');
     expect(result?.classTags.see).toEqual(['PrimaryButtonComponent']);

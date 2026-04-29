@@ -29,6 +29,11 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
         >
           Deprecated{{ deprecatedMessage() ? ': ' + deprecatedMessage() : '' }}
         </span>
+        } @if (version()) {
+        <span class="prism-jsdoc-panel__meta-item">
+          <span class="prism-jsdoc-panel__meta-label">Version:</span>
+          {{ version() }}
+        </span>
         } @if (since()) {
         <span class="prism-jsdoc-panel__meta-item">
           <span class="prism-jsdoc-panel__meta-label">Since:</span>
@@ -333,6 +338,8 @@ export class JsDocPanelComponent {
 
   protected readonly since = computed(() => this.classTags().since);
 
+  protected readonly version = computed(() => this.classTags().version);
+
   protected readonly seeRefs = computed(() => this.classTags().see ?? []);
 
   protected readonly examples = computed(() => this.classTags().example ?? []);
@@ -342,7 +349,7 @@ export class JsDocPanelComponent {
   );
 
   protected readonly hasTags = computed(
-    () => this.isDeprecated() || !!this.since() || this.seeRefs().length > 0
+    () => this.isDeprecated() || !!this.since() || !!this.version() || this.seeRefs().length > 0
   );
 
   protected isMemberDeprecated(name: string): boolean {

@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 
 /**
  * Primary action button component.
+ * @version 1.0.0
  * @since 1.0.0
  * @deprecated Use PrimaryButtonComponent instead.
  * @see PrimaryButtonComponent

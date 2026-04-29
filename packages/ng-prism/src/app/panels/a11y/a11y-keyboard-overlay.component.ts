@@ -65,7 +65,7 @@ export interface BadgePosition {
       position: absolute;
       width: 20px;
       height: 20px;
-      background: #818cf8;
+      background: var(--prism-primary);
       color: white;
       border-radius: 50%;
       font-size: 10px;

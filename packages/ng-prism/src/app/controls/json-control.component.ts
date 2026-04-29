@@ -80,10 +80,10 @@ function highlightJson(json: string): string {
     }
     .json-pre code { font-family: inherit; }
 
-    :host ::ng-deep .jh-key { color: #93c5fd; }
-    :host ::ng-deep .jh-string { color: #86efac; }
-    :host ::ng-deep .jh-number { color: #fbbf24; }
-    :host ::ng-deep .jh-bool { color: #a78bfa; }
+    :host ::ng-deep .jh-key { color: var(--prism-code-attr); }
+    :host ::ng-deep .jh-string { color: var(--prism-code-str); }
+    :host ::ng-deep .jh-number { color: var(--prism-warn); }
+    :host ::ng-deep .jh-bool { color: var(--prism-primary); }
     :host ::ng-deep .jh-null { color: var(--prism-text-ghost); }
 
     .json-input {

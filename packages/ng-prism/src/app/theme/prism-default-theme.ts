@@ -89,6 +89,10 @@ export const PRISM_BASE_TOKENS: Record<string, string> = {
   '--dur-base': '0.2s',
   '--dur-slow': '0.3s',
 
+  '--prism-void-light': '#f7f5fc',
+  '--prism-void-dark': '#07050f',
+  '--prism-text-light': '#ede9f8',
+
   '--prism-header-height': '52px',
 
   '--prism-font-sans': 'var(--font-sans)',

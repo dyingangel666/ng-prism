@@ -40,7 +40,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
       padding: 2px 6px;
       border-radius: 4px;
       background: rgba(17, 24, 39, 0.92);
-      color: #fff;
+      color: var(--prism-text-light, #fff);
       font: 11px/1.4 var(--font-mono);
       white-space: nowrap;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
