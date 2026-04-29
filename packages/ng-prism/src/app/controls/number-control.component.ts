@@ -10,47 +10,31 @@ import {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="ctl-slider">
-      <input
-        type="range"
-        [min]="0"
-        [max]="100"
-        [value]="value()"
-        (input)="valueChange.emit($any($event.target).valueAsNumber || 0)"
-      />
-      <span class="ctl-slider-val">{{ value() }}</span>
-    </div>
+    <input
+      type="number"
+      class="ctl-number"
+      [value]="value()"
+      (input)="valueChange.emit($any($event.target).valueAsNumber || 0)"
+    />
   `,
   styles: `
-    .ctl-slider {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .ctl-slider input[type=range] {
-      flex: 1;
-      -webkit-appearance: none;
-      height: 4px;
+    .ctl-number {
+      height: 30px;
+      padding: 0 10px;
       background: var(--prism-input-bg);
-      border-radius: 2px;
-      outline: none;
-    }
-    .ctl-slider input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: linear-gradient(180deg, var(--prism-primary-from), var(--prism-primary-to));
-      cursor: pointer;
-      border: 2px solid var(--prism-bg-elevated);
-    }
-    .ctl-slider-val {
-      font-family: var(--font-mono);
-      font-size: 12px;
+      border: 1px solid var(--prism-border);
+      border-radius: var(--radius-sm);
       color: var(--prism-text);
-      min-width: 44px;
-      text-align: right;
+      font-size: 13px;
+      font-family: var(--font-sans);
+      flex: 1;
+      min-width: 0;
+      outline: none;
+      transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+    }
+    .ctl-number:focus {
+      border-color: var(--prism-primary);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--prism-primary) 30%, transparent);
     }
   `,
 })
