@@ -38,6 +38,9 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
         </div>
       </div>
       <div class="prism-header__actions">
+        @if (buildInfoLabel()) {
+        <span class="prism-header__build-pill">{{ buildInfoLabel() }}</span>
+        }
         <button
           class="prism-header__icon-btn"
           (click)="themeService.toggle()"
@@ -161,6 +164,18 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
       color: var(--prism-text-muted);
     }
 
+    .prism-header__build-pill {
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      color: var(--prism-text-ghost);
+      background: var(--prism-input-bg);
+      border: 1px solid var(--prism-border);
+      border-radius: 9999px;
+      padding: 2px 10px;
+      white-space: nowrap;
+      line-height: 1.4;
+    }
+
     .prism-header__actions {
       display: flex;
       align-items: center;
@@ -206,6 +221,15 @@ export class PrismHeaderComponent {
 
   protected readonly title = computed(() => this.config.title ?? 'ng-prism');
   protected readonly subtitle = computed(() => this.config.subtitle ?? null);
+
+  protected readonly buildInfoLabel = computed(() => {
+    const info = this.config.buildInfo;
+    if (!info) return null;
+    const parts: string[] = [];
+    if (info.version) parts.push(`v${info.version}`);
+    if (info.gitHash) parts.push(info.gitHash.slice(0, 7));
+    return parts.length ? parts.join(' · ') : null;
+  });
 
   @HostListener('document:keydown', ['$event'])
   protected onGlobalKey(e: KeyboardEvent): void {

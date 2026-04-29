@@ -30,6 +30,7 @@ interface NgPrismConfig {
   headless?: boolean;
   appComponent?: Type<unknown>;
   urlState?: boolean;
+  buildInfo?: { version?: string; gitHash?: string };
 }
 ```
 
@@ -171,3 +172,25 @@ export default defineConfig({ urlState: false });
 ```
 
 See [URL State Sync](guide/url-state.md).
+
+---
+
+### `buildInfo`
+
+Display the deployed package version and/or git commit hash as a subtle pill in the header (left of the action buttons).
+
+Both fields are optional — the pill shows whichever values are provided, separated by `·`. When neither is set, nothing is rendered.
+
+```typescript
+export default defineConfig({
+  buildInfo: {
+    version: packageJson.version,
+    gitHash: environment.gitHash,
+  },
+});
+```
+
+| Key       | Type     | Description                                       |
+| --------- | -------- | ------------------------------------------------- |
+| `version` | `string` | Package version — displayed as `v1.2.3`           |
+| `gitHash` | `string` | Git commit hash — truncated to 7 characters in UI |

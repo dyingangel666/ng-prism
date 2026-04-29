@@ -37,6 +37,7 @@ The most commonly used fields:
 | `ui`              | object                   | Replace individual UI sections with custom components        |
 | `headless`        | `boolean`                | Strip all built-in chrome — render only the component canvas |
 | `urlState`        | `boolean`                | Disable URL state sync (default: `true`)                     |
+| `buildInfo`       | `object`                 | Show version / git hash pill in header                       |
 
 ## Adding Global Providers
 
@@ -95,6 +96,21 @@ export default defineConfig({
 | `logo.dark`  | `string` | Logo image URL for dark theme                              |
 
 If only one logo variant is provided, it is used for both themes. If no logo is configured, a default prism icon is shown.
+
+### Build Info
+
+Show the deployed version and git hash as a pill in the header:
+
+```typescript
+export default defineConfig({
+  buildInfo: {
+    version: packageJson.version,
+    gitHash: environment.gitHash,
+  },
+});
+```
+
+The pill appears left of the header action buttons. Both fields are optional — the git hash is automatically truncated to 7 characters.
 
 > **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
 

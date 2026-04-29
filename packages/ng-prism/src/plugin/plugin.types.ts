@@ -137,4 +137,8 @@ export interface NgPrismConfig {
   appComponent?: Type<unknown>;
   /** When false, disables URL state sync (default: true). */
   urlState?: boolean;
+  buildInfo?: {
+    version?: string;
+    gitHash?: string;
+  };
 }
