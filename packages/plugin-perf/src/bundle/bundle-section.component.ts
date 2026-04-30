@@ -7,235 +7,202 @@ import type { BundleMetrics } from '../perf.types.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (metrics(); as m) {
-      <div class="prism-perf-bundle-hero">
-        <div class="prism-perf-bundle-metric">
-          <div class="prism-perf-label">Source Size</div>
-          <div class="prism-perf-bundle-value">{{ formatKb(m.sourceSize) }}<span class="prism-perf-bundle-unit">KB</span></div>
-          <div class="prism-perf-sub">{{ formatBytes(m.sourceSize) }} bytes</div>
+      <div class="perf-body perf-body--4col">
+        <div class="perf-card">
+          <div class="perf-card-head">
+            <span class="perf-card-name">Source Size</span>
+            <span class="perf-card-status" [class]="sizeStatus()">{{ sizeStatusText() }}</span>
+          </div>
+          <div class="perf-card-val">{{ formatKb(m.sourceSize) }}<span>kb</span></div>
+          <div class="perf-card-sub">{{ formatBytes(m.sourceSize) }} bytes</div>
         </div>
-        <div class="prism-perf-bundle-metric">
-          <div class="prism-perf-label">Gzip Estimate</div>
-          <div class="prism-perf-bundle-value">{{ formatKb(m.gzipEstimate) }}<span class="prism-perf-bundle-unit">KB</span></div>
-          <div class="prism-perf-sub">~{{ gzipPercent() }}% of source</div>
+        <div class="perf-card">
+          <div class="perf-card-head">
+            <span class="perf-card-name">Gzip Estimate</span>
+            <span class="perf-card-status" [class]="gzipStatus()">{{ gzipStatusText() }}</span>
+          </div>
+          <div class="perf-card-val">{{ formatKb(m.gzipEstimate) }}<span>kb</span></div>
+          <div class="perf-card-sub">~{{ gzipPercent() }}% of source</div>
         </div>
-        <div class="prism-perf-bundle-metric">
-          <div class="prism-perf-label">Direct Imports</div>
-          <div class="prism-perf-bundle-value">{{ m.directImports }}</div>
-          <div class="prism-perf-sub">top-level only</div>
+        <div class="perf-card">
+          <div class="perf-card-head">
+            <span class="perf-card-name">Direct Imports</span>
+          </div>
+          <div class="perf-card-val">{{ m.directImports }}</div>
+          <div class="perf-card-sub">top-level only</div>
         </div>
-        <div class="prism-perf-bundle-metric">
-          <div class="prism-perf-label">Tree Depth</div>
-          <div class="prism-perf-bundle-value">{{ m.treeDepth }}<span class="prism-perf-bundle-unit">/ 10</span></div>
-          <div class="prism-perf-sub">import levels</div>
+        <div class="perf-card">
+          <div class="perf-card-head">
+            <span class="perf-card-name">Tree Depth</span>
+          </div>
+          <div class="perf-card-val">{{ m.treeDepth }}<span>/ 10</span></div>
+          <div class="perf-card-sub">import levels</div>
         </div>
       </div>
 
-      <div class="prism-perf-bundle-section">
-        <div class="prism-perf-label">Size Breakdown</div>
-        <div class="prism-perf-size-bars">
-          <div class="prism-perf-size-bar-row">
-            <span class="prism-perf-size-bar-label">source</span>
-            <div class="prism-perf-size-bar-track">
-              <div class="prism-perf-size-bar-fill" [style.width.%]="sourceBarPercent()" style="background: linear-gradient(90deg, #a78bfa, #818cf8)"></div>
-            </div>
-            <span class="prism-perf-size-bar-val" style="color:#a78bfa">{{ formatKb(m.sourceSize) }} KB</span>
+      <div class="perf-detail">
+        <div class="perf-card perf-card--block">
+          <div class="perf-card-head"><span class="perf-card-name">Size Breakdown</span></div>
+          <div class="perf-bars">
+            <span class="perf-bar-label">source</span>
+            <div class="perf-bar-track"><div class="perf-bar-fill" [style.width.%]="sourceBarPercent()"></div></div>
+            <span class="perf-bar-val">{{ formatKb(m.sourceSize) }} KB</span>
+            <span class="perf-bar-label">gzip est.</span>
+            <div class="perf-bar-track"><div class="perf-bar-fill" [style.width.%]="gzipBarPercent()"></div></div>
+            <span class="perf-bar-val">{{ formatKb(m.gzipEstimate) }} KB</span>
           </div>
-          <div class="prism-perf-size-bar-row">
-            <span class="prism-perf-size-bar-label">gzip est.</span>
-            <div class="prism-perf-size-bar-track">
-              <div class="prism-perf-size-bar-fill" [style.width.%]="gzipBarPercent()" style="background: rgba(167,139,250,0.45)"></div>
-            </div>
-            <span class="prism-perf-size-bar-val" style="color:#8476a2">{{ formatKb(m.gzipEstimate) }} KB</span>
-          </div>
-        </div>
-        <div class="prism-perf-threshold-legend">
-          <span>Thresholds: <span style="color:var(--perf-warn, #fbbf24)">warn &ge; {{ warnKb() }} KB</span> · <span style="color:var(--perf-crit, #f87171)">crit &ge; {{ critKb() }} KB</span></span>
+          <div class="perf-thresholds">Thresholds: <span class="perf-thresholds--warn">warn &ge; {{ warnKb() }} KB</span> &middot; <span class="perf-thresholds--crit">crit &ge; {{ critKb() }} KB</span></div>
         </div>
       </div>
 
-      <div class="prism-perf-bundle-section" style="border-bottom:none">
-        <div class="prism-perf-label">Import Tree Depth</div>
-        <div class="prism-perf-depth-gauge">
-          <span class="prism-perf-depth-label">depth</span>
-          <div class="prism-perf-depth-steps">
-            @for (step of depthSteps(); track step.index) {
-              <div class="prism-perf-depth-step" [class.filled]="step.filled" [class.deep]="step.deep"></div>
-            }
-          </div>
-          <span class="prism-perf-depth-val" [style.color]="m.treeDepth >= 4 ? 'var(--perf-warn, #fbbf24)' : 'var(--prism-primary, #a78bfa)'">{{ m.treeDepth }} / 10</span>
-        </div>
-
-        <div style="margin-top:14px">
-          <div class="prism-perf-label">Direct Imports ({{ m.directImports }})</div>
-          <div class="prism-perf-import-list">
+      <div class="perf-detail perf-detail--last">
+        <div class="perf-card perf-card--block">
+          <div class="perf-card-head"><span class="perf-card-name">Direct Imports ({{ m.directImports }})</span></div>
+          <div class="perf-chips">
             @for (imp of visibleImports(); track imp) {
-              <span class="prism-perf-import-chip" [class]="chipClass(imp)">{{ imp }}</span>
+              <span class="perf-chip" [class]="chipClass(imp)">{{ imp }}</span>
             }
             @if (hiddenImportCount() > 0) {
-              <span class="prism-perf-import-chip">+{{ hiddenImportCount() }} more</span>
+              <span class="perf-chip">+{{ hiddenImportCount() }} more</span>
             }
           </div>
         </div>
       </div>
     } @else {
-      <div class="prism-perf-empty">
-        <div class="prism-perf-empty-icon">&#128230;</div>
-        <div class="prism-perf-empty-text">No bundle data available</div>
-        <div class="prism-perf-empty-hint">Bundle metrics are collected at build time</div>
+      <div class="perf-empty">
+        <div class="perf-empty-text">No bundle data available</div>
+        <div class="perf-empty-hint">Bundle metrics are collected at build time</div>
       </div>
     }
   `,
   styles: `
-    .prism-perf-bundle-hero {
+    .perf-body {
+      padding: 20px 24px;
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      border-bottom: 1px solid var(--prism-border, rgba(255,255,255,0.08));
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      align-content: start;
     }
-    .prism-perf-bundle-metric {
-      padding: 14px 16px;
-      border-right: 1px solid var(--prism-border, rgba(255,255,255,0.08));
+    .perf-body--4col { grid-template-columns: repeat(4, 1fr); }
+
+    .perf-card {
+      padding: 16px;
+      background: var(--prism-bg-surface);
+      border: 1px solid var(--prism-border);
+      border-radius: 10px;
     }
-    .prism-perf-bundle-metric:last-child { border-right: none; }
-    .prism-perf-bundle-value {
-      font-size: 22px;
-      font-family: var(--prism-font-mono, monospace);
-      font-weight: 600;
-      color: var(--prism-text, #ede9f8);
-      line-height: 1;
-      margin-top: 5px;
+    .perf-card--block { display: block; }
+    .perf-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
     }
-    .prism-perf-bundle-unit {
+    .perf-card-name {
       font-size: 11px;
-      font-weight: 400;
-      color: var(--prism-text-muted, #8476a2);
-      margin-left: 3px;
-    }
-    .prism-perf-label {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 0.1em;
       text-transform: uppercase;
-      color: var(--prism-text-ghost, #6a5d87);
-      margin-bottom: 5px;
+      letter-spacing: 0.08em;
+      color: var(--prism-text-ghost);
+      font-weight: 700;
     }
-    .prism-perf-sub {
+    .perf-card-status {
       font-size: 10px;
-      color: var(--prism-text-ghost, #6a5d87);
-      margin-top: 3px;
-      font-family: var(--prism-font-mono, monospace);
-    }
-    .prism-perf-bundle-section {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--prism-border, rgba(255,255,255,0.08));
-    }
-    .prism-perf-size-bars {
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      margin-top: 10px;
-    }
-    .prism-perf-size-bar-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .prism-perf-size-bar-label {
-      font-size: 11px;
-      color: var(--prism-text-muted, #8476a2);
-      width: 90px;
-      flex-shrink: 0;
-      font-family: var(--prism-font-mono, monospace);
-    }
-    .prism-perf-size-bar-track {
-      flex: 1;
-      height: 6px;
-      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
       border-radius: 3px;
-      overflow: hidden;
+      font-weight: 700;
+      letter-spacing: 0.04em;
     }
-    .prism-perf-size-bar-fill {
-      height: 100%;
-      border-radius: 3px;
+    .perf-card-status.good {
+      background: color-mix(in srgb, var(--prism-success) 15%, transparent);
+      color: var(--prism-success);
     }
-    .prism-perf-size-bar-val {
-      font-size: 11px;
-      font-family: var(--prism-font-mono, monospace);
-      color: var(--prism-text-2, #b0a6c8);
-      width: 58px;
-      text-align: right;
-      flex-shrink: 0;
+    .perf-card-status.warn {
+      background: color-mix(in srgb, var(--prism-warn) 15%, transparent);
+      color: var(--prism-warn);
     }
-    .prism-perf-threshold-legend {
-      margin-top: 10px;
-      font-size: 10px;
-      font-family: var(--prism-font-mono, monospace);
-      color: var(--prism-text-ghost, #6a5d87);
+    .perf-card-status.crit {
+      background: color-mix(in srgb, var(--prism-danger) 15%, transparent);
+      color: var(--prism-danger);
     }
-    .prism-perf-depth-gauge {
+    .perf-card-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--prism-text);
+      letter-spacing: -0.02em;
       display: flex;
-      align-items: center;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .perf-card-val span {
+      font-size: 13px;
+      color: var(--prism-text-muted);
+      font-weight: 500;
+    }
+    .perf-card-sub {
+      font-size: 11px;
+      color: var(--prism-text-muted);
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .perf-detail { padding: 0 24px 16px; }
+    .perf-detail--last { padding-bottom: 20px; }
+
+    .perf-bars {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
       gap: 10px;
-      margin-top: 10px;
-    }
-    .prism-perf-depth-label {
-      font-size: 11px;
-      color: var(--prism-text-muted, #8476a2);
-      width: 90px;
-      flex-shrink: 0;
-      font-family: var(--prism-font-mono, monospace);
-    }
-    .prism-perf-depth-steps {
-      display: flex;
-      gap: 3px;
-      flex: 1;
-    }
-    .prism-perf-depth-step {
-      flex: 1;
-      height: 6px;
-      border-radius: 2px;
-      background: rgba(255,255,255,0.05);
-    }
-    .prism-perf-depth-step.filled {
-      background: var(--prism-primary, #a78bfa);
-      opacity: 0.8;
-    }
-    .prism-perf-depth-step.deep {
-      background: var(--perf-warn, #fbbf24);
-      opacity: 0.5;
-    }
-    .prism-perf-depth-val {
-      font-size: 11px;
-      font-family: var(--prism-font-mono, monospace);
-      width: 58px;
-      text-align: right;
-      flex-shrink: 0;
-    }
-    .prism-perf-import-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
       margin-top: 8px;
     }
-    .prism-perf-import-chip {
-      padding: 2px 8px;
-      border-radius: 3px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--prism-border, rgba(255,255,255,0.08));
-      font-size: 10px;
-      font-family: var(--prism-font-mono, monospace);
-      color: var(--prism-text-muted, #8476a2);
+    .perf-bar-label { color: var(--prism-text-muted); }
+    .perf-bar-track {
+      height: 8px;
+      background: var(--prism-input-bg);
+      border-radius: 4px;
+      overflow: hidden;
     }
-    .prism-perf-import-chip.angular {
-      color: var(--prism-primary, #a78bfa);
-      border-color: color-mix(in srgb, var(--prism-primary, #a78bfa) 25%, transparent);
-      background: color-mix(in srgb, var(--prism-primary, #a78bfa) 8%, transparent);
+    .perf-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      border-radius: 4px;
     }
-    .prism-perf-import-chip.rxjs {
-      color: #67e8f9;
-      border-color: color-mix(in srgb, #67e8f9 25%, transparent);
-      background: color-mix(in srgb, #67e8f9 8%, transparent);
+    .perf-bar-val { color: var(--prism-primary); }
+
+    .perf-thresholds {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--prism-text-muted);
+      font-family: 'JetBrains Mono', monospace;
     }
-    .prism-perf-empty {
+    .perf-thresholds--warn { color: var(--prism-warn); }
+    .perf-thresholds--crit { color: var(--prism-danger); }
+
+    .perf-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .perf-chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--prism-input-bg);
+      color: var(--prism-text-2);
+      border: 1px solid var(--prism-border);
+      border-radius: 5px;
+    }
+    .perf-chip.angular {
+      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
+      color: var(--prism-primary);
+      border-color: color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    }
+
+    .perf-empty {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -244,9 +211,8 @@ import type { BundleMetrics } from '../perf.types.js';
       height: 100%;
       min-height: 180px;
     }
-    .prism-perf-empty-icon { font-size: 28px; opacity: 0.2; }
-    .prism-perf-empty-text { font-size: 12px; color: var(--prism-text-ghost, #6a5d87); }
-    .prism-perf-empty-hint { font-size: 11px; color: var(--prism-text-ghost, #6a5d87); opacity: 0.6; }
+    .perf-empty-text { font-size: 12px; color: var(--prism-text-ghost); }
+    .perf-empty-hint { font-size: 11px; color: var(--prism-text-ghost); opacity: 0.6; }
   `,
 })
 export class BundleSectionComponent {
@@ -274,14 +240,38 @@ export class BundleSectionComponent {
     return Math.min(100, (m.gzipEstimate / 1024 / maxKb) * 100);
   });
 
-  readonly depthSteps = computed(() => {
+  readonly sizeStatus = computed(() => {
     const m = this.metrics();
-    const depth = m?.treeDepth ?? 0;
-    return Array.from({ length: 10 }, (_, i) => ({
-      index: i,
-      filled: i < depth,
-      deep: i >= 4 && i < depth,
-    }));
+    if (!m) return '';
+    const kb = m.sourceSize / 1024;
+    if (kb >= this.critKb()) return 'crit';
+    if (kb >= this.warnKb()) return 'warn';
+    return 'good';
+  });
+
+  readonly sizeStatusText = computed(() => {
+    const s = this.sizeStatus();
+    if (s === 'good') return 'good';
+    if (s === 'warn') return 'warn';
+    if (s === 'crit') return 'crit';
+    return '';
+  });
+
+  readonly gzipStatus = computed(() => {
+    const m = this.metrics();
+    if (!m) return '';
+    const kb = m.gzipEstimate / 1024;
+    if (kb >= this.critKb()) return 'crit';
+    if (kb >= this.warnKb()) return 'warn';
+    return 'good';
+  });
+
+  readonly gzipStatusText = computed(() => {
+    const s = this.gzipStatus();
+    if (s === 'good') return 'good';
+    if (s === 'warn') return 'warn';
+    if (s === 'crit') return 'crit';
+    return '';
   });
 
   readonly visibleImports = computed(() => {
@@ -306,7 +296,6 @@ export class BundleSectionComponent {
 
   chipClass(imp: string): string {
     if (imp.startsWith('@angular/')) return 'angular';
-    if (imp.startsWith('rxjs')) return 'rxjs';
     return '';
   }
 }

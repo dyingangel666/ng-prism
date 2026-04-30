@@ -26,75 +26,64 @@ type SubTab = 'bundle' | 'render' | 'memory';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="prism-perf-panel">
-      <div class="prism-perf-subtabs">
+      <div class="prism-subtabs">
         <button
-          class="prism-perf-subtab"
-          [class.active]="activeTab() === 'bundle'"
+          class="prism-st-tab"
+          [class.prism-st-tab--active]="activeTab() === 'bundle'"
           (click)="activeTab.set('bundle')"
         >
-          <span class="prism-perf-subtab-icon">&#128230;</span> Bundle
+          Bundle
         </button>
         <button
-          class="prism-perf-subtab"
-          [class.active]="activeTab() === 'render'"
+          class="prism-st-tab"
+          [class.prism-st-tab--active]="activeTab() === 'render'"
           (click)="activeTab.set('render')"
         >
-          <span class="prism-perf-subtab-icon">&#9201;</span> Render
+          Render
         </button>
         <button
-          class="prism-perf-subtab"
-          [class.active]="activeTab() === 'memory'"
+          class="prism-st-tab"
+          [class.prism-st-tab--active]="activeTab() === 'memory'"
           (click)="activeTab.set('memory')"
         >
-          <span class="prism-perf-subtab-icon">&#129504;</span> Memory
+          Memory
         </button>
         @if (renderService.cdRunCount() > 0) {
-        <div class="prism-perf-cd-badge">
-          {{ renderService.cdRunCount() }} CD runs
-        </div>
+        <span class="prism-perf-cd-badge"
+          >{{ renderService.cdRunCount() }} CD runs</span
+        >
         }
       </div>
 
       @if (activeTab() === 'render') {
       <div class="prism-perf-toolbar">
         @if (renderService.isRecording()) {
-        <button
-          class="prism-perf-btn prism-perf-btn--primary"
-          (click)="renderService.stopRecording()"
-        >
-          <i class="prism-perf-btn-icon">&#9208;</i> Pause
+        <button class="prism-tool-btn" (click)="renderService.stopRecording()">
+          &#9208; Pause
         </button>
         } @else {
-        <button
-          class="prism-perf-btn prism-perf-btn--primary"
-          (click)="renderService.startRecording()"
-        >
-          <i class="prism-perf-btn-icon">&#9654;</i> Profile
+        <button class="prism-tool-btn" (click)="renderService.startRecording()">
+          &#9654; Profile
         </button>
         }
-        <button class="prism-perf-btn" (click)="renderService.clear()">
-          <i class="prism-perf-btn-icon">&#10005;</i> Clear
+        <button class="prism-tool-btn" (click)="renderService.clear()">
+          &#10005; Clear
         </button>
-        <div class="prism-perf-toolbar-spacer"></div>
         @if (renderService.isRecording()) {
-        <div class="prism-perf-status">
-          <div class="prism-perf-status-dot"></div>
-          live · {{ renderService.sampleCount() }} samples
-        </div>
+        <span class="prism-perf-status"
+          ><span class="prism-perf-status-dot"></span> live &middot;
+          {{ renderService.sampleCount() }} samples</span
+        >
         }
       </div>
       } @if (activeTab() === 'memory') {
       <div class="prism-perf-toolbar">
-        <button
-          class="prism-perf-btn prism-perf-btn--primary"
-          (click)="captureMemorySnapshots()"
-        >
-          <i class="prism-perf-btn-icon">&#9654;</i> Snapshot
+        <button class="prism-tool-btn" (click)="captureMemorySnapshots()">
+          &#9654; Snapshot
         </button>
-        <button class="prism-perf-btn" (click)="memoryService.clear()">
-          <i class="prism-perf-btn-icon">&#10005;</i> Clear
+        <button class="prism-tool-btn" (click)="memoryService.clear()">
+          &#10005; Clear
         </button>
-        <div class="prism-perf-toolbar-spacer"></div>
       </div>
       }
 
@@ -118,84 +107,120 @@ type SubTab = 'bundle' | 'render' | 'memory';
     </div>
   `,
   styles: `
-    .prism-perf-panel { display: flex; flex-direction: column; height: 340px; }
-    .prism-perf-subtabs {
-      display: flex; align-items: center;
-      background: var(--prism-bg-elevated);
+    .prism-perf-panel {
+      display: flex;
+      flex-direction: column;
+      height: 340px;
+    }
+
+    .prism-subtabs {
+      display: flex;
+      gap: 2px;
+      padding: 10px 20px 0;
       border-bottom: 1px solid var(--prism-border);
-      padding: 0 4px;
-    }
-    .prism-perf-subtab {
-      padding: 7px 12px; font-size: 11px;
-      font-family: var(--font-sans); font-weight: 500;
-      color: var(--prism-text-muted); border: none; background: none;
-      cursor: pointer; position: relative;
-      display: flex; align-items: center; gap: 5px;
-      transition: color var(--dur-fast); user-select: none;
-    }
-    .prism-perf-subtab::after {
-      content: ''; position: absolute;
-      bottom: -1px; left: 4px; right: 4px; height: 2px;
-      background: var(--prism-primary); opacity: 0;
-    }
-    .prism-perf-subtab.active { color: var(--prism-primary); }
-    .prism-perf-subtab.active::after { opacity: 1; }
-    .prism-perf-subtab-icon { font-size: 10px; opacity: 0.8; }
-    .prism-perf-cd-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 2px 8px; border-radius: var(--radius-xs);
-      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
-      border: 1px solid color-mix(in srgb, var(--prism-primary) 20%, transparent);
-      font-size: 10px; font-family: var(--font-mono);
-      color: var(--prism-primary); margin-left: auto;
-    }
-    .prism-perf-toolbar {
-      display: flex; align-items: center; gap: 6px;
-      padding: 6px 12px;
-      border-bottom: 1px solid var(--prism-border);
-      background: var(--prism-bg-surface); flex-shrink: 0;
-    }
-    .prism-perf-btn {
-      display: flex; align-items: center; gap: 5px;
-      padding: 4px 10px;
-      border: 1px solid var(--prism-border-strong);
-      border-radius: var(--radius-sm);
       background: var(--prism-bg-elevated);
-      color: var(--prism-text-2);
-      font-family: var(--font-sans); font-size: 11px; font-weight: 500;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .prism-st-tab {
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--prism-text-muted);
+      border-radius: 6px 6px 0 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       cursor: pointer;
-      transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+      background: transparent;
+      border: none;
+      font-family: var(--font-sans);
+      transition: color var(--dur-fast);
     }
-    .prism-perf-btn:hover {
-      background: color-mix(in srgb, var(--prism-primary) 12%, var(--prism-bg-elevated));
-      border-color: color-mix(in srgb, var(--prism-primary) 40%, transparent);
+    .prism-st-tab:hover { color: var(--prism-text-2); }
+    .prism-st-tab--active { color: var(--prism-text); }
+    .prism-st-tab--active::after {
+      content: '';
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      bottom: -1px;
+      height: 2px;
+      background: var(--prism-primary);
+      border-radius: 1px;
+    }
+
+    .prism-perf-cd-badge {
+      margin-left: auto;
+      font-family: var(--font-mono, 'JetBrains Mono', monospace);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      height: 24px;
+      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
       color: var(--prism-primary);
+      border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
+      border-radius: 5px;
     }
-    .prism-perf-btn--primary {
-      background: color-mix(in srgb, var(--prism-primary) 15%, var(--prism-bg-elevated));
-      border-color: color-mix(in srgb, var(--prism-primary) 35%, transparent);
-      color: var(--prism-primary);
+
+    .prism-perf-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px 0;
     }
-    .prism-perf-btn--primary:hover {
-      background: color-mix(in srgb, var(--prism-primary) 22%, var(--prism-bg-elevated));
+    .prism-tool-btn {
+      height: 24px;
+      padding: 0 9px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      color: var(--prism-text-muted);
+      transition: all 0.12s;
+      font-weight: 500;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-sans);
     }
-    .prism-perf-btn-icon { font-style: normal; font-size: 10px; }
-    .prism-perf-toolbar-spacer { flex: 1; }
+    .prism-tool-btn:hover {
+      color: var(--prism-text);
+      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+    }
+
     .prism-perf-status {
-      font-size: 10px; color: var(--prism-text-ghost);
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--prism-text-muted);
       font-family: var(--font-mono);
-      display: flex; align-items: center; gap: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
     .prism-perf-status-dot {
-      width: 5px; height: 5px; border-radius: 50%;
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
       background: var(--prism-success);
       box-shadow: 0 0 6px var(--prism-success);
       animation: prism-perf-pulse 2s ease-in-out infinite;
     }
-    @keyframes prism-perf-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes prism-perf-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
     .prism-perf-content {
-      flex: 1; overflow-y: auto;
-      background: var(--prism-bg-surface);
+      flex: 1;
+      overflow-y: auto;
     }
   `,
 })

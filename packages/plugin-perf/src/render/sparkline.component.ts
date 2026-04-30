@@ -9,8 +9,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       <svg class="prism-perf-sparkline-svg" [attr.viewBox]="'0 0 600 ' + height()" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="perf-sparkg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.35"/>
-            <stop offset="100%" stop-color="#a78bfa" stop-opacity="0.0"/>
+            <stop offset="0%" class="sparkline-gradient-start"/>
+            <stop offset="100%" class="sparkline-gradient-end"/>
           </linearGradient>
           <filter id="perf-glow">
             <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
@@ -20,21 +20,21 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
         @if (warnY() !== null) {
           <line [attr.x1]="0" [attr.y1]="warnY()" [attr.x2]="600" [attr.y2]="warnY()"
-                stroke="#fbbf24" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
-          <text [attr.x]="3" [attr.y]="warnY()! - 3" font-size="8" fill="#fbbf24" opacity="0.5"
+                class="sparkline-warn-line"/>
+          <text [attr.x]="3" [attr.y]="warnY()! - 3" font-size="8" class="sparkline-warn-text"
                 font-family="monospace">{{ thresholdWarn() }}ms</text>
         }
 
         <path [attr.d]="areaPath()" fill="url(#perf-sparkg)"/>
-        <path [attr.d]="linePath()" fill="none" stroke="#a78bfa" stroke-width="1.5" filter="url(#perf-glow)"/>
+        <path [attr.d]="linePath()" fill="none" class="sparkline-line" stroke-width="1.5" filter="url(#perf-glow)"/>
 
         @if (peakPoint(); as peak) {
-          <circle [attr.cx]="peak.x" [attr.cy]="peak.y" r="3" fill="#fbbf24" filter="url(#perf-glow)"/>
+          <circle [attr.cx]="peak.x" [attr.cy]="peak.y" r="3" class="sparkline-peak" filter="url(#perf-glow)"/>
         }
 
         @if (currentPoint(); as current) {
-          <circle [attr.cx]="current.x" [attr.cy]="current.y" r="2.5" fill="#a78bfa"/>
-          <circle [attr.cx]="current.x" [attr.cy]="current.y" r="5" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.4">
+          <circle [attr.cx]="current.x" [attr.cy]="current.y" r="2.5" class="sparkline-current"/>
+          <circle [attr.cx]="current.x" [attr.cy]="current.y" r="5" class="sparkline-current-pulse" stroke-width="1">
             <animate attributeName="r" values="3;7" dur="1.5s" repeatCount="indefinite"/>
             <animate attributeName="opacity" values="0.4;0" dur="1.5s" repeatCount="indefinite"/>
           </circle>
@@ -43,13 +43,24 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
     </div>
   `,
   styles: `
-    .prism-perf-sparkline-wrap {
-      position: relative;
+    .prism-perf-sparkline-wrap { position: relative; }
+    .prism-perf-sparkline-svg { width: 100%; height: 52px; }
+
+    .sparkline-gradient-start { stop-color: var(--prism-primary); stop-opacity: 0.35; }
+    .sparkline-gradient-end { stop-color: var(--prism-primary); stop-opacity: 0; }
+
+    .sparkline-warn-line {
+      stroke: var(--prism-warn);
+      stroke-width: 0.8;
+      stroke-dasharray: 4 4;
+      opacity: 0.4;
     }
-    .prism-perf-sparkline-svg {
-      width: 100%;
-      height: 52px;
-    }
+    .sparkline-warn-text { fill: var(--prism-warn); opacity: 0.5; }
+
+    .sparkline-line { stroke: var(--prism-primary); }
+    .sparkline-peak { fill: var(--prism-warn); }
+    .sparkline-current { fill: var(--prism-primary); }
+    .sparkline-current-pulse { fill: none; stroke: var(--prism-primary); opacity: 0.4; }
   `,
 })
 export class SparklineComponent {
