@@ -5,6 +5,7 @@
   - [Installation & Setup](guide/installation.md)
   - [Your First Showcase](guide/first-showcase.md)
   - [Configuration](guide/configuration.md)
+  - [Publishing Libraries](guide/library-publishing.md)
 
 - **Core Concepts**
   - [@Showcase Decorator](guide/showcase-decorator.md)
