@@ -235,11 +235,34 @@ function createConfigFile(): Rule {
   };
 }
 
+function addStripShowcaseScript(options: NgAddSchemaOptions): Rule {
+  return (tree: Tree) => {
+    const pkgPath = 'package.json';
+    const buffer = tree.read(pkgPath);
+    if (!buffer) return tree;
+
+    const pkg = JSON.parse(buffer.toString('utf-8')) as {
+      scripts?: Record<string, string>;
+      [key: string]: unknown;
+    };
+    if (!pkg.scripts) pkg.scripts = {};
+
+    const scriptName = 'strip-showcase';
+    if (pkg.scripts[scriptName]) return tree;
+
+    pkg.scripts[scriptName] = `ng-prism-strip dist/${options.project}`;
+    tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+
+    return tree;
+  };
+}
+
 export function ngAdd(options: NgAddSchemaOptions): Rule {
   return chain([
     addPrismAppProject(options),
     addBuilderTargets(options),
     addTsConfigPaths(options),
     createConfigFile(),
+    addStripShowcaseScript(options),
   ]);
 }

@@ -233,4 +233,27 @@ describe('ng-add schematic', () => {
       runSchematic({ project: 'nonexistent' }, tree),
     ).rejects.toThrow('Project "nonexistent" does not exist in angular.json');
   });
+
+  it('should add strip-showcase script to package.json', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('package.json', JSON.stringify({ name: 'my-workspace', scripts: {} }, null, 2));
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const pkg = readJson(result, '/package.json') as { scripts: Record<string, string> };
+    expect(pkg.scripts['strip-showcase']).toBe('ng-prism-strip dist/my-lib');
+  });
+
+  it('should not overwrite existing strip-showcase script', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('package.json', JSON.stringify({
+      name: 'my-workspace',
+      scripts: { 'strip-showcase': 'custom-command' },
+    }, null, 2));
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const pkg = readJson(result, '/package.json') as { scripts: Record<string, string> };
+    expect(pkg.scripts['strip-showcase']).toBe('custom-command');
+  });
 });
