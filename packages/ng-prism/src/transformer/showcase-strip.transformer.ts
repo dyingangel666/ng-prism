@@ -61,6 +61,12 @@ function tryHandleDecorateStatement(
   return { action: 'replace', statement: newStmt };
 }
 
+function isShowcaseDecorator(d: ts.Decorator, names: Set<string>): boolean {
+  return ts.isCallExpression(d.expression)
+    && ts.isIdentifier(d.expression.expression)
+    && names.has(d.expression.expression.text);
+}
+
 function stripNativeDecorators(
   node: ts.ClassDeclaration,
   names: Set<string>,
@@ -69,14 +75,9 @@ function stripNativeDecorators(
   const decorators = ts.getDecorators(node);
   if (!decorators) return undefined;
 
-  const hasShowcase = decorators.some(
-    (d) => ts.isCallExpression(d.expression) && ts.isIdentifier(d.expression.expression) && names.has(d.expression.expression.text),
-  );
-  if (!hasShowcase) return undefined;
+  const keptDecorators = decorators.filter((d) => !isShowcaseDecorator(d, names));
+  if (keptDecorators.length === decorators.length) return undefined;
 
-  const keptDecorators = decorators.filter(
-    (d) => !(ts.isCallExpression(d.expression) && ts.isIdentifier(d.expression.expression) && names.has(d.expression.expression.text)),
-  );
   const modifiers = ts.getModifiers(node) ?? [];
 
   return factory.updateClassDeclaration(
