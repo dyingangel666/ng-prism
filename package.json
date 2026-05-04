@@ -10,6 +10,7 @@
     "publish": "./scripts/publish.sh",
     "test:workspace:setup": "nx build ng-prism --skip-nx-cache",
     "test:workspace:serve": "cd test-workspace && ng run test-lib:prism",
+    "test:workspace:build": "cd test-workspace && ng run test-lib:prism-build",
     "test:workspace:clean": "cd test-workspace && rm -rf node_modules package-lock.json ng-prism.config.ts && git checkout -- angular.json package.json"
   },
   "private": true,
