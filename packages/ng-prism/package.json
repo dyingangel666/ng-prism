@@ -30,7 +30,15 @@
       "types": "./dist/plugin/index.d.ts",
       "import": "./dist/plugin/index.js",
       "default": "./dist/plugin/index.js"
+    },
+    "./transformer": {
+      "types": "./dist/transformer/index.d.ts",
+      "import": "./dist/transformer/index.js",
+      "default": "./dist/transformer/index.js"
     }
+  },
+  "bin": {
+    "ng-prism-strip": "./dist/transformer/cli.js"
   },
   "schematics": "./schematics/collection.json",
   "builders": "./builders.json",
