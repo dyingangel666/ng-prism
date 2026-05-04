@@ -256,4 +256,51 @@ describe('ng-add schematic', () => {
     const pkg = readJson(result, '/package.json') as { scripts: Record<string, string> };
     expect(pkg.scripts['strip-showcase']).toBe('custom-command');
   });
+
+  it('should add prism-manifest to .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    expect(result.exists('/.gitignore')).toBe(true);
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('projects/my-lib-prism/src/prism-manifest.ts');
+  });
+
+  it('should append to existing .gitignore without duplicating', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', 'node_modules\ndist\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('projects/my-lib-prism/src/prism-manifest.ts');
+  });
+
+  it('should not duplicate prism-manifest entry in .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', 'projects/my-lib-prism/src/prism-manifest.ts\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    const matches = gitignore.match(/prism-manifest\.ts/g);
+    expect(matches).toHaveLength(1);
+  });
+
+  it('should log setup summary', async () => {
+    const tree = createTree(defaultLibProject());
+    const logs: string[] = [];
+    const loggingContext = {
+      ...mockContext,
+      logger: { ...mockContext.logger, info: (msg: string) => logs.push(msg) },
+    } as unknown as SchematicContext;
+
+    const rule = ngAdd({ project: 'my-lib' });
+    await firstValueFrom(callRule(rule, tree, loggingContext));
+
+    expect(logs.some((l) => l.includes('my-lib-prism'))).toBe(true);
+    expect(logs.some((l) => l.includes('ng run my-lib:prism'))).toBe(true);
+  });
 });

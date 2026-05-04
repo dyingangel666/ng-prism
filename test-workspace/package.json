@@ -6,7 +6,8 @@
     "ng": "ng",
     "prism": "ng run test-lib:prism",
     "test": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs",
-    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs --coverage"
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs --coverage",
+    "strip-showcase": "ng-prism-strip dist/test-lib"
   },
   "dependencies": {
     "@angular/animations": "^21.0.0",

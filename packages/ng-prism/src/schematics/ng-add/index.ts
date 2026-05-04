@@ -235,6 +235,40 @@ function createConfigFile(): Rule {
   };
 }
 
+function addGitignoreEntry(options: NgAddSchemaOptions): Rule {
+  return (tree: Tree) => {
+    const prismProjectName = `${options.project}-prism`;
+    const entry = `projects/${prismProjectName}/src/prism-manifest.ts`;
+    const gitignorePath = '.gitignore';
+
+    const buffer = tree.read(gitignorePath);
+    if (buffer) {
+      const content = buffer.toString('utf-8');
+      if (content.includes(entry)) return tree;
+      tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
+    } else {
+      tree.create(gitignorePath, entry + '\n');
+    }
+
+    return tree;
+  };
+}
+
+function logSetupSummary(options: NgAddSchemaOptions): Rule {
+  return (_tree: Tree, context: SchematicContext) => {
+    const prismProjectName = `${options.project}-prism`;
+
+    context.logger.info('');
+    context.logger.info('ng-prism setup complete:');
+    context.logger.info(`  Prism app project: ${prismProjectName}`);
+    context.logger.info(`  Config file:       ng-prism.config.ts`);
+    context.logger.info(`  Dev server:        ng run ${options.project}:prism`);
+    context.logger.info(`  Production build:  ng run ${options.project}:prism-build`);
+    context.logger.info(`  Strip decorators:  npm run strip-showcase`);
+    context.logger.info('');
+  };
+}
+
 function addStripShowcaseScript(options: NgAddSchemaOptions): Rule {
   return (tree: Tree) => {
     const pkgPath = 'package.json';
@@ -264,5 +298,7 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
     addTsConfigPaths(options),
     createConfigFile(),
     addStripShowcaseScript(options),
+    addGitignoreEntry(options),
+    logSetupSummary(options),
   ]);
 }
