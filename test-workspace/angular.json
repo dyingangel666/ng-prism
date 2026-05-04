@@ -8,6 +8,12 @@
       "root": "projects/test-lib",
       "sourceRoot": "projects/test-lib/src",
       "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/test-lib/ng-package.json"
+          }
+        },
         "prism": {
           "builder": "@ng-prism/core:serve",
           "options": {

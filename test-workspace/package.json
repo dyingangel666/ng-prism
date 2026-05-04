@@ -31,6 +31,7 @@
     "@angular-devkit/build-angular": "^21.0.0",
     "@angular/cli": "^21.0.0",
     "@angular/compiler-cli": "^21.0.0",
+    "@ng-prism/core": "file:../packages/ng-prism",
     "@ng-prism/plugin-box-model": "file:../packages/plugin-box-model",
     "@ng-prism/plugin-coverage": "file:../packages/plugin-coverage",
     "@ng-prism/plugin-figma": "file:../packages/plugin-figma",
@@ -39,8 +40,8 @@
     "@types/node": "^25.5.0",
     "axe-core": "^4.10.0",
     "highlight.js": "^11.11.1",
+    "ng-packagr": "^21.2.3",
     "ngx-highlightjs": "^14.0.0",
-    "typescript": "~5.9.0",
-    "@ng-prism/core": "file:../packages/ng-prism"
+    "typescript": "~5.9.0"
   }
 }
