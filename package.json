@@ -8,6 +8,7 @@
     "build:all": "nx build ng-prism && nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perfm,plugin-coverage'",
     "test": "nx test ng-prism",
     "publish": "./scripts/publish.sh",
+    "test:workspace:kill": "lsof -ti :4400 | xargs kill -9 2>/dev/null || echo 'No process on port 4400'",
     "test:workspace:setup": "nx build ng-prism --skip-nx-cache",
     "test:workspace:serve": "cd test-workspace && ng run test-lib:prism",
     "test:workspace:build": "cd test-workspace && ng run test-lib:prism-build",
