@@ -48,44 +48,42 @@ type SubTab = 'bundle' | 'render' | 'memory';
         >
           Memory
         </button>
-        @if (renderService.cdRunCount() > 0) {
-        <span class="prism-perf-cd-badge"
-          >{{ renderService.cdRunCount() }} CD runs</span
-        >
-        }
+        <div class="prism-subtabs-actions">
+          @if (activeTab() === 'render') {
+            @if (renderService.isRecording()) {
+              <button class="prism-tool-btn" (click)="renderService.stopRecording()">
+                &#9208; Pause
+              </button>
+            } @else {
+              <button class="prism-tool-btn" (click)="renderService.startRecording()">
+                &#9654; Profile
+              </button>
+            }
+            <button class="prism-tool-btn" (click)="renderService.clear()">
+              &#10005; Clear
+            </button>
+            @if (renderService.isRecording()) {
+              <span class="prism-perf-status">
+                <span class="prism-perf-status-dot"></span> live &middot;
+                {{ renderService.sampleCount() }} samples
+              </span>
+            }
+          }
+          @if (activeTab() === 'memory') {
+            <button class="prism-tool-btn" (click)="captureMemorySnapshots()">
+              &#9654; Snapshot
+            </button>
+            <button class="prism-tool-btn" (click)="memoryService.clear()">
+              &#10005; Clear
+            </button>
+          }
+          @if (renderService.cdRunCount() > 0) {
+            <span class="prism-perf-cd-badge">
+              {{ renderService.cdRunCount() }} CD runs
+            </span>
+          }
+        </div>
       </div>
-
-      @if (activeTab() === 'render') {
-      <div class="prism-perf-toolbar">
-        @if (renderService.isRecording()) {
-        <button class="prism-tool-btn" (click)="renderService.stopRecording()">
-          &#9208; Pause
-        </button>
-        } @else {
-        <button class="prism-tool-btn" (click)="renderService.startRecording()">
-          &#9654; Profile
-        </button>
-        }
-        <button class="prism-tool-btn" (click)="renderService.clear()">
-          &#10005; Clear
-        </button>
-        @if (renderService.isRecording()) {
-        <span class="prism-perf-status"
-          ><span class="prism-perf-status-dot"></span> live &middot;
-          {{ renderService.sampleCount() }} samples</span
-        >
-        }
-      </div>
-      } @if (activeTab() === 'memory') {
-      <div class="prism-perf-toolbar">
-        <button class="prism-tool-btn" (click)="captureMemorySnapshots()">
-          &#9654; Snapshot
-        </button>
-        <button class="prism-tool-btn" (click)="memoryService.clear()">
-          &#10005; Clear
-        </button>
-      </div>
-      }
 
       <div class="prism-perf-content">
         @switch (activeTab()) { @case ('bundle') {
@@ -153,8 +151,14 @@ type SubTab = 'bundle' | 'render' | 'memory';
       border-radius: 1px;
     }
 
-    .prism-perf-cd-badge {
+    .prism-subtabs-actions {
       margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prism-perf-cd-badge {
       font-family: var(--font-mono, 'JetBrains Mono', monospace);
       font-size: 11px;
       display: inline-flex;
@@ -166,13 +170,6 @@ type SubTab = 'bundle' | 'render' | 'memory';
       color: var(--prism-primary);
       border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
       border-radius: 5px;
-    }
-
-    .prism-perf-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 14px 24px 0;
     }
     .prism-tool-btn {
       height: 24px;
@@ -196,7 +193,6 @@ type SubTab = 'bundle' | 'render' | 'memory';
     }
 
     .prism-perf-status {
-      margin-left: auto;
       font-size: 11px;
       color: var(--prism-text-muted);
       font-family: var(--font-mono);
