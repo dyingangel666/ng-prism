@@ -2,16 +2,18 @@
 
 Lightweight, Angular-native component showcase tool. Annotate components with `@Showcase` — no separate story files needed.
 
-[![Angular](https://img.shields.io/badge/Angular-21+-dd0031)](https://angular.dev)
+[![Angular](https://img.shields.io/badge/Angular-19+-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+
+**[Live Demo](https://dyingangel666.github.io/ng-prism/demo/)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
 
 ## Features
 
 - **Zero-config discovery** — TypeScript Compiler API scans your library at build time
 - **Signal-native** — works with `input()` / `output()` signals
 - **Directive support** — showcase directives with configurable host elements
-- **Plugin architecture** — JSDoc, A11y, Figma, Performance, Box Model, Coverage plugins
+- **Plugin architecture** — JSDoc, A11y, Figma, Performance, Box Model, Coverage
 - **Live Controls** — auto-generated input controls with type-aware editors
 - **Code Snippets** — live-updating Angular template snippets per variant
 - **Component Pages** — free-form demo pages for complex components
@@ -82,12 +84,7 @@ export default defineConfig({
 
   theme: {
     '--prism-primary': '#00a67e',
-    '--prism-bg': '#ffffff',
     '--prism-font-sans': "'Inter', sans-serif",
-  },
-
-  ui: {
-    header: MyCustomHeaderComponent,
   },
 
   appProviders: [
@@ -122,7 +119,6 @@ export class TooltipDirective { ... }
 For complex components that need template projections or mock data:
 
 ```typescript
-// Register in main.ts
 providePrism(PRISM_RUNTIME_MANIFEST, config, {
   componentPages: [
     { title: 'Table Demo', category: 'Data', component: TableDemoPage },
@@ -135,11 +131,9 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 ```typescript
 @Showcase({
   title: 'Table',
-  renderPage: 'Table Demo',  // delegates rendering to the page
+  renderPage: 'Table Demo',
   variants: [{ name: 'Default', inputs: { height: '400px' } }],
 })
-@Component({ selector: 'my-table' })
-export class TableComponent { ... }
 ```
 
 ## Official Plugins
@@ -154,18 +148,12 @@ export class TableComponent { ... }
 
 > **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
 
-## Documentation
-
-Full documentation with API reference, plugin guide, and advanced configuration:
-
-**[ng-prism Documentation](https://your-org.github.io/ng-prism/)**
-
 ## Requirements
 
 - Angular >= 19
 - TypeScript >= 5.9
-- Components must use `input()` / `output()` signals (not `@Input()` / `@Output()` decorators)
+- Components must use `input()` / `output()` signals
 
 ## License
 
-MIT
+[MIT](./LICENSE)
