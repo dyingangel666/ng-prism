@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/prism_teaser.jpg" alt="ng-prism — Storybook, reimagined for Angular" width="100%" />
+</p>
+
 # ng-prism
 
 Lightweight, Angular-native component showcase tool. Annotate components with `@Showcase` — no separate story files needed.
