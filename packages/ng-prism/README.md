@@ -2,8 +2,8 @@
 
 **ng-prism** is the Angular-native Storybook alternative. A lightweight component showcase tool that scans your library at build time and renders interactive demos — annotate components with `@Showcase`, no separate story files needed.
 
-[![Angular](https://img.shields.io/badge/Angular-19+-dd0031)](https://angular.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
+[![Angular](https://img.shields.io/badge/Angular-21+-dd0031)](https://angular.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 **[Live Demo](https://dyingangel666.github.io/ng-prism/demo/)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
@@ -150,8 +150,8 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Requirements
 
-- Angular >= 19
-- TypeScript >= 5.9
+- Angular >= 21
+- TypeScript >= 5.5
 - Components must use `input()` / `output()` signals
 
 ## License
