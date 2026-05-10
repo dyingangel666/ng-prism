@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Angular 20+ workspace (signal inputs supported since Angular 17, stable API since 20)
+- Angular 21+ workspace
 - Node.js 20+, npm 10+
 
 ## Automatic Setup — `ng add`
@@ -31,13 +31,15 @@ projects/
     angular.json       ← builder targets added here
 ```
 
+The schematic also adds a `strip-showcase` npm script to your `package.json`. This strips `@Showcase` decorators from compiled library output before publishing. See [Publishing Libraries](guide/library-publishing.md) for details.
+
 ## Verify
 
 ```bash
 ng run my-lib:prism        # or whatever the schematic named it
 ```
 
-The showcase opens at `http://localhost:4200`.
+The showcase opens at `http://localhost:4400`.
 
 ## Angular Builder Targets
 
@@ -45,7 +47,7 @@ The schematic adds two targets to `angular.json`:
 
 ```json
 "prism": {
-  "builder": "ng-prism:serve",
+  "builder": "@ng-prism/core:serve",
   "options": {
     "entryPoint": "packages/my-lib/src/index.ts",
     "configFile": "projects/my-lib-prism/prism.config.ts",
@@ -53,7 +55,7 @@ The schematic adds two targets to `angular.json`:
   }
 },
 "prism-build": {
-  "builder": "ng-prism:build",
+  "builder": "@ng-prism/core:build",
   "options": {
     "entryPoint": "packages/my-lib/src/index.ts",
     "configFile": "projects/my-lib-prism/prism.config.ts",
@@ -62,8 +64,8 @@ The schematic adds two targets to `angular.json`:
 }
 ```
 
-- **`ng-prism:serve`** — runs the TypeScript scanner, generates a runtime manifest, then delegates to the Angular dev server. Watches for file changes and re-scans incrementally.
-- **`ng-prism:build`** — same pipeline but runs the Angular production build and exits.
+- **`@ng-prism/core:serve`** — runs the TypeScript scanner, generates a runtime manifest, then delegates to the Angular dev server. Watches for file changes and re-scans incrementally.
+- **`@ng-prism/core:build`** — same pipeline but runs the Angular production build and exits.
 
 ### Builder Options
 
