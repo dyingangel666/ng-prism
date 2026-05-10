@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link
@@ -23,65 +23,66 @@
     />
     <style>
       :root {
-        /* — Prism light palette — */
-        --prism-void: #f0ecff;
-        --prism-deep: #faf8ff;
-        --prism-surface: #f3efff;
-        --prism-elevated: #ffffff;
-        --prism-violet: #6d28d9;
+        /* — Prism dark palette (aligned with PRISM_DARK_THEME) — */
+        --prism-void: #07050f;
+        --prism-deep: #0d0b1c;
+        --prism-surface: #131022;
+        --prism-elevated: #1a1535;
+        --prism-violet: #a78bfa;
         --prism-violet-deep: #7c3aed;
-        --prism-blue: #2563eb;
-        --prism-cyan: #0891b2;
-        --prism-pink: #db2777;
-        --prism-rose: #ec4899;
-        --prism-text-primary: #1a0e2e;
-        --prism-text-secondary: #4a3d65;
-        --prism-text-muted: #6b5e80;
-        --prism-border: rgba(109, 40, 217, 0.1);
-        --prism-glow: rgba(109, 40, 217, 0.1);
-        --prism-glow-strong: rgba(109, 40, 217, 0.2);
+        --prism-blue: #3b82f6;
+        --prism-cyan: #22d3ee;
+        --prism-pink: #ec4899;
+        --prism-rose: #f472b6;
+        --prism-text-primary: #ede9f8;
+        --prism-text-secondary: #b0a6c8;
+        --prism-text-muted: #8476a2;
+        --prism-border: rgba(255, 255, 255, 0.08);
+        --prism-glow: rgba(139, 92, 246, 0.18);
+        --prism-glow-strong: rgba(139, 92, 246, 0.35);
 
         /* — Docsify theme overrides — */
-        --theme-color: #6d28d9;
-        --base-background-color: #faf8ff;
-        --base-color: #1a0e2e;
+        --theme-color: #a78bfa;
+        --base-background-color: #0d0b1c;
+        --base-color: #ede9f8;
 
-        --sidebar-background: #f3efff;
-        --sidebar-nav-link-color: #4a3d65;
-        --sidebar-nav-link-color--active: #6d28d9;
-        --sidebar-nav-link-color--hover: #1a0e2e;
+        --sidebar-background: #07050f;
+        --sidebar-nav-link-color: #b0a6c8;
+        --sidebar-nav-link-color--active: #a78bfa;
+        --sidebar-nav-link-color--hover: #ede9f8;
         --sidebar-nav-link-border-color--active: #7c3aed;
-        --sidebar-nav-strong-color: #6b5e80;
-        --sidebar-name-color: #6d28d9;
+        --sidebar-nav-strong-color: #8476a2;
+        --sidebar-name-color: #a78bfa;
         --sidebar-width: 280px;
+        --sidebar-border-color: rgba(255, 255, 255, 0.08);
 
-        --link-color: #6d28d9;
-        --link-color--hover: #7c3aed;
+        --link-color: #a78bfa;
+        --link-color--hover: #c4b5fd;
 
-        --heading-color: #1a0e2e;
-        --heading-h2-border-color: rgba(109, 40, 217, 0.12);
+        --heading-color: #ede9f8;
+        --heading-h2-border-color: rgba(255, 255, 255, 0.08);
 
-        --code-theme-background: #f3efff;
-        --code-inline-background: rgba(109, 40, 217, 0.06);
-        --code-inline-color: #6d28d9;
+        --code-theme-background: #131022;
+        --code-inline-background: rgba(167, 139, 250, 0.12);
+        --code-inline-color: #c4b5fd;
 
         --blockquote-border-color: #7c3aed;
 
-        --table-head-background: rgba(109, 40, 217, 0.04);
-        --table-row-even-background: rgba(109, 40, 217, 0.02);
+        --table-head-background: rgba(167, 139, 250, 0.06);
+        --table-row-even-background: rgba(167, 139, 250, 0.03);
 
-        --search-background: #ffffff;
-        --search-result-heading-color: #6d28d9;
+        --search-background: #1a1535;
+        --search-result-heading-color: #a78bfa;
 
-        --cover-background-color: #faf8ff;
+        --cover-background-color: #0d0b1c;
 
-        --notice-tip-border-color: #6d28d9;
-        --notice-important-border-color: #2563eb;
+        --notice-tip-border-color: #a78bfa;
+        --notice-important-border-color: #3b82f6;
 
         --base-font-family: 'Inter', system-ui, -apple-system, sans-serif;
         --base-font-size: 15px;
         --base-line-height: 1.7;
-        --code-font-family: 'Fira Code', ui-monospace, 'Cascadia Code',
+        --code-font-family: 'JetBrains Mono', ui-monospace, 'Cascadia Code',
           monospace;
         --code-font-size: 0.875em;
 
@@ -107,7 +108,7 @@
     —————————————————————————————————————— */
       .sidebar {
         border-right: 1px solid var(--prism-border);
-        background: var(--prism-surface) !important;
+        background: var(--prism-void) !important;
       }
 
       /* Spectral gradient line at the top of sidebar */
@@ -125,7 +126,7 @@
           #fac3f2
         );
         border-radius: 1px;
-        opacity: 0.6;
+        opacity: 0.5;
       }
 
       .sidebar .search {
@@ -180,6 +181,14 @@
         border-right: 2px solid var(--prism-violet-deep);
       }
 
+      /* Sidebar toggle (mobile) */
+      .sidebar-toggle {
+        background: var(--prism-surface) !important;
+      }
+      .sidebar-toggle span {
+        background-color: var(--prism-text-muted) !important;
+      }
+
       /* ——————————————————————————————————————
        Content
     —————————————————————————————————————— */
@@ -223,7 +232,7 @@
         color: var(--prism-text-primary);
         margin: 2em 0 0.6em;
         padding-bottom: 0.4em;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.12);
       }
 
       .markdown-section h3 {
@@ -246,19 +255,24 @@
 
       .markdown-section a {
         text-decoration: none;
-        border-bottom: 1px solid rgba(109, 40, 217, 0.25);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.3);
         transition: color 0.15s, border-color 0.15s;
       }
       .markdown-section a:hover {
-        color: #7c3aed;
-        border-bottom-color: #7c3aed;
+        color: #c4b5fd;
+        border-bottom-color: #c4b5fd;
+      }
+
+      .markdown-section hr {
+        border: none;
+        border-top: 1px solid var(--prism-border);
       }
 
       /* ——————————————————————————————————————
        Code blocks
     —————————————————————————————————————— */
       .markdown-section pre {
-        background: var(--prism-elevated) !important;
+        background: var(--prism-surface) !important;
         border: 1px solid var(--prism-border);
         border-radius: 8px;
         padding: 20px 24px;
@@ -272,14 +286,73 @@
         font-size: var(--code-font-size);
       }
 
+      .markdown-section pre code {
+        background: transparent !important;
+        color: var(--prism-text-secondary);
+      }
+
       .markdown-section p code,
       .markdown-section li code,
       .markdown-section td code {
-        background: rgba(167, 139, 250, 0.08);
+        background: rgba(167, 139, 250, 0.1);
         color: #c4b5fd;
         padding: 2px 6px;
         border-radius: 4px;
         font-size: 0.85em;
+      }
+
+      /* ——————————————————————————————————————
+       Prism.js syntax highlighting (dark)
+    —————————————————————————————————————— */
+      .token.comment,
+      .token.prolog,
+      .token.doctype,
+      .token.cdata {
+        color: #6a5d87;
+      }
+
+      .token.punctuation {
+        color: #8476a2;
+      }
+
+      .token.property,
+      .token.tag,
+      .token.boolean,
+      .token.number,
+      .token.constant,
+      .token.symbol {
+        color: #f472b6;
+      }
+
+      .token.selector,
+      .token.attr-name,
+      .token.string,
+      .token.char,
+      .token.builtin {
+        color: #86efac;
+      }
+
+      .token.operator,
+      .token.entity,
+      .token.url {
+        color: #b0a6c8;
+      }
+
+      .token.atrule,
+      .token.attr-value,
+      .token.keyword {
+        color: #c4b5fd;
+      }
+
+      .token.function,
+      .token.class-name {
+        color: #60a5fa;
+      }
+
+      .token.regex,
+      .token.important,
+      .token.variable {
+        color: #fbbf24;
       }
 
       /* ——————————————————————————————————————
@@ -290,7 +363,7 @@
         width: 100%;
       }
       .markdown-section table thead {
-        background: rgba(167, 139, 250, 0.05);
+        background: rgba(167, 139, 250, 0.06);
       }
       .markdown-section table th {
         font-size: 12px;
@@ -300,7 +373,7 @@
         color: var(--prism-text-muted);
         text-align: left;
         padding: 10px 14px;
-        border-bottom: 1px solid rgba(167, 139, 250, 0.12);
+        border-bottom: 1px solid rgba(167, 139, 250, 0.15);
       }
       .markdown-section table td {
         padding: 10px 14px;
@@ -308,7 +381,7 @@
         font-size: 14px;
       }
       .markdown-section table tr:hover td {
-        background: rgba(167, 139, 250, 0.03);
+        background: rgba(167, 139, 250, 0.06);
       }
 
       /* ——————————————————————————————————————
@@ -316,7 +389,7 @@
     —————————————————————————————————————— */
       .markdown-section blockquote {
         border-left: 3px solid var(--prism-violet-deep);
-        background: rgba(167, 139, 250, 0.04);
+        background: rgba(167, 139, 250, 0.06);
         padding: 12px 20px;
         border-radius: 0 6px 6px 0;
         margin: 1.2em 0;
@@ -353,7 +426,7 @@
         transition: border-color 0.15s, box-shadow 0.15s;
       }
       .search input:focus {
-        border-color: rgba(109, 40, 217, 0.35) !important;
+        border-color: rgba(139, 92, 246, 0.4) !important;
         box-shadow: 0 0 0 3px var(--prism-glow) !important;
       }
       .search input::placeholder {
@@ -365,6 +438,12 @@
         right: 6px;
         top: 50%;
         transform: translateY(-50%);
+      }
+      .search .clear-button svg {
+        fill: var(--prism-text-muted);
+      }
+      .search .results-panel {
+        background: var(--prism-elevated) !important;
       }
 
       .matching-post {
@@ -391,6 +470,17 @@
       }
 
       /* ——————————————————————————————————————
+       GitHub corner
+    —————————————————————————————————————— */
+      .github-corner svg {
+        fill: #131022;
+        color: #b0a6c8;
+      }
+      .github-corner:hover svg {
+        color: #ede9f8;
+      }
+
+      /* ——————————————————————————————————————
        Scrollbar
     —————————————————————————————————————— */
       ::-webkit-scrollbar {
@@ -401,11 +491,11 @@
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: rgba(109, 40, 217, 0.12);
+        background: rgba(139, 92, 246, 0.15);
         border-radius: 3px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: rgba(109, 40, 217, 0.25);
+        background: rgba(139, 92, 246, 0.3);
       }
 
       /* ——————————————————————————————————————
@@ -420,8 +510,8 @@
         font-size: 11px;
         font-weight: 600;
         font-family: var(--code-font-family);
-        color: #fff !important;
-        background: var(--prism-violet);
+        color: #ede9f8 !important;
+        background: #7c3aed;
         border-radius: 8px;
         text-decoration: none !important;
         letter-spacing: 0.02em;
@@ -433,7 +523,7 @@
         line-height: 1.4;
       }
       .prism-version-badge:hover {
-        background: var(--prism-violet-deep);
+        background: #a78bfa;
       }
 
       /* ——————————————————————————————————————

@@ -1,6 +1,6 @@
 # ng-prism
 
-Lightweight, Angular-native component showcase tool. Annotate components with `@Showcase` — no separate story files needed.
+**ng-prism** is the Angular-native Storybook alternative. A lightweight component showcase tool that scans your library at build time and renders interactive demos — annotate components with `@Showcase`, no separate story files needed.
 
 [![Angular](https://img.shields.io/badge/Angular-19+-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178c6)](https://www.typescriptlang.org)
