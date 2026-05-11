@@ -64,7 +64,7 @@ export function createChangeHandler(options: ChangeHandlerOptions): ChangeHandle
 
   function handleChange(filename: string | null): void {
     if (disposed) return;
-    if (filename && !/\.(ts|scss|css|svg)$/.test(filename)) return;
+    if (filename && !/\.ts$/.test(filename)) return;
 
     if (timer) clearTimeout(timer);
     timer = setTimeout(triggerRebuild, debounceMs);

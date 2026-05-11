@@ -115,6 +115,23 @@ describe('createChangeHandler', () => {
     handler.dispose();
   });
 
+  it('should ignore style and asset changes that cannot affect the manifest', () => {
+    const onRebuild = jest.fn().mockResolvedValue(undefined);
+    const logger = createLogger();
+    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+
+    handler.handleChange('button.component.scss');
+    handler.handleChange('global.css');
+    handler.handleChange('icon.svg');
+    handler.handleChange('template.html');
+
+    jest.advanceTimersByTime(200);
+
+    expect(onRebuild).not.toHaveBeenCalled();
+
+    handler.dispose();
+  });
+
   it('should handle null filename (triggers rebuild)', async () => {
     const onRebuild = jest.fn().mockResolvedValue(undefined);
     const logger = createLogger();
