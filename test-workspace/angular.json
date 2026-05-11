@@ -59,13 +59,25 @@
               "highlight.js"
             ],
             "preserveSymlinks": true
-          }
+          },
+          "configurations": {
+            "production": {
+              "outputHashing": "all"
+            },
+            "development": {
+              "outputHashing": "none",
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "buildTarget": "test-lib-prism:build",
-            "port": 4400
+            "buildTarget": "test-lib-prism:build:development",
+            "port": 4400,
+            "liveReload": true
           }
         }
       }
