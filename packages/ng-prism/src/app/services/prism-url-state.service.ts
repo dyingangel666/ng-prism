@@ -11,6 +11,8 @@ const PARAM_PAGE = 'page';
 const PARAM_VARIANT = 'variant';
 const PARAM_VIEW = 'view';
 const DEFAULT_VIEW = 'renderer';
+const PARAM_PANEL = 'panel';
+const DEFAULT_PANEL = 'controls';
 
 @Injectable({ providedIn: 'root' })
 export class PrismUrlStateService {
@@ -32,9 +34,10 @@ export class PrismUrlStateService {
       const item = this.navigationService.activeItem();
       const variantIndex = this.rendererService.activeVariantIndex();
       const viewId = this.panelService.activeViewId();
+      const panelId = this.panelService.activePanelId();
 
       if (this.suppressSync) return;
-      this.writeToUrl(item, variantIndex, viewId);
+      this.writeToUrl(item, variantIndex, viewId, panelId);
     }, { injector: this.injector });
 
     window.addEventListener('popstate', () => this.restoreFromUrl());
@@ -46,6 +49,7 @@ export class PrismUrlStateService {
     const pageTitle = params.get(PARAM_PAGE);
     const variantParam = params.get(PARAM_VARIANT);
     const viewId = params.get(PARAM_VIEW);
+    const panelId = params.get(PARAM_PANEL);
 
     this.suppressSync = true;
     try {
@@ -73,6 +77,9 @@ export class PrismUrlStateService {
       if (viewId) {
         this.panelService.activeViewId.set(viewId);
       }
+      if (panelId) {
+        this.panelService.activePanelId.set(panelId);
+      }
     } finally {
       this.suppressSync = false;
     }
@@ -82,6 +89,7 @@ export class PrismUrlStateService {
     item: NavigationItem | null,
     variantIndex: number,
     viewId: string,
+    panelId: string,
   ): void {
     const params = new URLSearchParams();
 
@@ -96,6 +104,9 @@ export class PrismUrlStateService {
 
     if (viewId && viewId !== DEFAULT_VIEW) {
       params.set(PARAM_VIEW, viewId);
+    }
+    if (panelId && panelId !== DEFAULT_PANEL) {
+      params.set(PARAM_PANEL, panelId);
     }
 
     const queryString = params.toString();

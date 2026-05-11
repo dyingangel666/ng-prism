@@ -322,4 +322,42 @@ describe('PrismUrlStateService', () => {
       expect(replaceSpy).not.toHaveBeenCalled();
     });
   });
+
+  describe('panel param', () => {
+    it('should restore panel from URL', () => {
+      const comp = createComponent({ className: 'Foo' });
+      setUrl('?component=Foo&panel=events');
+      const { url, panel } = setup({ components: [comp] });
+
+      url.init();
+
+      expect(panel.activePanelId()).toBe('events');
+    });
+
+    it('should write panel to URL when changed (non-default)', () => {
+      const comp = createComponent({ className: 'Foo' });
+      setUrl('?component=Foo');
+      const { url, panel, nav } = setup({ components: [comp] });
+
+      url.init();
+      nav.select(comp);
+      panel.activePanelId.set('a11y');
+      flush();
+
+      expect(window.location.search).toContain('panel=a11y');
+    });
+
+    it('should omit panel from URL when value is default (controls)', () => {
+      const comp = createComponent({ className: 'Foo' });
+      setUrl('?component=Foo&panel=a11y');
+      const { url, panel, nav } = setup({ components: [comp] });
+
+      url.init();
+      nav.select(comp);
+      panel.activePanelId.set('controls');
+      flush();
+
+      expect(window.location.search).not.toContain('panel=');
+    });
+  });
 });
