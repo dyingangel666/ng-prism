@@ -146,6 +146,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
               buildTarget: `${prismProjectName}:build:development`,
               port,
               hmr: true,
+              liveReload: true,
             },
           },
         },

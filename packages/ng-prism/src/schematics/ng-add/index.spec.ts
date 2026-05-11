@@ -208,6 +208,7 @@ describe('ng-add schematic', () => {
 
     expect(serveOptions['buildTarget']).toBe('my-lib-prism:build:development');
     expect(serveOptions['hmr']).toBe(true);
+    expect(serveOptions['liveReload']).toBe(true);
   });
 
   it('should add ng-prism.config and library paths to tsconfig.json', async () => {
