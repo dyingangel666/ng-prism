@@ -13,6 +13,11 @@
       "type": "number",
       "default": 4400,
       "description": "Dev server port for the Prism styleguide"
+    },
+    "zoneless": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use zoneless change detection (no zone.js polyfill)"
     }
   },
   "required": ["project"],
