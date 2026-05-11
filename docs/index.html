@@ -69,7 +69,8 @@
         --blockquote-border-color: #7c3aed;
 
         --table-head-background: rgba(167, 139, 250, 0.06);
-        --table-row-even-background: rgba(167, 139, 250, 0.03);
+        --table-row-even-background: transparent;
+        --table-row-odd-background: transparent;
 
         --search-background: #1a1535;
         --search-result-heading-color: #a78bfa;
@@ -379,6 +380,11 @@
         padding: 10px 14px;
         border-bottom: 1px solid var(--prism-border);
         font-size: 14px;
+      }
+      .markdown-section table tr,
+      .markdown-section table tr:nth-child(2n),
+      .markdown-section table tr:nth-child(2n) td {
+        background: transparent;
       }
       .markdown-section table tr:hover td {
         background: rgba(167, 139, 250, 0.06);
