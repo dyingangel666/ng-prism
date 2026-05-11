@@ -180,6 +180,7 @@ The configuration split is intentional:
 - `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
 - The `development` configuration disables hashing, turns off optimization, and enables source maps — the usual Angular dev defaults.
 - The `serve` target explicitly points at `:build:development` so iteration uses the dev configuration.
+- The `polyfills` array shown above is the zone-based default. When set up with `--zoneless`, this field is `[]` instead — see [Zoneless Mode](#zoneless-mode-optional-recommended) above.
 
 ## Dev Reload Behavior
 
