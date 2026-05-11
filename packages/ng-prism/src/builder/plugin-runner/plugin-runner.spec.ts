@@ -93,6 +93,37 @@ describe('runPluginHooks', () => {
     expect(result.components[1].className).toBe('InjectedComponent');
   });
 
+  it('should wrap onComponentScanned errors with plugin and component context', async () => {
+    const plugin: NgPrismPlugin = {
+      name: 'broken-plugin',
+      onComponentScanned: () => {
+        throw new Error('boom');
+      },
+    };
+    const manifest = createManifest([createComponent({ className: 'BadComponent' })]);
+
+    await expect(runPluginHooks(manifest, [plugin])).rejects.toThrow(
+      /plugin "broken-plugin" failed in onComponentScanned for component "BadComponent" — boom/,
+    );
+  });
+
+  it('should preserve original error as cause', async () => {
+    const original = new Error('original');
+    const plugin: NgPrismPlugin = {
+      name: 'broken-plugin',
+      onManifestReady: () => {
+        throw original;
+      },
+    };
+
+    try {
+      await runPluginHooks(createManifest(), [plugin]);
+      fail('expected to throw');
+    } catch (err) {
+      expect((err as Error & { cause?: unknown }).cause).toBe(original);
+    }
+  });
+
   it('should handle async plugin hooks', async () => {
     const plugin: NgPrismPlugin = {
       name: 'async-plugin',

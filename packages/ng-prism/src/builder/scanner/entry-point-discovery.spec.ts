@@ -97,6 +97,32 @@ describe('discoverSecondaryEntryPoints', () => {
     expect(result).toEqual([]);
   });
 
+  it('should include the library root itself when its ng-package.json has no dest', () => {
+    tmp = createTempDir();
+    writeJson(tmp, 'ng-package.json', { lib: { entryFile: 'public-api.ts' } });
+    writeFileSync(join(tmp, 'public-api.ts'), 'export {}');
+
+    const result = discoverSecondaryEntryPoints(tmp, 'my-lib');
+
+    expect(result).toEqual([
+      { entryFile: join(tmp, 'public-api.ts'), importPath: 'my-lib' },
+    ]);
+  });
+
+  it('should include both the library root and a secondary entry point', () => {
+    tmp = createTempDir();
+    writeJson(tmp, 'ng-package.json', { lib: { entryFile: 'public-api.ts' } });
+    writeFileSync(join(tmp, 'public-api.ts'), 'export {}');
+    mkdirSync(join(tmp, 'testing'), { recursive: true });
+    writeJson(join(tmp, 'testing'), 'ng-package.json', { lib: { entryFile: 'public-api.ts' } });
+    writeFileSync(join(tmp, 'testing', 'public-api.ts'), 'export {}');
+
+    const result = discoverSecondaryEntryPoints(tmp, 'my-lib');
+
+    const importPaths = result.map((e) => e.importPath).sort();
+    expect(importPaths).toEqual(['my-lib', 'my-lib/testing']);
+  });
+
   it('should ignore node_modules directories', () => {
     tmp = createTempDir();
     mkdirSync(join(tmp, 'node_modules', 'some-pkg'), { recursive: true });

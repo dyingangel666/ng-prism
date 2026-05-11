@@ -12,6 +12,7 @@ import { A11yTreeComponent } from './a11y-tree.component.js';
 import { A11ySrComponent } from './a11y-sr.component.js';
 import { A11yPanelStateService } from './a11y-panel-state.service.js';
 import type { A11yCoreConfig } from './a11y.types.js';
+import type { RuntimeComponent } from '../../../plugin/plugin.types.js';
 
 @Component({
   selector: 'prism-a11y-panel',
@@ -71,9 +72,9 @@ import type { A11yCoreConfig } from './a11y.types.js';
         </div>
         } @else { @switch (state.activeTab()) { @case ('violations') {
         <prism-a11y-violations /> } @case ('keyboard') {
-        <prism-a11y-keyboard [activeComponent]="activeComponent()" /> } @case
-        ('tree') { <prism-a11y-tree [activeComponent]="activeComponent()" /> }
-        @case ('sr') { <prism-a11y-sr [activeComponent]="activeComponent()" /> }
+        <prism-a11y-keyboard /> } @case
+        ('tree') { <prism-a11y-tree /> }
+        @case ('sr') { <prism-a11y-sr /> }
         } }
       </div>
     </div>
@@ -161,12 +162,11 @@ export class A11yPanelComponent {
   private readonly auditService = inject(A11yAuditService);
   protected readonly state = inject(A11yPanelStateService);
 
-  readonly activeComponent = input<unknown>(null);
+  readonly activeComponent = input<RuntimeComponent | null>(null);
 
   protected readonly disabled = computed(() => {
-    const comp = this.activeComponent() as any;
-    const config: A11yCoreConfig | undefined =
-      comp?.meta?.showcaseConfig?.meta?.['a11y'];
+    const comp = this.activeComponent();
+    const config = comp?.meta.showcaseConfig.meta?.['a11y'] as A11yCoreConfig | undefined;
     return config?.disable === true;
   });
 

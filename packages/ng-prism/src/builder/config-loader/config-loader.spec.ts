@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { existsSync } from 'fs';
+import { readdirSync } from 'fs';
 import { loadConfig } from './config-loader.js';
 
 const FIXTURES_DIR = join(__dirname, '__fixtures__');
@@ -41,8 +41,23 @@ describe('loadConfig', () => {
       configFileName: 'valid.config.ts',
     });
 
-    const tempPath = join(FIXTURES_DIR, 'valid.config.tmp.mjs');
-    expect(existsSync(tempPath)).toBe(false);
+    const leftovers = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.tmp.mjs'));
+    expect(leftovers).toEqual([]);
+  });
+
+  it('should reload config on second call (no ESM module cache hit)', async () => {
+    const first = await loadConfig({
+      workspaceRoot: FIXTURES_DIR,
+      configFileName: 'valid.config.ts',
+    });
+    const second = await loadConfig({
+      workspaceRoot: FIXTURES_DIR,
+      configFileName: 'valid.config.ts',
+    });
+
+    expect(second).toEqual(first);
+    const leftovers = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.tmp.mjs'));
+    expect(leftovers).toEqual([]);
   });
 
   it('should use default config file name when not specified', async () => {
@@ -51,5 +66,14 @@ describe('loadConfig', () => {
     });
 
     expect(config).toEqual({});
+  });
+
+  it('should reject configFile paths that resolve outside the workspace root', async () => {
+    await expect(
+      loadConfig({
+        workspaceRoot: FIXTURES_DIR,
+        configFileName: '../../../etc/passwd.ts',
+      }),
+    ).rejects.toThrow(/resolves outside workspace root/);
   });
 });

@@ -234,4 +234,18 @@ describe('generateSnippet', () => {
       expect(result).toContain('<ng-container card-header>Title</ng-container>');
     });
   });
+
+  describe('attribute escaping', () => {
+    it('should escape double quotes in string attribute values', () => {
+      const inputs = [meta({ name: 'label' })];
+      const result = generateSnippet('lib-button', inputs, { label: 'He said "hi"' });
+      expect(result).toBe('<lib-button label="He said &quot;hi&quot;" />');
+    });
+
+    it('should escape ampersands in string attribute values', () => {
+      const inputs = [meta({ name: 'label' })];
+      const result = generateSnippet('lib-button', inputs, { label: 'A & B' });
+      expect(result).toBe('<lib-button label="A &amp; B" />');
+    });
+  });
 });

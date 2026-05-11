@@ -143,6 +143,11 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
       position: relative;
       transform: scale(var(--zoom, 1));
       transition: transform 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
     }
 
   `,
@@ -254,9 +259,12 @@ export class PrismRendererComponent {
           return;
         }
         this.activeOverlay.set(null);
+        const requestedPanelId = panel.id;
         panel.loadOverlayComponent().then((c) => {
-          this.overlayCache.set(panel.id, c);
-          this.activeOverlay.set(c);
+          this.overlayCache.set(requestedPanelId, c);
+          if (this.panelService.activePanelId() === requestedPanelId) {
+            this.activeOverlay.set(c);
+          }
         });
         return;
       }

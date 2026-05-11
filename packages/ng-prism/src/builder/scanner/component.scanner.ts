@@ -24,7 +24,8 @@ export function scanComponents(
     const showcaseDecorator = findDecorator(classDecl, 'Showcase');
     if (!showcaseDecorator) continue;
 
-    const showcaseConfig = extractShowcaseConfig(showcaseDecorator);
+    const className = classDecl.name?.text ?? 'Anonymous';
+    const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className);
     if (!showcaseConfig) continue;
 
     const componentMeta = extractComponentMeta(classDecl);
@@ -32,7 +33,6 @@ export function scanComponents(
     const outputs = extractOutputs(classDecl, checker);
 
     const filePath = classDecl.getSourceFile().fileName;
-    const className = classDecl.name?.text ?? 'Anonymous';
 
     if (hasDecoratorInputs(classDecl)) {
       console.warn(
@@ -62,12 +62,20 @@ function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
   return false;
 }
 
-function extractShowcaseConfig(decorator: ts.Decorator): ShowcaseConfig | undefined {
+function extractShowcaseConfig(decorator: ts.Decorator, className: string): ShowcaseConfig | undefined {
   const arg = getDecoratorArgument(decorator);
   if (!arg) return undefined;
 
   const raw = evaluateExpression(arg);
-  if (!raw || typeof raw !== 'object' || !('title' in raw)) return undefined;
+  if (!raw || typeof raw !== 'object') return undefined;
+
+  if (!('title' in raw)) {
+    console.warn(
+      `⚠ ng-prism: ${className} has @Showcase without a "title" field — skipping. ` +
+      `Add a title so it can appear in the styleguide.`
+    );
+    return undefined;
+  }
 
   const obj = raw as Record<string, unknown>;
   const config: ShowcaseConfig = {

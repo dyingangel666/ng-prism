@@ -25,7 +25,7 @@
 - **Plugins**
   - [Plugin Overview](plugins/overview.md)
   - [JSDoc — API Docs](plugins/jsdoc.md)
-  - [Figma — Design Embed](plugins/figma.md)
+  - [Figma — Embed & Design Diff](plugins/figma.md)
   - [Box Model — Inspector](plugins/box-model.md)
   - [Perf — Performance](plugins/perf.md)
   - [Coverage — Test Coverage](plugins/coverage.md)

@@ -1,34 +1,58 @@
 import type { NgPrismPlugin, PrismManifest, ScannedComponent } from '../../plugin/plugin.types.js';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 
+function pluginLabel(plugin: NgPrismPlugin): string {
+  return plugin.name ? `"${plugin.name}"` : '<unnamed>';
+}
+
+function wrapPluginError(plugin: NgPrismPlugin, hook: string, target: string, err: unknown): Error {
+  const cause = err instanceof Error ? err.message : String(err);
+  const wrapped = new Error(
+    `ng-prism: plugin ${pluginLabel(plugin)} failed in ${hook} for ${target} — ${cause}`,
+    err instanceof Error ? { cause: err } : undefined,
+  );
+  if (err instanceof Error && err.stack) {
+    wrapped.stack = `${wrapped.message}\nCaused by: ${err.stack}`;
+  }
+  return wrapped;
+}
+
 export async function runPluginHooks(
   manifest: PrismManifest,
   plugins: NgPrismPlugin[],
 ): Promise<PrismManifest> {
-  let components = [...manifest.components];
+  const components = [...manifest.components];
 
-  for (const comp of components) {
-    let current: ScannedComponent = comp;
+  for (let i = 0; i < components.length; i++) {
+    let current: ScannedComponent = components[i];
     for (const plugin of plugins) {
       if (plugin.onComponentScanned) {
-        const result = await plugin.onComponentScanned(current);
-        if (result) {
-          current = result;
+        try {
+          const result = await plugin.onComponentScanned(current);
+          if (result) {
+            current = result;
+          }
+        } catch (err) {
+          throw wrapPluginError(plugin, 'onComponentScanned', `component "${current.className}"`, err);
         }
       }
     }
-    components[components.indexOf(comp)] = current;
+    components[i] = current;
   }
 
-  let pages = [...(manifest.pages ?? [])];
+  const pages = [...(manifest.pages ?? [])];
 
   for (let i = 0; i < pages.length; i++) {
     let current: StyleguidePage = pages[i];
     for (const plugin of plugins) {
       if (plugin.onPageScanned) {
-        const result = await plugin.onPageScanned(current);
-        if (result) {
-          current = result;
+        try {
+          const result = await plugin.onPageScanned(current);
+          if (result) {
+            current = result;
+          }
+        } catch (err) {
+          throw wrapPluginError(plugin, 'onPageScanned', `page "${current.title}"`, err);
         }
       }
     }
@@ -39,9 +63,13 @@ export async function runPluginHooks(
 
   for (const plugin of plugins) {
     if (plugin.onManifestReady) {
-      const updated = await plugin.onManifestReady(result);
-      if (updated) {
-        result = updated;
+      try {
+        const updated = await plugin.onManifestReady(result);
+        if (updated) {
+          result = updated;
+        }
+      } catch (err) {
+        throw wrapPluginError(plugin, 'onManifestReady', 'manifest', err);
       }
     }
   }

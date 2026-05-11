@@ -4,3 +4,4 @@ export { NoShowcaseComponent } from './no-showcase.component.js';
 export { SignalButtonComponent } from './signal-button.component.js';
 export { ModelInputComponent } from './model-input.component.js';
 export { HighlightDirective } from './highlight.directive.js';
+export { MissingTitleComponent } from './missing-title.component.js';

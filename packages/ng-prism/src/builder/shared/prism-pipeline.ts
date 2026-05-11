@@ -100,10 +100,14 @@ function writeManifestIfChanged(manifestPath: string, newContent: string): boole
 
   const tempPath = manifestPath + '.tmp';
   writeFileSync(tempPath, newContent, 'utf-8');
-  if (existsSync(manifestPath)) {
-    unlinkSync(manifestPath);
+  try {
+    renameSync(tempPath, manifestPath);
+  } catch (err) {
+    if (existsSync(tempPath)) {
+      try { unlinkSync(tempPath); } catch { /* best-effort cleanup */ }
+    }
+    throw err;
   }
-  renameSync(tempPath, manifestPath);
   return true;
 }
 

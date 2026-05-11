@@ -144,10 +144,10 @@ describe('createChangeHandler', () => {
     handler.dispose();
   });
 
-  it('should not rebuild while already rebuilding', async () => {
-    let resolveRebuild!: () => void;
+  it('should queue changes that arrive during a rebuild and run another rebuild after completion', async () => {
+    const resolvers: Array<() => void> = [];
     const onRebuild = jest.fn().mockImplementation(
-      () => new Promise<void>((resolve) => { resolveRebuild = resolve; }),
+      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
     );
     const logger = createLogger();
     const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
@@ -162,14 +162,46 @@ describe('createChangeHandler', () => {
     await Promise.resolve();
     expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    resolveRebuild();
+    resolvers[0]();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(onRebuild).toHaveBeenCalledTimes(2);
+
+    resolvers[1]();
     await Promise.resolve();
 
-    handler.handleChange('third.ts');
+    handler.dispose();
+  });
+
+  it('should coalesce multiple changes during a rebuild into a single follow-up rebuild', async () => {
+    const resolvers: Array<() => void> = [];
+    const onRebuild = jest.fn().mockImplementation(
+      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
+    );
+    const logger = createLogger();
+    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+
+    handler.handleChange('first.ts');
     jest.advanceTimersByTime(100);
     await Promise.resolve();
+    expect(onRebuild).toHaveBeenCalledTimes(1);
 
+    handler.handleChange('second.ts');
+    jest.advanceTimersByTime(100);
+    handler.handleChange('third.ts');
+    jest.advanceTimersByTime(100);
+    handler.handleChange('fourth.ts');
+    jest.advanceTimersByTime(100);
+    await Promise.resolve();
+    expect(onRebuild).toHaveBeenCalledTimes(1);
+
+    resolvers[0]();
+    await Promise.resolve();
+    await Promise.resolve();
     expect(onRebuild).toHaveBeenCalledTimes(2);
+
+    resolvers[1]();
+    await Promise.resolve();
 
     handler.dispose();
   });

@@ -32,8 +32,8 @@ async function createServeBuilder(
       await runPrismPipeline(pipelineOptions, context, state);
     },
     logger: {
-      info: (msg: string) => console.log(msg),
-      error: (msg: string) => console.error(msg),
+      info: (msg: string) => context.logger.info(msg),
+      error: (msg: string) => context.logger.error(msg),
     },
   });
 
@@ -47,6 +47,11 @@ async function createServeBuilder(
     run.stop();
   };
 
+  const cleanupSignals = () => {
+    process.off('SIGINT', shutdown);
+    process.off('SIGTERM', shutdown);
+  };
+
   process.once('SIGINT', shutdown);
   process.once('SIGTERM', shutdown);
 
@@ -54,8 +59,8 @@ async function createServeBuilder(
     let lastOutput: BuilderOutput | undefined;
     run.output.subscribe({
       next: (output) => { lastOutput = output; },
-      error: (err) => { shutdown(); reject(err); },
-      complete: () => { watcher.close(); resolve(lastOutput ?? { success: false }); },
+      error: (err) => { cleanupSignals(); shutdown(); reject(err); },
+      complete: () => { cleanupSignals(); watcher.close(); resolve(lastOutput ?? { success: false }); },
     });
   });
 }

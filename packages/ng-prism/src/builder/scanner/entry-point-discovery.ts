@@ -21,6 +21,28 @@ function findNgPackageJsons(
   baseImportPath: string,
   result: DiscoveredEntryPoint[],
 ): void {
+  const isLibraryRoot = dir === libraryRoot;
+  const ngPackagePath = join(dir, 'ng-package.json');
+
+  if (existsSync(ngPackagePath)) {
+    const ngPackage = JSON.parse(readFileSync(ngPackagePath, 'utf-8'));
+
+    if (!ngPackage.dest) {
+      const entryFile = ngPackage.lib?.entryFile ?? 'public-api.ts';
+      const entryFilePath = join(dir, entryFile);
+
+      if (existsSync(entryFilePath)) {
+        const relDir = relative(libraryRoot, dir);
+        const importPath = relDir === ''
+          ? baseImportPath
+          : posix.join(baseImportPath, relDir.split('\\').join('/'));
+        result.push({ entryFile: entryFilePath, importPath });
+      }
+
+      if (!isLibraryRoot) return;
+    }
+  }
+
   let entries: string[];
   try {
     entries = readdirSync(dir);
@@ -32,26 +54,12 @@ function findNgPackageJsons(
     if (entry === 'node_modules' || entry === '.git') continue;
 
     const fullPath = join(dir, entry);
-    if (!statSync(fullPath).isDirectory()) continue;
-
-    const ngPackagePath = join(fullPath, 'ng-package.json');
-    if (!existsSync(ngPackagePath)) {
-      findNgPackageJsons(fullPath, libraryRoot, baseImportPath, result);
+    try {
+      if (!statSync(fullPath).isDirectory()) continue;
+    } catch {
       continue;
     }
 
-    const ngPackage = JSON.parse(readFileSync(ngPackagePath, 'utf-8'));
-
-    if (ngPackage.dest) continue;
-
-    const entryFile = ngPackage.lib?.entryFile ?? 'public-api.ts';
-    const entryFilePath = join(fullPath, entryFile);
-
-    if (!existsSync(entryFilePath)) continue;
-
-    const relDir = relative(libraryRoot, fullPath);
-    const importPath = posix.join(baseImportPath, relDir.split('\\').join('/'));
-
-    result.push({ entryFile: entryFilePath, importPath });
+    findNgPackageJsons(fullPath, libraryRoot, baseImportPath, result);
   }
 }

@@ -5,9 +5,13 @@ export interface SnippetDirectiveOptions {
   host?: string | DirectiveHost;
 }
 
+function escapeAttrValue(value: unknown): string {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 function pushAttribute(attributes: string[], name: string, value: unknown): void {
   if (typeof value === 'string') {
-    attributes.push(`${name}="${value}"`);
+    attributes.push(`${name}="${escapeAttrValue(value)}"`);
   } else if (typeof value === 'boolean') {
     attributes.push(`[${name}]="true"`);
   } else if (typeof value === 'number') {
@@ -15,7 +19,7 @@ function pushAttribute(attributes: string[], name: string, value: unknown): void
   } else if (typeof value === 'object' || Array.isArray(value)) {
     attributes.push(`[${name}]="yourData"`);
   } else {
-    attributes.push(`[${name}]="${String(value)}"`);
+    attributes.push(`[${name}]="${escapeAttrValue(value)}"`);
   }
 }
 
@@ -119,7 +123,7 @@ function generateDirectiveSnippet(
     tag = host.selector;
     if (host.inputs) {
       for (const [k, v] of Object.entries(host.inputs)) {
-        hostAttrs.push(`${k}="${String(v)}"`);
+        hostAttrs.push(`${k}="${escapeAttrValue(v)}"`);
       }
     }
   }

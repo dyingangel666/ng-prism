@@ -1,10 +1,10 @@
 // Tokens
+// PRISM_RENDERER_HOOKS + PrismRendererHooks are exported from the plugin entry point
+// (src/plugin/index.ts) since they belong to the plugin API surface.
 export {
   PRISM_MANIFEST,
   PRISM_CONFIG,
-  PRISM_RENDERER_HOOKS,
 } from './tokens/prism-tokens.js';
-export type { PrismRendererHooks } from './tokens/prism-tokens.js';
 
 // Theme
 export {

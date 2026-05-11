@@ -3,7 +3,6 @@ import {
   Component,
   computed,
   inject,
-  input,
 } from '@angular/core';
 import { A11yKeyboardService } from './a11y-keyboard.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
@@ -99,8 +98,6 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
 export class A11yKeyboardComponent {
   protected readonly rendererService = inject(PrismRendererService);
   private readonly keyboardService = inject(A11yKeyboardService);
-
-  readonly activeComponent = input<unknown>(null);
 
   protected readonly items = computed(() => {
     const root = this.rendererService.renderedElement();

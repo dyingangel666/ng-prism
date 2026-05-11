@@ -1,4 +1,4 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
 import type { AxeResults, RunOptions } from 'axe-core';
 import type { A11yCoreConfig, A11yScoreResult } from './a11y.types.js';
 
@@ -48,8 +48,17 @@ export class A11yAuditService {
   });
 
   private timer: ReturnType<typeof setTimeout> | null = null;
+  private destroyed = false;
+
+  constructor() {
+    inject(DestroyRef).onDestroy(() => {
+      this.destroyed = true;
+      this.clear();
+    });
+  }
 
   scheduleAudit(element: Element, config?: A11yCoreConfig, debounceMs = 500): void {
+    if (this.destroyed) return;
     if (this.timer) clearTimeout(this.timer);
     this.running.set(true);
     this.error.set(null);
@@ -57,10 +66,12 @@ export class A11yAuditService {
     this.timer = setTimeout(() => {
       runCoreAudit(element, config).then(
         (result) => {
+          if (this.destroyed) return;
           this.results.set(result);
           this.running.set(false);
         },
         (err) => {
+          if (this.destroyed) return;
           this.error.set(err instanceof Error ? err.message : String(err));
           this.running.set(false);
         },

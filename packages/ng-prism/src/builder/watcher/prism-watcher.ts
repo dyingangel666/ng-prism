@@ -30,33 +30,44 @@ export function createChangeHandler(options: ChangeHandlerOptions): ChangeHandle
   const { onRebuild, logger, debounceMs = 300 } = options;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let isRebuilding = false;
+  let pendingChange = false;
   let disposed = false;
+
+  async function triggerRebuild(): Promise<void> {
+    if (disposed) return;
+    if (isRebuilding) {
+      pendingChange = true;
+      return;
+    }
+
+    isRebuilding = true;
+    pendingChange = false;
+    logger.info('ng-prism: Change detected, re-scanning...');
+
+    try {
+      await onRebuild();
+      if (!disposed) {
+        logger.info('ng-prism: Re-scan complete.');
+      }
+    } catch (err) {
+      if (!disposed) {
+        logger.error(`ng-prism: Re-scan failed — ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } finally {
+      isRebuilding = false;
+      if (!disposed && pendingChange) {
+        pendingChange = false;
+        void triggerRebuild();
+      }
+    }
+  }
 
   function handleChange(filename: string | null): void {
     if (disposed) return;
     if (filename && !/\.(ts|scss|css|svg)$/.test(filename)) return;
 
     if (timer) clearTimeout(timer);
-
-    timer = setTimeout(async () => {
-      if (disposed || isRebuilding) return;
-
-      isRebuilding = true;
-      logger.info('ng-prism: Change detected, re-scanning...');
-
-      try {
-        await onRebuild();
-        if (!disposed) {
-          logger.info('ng-prism: Re-scan complete.');
-        }
-      } catch (err) {
-        if (!disposed) {
-          logger.error(`ng-prism: Re-scan failed — ${err instanceof Error ? err.message : String(err)}`);
-        }
-      } finally {
-        isRebuilding = false;
-      }
-    }, debounceMs);
+    timer = setTimeout(triggerRebuild, debounceMs);
   }
 
   function dispose(): void {

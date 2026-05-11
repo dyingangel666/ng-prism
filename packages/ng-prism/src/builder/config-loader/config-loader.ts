@@ -1,6 +1,6 @@
 import '@angular/compiler';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
-import { join } from 'path';
+import { resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import ts from 'typescript';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
@@ -14,7 +14,15 @@ const DEFAULT_CONFIG_FILE = 'ng-prism.config.ts';
 
 export async function loadConfig(options: ConfigLoaderOptions): Promise<NgPrismConfig> {
   const configFileName = options.configFileName ?? DEFAULT_CONFIG_FILE;
-  const configPath = join(options.workspaceRoot, configFileName);
+  const workspaceRoot = resolve(options.workspaceRoot);
+  const configPath = resolve(workspaceRoot, configFileName);
+
+  if (configPath !== workspaceRoot && !configPath.startsWith(workspaceRoot + sep)) {
+    throw new Error(
+      `ng-prism: configFile "${configFileName}" resolves outside workspace root (${workspaceRoot}). ` +
+      `Provide a path relative to the workspace.`,
+    );
+  }
 
   if (!existsSync(configPath)) {
     return {};
@@ -30,7 +38,8 @@ export async function loadConfig(options: ConfigLoaderOptions): Promise<NgPrismC
     },
   });
 
-  const tempPath = configPath.replace(/\.ts$/, '.tmp.mjs');
+  const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const tempPath = configPath.replace(/\.ts$/, `.${uniqueSuffix}.tmp.mjs`);
 
   try {
     writeFileSync(tempPath, transpiled.outputText, 'utf-8');

@@ -159,6 +159,18 @@ describe('scanComponents', () => {
     warnSpy.mockRestore();
   });
 
+  it('should warn and skip @Showcase classes without a title', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const components = scanComponents(exports, checker);
+
+    expect(components.find((c) => c.className === 'MissingTitleComponent')).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('MissingTitleComponent has @Showcase without a "title" field')
+    );
+
+    warnSpy.mockRestore();
+  });
+
   it('should not warn for signal-based components', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     scanComponents(exports, checker);

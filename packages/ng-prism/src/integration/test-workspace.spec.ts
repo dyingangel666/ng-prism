@@ -32,11 +32,11 @@ function createTempWorkspace(): string {
     sourceRoot: 'projects/test-lib-prism/src',
     architect: {
       'prism-serve': {
-        builder: 'ng-prism:serve',
+        builder: '@ng-prism/core:serve',
         options: { libraryProject: 'test-lib' },
       },
       'prism-build': {
-        builder: 'ng-prism:build',
+        builder: '@ng-prism/core:build',
         options: { libraryProject: 'test-lib' },
       },
     },

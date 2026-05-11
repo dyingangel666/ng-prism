@@ -3,7 +3,6 @@ import {
   Component,
   computed,
   inject,
-  input,
 } from '@angular/core';
 import { A11ySrService } from './a11y-sr.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
@@ -93,8 +92,6 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
 export class A11ySrComponent {
   protected readonly rendererService = inject(PrismRendererService);
   private readonly srService = inject(A11ySrService);
-
-  readonly activeComponent = input<unknown>(null);
 
   protected readonly announcements = computed(() => {
     const root = this.rendererService.renderedElement();
