@@ -386,6 +386,32 @@ describe('PrismRendererService', () => {
 
       expect(renderer.inputValues()['__prismContent__']).toBe('Hover me');
     });
+
+    it('should preserve pre-set activeVariantIndex on initial mount (no prior className)', () => {
+      const comp = createComponent({
+        variants: [{ name: 'A' }, { name: 'B' }, { name: 'C' }],
+      });
+      const { renderer } = setup({ components: [comp] });
+
+      renderer.activeVariantIndex.set(2);
+      renderer.reconcileForComponent(comp);
+
+      expect(renderer.activeVariantIndex()).toBe(2);
+    });
+
+    it('should still reset to 0 on a real component switch', () => {
+      const compA = createComponent({ variants: [{ name: 'A1' }, { name: 'A2' }] });
+      const compB = createComponent({ variants: [{ name: 'B1' }] });
+      compB.meta.className = 'Other';
+      const { renderer } = setup({ components: [compA, compB] });
+
+      renderer.activeVariantIndex.set(1);
+      renderer.reconcileForComponent(compA);
+      expect(renderer.activeVariantIndex()).toBe(1);
+
+      renderer.reconcileForComponent(compB);
+      expect(renderer.activeVariantIndex()).toBe(0);
+    });
   });
 
   describe('directive support', () => {

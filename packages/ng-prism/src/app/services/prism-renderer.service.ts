@@ -23,7 +23,7 @@ export class PrismRendererService {
     const prev = this._lastClassName;
     this._lastClassName = comp.meta.className;
 
-    if (prev !== comp.meta.className) {
+    if (prev !== null && prev !== comp.meta.className) {
       this.activeVariantIndex.set(0);
       this.applyVariant(0, comp);
       return;
@@ -33,6 +33,13 @@ export class PrismRendererService {
     const maxIndex = Math.max(0, variants.length - 1);
     const preservedIndex = Math.min(this.activeVariantIndex(), maxIndex);
     this.activeVariantIndex.set(preservedIndex);
+
+    const defaults: Record<string, unknown> = {};
+    for (const input of comp.meta.inputs) {
+      if (input.defaultValue !== undefined) {
+        defaults[input.name] = input.defaultValue;
+      }
+    }
 
     const validKeys = new Set(comp.meta.inputs.map((i) => i.name));
     const currentValues = this.inputValues();
@@ -45,7 +52,7 @@ export class PrismRendererService {
 
     const variant = variants[preservedIndex];
     const variantInputs = variant?.inputs ?? {};
-    const merged: Record<string, unknown> = { ...variantInputs, ...preserved };
+    const merged: Record<string, unknown> = { ...defaults, ...variantInputs, ...preserved };
 
     if (comp.meta.componentMeta.isDirective && variant?.content && preserved['__prismContent__'] === undefined) {
       merged['__prismContent__'] = typeof variant.content === 'string' ? variant.content : '';
