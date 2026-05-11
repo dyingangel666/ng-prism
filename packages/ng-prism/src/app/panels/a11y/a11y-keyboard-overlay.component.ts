@@ -25,23 +25,24 @@ export interface BadgePosition {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (panelState.activeTab() === 'keyboard') {
-      @for (badge of badges(); track badge.index) {
-        <div
-          class="prism-a11y-kbd-ov__highlight"
-          [style.left.px]="badge.x"
-          [style.top.px]="badge.y"
-          [style.width.px]="badge.width"
-          [style.height.px]="badge.height"
-          [title]="badge.name || badge.role"
-        ></div>
-        <div
-          class="prism-a11y-kbd-ov__badge"
-          [style.left.px]="badge.x - 10"
-          [style.top.px]="badge.y - 10"
-        >{{ badge.index }}</div>
-      }
-    }
+    @if (panelState.activeTab() === 'keyboard') { @for (badge of badges(); track
+    badge.index) {
+    <div
+      class="prism-a11y-kbd-ov__highlight"
+      [style.left.px]="badge.x"
+      [style.top.px]="badge.y"
+      [style.width.px]="badge.width"
+      [style.height.px]="badge.height"
+      [title]="badge.name || badge.role"
+    ></div>
+    <div
+      class="prism-a11y-kbd-ov__badge"
+      [style.left.px]="badge.x - 10"
+      [style.top.px]="badge.y - 10"
+    >
+      {{ badge.index }}
+    </div>
+    } }
   `,
   styles: `
     :host {
@@ -111,13 +112,15 @@ export class A11yKeyboardOverlayComponent {
   }
 
   private computeBadges(root: Element): void {
-    const canvas = this.elementRef.nativeElement.closest('.prism-renderer__canvas') as HTMLElement | null;
+    const canvas = this.elementRef.nativeElement.closest(
+      '.prism-canvas-stage'
+    ) as HTMLElement | null;
     if (!canvas) return;
 
     const doc = (root as HTMLElement).ownerDocument;
     const items = this.keyboardService.extractTabOrder(
       root,
-      doc ? (id) => doc.getElementById(id) : undefined,
+      doc ? (id) => doc.getElementById(id) : undefined
     );
 
     const canvasRect = canvas.getBoundingClientRect();

@@ -14,6 +14,7 @@ A lightweight, Angular-native component showcase tool. Annotate your components 
 - **TypeScript Compiler API** — inputs, outputs, and types are extracted at build time, no runtime reflection
 - **Component Pages** — register free-form Angular components as styleguide pages alongside `@Showcase` components
 - **URL state** — deep-linking via `?component=`, `?variant=`, `?page=`, `?view=` params
+- **Zoneless ready** — opt in via `ng add @ng-prism/core --zoneless` for ~30 KB bundle savings
 
 ## Quick Example
 
@@ -27,7 +28,7 @@ import { Component, input } from '@angular/core';
   description: 'The primary action button.',
   variants: [
     { name: 'Primary', inputs: { label: 'Save', variant: 'primary' } },
-    { name: 'Danger',  inputs: { label: 'Delete', variant: 'danger' } },
+    { name: 'Danger', inputs: { label: 'Delete', variant: 'danger' } },
   ],
 })
 @Component({
@@ -36,7 +37,7 @@ import { Component, input } from '@angular/core';
   template: `<button [class]="variant()">{{ label() }}</button>`,
 })
 export class ButtonComponent {
-  label   = input.required<string>();
+  label = input.required<string>();
   variant = input<'primary' | 'danger'>('primary');
 }
 ```

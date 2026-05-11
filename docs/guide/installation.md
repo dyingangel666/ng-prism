@@ -15,10 +15,10 @@ ng add @ng-prism/core
 
 The schematic prompts for:
 
-| Prompt | Default | Description |
-|--------|---------|-------------|
-| Library project | _(first lib found)_ | The library whose components you want to showcase |
-| Showcase app name | `{lib}-prism` | Name of the generated Angular app project |
+| Prompt            | Default             | Description                                       |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| Library project   | _(first lib found)_ | The library whose components you want to showcase |
+| Showcase app name | `{lib}-prism`       | Name of the generated Angular app project         |
 
 After running, your workspace contains:
 
@@ -40,6 +40,56 @@ ng run my-lib:prism        # or whatever the schematic named it
 ```
 
 The showcase opens at `http://localhost:4400`.
+
+## Zoneless Mode (optional, recommended)
+
+ng-prism supports Angular's zoneless change detection. Pass `--zoneless` during setup to skip the `zone.js` polyfill:
+
+```bash
+ng add @ng-prism/core --zoneless
+```
+
+This removes ~30 KB from the bundle and aligns with the modern Angular direction. ng-prism itself is fully signal-based, and the scanner already requires `input()`/`output()` signals on every showcased component — so zoneless is safe by design.
+
+### Migrating an existing setup to zoneless
+
+Three manual edits are needed:
+
+**1. `projects/<lib>-prism/src/main.ts`** — add `provideZonelessChangeDetection()`:
+
+```diff
++import { provideZonelessChangeDetection } from '@angular/core';
+ import { bootstrapApplication } from '@angular/platform-browser';
+ import { PrismShellComponent, providePrism } from '@ng-prism/core';
+ import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';
+ import config from 'ng-prism.config';
+
+ bootstrapApplication(PrismShellComponent, {
+-  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],
++  providers: [
++    provideZonelessChangeDetection(),
++    providePrism(PRISM_RUNTIME_MANIFEST, config),
++  ],
+ });
+```
+
+Order matters: `provideZonelessChangeDetection()` must come before `providePrism()`.
+
+**2. `angular.json`** — remove the `zone.js` polyfill from the Prism app's build target:
+
+```diff
+ "projects": {
+   "<lib>-prism": {
+     "architect": {
+       "build": {
+         "options": {
+-          "polyfills": ["zone.js"],
++          "polyfills": [],
+```
+
+**3. `ng-prism.config.ts`** — if your `appProviders` contains zone-dependent providers (e.g. older animation modules, `provideZoneChangeDetection`), remove them or swap for zoneless-compatible alternatives.
+
+**Verify:** Run `ng run <lib>:prism` — the app should boot without errors and all showcases should render. Bundle size drops by ~30 KB (zone.js is no longer loaded).
 
 ## Angular Builder Targets
 
@@ -71,15 +121,15 @@ The schematic adds two targets to the **library project** in `angular.json`:
 
 ### Builder Options
 
-| Option | Required | Description |
-|--------|----------|-------------|
-| `entryPoint` | Yes | Path to your library's barrel `public-api.ts` (or directory with secondary entry points) |
-| `prismProject` | Yes | Angular project name for the generated showcase app |
-| `libraryProject` | Yes | Angular project name of the library being showcased |
-| `libraryImportPath` | No | Override the import path used in the generated manifest (defaults to `libraryProject`) |
-| `configFile` | No | Path to your config file (default: `ng-prism.config.ts` at workspace root) |
-| `port` | No | Dev server port for `:serve` (default: `4400`) |
-| `outputPath` | `:build` only | Output directory for the production build |
+| Option              | Required      | Description                                                                              |
+| ------------------- | ------------- | ---------------------------------------------------------------------------------------- |
+| `entryPoint`        | Yes           | Path to your library's barrel `public-api.ts` (or directory with secondary entry points) |
+| `prismProject`      | Yes           | Angular project name for the generated showcase app                                      |
+| `libraryProject`    | Yes           | Angular project name of the library being showcased                                      |
+| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)   |
+| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)               |
+| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                           |
+| `outputPath`        | `:build` only | Output directory for the production build                                                |
 
 ## Showcase App Target Configuration
 
@@ -130,6 +180,7 @@ The configuration split is intentional:
 - `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
 - The `development` configuration disables hashing, turns off optimization, and enables source maps — the usual Angular dev defaults.
 - The `serve` target explicitly points at `:build:development` so iteration uses the dev configuration.
+- The `polyfills` array shown above is the zone-based default. When set up with `--zoneless`, this field is `[]` instead — see [Zoneless Mode](#zoneless-mode-optional-recommended) above.
 
 ## Dev Reload Behavior
 
@@ -144,12 +195,12 @@ Angular's `@angular/build:application` builds the entire app into a single bundl
 
 The `@ng-prism/core:serve` builder runs its own incremental scanner on the library entry point. The scanner only reacts to **`.ts` file changes** — style and template edits don't need a manifest rescan and are handled directly by Angular's dev server. Concretely:
 
-| Edit | ng-prism scanner | Angular dev server |
-|---|---|---|
-| `.ts` (component logic, `@Showcase`, etc.) | re-scan + regenerate manifest if metadata changed | rebuild + reload |
-| `.scss` / `.css` / `.svg` | skipped | rebuild + reload |
-| `.html` template | skipped | rebuild + reload |
-| `ng-prism.config.ts` | re-scan + regenerate manifest | rebuild + reload |
+| Edit                                       | ng-prism scanner                                  | Angular dev server |
+| ------------------------------------------ | ------------------------------------------------- | ------------------ |
+| `.ts` (component logic, `@Showcase`, etc.) | re-scan + regenerate manifest if metadata changed | rebuild + reload   |
+| `.scss` / `.css` / `.svg`                  | skipped                                           | rebuild + reload   |
+| `.html` template                           | skipped                                           | rebuild + reload   |
+| `ng-prism.config.ts`                       | re-scan + regenerate manifest                     | rebuild + reload   |
 
 Skipping the scan for style and template changes shaves ~300-500ms off every save, since the TypeScript compiler API doesn't need to traverse the library source tree for those edits.
 
@@ -194,10 +245,10 @@ bootstrapApplication(PrismShellComponent, {
 
 Some features require additional peer dependencies:
 
-| Package | Required for |
-|---------|-------------|
+| Package                            | Required for                              |
+| ---------------------------------- | ----------------------------------------- |
 | `highlight.js` + `ngx-highlightjs` | Code snippet highlighting in the renderer |
-| `axe-core` | Built-in accessibility auditing |
+| `axe-core`                         | Built-in accessibility auditing           |
 
 Install them only if you use those features:
 

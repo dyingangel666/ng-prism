@@ -2,26 +2,52 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
+  ElementRef,
   inject,
+  signal,
 } from '@angular/core';
 import { A11yKeyboardService } from './a11y-keyboard.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
+
+interface Bounds {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
 
 @Component({
   selector: 'prism-a11y-overlay-host',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="a11y-mark outline" style="inset: 0"></div>
+    @if (bounds(); as b) {
+    <div
+      class="a11y-mark outline"
+      [style.top.px]="b.top"
+      [style.left.px]="b.left"
+      [style.width.px]="b.width"
+      [style.height.px]="b.height"
+    ></div>
     @if (roleLabel()) {
-    <div class="a11y-mark" style="top: -22px; left: -2px">
+    <div
+      class="a11y-mark"
+      [style.top.px]="b.top - 22"
+      [style.left.px]="b.left - 2"
+    >
       <span class="tag">{{ roleLabel() }}</span>
     </div>
     } @if (tabLabel()) {
-    <div class="a11y-mark kb" style="bottom: -24px; right: -2px">
+    <div
+      class="a11y-mark kb"
+      [style.top.px]="b.top + b.height + 4"
+      [style.left.px]="b.left + b.width + 2"
+      style="transform: translateX(-100%)"
+    >
       <span class="tag">{{ tabLabel() }}</span>
     </div>
-    }
+    } }
   `,
   styles: `
     :host { display: contents; }
@@ -51,6 +77,25 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
 export class A11yOverlayHostComponent {
   private readonly rendererService = inject(PrismRendererService);
   private readonly keyboardService = inject(A11yKeyboardService);
+  private readonly elementRef = inject(ElementRef<HTMLElement>);
+
+  private readonly layoutTick = signal(0);
+
+  protected readonly bounds = computed<Bounds | null>(() => {
+    const el = this.rendererService.renderedElement();
+    this.layoutTick();
+    if (!el) return null;
+    const parent = this.elementRef.nativeElement.parentElement;
+    if (!parent) return null;
+    const elRect = (el as HTMLElement).getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect();
+    return {
+      top: elRect.top - parentRect.top,
+      left: elRect.left - parentRect.left,
+      width: elRect.width,
+      height: elRect.height,
+    };
+  });
 
   protected readonly roleLabel = computed(() => {
     const el = this.rendererService.renderedElement();
@@ -70,6 +115,24 @@ export class A11yOverlayHostComponent {
     if (items.length === 0) return null;
     return `Tab ${items[0].index}`;
   });
+
+  constructor() {
+    effect((onCleanup) => {
+      const el = this.rendererService.renderedElement();
+      if (!el) return;
+      const ro = new ResizeObserver(() => this.layoutTick.update((v) => v + 1));
+      ro.observe(el);
+      const parent = this.elementRef.nativeElement.parentElement;
+      if (parent) ro.observe(parent);
+      onCleanup(() => ro.disconnect());
+    });
+
+    effect(() => {
+      this.rendererService.inputValues();
+      this.rendererService.activeVariantIndex();
+      this.layoutTick.update((v) => v + 1);
+    });
+  }
 }
 
 function implicitRole(el: Element): string | null {
