@@ -446,4 +446,16 @@ describe('ng-add schematic', () => {
     expect(providePrismIndex).toBeGreaterThan(-1);
     expect(zonelessIndex).toBeLessThan(providePrismIndex);
   });
+
+  it('should write empty polyfills array when zoneless=true', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib', zoneless: true }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
+    };
+    const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
+    expect(buildOptions['polyfills']).toEqual([]);
+  });
 });

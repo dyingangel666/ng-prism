@@ -141,7 +141,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
               browser: `${prismSrc}/main.ts`,
               tsConfig: `${prismRoot}/tsconfig.app.json`,
               styles: ['node_modules/highlight.js/styles/base16/solarized-dark.min.css'],
-              polyfills: ['zone.js'],
+              polyfills: zoneless ? [] : ['zone.js'],
               allowedCommonJsDependencies: ['highlight.js'],
               preserveSymlinks: true,
             },
