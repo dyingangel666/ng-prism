@@ -128,7 +128,7 @@ export class A11ySrOverlayComponent {
   }
 
   private computeBadges(root: Element): void {
-    const canvas = this.elementRef.nativeElement.closest('.prism-renderer__canvas') as HTMLElement | null;
+    const canvas = this.elementRef.nativeElement.closest('.prism-canvas-stage') as HTMLElement | null;
     if (!canvas) return;
 
     const doc = (root as HTMLElement).ownerDocument;
