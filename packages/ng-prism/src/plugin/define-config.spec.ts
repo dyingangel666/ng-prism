@@ -1,4 +1,5 @@
 import { defineConfig } from './define-config.js';
+import type { NgPrismPlugin } from './plugin.types.js';
 
 describe('defineConfig', () => {
   it('should return the config unchanged', () => {
@@ -46,7 +47,7 @@ describe('defineConfig', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
     defineConfig({
-      plugins: [{}, {}],
+      plugins: [{} as NgPrismPlugin, {} as NgPrismPlugin],
     });
 
     expect(warnSpy).not.toHaveBeenCalled();
