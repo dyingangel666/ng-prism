@@ -30,6 +30,7 @@ export {
 export { PrismPluginService } from './services/prism-plugin.service.js';
 export { PrismLayoutService } from './services/prism-layout.service.js';
 export { PrismUrlStateService } from './services/prism-url-state.service.js';
+export { PrismPersistenceService } from './services/prism-persistence.service.js';
 
 // Shell (root component)
 export { PrismShellComponent } from './shell/prism-shell.component.js';

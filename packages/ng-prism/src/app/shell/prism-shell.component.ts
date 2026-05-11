@@ -23,6 +23,7 @@ import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
 import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
 import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
 import { PrismUrlStateService } from '../services/prism-url-state.service.js';
+import { PrismPersistenceService } from '../services/prism-persistence.service.js';
 import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
 import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
 import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
@@ -288,6 +289,7 @@ export class PrismShellComponent {
   protected readonly panelService = inject(PrismPanelService);
   private readonly pluginService = inject(PrismPluginService);
   private readonly urlStateService = inject(PrismUrlStateService);
+  private readonly persistenceService = inject(PrismPersistenceService);
 
   protected readonly viewPanels = computed(() => [
     ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
@@ -310,6 +312,7 @@ export class PrismShellComponent {
     this.themeService.applyConfigOverrides(this.config);
     this.navigationService.selectFirst();
     this.urlStateService.init();
+    this.persistenceService.init();
 
     let lastItemKey: string | null = null;
     effect(() => {

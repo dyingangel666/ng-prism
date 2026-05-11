@@ -137,6 +137,8 @@ export interface NgPrismConfig {
   appComponent?: Type<unknown>;
   /** When false, disables URL state sync (default: true). */
   urlState?: boolean;
+  /** When false, disables sessionStorage state persistence (default: true). */
+  persistState?: boolean;
   buildInfo?: {
     version?: string;
     gitHash?: string;
