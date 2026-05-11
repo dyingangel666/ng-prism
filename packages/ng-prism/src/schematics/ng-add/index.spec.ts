@@ -49,7 +49,10 @@ const mockContext = {
   interactive: false,
 } as unknown as SchematicContext;
 
-async function runSchematic(options: { project: string; port?: number }, tree: Tree): Promise<Tree> {
+async function runSchematic(
+  options: { project: string; port?: number; zoneless?: boolean },
+  tree: Tree,
+): Promise<Tree> {
   const rule = ngAdd(options);
   return firstValueFrom(callRule(rule, tree, mockContext));
 }
