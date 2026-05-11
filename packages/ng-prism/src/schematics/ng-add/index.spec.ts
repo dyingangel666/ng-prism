@@ -431,4 +431,19 @@ describe('ng-add schematic', () => {
     expect(logs.some((l) => l.includes('my-lib-prism'))).toBe(true);
     expect(logs.some((l) => l.includes('ng run my-lib:prism'))).toBe(true);
   });
+
+  it('should generate main.ts with provideZonelessChangeDetection when zoneless=true', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib', zoneless: true }, tree);
+
+    const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+    expect(mainTs).toContain("import { provideZonelessChangeDetection } from '@angular/core'");
+    expect(mainTs).toContain('provideZonelessChangeDetection()');
+    const zonelessIndex = mainTs.indexOf('provideZonelessChangeDetection()');
+    const providePrismIndex = mainTs.indexOf('providePrism(PRISM_RUNTIME_MANIFEST, config)');
+    expect(zonelessIndex).toBeGreaterThan(-1);
+    expect(providePrismIndex).toBeGreaterThan(-1);
+    expect(zonelessIndex).toBeLessThan(providePrismIndex);
+  });
 });

@@ -55,17 +55,34 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
     const prismRoot = `projects/${prismProjectName}`;
     const prismSrc = `${prismRoot}/src`;
 
-    const mainTs = [
-      "import { bootstrapApplication } from '@angular/platform-browser';",
-      "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
-      "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
-      "import config from 'ng-prism.config';",
-      '',
-      'bootstrapApplication(PrismShellComponent, {',
-      '  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],',
-      '});',
-      '',
-    ].join('\n');
+    const zoneless = options.zoneless === true;
+    const mainTs = zoneless
+      ? [
+          "import { provideZonelessChangeDetection } from '@angular/core';",
+          "import { bootstrapApplication } from '@angular/platform-browser';",
+          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
+          "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+          "import config from 'ng-prism.config';",
+          '',
+          'bootstrapApplication(PrismShellComponent, {',
+          '  providers: [',
+          '    provideZonelessChangeDetection(),',
+          '    providePrism(PRISM_RUNTIME_MANIFEST, config),',
+          '  ],',
+          '});',
+          '',
+        ].join('\n')
+      : [
+          "import { bootstrapApplication } from '@angular/platform-browser';",
+          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
+          "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+          "import config from 'ng-prism.config';",
+          '',
+          'bootstrapApplication(PrismShellComponent, {',
+          '  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],',
+          '});',
+          '',
+        ].join('\n');
 
     if (!tree.exists(`${prismSrc}/main.ts`)) {
       tree.create(`${prismSrc}/main.ts`, mainTs);
