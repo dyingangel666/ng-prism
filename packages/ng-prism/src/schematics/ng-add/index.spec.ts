@@ -458,4 +458,28 @@ describe('ng-add schematic', () => {
     const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
     expect(buildOptions['polyfills']).toEqual([]);
   });
+
+  it('should NOT include provideZonelessChangeDetection when zoneless option is omitted', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+    expect(mainTs).not.toContain('provideZonelessChangeDetection');
+  });
+
+  it('should NOT include provideZonelessChangeDetection when zoneless=false', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib', zoneless: false }, tree);
+
+    const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+    expect(mainTs).not.toContain('provideZonelessChangeDetection');
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
+    };
+    const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
+    expect(buildOptions['polyfills']).toEqual(['zone.js']);
+  });
 });
