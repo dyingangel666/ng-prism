@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { BooleanControlComponent } from '../../controls/boolean-control.component.js';
 import { JsonControlComponent } from '../../controls/json-control.component.js';
 import { NumberControlComponent } from '../../controls/number-control.component.js';
@@ -8,6 +8,7 @@ import { UnionControlComponent } from '../../controls/union-control.component.js
 import type {
   ControlDefinition,
   InputMeta,
+  RuntimeComponent,
 } from '../../../plugin/plugin.types.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
@@ -140,6 +141,8 @@ export class PrismControlsPanelComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   private readonly pluginService = inject(PrismPluginService);
+
+  readonly activeComponent = input<RuntimeComponent | null>(null);
 
   protected getCustomControl(input: InputMeta): ControlDefinition | null {
     return (
