@@ -482,4 +482,16 @@ describe('ng-add schematic', () => {
     const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
     expect(buildOptions['polyfills']).toEqual(['zone.js']);
   });
+
+  it('should be idempotent with --zoneless: second run does not modify zoneless main.ts', async () => {
+    const tree = createTree(defaultLibProject());
+
+    await runSchematic({ project: 'my-lib', zoneless: true }, tree);
+    const mainTsAfterFirst = tree.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
+    const result = await runSchematic({ project: 'my-lib', zoneless: true }, tree);
+
+    const mainTsAfterSecond = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+    expect(mainTsAfterSecond).toBe(mainTsAfterFirst);
+  });
 });
