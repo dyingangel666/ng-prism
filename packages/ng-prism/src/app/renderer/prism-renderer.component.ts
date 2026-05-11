@@ -148,6 +148,7 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
       justify-content: center;
       width: 100%;
       height: 100%;
+      max-width: 600px;
     }
 
   `,
