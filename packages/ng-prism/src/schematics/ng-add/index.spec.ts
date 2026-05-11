@@ -176,6 +176,40 @@ describe('ng-add schematic', () => {
     expect(buildOptions['allowedCommonJsDependencies']).toEqual(['highlight.js']);
   });
 
+  it('should split outputHashing into production and development configurations', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
+    };
+    const build = workspace.projects['my-lib-prism'].architect['build'];
+    const options = build['options'] as Record<string, unknown>;
+    const configurations = build['configurations'] as Record<string, Record<string, unknown>>;
+
+    expect(options['outputHashing']).toBeUndefined();
+    expect(configurations['production']['outputHashing']).toBe('all');
+    expect(configurations['development']['outputHashing']).toBe('none');
+    expect(configurations['development']['optimization']).toBe(false);
+    expect(configurations['development']['sourceMap']).toBe(true);
+    expect(build['defaultConfiguration']).toBe('production');
+  });
+
+  it('should configure serve target for HMR against the development configuration', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
+    };
+    const serveOptions = workspace.projects['my-lib-prism'].architect['serve'].options;
+
+    expect(serveOptions['buildTarget']).toBe('my-lib-prism:build:development');
+    expect(serveOptions['hmr']).toBe(true);
+  });
+
   it('should add ng-prism.config and library paths to tsconfig.json', async () => {
     const tree = createTree(defaultLibProject());
 

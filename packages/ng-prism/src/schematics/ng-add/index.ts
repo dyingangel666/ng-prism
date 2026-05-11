@@ -128,12 +128,24 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
               allowedCommonJsDependencies: ['highlight.js'],
               preserveSymlinks: true,
             },
+            configurations: {
+              production: {
+                outputHashing: 'all',
+              },
+              development: {
+                outputHashing: 'none',
+                optimization: false,
+                sourceMap: true,
+              },
+            },
+            defaultConfiguration: 'production',
           },
           serve: {
             builder: '@angular-devkit/build-angular:dev-server',
             options: {
-              buildTarget: `${prismProjectName}:build`,
+              buildTarget: `${prismProjectName}:build:development`,
               port,
+              hmr: true,
             },
           },
         },
