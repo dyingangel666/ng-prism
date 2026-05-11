@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { PrismNavigationService, PrismRendererService } from '@ng-prism/core';
 import { FIGMA_PLUGIN_CONFIG } from '../figma-config.token.js';
 import { type DiffMode, type DiffResult, type DiffState, extractFileKey, parseFigmaMeta } from './figma-diff.types.js';
@@ -250,6 +250,8 @@ export class FigmaDesignDiffPanelComponent {
   private readonly config = inject(FIGMA_PLUGIN_CONFIG);
   private readonly nav = inject(PrismNavigationService);
   private readonly renderer = inject(PrismRendererService);
+
+  readonly activeComponent = input<unknown>(null);
 
   protected readonly state = signal<DiffState>({ status: 'idle' });
   protected readonly activeMode = signal<DiffMode>('side-by-side');

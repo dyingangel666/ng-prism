@@ -1,5 +1,9 @@
 import { InjectionToken } from '@angular/core';
-import type { NgPrismConfig, RuntimeManifest } from '../../plugin/plugin.types.js';
+import type {
+  NgPrismConfig,
+  PanelDefinition,
+  RuntimeManifest,
+} from '../../plugin/plugin.types.js';
 
 export const PRISM_MANIFEST = new InjectionToken<RuntimeManifest>('PRISM_MANIFEST');
 
@@ -16,3 +20,8 @@ export interface PrismRendererHooks {
 
 export const PRISM_RENDERER_HOOKS =
   new InjectionToken<PrismRendererHooks>('PRISM_RENDERER_HOOKS');
+
+export const PRISM_BUILTIN_PANELS = new InjectionToken<PanelDefinition[]>(
+  'PRISM_BUILTIN_PANELS',
+  { providedIn: 'root', factory: () => [] }
+);

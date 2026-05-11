@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { BoxModelStateService } from './box-model-state.service.js';
 import type { BoxModelData } from './box-model.types.js';
 
@@ -123,6 +123,8 @@ import type { BoxModelData } from './box-model.types.js';
 })
 export class BoxModelPanelComponent {
   protected readonly stateService = inject(BoxModelStateService);
+
+  readonly activeComponent = input<unknown>(null);
 
   fmt(value: number): string {
     return value === 0 ? '-' : `${value}`;

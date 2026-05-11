@@ -3,7 +3,12 @@ import { provideHighlightOptions } from 'ngx-highlightjs';
 import type { NgPrismConfig, RuntimeManifest } from '../plugin/plugin.types.js';
 import type { ComponentPageOptions } from '../plugin/page-helpers.js';
 import { componentPage } from '../plugin/page-helpers.js';
-import { PRISM_CONFIG, PRISM_MANIFEST } from './tokens/prism-tokens.js';
+import { BUILTIN_PANELS } from './panels/builtin-panels.js';
+import {
+  PRISM_BUILTIN_PANELS,
+  PRISM_CONFIG,
+  PRISM_MANIFEST,
+} from './tokens/prism-tokens.js';
 
 export interface ProvidePrismOptions {
   componentPages?: ComponentPageOptions[];
@@ -20,6 +25,7 @@ export function providePrism(
 
   return makeEnvironmentProviders([
     { provide: PRISM_MANIFEST, useValue: mergedManifest },
+    { provide: PRISM_BUILTIN_PANELS, useValue: BUILTIN_PANELS },
     ...(config ? [{ provide: PRISM_CONFIG, useValue: config }] : []),
     ...(config?.appProviders ?? []),
     provideHighlightOptions({

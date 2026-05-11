@@ -5,6 +5,7 @@ import {
   effect,
   ElementRef,
   inject,
+  input,
   signal,
 } from '@angular/core';
 import { A11yKeyboardService } from './a11y-keyboard.service.js';
@@ -75,14 +76,14 @@ interface Bounds {
   `,
 })
 export class A11yOverlayHostComponent {
-  private readonly rendererService = inject(PrismRendererService);
+  readonly rendererService = input.required<PrismRendererService>();
   private readonly keyboardService = inject(A11yKeyboardService);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
 
   private readonly layoutTick = signal(0);
 
   protected readonly bounds = computed<Bounds | null>(() => {
-    const el = this.rendererService.renderedElement();
+    const el = this.rendererService().renderedElement();
     this.layoutTick();
     if (!el) return null;
     const parent = this.elementRef.nativeElement.parentElement;
@@ -98,14 +99,14 @@ export class A11yOverlayHostComponent {
   });
 
   protected readonly roleLabel = computed(() => {
-    const el = this.rendererService.renderedElement();
+    const el = this.rendererService().renderedElement();
     if (!el) return null;
     const role = el.getAttribute('role') ?? implicitRole(el);
     return role ? `role="${role}"` : null;
   });
 
   protected readonly tabLabel = computed(() => {
-    const el = this.rendererService.renderedElement();
+    const el = this.rendererService().renderedElement();
     if (!el) return null;
     const doc = (el as HTMLElement).ownerDocument;
     const items = this.keyboardService.extractTabOrder(
@@ -118,7 +119,7 @@ export class A11yOverlayHostComponent {
 
   constructor() {
     effect((onCleanup) => {
-      const el = this.rendererService.renderedElement();
+      const el = this.rendererService().renderedElement();
       if (!el) return;
       const ro = new ResizeObserver(() => this.layoutTick.update((v) => v + 1));
       ro.observe(el);
@@ -128,8 +129,8 @@ export class A11yOverlayHostComponent {
     });
 
     effect(() => {
-      this.rendererService.inputValues();
-      this.rendererService.activeVariantIndex();
+      this.rendererService().inputValues();
+      this.rendererService().activeVariantIndex();
       this.layoutTick.update((v) => v + 1);
     });
   }

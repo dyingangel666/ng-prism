@@ -2,11 +2,9 @@ import { NgComponentOutlet } from '@angular/common';
 import {
   Component,
   computed,
-  createEnvironmentInjector,
   effect,
   EnvironmentInjector,
   inject,
-  OnDestroy,
   signal,
   type Type,
   ChangeDetectionStrategy,
@@ -195,7 +193,7 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
     }
   `,
 })
-export class PrismPanelHostComponent implements OnDestroy {
+export class PrismPanelHostComponent {
   private readonly pluginService = inject(PrismPluginService);
   private readonly nav = inject(PrismNavigationService);
   protected readonly panelService = inject(PrismPanelService);
@@ -263,34 +261,12 @@ export class PrismPanelHostComponent implements OnDestroy {
   }));
 
   private readonly lazyCache = new Map<string, Type<unknown>>();
-  private readonly injectorCache = new Map<string, EnvironmentInjector>();
 
-  protected readonly activeInjector = computed(() => {
-    const panelId = this.panelService.activePanelId();
-    const panel = this.allPanels().find((p) => p.id === panelId);
-    if (!panel?.providers?.length) return this.envInjector;
-
-    if (!this.injectorCache.has(panel.id)) {
-      this.injectorCache.set(
-        panel.id,
-        createEnvironmentInjector(
-          panel.providers,
-          this.envInjector,
-          `PrismPanel[${panel.id}]`
-        )
-      );
-    }
-    return this.injectorCache.get(panel.id)!;
-  });
+  protected readonly activeInjector = computed(
+    () => this.panelService.activePanelInjector() ?? this.envInjector
+  );
 
   constructor() {
-    effect(() => {
-      const injector = this.activeInjector();
-      this.panelService.activePanelInjector.set(
-        injector === this.envInjector ? null : injector
-      );
-    });
-
     effect(() => {
       const element = this.rendererService.renderedElement();
       const comp = this.nav.activeComponent() as any;
@@ -341,9 +317,5 @@ export class PrismPanelHostComponent implements OnDestroy {
         });
       }
     });
-  }
-
-  ngOnDestroy(): void {
-    this.injectorCache.forEach((injector) => injector.destroy());
   }
 }
