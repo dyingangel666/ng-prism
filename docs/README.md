@@ -14,6 +14,7 @@ A lightweight, Angular-native component showcase tool. Annotate your components 
 - **TypeScript Compiler API** — inputs, outputs, and types are extracted at build time, no runtime reflection
 - **Component Pages** — register free-form Angular components as styleguide pages alongside `@Showcase` components
 - **URL state** — deep-linking via `?component=`, `?variant=`, `?page=`, `?view=` params
+- **Zoneless ready** — opt in via `ng add @ng-prism/core --zoneless` for ~30 KB bundle savings
 
 ## Quick Example
 
