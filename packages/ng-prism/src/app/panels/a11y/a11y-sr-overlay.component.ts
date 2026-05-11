@@ -25,25 +25,25 @@ interface SrBadgePosition {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    @if (showOverlay()) {
-      @for (badge of badges(); track badge.index) {
-        @if (badge.isActive) {
-          <div
-            class="prism-a11y-sr-ov__focus"
-            [style.left.px]="badge.x"
-            [style.top.px]="badge.y"
-            [style.width.px]="badge.width"
-            [style.height.px]="badge.height"
-          ></div>
-        }
-        <div
-          class="prism-a11y-sr-ov__badge"
-          [class.prism-a11y-sr-ov__badge--active]="badge.isActive"
-          [style.left.px]="badge.x - 10"
-          [style.top.px]="badge.y - 10"
-        >{{ badge.index }}</div>
-      }
+    @if (showOverlay()) { @for (badge of badges(); track badge.index) { @if
+    (badge.isActive) {
+    <div
+      class="prism-a11y-sr-ov__focus"
+      [style.left.px]="badge.x"
+      [style.top.px]="badge.y"
+      [style.width.px]="badge.width"
+      [style.height.px]="badge.height"
+    ></div>
     }
+    <div
+      class="prism-a11y-sr-ov__badge"
+      [class.prism-a11y-sr-ov__badge--active]="badge.isActive"
+      [style.left.px]="badge.x - 10"
+      [style.top.px]="badge.y - 10"
+    >
+      {{ badge.index }}
+    </div>
+    } }
   `,
   styles: `
     :host {
@@ -124,17 +124,21 @@ export class A11ySrOverlayComponent {
 
   setActiveIndex(idx: number): void {
     this.activeIdx = idx;
-    this.badges.update((bs) => bs.map((b, i) => ({ ...b, isActive: i === idx })));
+    this.badges.update((bs) =>
+      bs.map((b, i) => ({ ...b, isActive: i === idx }))
+    );
   }
 
   private computeBadges(root: Element): void {
-    const canvas = this.elementRef.nativeElement.closest('.prism-canvas-stage') as HTMLElement | null;
+    const canvas = this.elementRef.nativeElement.closest(
+      '.prism-canvas-stage'
+    ) as HTMLElement | null;
     if (!canvas) return;
 
     const doc = (root as HTMLElement).ownerDocument;
     const announcements = this.srService.buildAnnouncementList(
       root,
-      doc ? (id) => doc.getElementById(id) : undefined,
+      doc ? (id) => doc.getElementById(id) : undefined
     );
 
     const canvasRect = canvas.getBoundingClientRect();

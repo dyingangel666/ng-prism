@@ -15,10 +15,10 @@ ng add @ng-prism/core
 
 The schematic prompts for:
 
-| Prompt | Default | Description |
-|--------|---------|-------------|
-| Library project | _(first lib found)_ | The library whose components you want to showcase |
-| Showcase app name | `{lib}-prism` | Name of the generated Angular app project |
+| Prompt            | Default             | Description                                       |
+| ----------------- | ------------------- | ------------------------------------------------- |
+| Library project   | _(first lib found)_ | The library whose components you want to showcase |
+| Showcase app name | `{lib}-prism`       | Name of the generated Angular app project         |
 
 After running, your workspace contains:
 
@@ -121,15 +121,15 @@ The schematic adds two targets to the **library project** in `angular.json`:
 
 ### Builder Options
 
-| Option | Required | Description |
-|--------|----------|-------------|
-| `entryPoint` | Yes | Path to your library's barrel `public-api.ts` (or directory with secondary entry points) |
-| `prismProject` | Yes | Angular project name for the generated showcase app |
-| `libraryProject` | Yes | Angular project name of the library being showcased |
-| `libraryImportPath` | No | Override the import path used in the generated manifest (defaults to `libraryProject`) |
-| `configFile` | No | Path to your config file (default: `ng-prism.config.ts` at workspace root) |
-| `port` | No | Dev server port for `:serve` (default: `4400`) |
-| `outputPath` | `:build` only | Output directory for the production build |
+| Option              | Required      | Description                                                                              |
+| ------------------- | ------------- | ---------------------------------------------------------------------------------------- |
+| `entryPoint`        | Yes           | Path to your library's barrel `public-api.ts` (or directory with secondary entry points) |
+| `prismProject`      | Yes           | Angular project name for the generated showcase app                                      |
+| `libraryProject`    | Yes           | Angular project name of the library being showcased                                      |
+| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)   |
+| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)               |
+| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                           |
+| `outputPath`        | `:build` only | Output directory for the production build                                                |
 
 ## Showcase App Target Configuration
 
@@ -195,12 +195,12 @@ Angular's `@angular/build:application` builds the entire app into a single bundl
 
 The `@ng-prism/core:serve` builder runs its own incremental scanner on the library entry point. The scanner only reacts to **`.ts` file changes** — style and template edits don't need a manifest rescan and are handled directly by Angular's dev server. Concretely:
 
-| Edit | ng-prism scanner | Angular dev server |
-|---|---|---|
-| `.ts` (component logic, `@Showcase`, etc.) | re-scan + regenerate manifest if metadata changed | rebuild + reload |
-| `.scss` / `.css` / `.svg` | skipped | rebuild + reload |
-| `.html` template | skipped | rebuild + reload |
-| `ng-prism.config.ts` | re-scan + regenerate manifest | rebuild + reload |
+| Edit                                       | ng-prism scanner                                  | Angular dev server |
+| ------------------------------------------ | ------------------------------------------------- | ------------------ |
+| `.ts` (component logic, `@Showcase`, etc.) | re-scan + regenerate manifest if metadata changed | rebuild + reload   |
+| `.scss` / `.css` / `.svg`                  | skipped                                           | rebuild + reload   |
+| `.html` template                           | skipped                                           | rebuild + reload   |
+| `ng-prism.config.ts`                       | re-scan + regenerate manifest                     | rebuild + reload   |
 
 Skipping the scan for style and template changes shaves ~300-500ms off every save, since the TypeScript compiler API doesn't need to traverse the library source tree for those edits.
 
@@ -245,10 +245,10 @@ bootstrapApplication(PrismShellComponent, {
 
 Some features require additional peer dependencies:
 
-| Package | Required for |
-|---------|-------------|
+| Package                            | Required for                              |
+| ---------------------------------- | ----------------------------------------- |
 | `highlight.js` + `ngx-highlightjs` | Code snippet highlighting in the renderer |
-| `axe-core` | Built-in accessibility auditing |
+| `axe-core`                         | Built-in accessibility auditing           |
 
 Install them only if you use those features:
 

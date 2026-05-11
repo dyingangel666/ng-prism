@@ -23,33 +23,31 @@ interface Bounds {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (bounds(); as b) {
-      <div
-        class="a11y-mark outline"
-        [style.top.px]="b.top"
-        [style.left.px]="b.left"
-        [style.width.px]="b.width"
-        [style.height.px]="b.height"
-      ></div>
-      @if (roleLabel()) {
-        <div
-          class="a11y-mark"
-          [style.top.px]="b.top - 22"
-          [style.left.px]="b.left - 2"
-        >
-          <span class="tag">{{ roleLabel() }}</span>
-        </div>
-      }
-      @if (tabLabel()) {
-        <div
-          class="a11y-mark kb"
-          [style.top.px]="b.top + b.height + 4"
-          [style.left.px]="b.left + b.width + 2"
-          style="transform: translateX(-100%)"
-        >
-          <span class="tag">{{ tabLabel() }}</span>
-        </div>
-      }
-    }
+    <div
+      class="a11y-mark outline"
+      [style.top.px]="b.top"
+      [style.left.px]="b.left"
+      [style.width.px]="b.width"
+      [style.height.px]="b.height"
+    ></div>
+    @if (roleLabel()) {
+    <div
+      class="a11y-mark"
+      [style.top.px]="b.top - 22"
+      [style.left.px]="b.left - 2"
+    >
+      <span class="tag">{{ roleLabel() }}</span>
+    </div>
+    } @if (tabLabel()) {
+    <div
+      class="a11y-mark kb"
+      [style.top.px]="b.top + b.height + 4"
+      [style.left.px]="b.left + b.width + 2"
+      style="transform: translateX(-100%)"
+    >
+      <span class="tag">{{ tabLabel() }}</span>
+    </div>
+    } }
   `,
   styles: `
     :host { display: contents; }
@@ -122,9 +120,7 @@ export class A11yOverlayHostComponent {
     effect((onCleanup) => {
       const el = this.rendererService.renderedElement();
       if (!el) return;
-      const ro = new ResizeObserver(() =>
-        this.layoutTick.update((v) => v + 1),
-      );
+      const ro = new ResizeObserver(() => this.layoutTick.update((v) => v + 1));
       ro.observe(el);
       const parent = this.elementRef.nativeElement.parentElement;
       if (parent) ro.observe(parent);

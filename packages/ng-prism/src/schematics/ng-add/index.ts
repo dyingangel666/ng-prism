@@ -5,7 +5,11 @@ import {
   type Tree,
   SchematicsException,
 } from '@angular-devkit/schematics';
-import { parse as parseJsonc, modify as modifyJsonc, applyEdits as applyJsoncEdits } from 'jsonc-parser';
+import {
+  parse as parseJsonc,
+  modify as modifyJsonc,
+  applyEdits as applyJsoncEdits,
+} from 'jsonc-parser';
 import type { NgAddSchemaOptions } from './schema.js';
 
 interface WorkspaceProject {
@@ -47,7 +51,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
 
     if (!project) {
       throw new SchematicsException(
-        `Project "${options.project}" does not exist in angular.json`,
+        `Project "${options.project}" does not exist in angular.json`
       );
     }
 
@@ -140,7 +144,9 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
               index: `${prismSrc}/index.html`,
               browser: `${prismSrc}/main.ts`,
               tsConfig: `${prismRoot}/tsconfig.app.json`,
-              styles: ['node_modules/highlight.js/styles/base16/solarized-dark.min.css'],
+              styles: [
+                'node_modules/highlight.js/styles/base16/solarized-dark.min.css',
+              ],
               polyfills: zoneless ? [] : ['zone.js'],
               allowedCommonJsDependencies: ['highlight.js'],
               preserveSymlinks: true,
@@ -251,7 +257,7 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
         nextText,
         ['compilerOptions', 'paths', 'ng-prism.config'],
         ['ng-prism.config.ts'],
-        { formattingOptions },
+        { formattingOptions }
       );
       nextText = applyJsoncEdits(nextText, edits);
       changed = true;
@@ -262,7 +268,7 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
         nextText,
         ['compilerOptions', 'paths', options.project],
         [`${sourceRoot}/public-api.ts`],
-        { formattingOptions },
+        { formattingOptions }
       );
       nextText = applyJsoncEdits(nextText, edits);
       changed = true;
@@ -325,7 +331,9 @@ function logSetupSummary(options: NgAddSchemaOptions): Rule {
     context.logger.info(`  Prism app project: ${prismProjectName}`);
     context.logger.info(`  Config file:       ng-prism.config.ts`);
     context.logger.info(`  Dev server:        ng run ${options.project}:prism`);
-    context.logger.info(`  Production build:  ng run ${options.project}:prism-build`);
+    context.logger.info(
+      `  Production build:  ng run ${options.project}:prism-build`
+    );
     context.logger.info(`  Strip decorators:  npm run strip-showcase`);
     context.logger.info('');
   };

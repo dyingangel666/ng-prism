@@ -28,7 +28,7 @@ import { Component, input } from '@angular/core';
   description: 'The primary action button.',
   variants: [
     { name: 'Primary', inputs: { label: 'Save', variant: 'primary' } },
-    { name: 'Danger',  inputs: { label: 'Delete', variant: 'danger' } },
+    { name: 'Danger', inputs: { label: 'Delete', variant: 'danger' } },
   ],
 })
 @Component({
@@ -37,7 +37,7 @@ import { Component, input } from '@angular/core';
   template: `<button [class]="variant()">{{ label() }}</button>`,
 })
 export class ButtonComponent {
-  label   = input.required<string>();
+  label = input.required<string>();
   variant = input<'primary' | 'danger'>('primary');
 }
 ```

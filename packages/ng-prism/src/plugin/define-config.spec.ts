@@ -15,7 +15,7 @@ describe('defineConfig', () => {
     });
 
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('plugin "a" is registered more than once'),
+      expect.stringContaining('plugin "a" is registered more than once')
     );
 
     warnSpy.mockRestore();
