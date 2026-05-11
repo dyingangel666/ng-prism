@@ -117,20 +117,41 @@ The schematic also adds a separate **showcase app project** (`my-lib-prism`) to 
       "options": {
         "buildTarget": "my-lib-prism:build:development",
         "port": 4400,
-        "hmr": true
+        "hmr": true,
+        "liveReload": true
       }
     }
   }
 }
 ```
 
-The configuration split is intentional and required for HMR to work:
+The configuration split is intentional:
 
-- `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server refuses to enable HMR with `outputHashing: "all"` and prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal.
+- `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
 - The `development` configuration disables hashing, turns off optimization, and enables source maps — the usual Angular dev defaults.
-- The `serve` target points explicitly at `:build:development` and sets `hmr: true`. `liveReload` is left at its default (`true`) so that non-HMR-able changes still trigger an automatic page refresh as a fallback.
+- The `serve` target explicitly points at `:build:development` so iteration uses the dev configuration.
 
-After running `ng add @ng-prism/core` you should see Vite/Angular HMR updates in the browser console when you edit library code or styles — no full reload required. See [State Preservation](guide/url-state.md) for what survives a reload if one does happen.
+## Dev Reload Behavior
+
+Angular's `@angular/build:application` builds the entire app into a single bundle (`main.js`). True module-level HMR — where individual modules get hot-swapped — is not possible against a monolithic bundle. In practice that means **edits trigger a full page refresh**, even with `hmr: true`. ng-prism turns this from a workflow blocker into an acceptable iteration loop through two layers:
+
+1. **The dev configuration skips minification and source-map optimization.** Library and showcase rebuilds typically complete in 300-900ms.
+2. **State preservation across reloads** (built into ng-prism): the active component, variant, view tab, addon panel tab, control panel overrides, and a11y sub-state are restored after the page reloads, so iterating on a specific variant doesn't lose context. See [State Preservation](guide/url-state.md).
+
+`liveReload: true` is the recommended default — it triggers the reload automatically. Setting `liveReload: false` is only useful if you want to refresh manually (for example to inspect server-side state between edits).
+
+### What ng-prism's watcher does
+
+The `@ng-prism/core:serve` builder runs its own incremental scanner on the library entry point. The scanner only reacts to **`.ts` file changes** — style and template edits don't need a manifest rescan and are handled directly by Angular's dev server. Concretely:
+
+| Edit | ng-prism scanner | Angular dev server |
+|---|---|---|
+| `.ts` (component logic, `@Showcase`, etc.) | re-scan + regenerate manifest if metadata changed | rebuild + reload |
+| `.scss` / `.css` / `.svg` | skipped | rebuild + reload |
+| `.html` template | skipped | rebuild + reload |
+| `ng-prism.config.ts` | re-scan + regenerate manifest | rebuild + reload |
+
+Skipping the scan for style and template changes shaves ~300-500ms off every save, since the TypeScript compiler API doesn't need to traverse the library source tree for those edits.
 
 ## Manual Setup
 
