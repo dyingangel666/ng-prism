@@ -41,6 +41,56 @@ ng run my-lib:prism        # or whatever the schematic named it
 
 The showcase opens at `http://localhost:4400`.
 
+## Zoneless Mode (optional, recommended)
+
+ng-prism supports Angular's zoneless change detection. Pass `--zoneless` during setup to skip the `zone.js` polyfill:
+
+```bash
+ng add @ng-prism/core --zoneless
+```
+
+This removes ~30 KB from the bundle and aligns with the modern Angular direction. ng-prism itself is fully signal-based, and the scanner already requires `input()`/`output()` signals on every showcased component — so zoneless is safe by design.
+
+### Migrating an existing setup to zoneless
+
+Three manual edits are needed:
+
+**1. `projects/<lib>-prism/src/main.ts`** — add `provideZonelessChangeDetection()`:
+
+```diff
++import { provideZonelessChangeDetection } from '@angular/core';
+ import { bootstrapApplication } from '@angular/platform-browser';
+ import { PrismShellComponent, providePrism } from '@ng-prism/core';
+ import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';
+ import config from 'ng-prism.config';
+
+ bootstrapApplication(PrismShellComponent, {
+-  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],
++  providers: [
++    provideZonelessChangeDetection(),
++    providePrism(PRISM_RUNTIME_MANIFEST, config),
++  ],
+ });
+```
+
+Order matters: `provideZonelessChangeDetection()` must come before `providePrism()`.
+
+**2. `angular.json`** — remove the `zone.js` polyfill from the Prism app's build target:
+
+```diff
+ "projects": {
+   "<lib>-prism": {
+     "architect": {
+       "build": {
+         "options": {
+-          "polyfills": ["zone.js"],
++          "polyfills": [],
+```
+
+**3. `ng-prism.config.ts`** — if your `appProviders` contains zone-dependent providers (e.g. older animation modules, `provideZoneChangeDetection`), remove them or swap for zoneless-compatible alternatives.
+
+**Verify:** Run `ng run <lib>:prism` — the app should boot without errors and all showcases should render. Bundle size drops by ~30 KB (zone.js is no longer loaded).
+
 ## Angular Builder Targets
 
 The schematic adds two targets to the **library project** in `angular.json`:
