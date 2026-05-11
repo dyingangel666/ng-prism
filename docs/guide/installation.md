@@ -43,23 +43,25 @@ The showcase opens at `http://localhost:4400`.
 
 ## Angular Builder Targets
 
-The schematic adds two targets to `angular.json`:
+The schematic adds two targets to the **library project** in `angular.json`:
 
 ```json
 "prism": {
   "builder": "@ng-prism/core:serve",
   "options": {
-    "entryPoint": "packages/my-lib/src/index.ts",
-    "configFile": "projects/my-lib-prism/prism.config.ts",
-    "appProject": "my-lib-prism"
+    "entryPoint": "projects/my-lib/src/public-api.ts",
+    "prismProject": "my-lib-prism",
+    "libraryProject": "my-lib",
+    "port": 4400
   }
 },
 "prism-build": {
   "builder": "@ng-prism/core:build",
   "options": {
-    "entryPoint": "packages/my-lib/src/index.ts",
-    "configFile": "projects/my-lib-prism/prism.config.ts",
-    "appProject": "my-lib-prism"
+    "entryPoint": "projects/my-lib/src/public-api.ts",
+    "prismProject": "my-lib-prism",
+    "libraryProject": "my-lib",
+    "outputPath": "dist/my-lib-prism"
   }
 }
 ```
@@ -71,9 +73,64 @@ The schematic adds two targets to `angular.json`:
 
 | Option | Required | Description |
 |--------|----------|-------------|
-| `entryPoint` | Yes | Path to your library's barrel `index.ts` (or directory with secondary entry points) |
-| `configFile` | Yes | Path to your `prism.config.ts` |
-| `appProject` | Yes | Angular project name for the showcase app |
+| `entryPoint` | Yes | Path to your library's barrel `public-api.ts` (or directory with secondary entry points) |
+| `prismProject` | Yes | Angular project name for the generated showcase app |
+| `libraryProject` | Yes | Angular project name of the library being showcased |
+| `libraryImportPath` | No | Override the import path used in the generated manifest (defaults to `libraryProject`) |
+| `configFile` | No | Path to your config file (default: `ng-prism.config.ts` at workspace root) |
+| `port` | No | Dev server port for `:serve` (default: `4400`) |
+| `outputPath` | `:build` only | Output directory for the production build |
+
+## Showcase App Target Configuration
+
+The schematic also adds a separate **showcase app project** (`my-lib-prism`) to `angular.json` with its own build and serve targets:
+
+```json
+"my-lib-prism": {
+  "architect": {
+    "build": {
+      "builder": "@angular-devkit/build-angular:application",
+      "options": {
+        "outputPath": { "base": "dist/my-lib-prism", "browser": "" },
+        "index": "projects/my-lib-prism/src/index.html",
+        "browser": "projects/my-lib-prism/src/main.ts",
+        "tsConfig": "projects/my-lib-prism/tsconfig.app.json",
+        "styles": ["node_modules/highlight.js/styles/base16/solarized-dark.min.css"],
+        "polyfills": ["zone.js"],
+        "allowedCommonJsDependencies": ["highlight.js"],
+        "preserveSymlinks": true
+      },
+      "configurations": {
+        "production": {
+          "outputHashing": "all"
+        },
+        "development": {
+          "outputHashing": "none",
+          "optimization": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "builder": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "buildTarget": "my-lib-prism:build:development",
+        "port": 4400,
+        "hmr": true
+      }
+    }
+  }
+}
+```
+
+The configuration split is intentional and required for HMR to work:
+
+- `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server refuses to enable HMR with `outputHashing: "all"` and prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal.
+- The `development` configuration disables hashing, turns off optimization, and enables source maps — the usual Angular dev defaults.
+- The `serve` target points explicitly at `:build:development` and sets `hmr: true`. `liveReload` is left at its default (`true`) so that non-HMR-able changes still trigger an automatic page refresh as a fallback.
+
+After running `ng add @ng-prism/core` you should see Vite/Angular HMR updates in the browser console when you edit library code or styles — no full reload required. See [State Preservation](guide/url-state.md) for what survives a reload if one does happen.
 
 ## Manual Setup
 
