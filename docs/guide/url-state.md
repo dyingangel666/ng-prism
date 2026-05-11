@@ -1,6 +1,11 @@
-# URL State Sync
+# State Preservation
 
-ng-prism synchronizes the active component, page, variant, and view to the browser URL. This enables deep-linking, sharing, and reliable browser back/forward navigation.
+ng-prism keeps the UI state alive across full-page reloads — the workflow you care about during component-driven development. Two layers cooperate:
+
+- **URL** carries shareable state (component, variant, view, panel tab) — bookmarkable, deep-linkable.
+- **sessionStorage** carries per-session ephemeral state (control panel input overrides, a11y sub-tab, perspective) — quiet on the URL.
+
+After editing a SCSS file in your library and waiting for the dev-server reload, you land back on the same component, same variant, with the same control overrides applied. No more clicking your way back to where you were.
 
 ## URL Parameters
 
@@ -10,11 +15,12 @@ ng-prism synchronizes the active component, page, variant, and view to the brows
 | `page` | `?page=Button%20Patterns` | Active page title (URL-encoded) |
 | `variant` | `?variant=1` | Active variant index (0-based) |
 | `view` | `?view=docs` | Active view tab (e.g. `docs`, `a11y`) |
+| `panel` | `?panel=a11y` | Active addon panel tab (default: `controls`, omitted when default) |
 
 Example URL:
 
 ```
-http://localhost:4200?component=ButtonComponent&variant=2&view=docs
+http://localhost:4200?component=ButtonComponent&variant=2&view=docs&panel=a11y
 ```
 
 ## Deep-Linking
@@ -25,37 +31,48 @@ Share a URL pointing directly to a specific component and variant. Anyone openin
 http://localhost:4200?component=AlertComponent&variant=1
 ```
 
-## State Preservation on Reload
-
-URL state is read on page load before the first navigation. If `?component=ButtonComponent` is present, ng-prism selects that component on startup rather than defaulting to the first item in the manifest.
-
 ## Browser Back/Forward
 
 Each navigation (selecting a component, changing variant, switching view) pushes a new browser history entry. The browser back and forward buttons move through the navigation history as expected.
 
+## Control Panel & A11y State (sessionStorage)
+
+URL state does not carry control panel overrides — long input strings would bloat every link. Instead, ng-prism mirrors these to `sessionStorage` under the key `ng-prism:state`:
+
+- Control input overrides, keyed by `className` + `variantIndex`. Each component keeps its own bucket; switching components does not discard the others.
+- A11y panel `activeTab` (`violations` | `keyboard` | `tree` | `sr`) and `perspective` (`visual` | `screen-reader`).
+
+Writes are debounced 200ms, so rapid keystrokes in a text input do not thrash storage. On reload, the persisted bucket is applied only if the persisted `variantIndex` still matches the active variant restored from the URL — preventing stale overrides from leaking into a different variant.
+
+> Layout, theme, and canvas (zoom/background) are persisted independently to `localStorage` by their own services (`ng-prism-layout`, `ng-prism-theme`, `ng-prism-canvas`) and survive across browser sessions.
+
 ## Opting Out
 
-Disable URL state sync in your config:
+Disable each layer independently:
 
 ```typescript
 export default defineConfig({
-  urlState: false,
+  urlState: false,      // disables URL sync
+  persistState: false,  // disables sessionStorage for controls + a11y
 });
 ```
 
-When disabled, the URL never changes and no state is read from it on load.
+When `urlState` is `false`, the URL never changes and no state is read from it on load. When `persistState` is `false`, control overrides and the a11y sub-tab reset on every reload.
 
 ## How It Works
 
-`PrismUrlStateService` reads the URL on startup via `window.location.search` and sets the initial navigation state. It then subscribes to navigation signal changes and calls `history.pushState()` to keep the URL in sync.
+`PrismUrlStateService` reads the URL on startup via `window.location.search` and sets the initial navigation state. It then subscribes to navigation signal changes and calls `history.pushState()` (or `replaceState()` when only sub-state changes) to keep the URL in sync.
 
-The service is initialized automatically by `PrismShellComponent`. If you use a custom shell component (`appComponent`), call `PrismUrlStateService.init()` manually during bootstrap.
+`PrismPersistenceService` reads `sessionStorage` after the URL service has selected the active component, then applies persisted control values that match the current `className` + `variantIndex`. It subscribes to the same signals and debounce-writes back on change. Schema-version, corrupted JSON, quota-exceeded, and missing-`sessionStorage` are all handled gracefully without crashing the app.
+
+Both services are initialized automatically by `PrismShellComponent` in this order: `urlStateService.init()` → `persistenceService.init()`. If you use a custom shell component (`appComponent`), call them manually during bootstrap:
 
 ```typescript
 @Component({ ... })
 export class MyShellComponent {
   constructor() {
     inject(PrismUrlStateService).init();
+    inject(PrismPersistenceService).init();
   }
 }
 ```

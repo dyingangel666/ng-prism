@@ -55,7 +55,7 @@ Tracks the active variant and input values for the currently rendered component.
 | `activeContent` | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas |
 | `renderedElement` | `WritableSignal<Element \| null>` | Reference to the root DOM element of the rendered component |
 | `resetForComponent(comp)` | `void` | Full reset — resets variant index, inputs, and content to variant 0 |
-| `reconcileForComponent(comp)` | `void` | Soft reset — preserves variant index and user-overridden inputs on HMR |
+| `reconcileForComponent(comp)` | `void` | Soft reset — preserves variant index and user-overridden inputs on HMR or initial mount; merges input defaults when the prior className was `null` (fresh mount) |
 | `selectVariant(index)` | `void` | Change variant and apply its inputs |
 | `updateInput(name, value)` | `void` | Update a single input value (merges into `inputValues`) |
 
@@ -157,19 +157,36 @@ Provides aggregated plugin contributions (panels and controls) derived from `NgP
 
 ## PrismUrlStateService
 
-Synchronizes navigation state with URL query parameters. Initialized automatically by `PrismShellComponent`.
+Synchronizes navigation state with URL query parameters: `component`, `page`, `variant`, `view`, `panel`. Initialized automatically by `PrismShellComponent`.
 
 | Member | Description |
 |--------|-------------|
 | `init()` | Reads initial state from URL, starts sync effect, and registers `popstate` listener |
 
-When using a custom `appComponent`, call `init()` manually:
+Disabled via `NgPrismConfig.urlState = false`. See [State Preservation](guide/url-state.md).
+
+---
+
+## PrismPersistenceService
+
+Persists control panel input overrides (per `className` + `variantIndex`) and a11y sub-state (`activeTab`, `perspective`) to `sessionStorage` under the key `ng-prism:state`. Initialized automatically by `PrismShellComponent` immediately after `PrismUrlStateService`.
+
+| Member | Description |
+|--------|-------------|
+| `init()` | Reads sessionStorage, applies persisted state, and starts a debounced sync effect (200ms) |
+
+Schema version, corrupted JSON, quota-exceeded errors, and a missing `sessionStorage` (Privacy/SecurityError) are all handled gracefully. Layout, theme, and canvas are persisted independently to `localStorage` by their own services.
+
+Disabled via `NgPrismConfig.persistState = false`. See [State Preservation](guide/url-state.md).
+
+When using a custom `appComponent`, call both init methods in the order URL → persistence:
 
 ```typescript
 @Component({ ... })
 export class MyShellComponent {
   constructor() {
     inject(PrismUrlStateService).init();
+    inject(PrismPersistenceService).init();
   }
 }
 ```

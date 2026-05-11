@@ -20,7 +20,7 @@
 - **Customization**
   - [Theming](guide/theming.md)
   - [Custom UI Sections](guide/custom-ui.md)
-  - [URL State Sync](guide/url-state.md)
+  - [State Preservation](guide/url-state.md)
 
 - **Plugins**
   - [Plugin Overview](plugins/overview.md)

@@ -30,6 +30,7 @@ interface NgPrismConfig {
   headless?: boolean;
   appComponent?: Type<unknown>;
   urlState?: boolean;
+  persistState?: boolean;
   buildInfo?: { version?: string; gitHash?: string };
 }
 ```
@@ -171,7 +172,21 @@ When `false`, disables URL query parameter synchronization. Default: `true`.
 export default defineConfig({ urlState: false });
 ```
 
-See [URL State Sync](guide/url-state.md).
+See [State Preservation](guide/url-state.md).
+
+---
+
+### `persistState`
+
+When `false`, disables `sessionStorage` persistence for control panel input overrides and a11y sub-state (active tab, perspective). Default: `true`.
+
+```typescript
+export default defineConfig({ persistState: false });
+```
+
+Layout, theme, and canvas settings are persisted independently to `localStorage` and are not affected by this flag.
+
+See [State Preservation](guide/url-state.md).
 
 ---
 
