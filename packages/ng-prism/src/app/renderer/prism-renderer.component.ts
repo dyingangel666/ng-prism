@@ -30,6 +30,7 @@ import { PrismPanelService } from '../services/prism-panel.service.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 
 @Component({
@@ -38,7 +39,7 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismCanvasRulersComponent, NgComponentOutlet],
   template: `
-    <div class="prism-canvas-stage" [attr.data-bg]="canvasService.bg()">
+    <div class="prism-canvas-stage" [attr.data-bg]="variantBg.effective()">
       <div class="canvas-badges">
         <span class="c-badge"
           >{{ Math.round(canvasService.zoom() * 100) }}%</span
@@ -158,6 +159,7 @@ export class PrismRendererComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly canvasService = inject(PrismCanvasService);
+  protected readonly variantBg = inject(PrismVariantBgService);
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);
