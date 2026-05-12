@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 
 @Component({
@@ -7,7 +7,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (visible()) {
-    <div class="prism-bg-pill" role="status">
+    <div class="prism-bg-pill">
       <span class="label">Recommended: {{ recommended() }}</span>
       <button
         type="button"
@@ -71,9 +71,7 @@ export class PrismCanvasBgPillComponent {
   private readonly variantBg = inject(PrismVariantBgService);
 
   protected readonly recommended = this.variantBg.recommended;
-  protected readonly visible = computed(
-    () => this.variantBg.recommended() !== null && this.variantBg.override() !== null,
-  );
+  protected readonly visible = this.variantBg.isDeviating;
 
   protected reset(): void {
     this.variantBg.clearOverride();

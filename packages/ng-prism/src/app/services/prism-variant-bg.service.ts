@@ -24,6 +24,13 @@ export class PrismVariantBgService {
     this._override() ?? this.recommended() ?? this.canvas.bg(),
   );
 
+  /** True when the user's override differs from the (non-null) recommended bg. */
+  readonly isDeviating = computed<boolean>(() => {
+    const override = this._override();
+    const recommended = this.recommended();
+    return override !== null && recommended !== null && override !== recommended;
+  });
+
   constructor() {
     effect(() => {
       this.navigation.activeComponent();

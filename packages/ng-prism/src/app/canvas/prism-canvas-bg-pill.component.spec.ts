@@ -62,6 +62,15 @@ describe('PrismCanvasBgPillComponent', () => {
     expect(fixture.nativeElement.querySelector('.prism-bg-pill')).toBeNull();
   });
 
+  it('is hidden when override equals recommendation', () => {
+    activate(makeComponent('dark'));
+    bgService.setOverride('dark');
+    const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.prism-bg-pill')).toBeNull();
+  });
+
   it('is visible when recommendation and override differ', () => {
     activate(makeComponent('dark'));
     bgService.setOverride('light');

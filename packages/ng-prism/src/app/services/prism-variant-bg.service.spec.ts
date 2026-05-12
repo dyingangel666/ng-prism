@@ -120,4 +120,20 @@ describe('PrismVariantBgService', () => {
     service.clearOverride();
     expect(service.effective()).toBe('dark');
   });
+
+  it('isDeviating is true only when override differs from recommended', () => {
+    activate(manifestService, nav, makeComponent('dark'));
+    TestBed.flushEffects();
+
+    expect(service.isDeviating()).toBe(false);
+
+    service.setOverride('dark');
+    expect(service.isDeviating()).toBe(false);
+
+    service.setOverride('light');
+    expect(service.isDeviating()).toBe(true);
+
+    service.clearOverride();
+    expect(service.isDeviating()).toBe(false);
+  });
 });
