@@ -51,7 +51,7 @@ Groups the component in the sidebar. Components without a category land in "Unca
 @Showcase({ title: 'Card', category: 'Molecules' })
 ```
 
-Use ` / ` (space-slash-space) to nest categories under a parent group:
+Use `/` (space-slash-space) to nest categories under a parent group:
 
 ```typescript
 @Showcase({ title: 'Button', category: 'Atoms' })
@@ -137,6 +137,21 @@ Arbitrary key-value metadata consumed by plugins. Each official plugin documents
   },
 })
 ```
+
+### `bg`
+
+Recommended canvas background for this component. Applied automatically when the user opens the component (or one of its variants), unless a variant defines its own `bg`. The user can still pick a different background via the canvas toolbar; the override is transient and resets when switching variants or components. When the user has deviated, a `Recommended: <bg>` pill appears in the canvas with a one-click `Reset` button.
+
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+
+```typescript
+@Showcase({
+  title: 'Dark-only Card',
+  bg: 'dark',
+})
+```
+
+Variants can also declare a recommended `bg` — variant-level always wins over component-level. See [Variants](guide/variants.md#per-variant-background).
 
 ### `host`
 

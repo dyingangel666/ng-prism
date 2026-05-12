@@ -2,10 +2,10 @@ import {
   Component,
   inject,
   computed,
-  signal,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
+import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { generateSnippet } from '../renderer/snippet-generator.js';
@@ -46,7 +46,7 @@ function tokenizeXml(code: string): string {
   imports: [PrismIconComponent],
   template: `
     <div class="code-drawer" [class.is-collapsed]="collapsed()">
-      <div class="code-head" (click)="collapsed.update(v => !v)">
+      <div class="code-head" (click)="layoutService.toggleCodeDrawer()">
         <prism-icon name="chevron-down" [size]="12" class="chev" />
         <prism-icon name="copy" [size]="12" />
         <span>Angular Template</span>
@@ -145,8 +145,9 @@ function tokenizeXml(code: string): string {
 export class PrismCodeDrawerComponent {
   private readonly navigationService = inject(PrismNavigationService);
   private readonly rendererService = inject(PrismRendererService);
+  protected readonly layoutService = inject(PrismLayoutService);
 
-  protected readonly collapsed = signal(false);
+  protected readonly collapsed = this.layoutService.codeDrawerCollapsed;
 
   protected readonly snippet = computed(() => {
     const comp = this.navigationService.activeComponent();

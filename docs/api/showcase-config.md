@@ -15,6 +15,7 @@ interface ShowcaseConfig {
   tags?: string[];
   providers?: Provider[];
   meta?: Record<string, unknown>;
+  bg?: CanvasBg;
   host?: string | DirectiveHost;
   renderPage?: string;
 }
@@ -134,6 +135,25 @@ Optional arbitrary key-value metadata. Plugins read their own namespaced keys fr
 
 ---
 
+### `bg`
+
+Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background via the canvas toolbar — the override is transient and resets when switching variants or components.
+
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+
+```typescript
+@Showcase({
+  title: 'Dark-only Card',
+  bg: 'dark',
+})
+```
+
+When the user has deviated from the recommended background, a small floating pill appears in the canvas labelled `Recommended: <bg>` with a one-click `Reset` button.
+
+See also: [Variants — Per-Variant Background](guide/variants.md#per-variant-background) for the variant-level override and [Canvas State](architecture/canvas-state.md) for the full fallback model.
+
+---
+
 ### `host`
 
 Optional. Tells ng-prism how to render a **directive** that cannot render on its own.
@@ -184,8 +204,8 @@ interface DirectiveHost {
   selector: string;
   /** Import info for the Angular component */
   import: {
-    name: string;  // exported class name
-    from: string;  // npm package or path
+    name: string; // exported class name
+    from: string; // npm package or path
   };
   /** Static inputs passed to the host component */
   inputs?: Record<string, unknown>;

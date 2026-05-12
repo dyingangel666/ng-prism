@@ -4,13 +4,22 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 
-Object.defineProperty(global, 'localStorage', { value: localStorageMock, writable: true });
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
 
 function createService(): PrismLayoutService {
   return new PrismLayoutService();
@@ -59,6 +68,35 @@ describe('PrismLayoutService', () => {
     expect(s.addonsOrientation()).toBe('bottom');
   });
 
+  it('should default code drawer to expanded', () => {
+    const s = createService();
+    expect(s.codeDrawerCollapsed()).toBe(false);
+  });
+
+  it('should toggle code drawer', () => {
+    const s = createService();
+    s.toggleCodeDrawer();
+    expect(s.codeDrawerCollapsed()).toBe(true);
+    s.toggleCodeDrawer();
+    expect(s.codeDrawerCollapsed()).toBe(false);
+  });
+
+  it('should persist code drawer state to localStorage', () => {
+    const s = createService();
+    s.toggleCodeDrawer();
+    const stored = JSON.parse(localStorage.getItem('ng-prism-layout')!);
+    expect(stored.codeDrawerCollapsed).toBe(true);
+  });
+
+  it('should restore code drawer state from localStorage', () => {
+    localStorage.setItem(
+      'ng-prism-layout',
+      JSON.stringify({ codeDrawerCollapsed: true })
+    );
+    const s = createService();
+    expect(s.codeDrawerCollapsed()).toBe(true);
+  });
+
   it('should clamp sidebar width to [160, 600]', () => {
     const s = createService();
     s.setSidebarWidth(50);
@@ -95,11 +133,14 @@ describe('PrismLayoutService', () => {
   });
 
   it('should restore state from localStorage on construction', () => {
-    localStorage.setItem('ng-prism-layout', JSON.stringify({
-      sidebarVisible: false,
-      sidebarWidth: 360,
-      addonsOrientation: 'right',
-    }));
+    localStorage.setItem(
+      'ng-prism-layout',
+      JSON.stringify({
+        sidebarVisible: false,
+        sidebarWidth: 360,
+        addonsOrientation: 'right',
+      })
+    );
     const s = createService();
     expect(s.sidebarVisible()).toBe(false);
     expect(s.sidebarWidth()).toBe(360);

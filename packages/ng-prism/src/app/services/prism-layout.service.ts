@@ -11,28 +11,34 @@ export class PrismLayoutService {
   readonly sidebarWidth = signal(280);
   readonly panelHeight = signal(300);
   readonly panelWidth = signal(320);
+  readonly codeDrawerCollapsed = signal(false);
 
   constructor() {
     this.loadFromStorage();
   }
 
   toggleSidebar(): void {
-    this.sidebarVisible.update(v => !v);
+    this.sidebarVisible.update((v) => !v);
     this.saveToStorage();
   }
 
   toggleAddons(): void {
-    this.addonsVisible.update(v => !v);
+    this.addonsVisible.update((v) => !v);
     this.saveToStorage();
   }
 
   toggleToolbar(): void {
-    this.toolbarVisible.update(v => !v);
+    this.toolbarVisible.update((v) => !v);
     this.saveToStorage();
   }
 
   toggleOrientation(): void {
-    this.addonsOrientation.update(v => (v === 'bottom' ? 'right' : 'bottom'));
+    this.addonsOrientation.update((v) => (v === 'bottom' ? 'right' : 'bottom'));
+    this.saveToStorage();
+  }
+
+  toggleCodeDrawer(): void {
+    this.codeDrawerCollapsed.update((v) => !v);
     this.saveToStorage();
   }
 
@@ -56,15 +62,26 @@ export class PrismLayoutService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const d = JSON.parse(raw) as Record<string, unknown>;
-      if (typeof d['sidebarVisible'] === 'boolean') this.sidebarVisible.set(d['sidebarVisible']);
-      if (typeof d['addonsVisible'] === 'boolean') this.addonsVisible.set(d['addonsVisible']);
-      if (typeof d['toolbarVisible'] === 'boolean') this.toolbarVisible.set(d['toolbarVisible']);
-      if (d['addonsOrientation'] === 'bottom' || d['addonsOrientation'] === 'right') {
+      if (typeof d['sidebarVisible'] === 'boolean')
+        this.sidebarVisible.set(d['sidebarVisible']);
+      if (typeof d['addonsVisible'] === 'boolean')
+        this.addonsVisible.set(d['addonsVisible']);
+      if (typeof d['toolbarVisible'] === 'boolean')
+        this.toolbarVisible.set(d['toolbarVisible']);
+      if (
+        d['addonsOrientation'] === 'bottom' ||
+        d['addonsOrientation'] === 'right'
+      ) {
         this.addonsOrientation.set(d['addonsOrientation']);
       }
-      if (typeof d['sidebarWidth'] === 'number') this.sidebarWidth.set(Math.max(160, Math.min(600, d['sidebarWidth'])));
-      if (typeof d['panelHeight'] === 'number') this.panelHeight.set(Math.max(100, Math.min(600, d['panelHeight'])));
-      if (typeof d['panelWidth'] === 'number') this.panelWidth.set(Math.max(200, Math.min(600, d['panelWidth'])));
+      if (typeof d['sidebarWidth'] === 'number')
+        this.sidebarWidth.set(Math.max(160, Math.min(600, d['sidebarWidth'])));
+      if (typeof d['panelHeight'] === 'number')
+        this.panelHeight.set(Math.max(100, Math.min(600, d['panelHeight'])));
+      if (typeof d['panelWidth'] === 'number')
+        this.panelWidth.set(Math.max(200, Math.min(600, d['panelWidth'])));
+      if (typeof d['codeDrawerCollapsed'] === 'boolean')
+        this.codeDrawerCollapsed.set(d['codeDrawerCollapsed']);
     } catch {}
   }
 
@@ -77,6 +94,7 @@ export class PrismLayoutService {
       sidebarWidth: this.sidebarWidth(),
       panelHeight: this.panelHeight(),
       panelWidth: this.panelWidth(),
+      codeDrawerCollapsed: this.codeDrawerCollapsed(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }

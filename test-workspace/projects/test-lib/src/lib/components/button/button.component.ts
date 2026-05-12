@@ -1,7 +1,17 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { Showcase } from '@ng-prism/core';
 
-export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'icon-only';
+export type ButtonVariantType =
+  | 'filled'
+  | 'outlined'
+  | 'elevated'
+  | 'text'
+  | 'icon-only';
 
 @Showcase({
   title: 'Button',
@@ -64,6 +74,11 @@ export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'i
     {
       name: 'Readonly',
       inputs: { variant: 'filled', label: 'Readonly', readonly: true },
+    },
+    {
+      name: 'On dark',
+      inputs: { variant: 'elevated', label: 'On dark' },
+      bg: 'dark',
     },
   ],
   tags: ['form', 'action', 'button'],

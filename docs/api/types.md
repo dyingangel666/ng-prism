@@ -51,18 +51,18 @@ interface ScannedComponent {
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `className` | TypeScript class name |
-| `filePath` | Absolute path to the source file |
-| `showcaseConfig` | The `ShowcaseConfig` passed to `@Showcase` |
-| `inputs` | Array of extracted `InputMeta` for each `input()` signal |
-| `outputs` | Array of extracted `OutputMeta` for each `output()` signal |
-| `componentMeta.selector` | Angular element selector |
-| `componentMeta.standalone` | Whether the component is standalone |
-| `componentMeta.isDirective` | `true` if decorated with `@Directive`, `false` for `@Component` |
-| `importPath` | Entry point import path (e.g. `'my-lib/atoms'` for secondary entry points) |
-| `meta` | Plugin-injected metadata |
+| Field                       | Description                                                                |
+| --------------------------- | -------------------------------------------------------------------------- |
+| `className`                 | TypeScript class name                                                      |
+| `filePath`                  | Absolute path to the source file                                           |
+| `showcaseConfig`            | The `ShowcaseConfig` passed to `@Showcase`                                 |
+| `inputs`                    | Array of extracted `InputMeta` for each `input()` signal                   |
+| `outputs`                   | Array of extracted `OutputMeta` for each `output()` signal                 |
+| `componentMeta.selector`    | Angular element selector                                                   |
+| `componentMeta.standalone`  | Whether the component is standalone                                        |
+| `componentMeta.isDirective` | `true` if decorated with `@Directive`, `false` for `@Component`            |
+| `importPath`                | Entry point import path (e.g. `'my-lib/atoms'` for secondary entry points) |
+| `meta`                      | Plugin-injected metadata                                                   |
 
 ---
 
@@ -73,7 +73,14 @@ Describes a single `input()` signal as extracted by the scanner.
 ```typescript
 interface InputMeta {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'union' | 'array' | 'object' | 'unknown';
+  type:
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'union'
+    | 'array'
+    | 'object'
+    | 'unknown';
   rawType?: string;
   values?: string[];
   defaultValue?: unknown;
@@ -82,15 +89,15 @@ interface InputMeta {
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `name` | Property name |
-| `type` | Normalized type category used to select a control |
-| `rawType` | Raw TypeScript type string (e.g. `'primary' \| 'danger'`) |
-| `values` | For union types: the individual member values |
-| `defaultValue` | Value from `input(defaultValue)` |
-| `required` | `true` if declared with `input.required<T>()` |
-| `doc` | JSDoc comment from the property (populated by `@ng-prism/plugin-jsdoc`) |
+| Field          | Description                                                             |
+| -------------- | ----------------------------------------------------------------------- |
+| `name`         | Property name                                                           |
+| `type`         | Normalized type category used to select a control                       |
+| `rawType`      | Raw TypeScript type string (e.g. `'primary' \| 'danger'`)               |
+| `values`       | For union types: the individual member values                           |
+| `defaultValue` | Value from `input(defaultValue)`                                        |
+| `required`     | `true` if declared with `input.required<T>()`                           |
+| `doc`          | JSDoc comment from the property (populated by `@ng-prism/plugin-jsdoc`) |
 
 ---
 
@@ -167,7 +174,7 @@ componentPage({
   category: 'Atoms',
   order: 99,
   component: ButtonPatternsPageComponent,
-})
+});
 ```
 
 ---
@@ -179,7 +186,7 @@ Discriminated union used in `PrismNavigationService.categoryTree()` and `PrismNa
 ```typescript
 type NavigationItem =
   | { kind: 'component'; data: RuntimeComponent }
-  | { kind: 'page';      data: StyleguidePage };
+  | { kind: 'page'; data: StyleguidePage };
 ```
 
 ---
@@ -193,16 +200,18 @@ interface Variant {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
+  bg?: CanvasBg;
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `name` | Tab label |
-| `inputs` | Key-value map of input signal names to values |
-| `content` | Content projected into `<ng-content>` — string for single slot, record for named slots |
-| `description` | Optional description rendered below the variant tab |
-| `meta` | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`) |
+| Field         | Description                                                                                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`        | Tab label                                                                                                                                                                                 |
+| `inputs`      | Key-value map of input signal names to values                                                                                                                                             |
+| `content`     | Content projected into `<ng-content>` — string for single slot, record for named slots                                                                                                    |
+| `description` | Optional description rendered below the variant tab                                                                                                                                       |
+| `meta`        | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`)                                                                                                                                       |
+| `bg`          | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`. See [Per-Variant Background](guide/variants.md#per-variant-background). |
 
 ---
 
@@ -217,6 +226,24 @@ interface DirectiveHost {
 ```
 
 Used in `ShowcaseConfig.host` for directive showcases that require an Angular component as the host element. See [Directive Hosting](guide/directive-hosting.md).
+
+---
+
+## CanvasBg
+
+Canvas background mode used by `ShowcaseConfig.bg` and `Variant.bg`.
+
+```typescript
+type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+```
+
+| Value     | Visual                                                        |
+| --------- | ------------------------------------------------------------- |
+| `dots`    | Default — light dot grid on neutral surface                   |
+| `plain`   | Solid neutral surface, no pattern                             |
+| `light`   | Light surface tuned for components designed for light themes  |
+| `dark`    | Dark surface tuned for components designed for dark themes    |
+| `checker` | Checkerboard pattern, useful for components with transparency |
 
 ---
 

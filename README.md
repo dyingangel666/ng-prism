@@ -91,10 +91,7 @@ export default defineConfig({
     '--prism-font-sans': "'Inter', sans-serif",
   },
 
-  appProviders: [
-    provideAnimationsAsync(),
-    provideHttpClient(),
-  ],
+  appProviders: [provideAnimationsAsync(), provideHttpClient()],
 });
 ```
 
@@ -142,13 +139,13 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Official Plugins
 
-| Plugin | Package | Description |
-|---|---|---|
-| JSDoc | `@ng-prism/plugin-jsdoc` | API documentation from JSDoc comments |
-| Figma | `@ng-prism/plugin-figma` | Figma design embed + visual diff |
-| Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector |
-| Perf | `@ng-prism/plugin-perf` | Render performance profiling |
-| Coverage | `@ng-prism/plugin-coverage` | Per-component test coverage from Istanbul/v8 |
+| Plugin    | Package                      | Description                                  |
+| --------- | ---------------------------- | -------------------------------------------- |
+| JSDoc     | `@ng-prism/plugin-jsdoc`     | API documentation from JSDoc comments        |
+| Figma     | `@ng-prism/plugin-figma`     | Figma design embed + visual diff             |
+| Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector                      |
+| Perf      | `@ng-prism/plugin-perf`      | Render performance profiling                 |
+| Coverage  | `@ng-prism/plugin-coverage`  | Per-component test coverage from Istanbul/v8 |
 
 > **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
 
@@ -157,6 +154,10 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 - Angular >= 21
 - TypeScript >= 5.5
 - Components must use `input()` / `output()` signals
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, the test workspace workflow, and PR guidelines.
 
 ## License
 

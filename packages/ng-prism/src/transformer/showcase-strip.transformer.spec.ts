@@ -6,7 +6,7 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core';",
         "import { Component } from '@angular/core';",
-        "class MyComponent {}",
+        'class MyComponent {}',
         "Showcase({ title: 'Test', category: 'Demo' })(MyComponent);",
       ].join('\n');
 
@@ -23,7 +23,7 @@ describe('stripShowcaseDecorators', () => {
     it('should remove entire __decorate statement when only Showcase remains', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core';",
-        "class MyComponent {}",
+        'class MyComponent {}',
         "MyComponent = __decorate([Showcase({ title: 'Test' })], MyComponent);",
       ].join('\n');
 
@@ -40,7 +40,7 @@ describe('stripShowcaseDecorators', () => {
     it('should remove only Showcase from __decorate array', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core';",
-        "class MyComponent {}",
+        'class MyComponent {}',
         "MyComponent = __decorate([Showcase({ title: 'Test' }), OtherDecorator()], MyComponent);",
       ].join('\n');
 
@@ -61,7 +61,7 @@ describe('stripShowcaseDecorators', () => {
         "import { Component } from '@angular/core';",
         "@Showcase({ title: 'Test' })",
         "@Component({ selector: 'my-comp' })",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
@@ -78,7 +78,7 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core';",
         "Showcase({ title: 'Test' })(MyComponent);",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
@@ -93,8 +93,8 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase, defineConfig } from '@ng-prism/core';",
         "Showcase({ title: 'Test' })(MyComponent);",
-        "class MyComponent {}",
-        "const c = defineConfig({ plugins: [] });",
+        'class MyComponent {}',
+        'const c = defineConfig({ plugins: [] });',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
@@ -110,7 +110,7 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase as S } from '@ng-prism/core';",
         "S({ title: 'Test' })(MyComponent);",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
@@ -127,7 +127,7 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Component } from '@angular/core';",
         "@Component({ selector: 'my-comp' })",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
@@ -141,7 +141,7 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core';",
         "Showcase({ title: 'Test' })(MyComponent);",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const first = stripShowcaseDecorators(input);
@@ -156,13 +156,111 @@ describe('stripShowcaseDecorators', () => {
       const input = [
         "import { Showcase } from '@ng-prism/core/decorator';",
         "Showcase({ title: 'Test' })(MyComponent);",
-        "class MyComponent {}",
+        'class MyComponent {}',
       ].join('\n');
 
       const result = stripShowcaseDecorators(input);
 
       expect(result).not.toContain('Showcase');
       expect(result).not.toContain('@ng-prism/core');
+    });
+  });
+
+  describe('audit — fail-loud on dangling references', () => {
+    it('throws when a bare reference to Showcase remains after stripping', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        'class MyComponent {}',
+        'const meta = Showcase;',
+      ].join('\n');
+
+      expect(() => stripShowcaseDecorators(input, 'icon.ts')).toThrow(
+        /Showcase/
+      );
+      expect(() => stripShowcaseDecorators(input, 'icon.ts')).toThrow(
+        /icon\.ts/
+      );
+    });
+
+    it('throws when an unrecognized decorator emit form leaves Showcase referenced', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        'class IconComponent {}',
+        "IconComponent = __esDecorate(null, [Showcase({ title: 'Icon' })], null, IconComponent);",
+      ].join('\n');
+
+      expect(() => stripShowcaseDecorators(input, 'icon.ts')).toThrow(
+        /Showcase/
+      );
+    });
+
+    it('includes line number in error message', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        '',
+        'class MyComponent {}',
+        'const x = Showcase;',
+      ].join('\n');
+
+      expect(() => stripShowcaseDecorators(input, 'test.ts')).toThrow(
+        /test\.ts:\d+/
+      );
+    });
+
+    it('detects leaks via aliased local name', () => {
+      const input = [
+        "import { Showcase as S } from '@ng-prism/core';",
+        'class MyComponent {}',
+        'const x = S;',
+      ].join('\n');
+
+      expect(() => stripShowcaseDecorators(input)).toThrow(/S\b/);
+    });
+
+    it('does not throw on legitimate complete strips', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        'class MyComponent {}',
+        "MyComponent = __decorate([Showcase({ title: 'Test' })], MyComponent);",
+      ].join('\n');
+
+      expect(() => stripShowcaseDecorators(input)).not.toThrow();
+    });
+  });
+
+  describe('__decorate form — chained self-alias assignment', () => {
+    it('should remove entire statement when only Showcase remains in chained assignment', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        'class IconComponent {}',
+        "IconComponent = IconComponent_1 = __decorate([Showcase({ title: 'Icon', variants: [] })], IconComponent);",
+        'var IconComponent_1;',
+        'export { IconComponent };',
+      ].join('\n');
+
+      const result = stripShowcaseDecorators(input);
+
+      expect(result).not.toContain('Showcase');
+      expect(result).not.toContain('__decorate');
+      expect(result).not.toContain('@ng-prism/core');
+      expect(result).toContain('class IconComponent');
+    });
+
+    it('should preserve chain when other decorators remain in chained assignment', () => {
+      const input = [
+        "import { Showcase } from '@ng-prism/core';",
+        'class IconComponent {}',
+        "IconComponent = IconComponent_1 = __decorate([Showcase({ title: 'Icon' }), OtherDecorator()], IconComponent);",
+      ].join('\n');
+
+      const result = stripShowcaseDecorators(input);
+
+      expect(result).not.toContain('Showcase');
+      expect(result).not.toContain('@ng-prism/core');
+      expect(result).toContain('__decorate');
+      expect(result).toContain('OtherDecorator');
+      expect(result).toContain('IconComponent = IconComponent_1');
+      expect(result).toContain('class IconComponent');
     });
   });
 });

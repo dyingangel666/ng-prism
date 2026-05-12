@@ -11,6 +11,7 @@ interface Variant {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
+  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
 }
 ```
 
@@ -40,15 +41,15 @@ When no variants are defined, a single unlabeled canvas is shown and all control
 
 The TypeScript Compiler API extracts the type of each `input()` signal at build time and maps it to the appropriate control in the Controls panel:
 
-| TypeScript type | Control |
-|-----------------|---------|
-| `string` | Text input |
-| `number` | Number input |
-| `boolean` | Checkbox |
+| TypeScript type                            | Control                            |
+| ------------------------------------------ | ---------------------------------- |
+| `string`                                   | Text input                         |
+| `number`                                   | Number input                       |
+| `boolean`                                  | Checkbox                           |
 | `'a' \| 'b' \| 'c'` (string literal union) | Select dropdown with those options |
-| `object` / interface | JSON editor |
-| Array | JSON editor |
-| Other / unknown | Text input (cast to string) |
+| `object` / interface                       | JSON editor                        |
+| Array                                      | JSON editor                        |
+| Other / unknown                            | Text input (cast to string)        |
 
 ### Example
 
@@ -64,6 +65,7 @@ export class TagComponent {
 ```
 
 The Controls panel renders:
+
 - `label` → text input (required, no default)
 - `count` → number input (default `0`)
 - `active` → checkbox (default `false`)
@@ -75,7 +77,7 @@ The Controls panel renders:
 Default values are read from the `input()` call:
 
 ```typescript
-label = input('Click me');         // default: 'Click me'
+label = input('Click me'); // default: 'Click me'
 variant = input<'primary'>('primary'); // default: 'primary'
 ```
 
@@ -137,3 +139,23 @@ variants: [
   },
 ],
 ```
+
+## Per-Variant Background
+
+A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically — overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it via the canvas toolbar, but switching variants resets to the recommendation.
+
+```typescript
+@Showcase({
+  title: 'Button',
+  variants: [
+    { name: 'On light', inputs: { variant: 'primary' }, bg: 'light' },
+    { name: 'On dark',  inputs: { variant: 'primary' }, bg: 'dark'  },
+  ],
+})
+```
+
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+
+A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
+
+See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.

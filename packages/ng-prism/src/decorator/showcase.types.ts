@@ -1,4 +1,5 @@
 import type { Provider } from '@angular/core';
+import type { CanvasBg } from '../shared/canvas-bg.type.js';
 
 export interface DirectiveHost {
   selector: string;
@@ -29,6 +30,13 @@ export interface ShowcaseConfig {
   providers?: Provider[];
   /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
   meta?: Record<string, unknown>;
+  /**
+   * Recommended canvas background for this component. Applied when the user
+   * opens the component, unless a variant defines its own `bg`. The user
+   * can override via the canvas toolbar; the override is transient and
+   * resets when switching variants or components.
+   */
+  bg?: CanvasBg;
   /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
   host?: string | DirectiveHost;
   /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
@@ -50,4 +58,6 @@ export interface Variant {
   description?: string;
   /** Arbitrary metadata for plugins (e.g. { figma: 'https://...?node-id=12-34' }) */
   meta?: Record<string, unknown>;
+  /** Recommended canvas background for this variant. Overrides `ShowcaseConfig.bg`. */
+  bg?: CanvasBg;
 }
