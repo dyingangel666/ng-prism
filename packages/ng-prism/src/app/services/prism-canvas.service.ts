@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
+import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 
-export type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+export type { CanvasBg };
 
 const STORAGE_KEY = 'ng-prism-canvas';
 
@@ -40,11 +41,7 @@ export class PrismCanvasService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const d = JSON.parse(raw) as Record<string, unknown>;
-      if (
-        ['dots', 'plain', 'light', 'dark', 'checker'].includes(
-          d['bg'] as string
-        )
-      ) {
+      if (CANVAS_BGS.includes(d['bg'] as CanvasBg)) {
         this.bg.set(d['bg'] as CanvasBg);
       }
       if (typeof d['zoom'] === 'number') this.zoom.set(d['zoom']);
