@@ -12,7 +12,7 @@ describe('createScanner', () => {
     const scanner = createScanner({ entryPoint });
     const manifest = scanner.scan();
 
-    expect(manifest.components).toHaveLength(5);
+    expect(manifest.components).toHaveLength(6);
   });
 
   it('should produce correct ButtonComponent data', () => {
@@ -70,7 +70,7 @@ describe('createScanner', () => {
     });
     const manifest = scanner.scan();
 
-    expect(manifest.components).toHaveLength(5);
+    expect(manifest.components).toHaveLength(6);
   });
 
   it('should produce correct HighlightDirective data', () => {

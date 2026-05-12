@@ -1,8 +1,13 @@
 import ts from 'typescript';
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import type { ShowcaseConfig } from '../../decorator/showcase.types.js';
+import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { evaluateExpression, findDecorator, getDecoratorArgument } from './ast-utils.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
+
+function isCanvasBg(value: unknown): value is CanvasBg {
+  return typeof value === 'string' && (CANVAS_BGS as readonly string[]).includes(value);
+}
 
 /**
  * Scan exported symbols for Angular components annotated with @Showcase.
@@ -89,8 +94,29 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
   if (obj['host'] !== undefined) config.host = obj['host'] as ShowcaseConfig['host'];
   if (obj['renderPage']) config.renderPage = obj['renderPage'] as string;
 
+  if (obj['bg'] !== undefined) {
+    if (isCanvasBg(obj['bg'])) {
+      config.bg = obj['bg'];
+    } else {
+      console.warn(
+        `⚠ ng-prism: ${className} declares invalid bg "${String(obj['bg'])}" — ` +
+        `expected one of: dots, plain, light, dark, checker. Skipping.`
+      );
+    }
+  }
+
   if (Array.isArray(obj['variants'])) {
-    config.variants = obj['variants'] as ShowcaseConfig['variants'];
+    config.variants = (obj['variants'] as Array<Record<string, unknown>>).map((variant) => {
+      const cleaned: Record<string, unknown> = { ...variant };
+      if (variant['bg'] !== undefined && !isCanvasBg(variant['bg'])) {
+        console.warn(
+          `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
+          `invalid bg "${String(variant['bg'])}" — expected one of: dots, plain, light, dark, checker. Skipping.`
+        );
+        delete cleaned['bg'];
+      }
+      return cleaned;
+    }) as ShowcaseConfig['variants'];
   }
 
   return config;

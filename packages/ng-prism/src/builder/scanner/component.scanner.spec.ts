@@ -34,8 +34,9 @@ describe('scanComponents', () => {
     expect(names).toContain('SignalButtonComponent');
     expect(names).toContain('ModelInputComponent');
     expect(names).toContain('HighlightDirective');
+    expect(names).toContain('InvalidBgComponent');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(5);
+    expect(components).toHaveLength(6);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
@@ -180,6 +181,41 @@ describe('scanComponents', () => {
     );
     expect(warnSpy).not.toHaveBeenCalledWith(
       expect.stringContaining('HighlightDirective')
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it('should extract component-level bg', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.showcaseConfig.bg).toBe('dark');
+  });
+
+  it('should extract variant-level bg', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.showcaseConfig.variants![0].bg).toBe('light');
+    expect(button.showcaseConfig.variants![1].bg).toBeUndefined();
+  });
+
+  it('should leave bg undefined when not declared', () => {
+    const components = scanComponents(exports, checker);
+    const card = components.find((c) => c.className === 'CardComponent')!;
+
+    expect(card.showcaseConfig.bg).toBeUndefined();
+  });
+
+  it('should warn and skip invalid bg values', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const components = scanComponents(exports, checker);
+
+    const invalid = components.find((c) => c.className === 'InvalidBgComponent')!;
+    expect(invalid.showcaseConfig.bg).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('InvalidBgComponent declares invalid bg "rainbow"')
     );
 
     warnSpy.mockRestore();
