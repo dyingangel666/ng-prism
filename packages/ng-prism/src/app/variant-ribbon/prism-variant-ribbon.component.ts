@@ -35,9 +35,17 @@ function variantColor(name: string, index: number): string {
         class="v-tab"
         [class.v-tab--active]="rendererService.activeVariantIndex() === i"
         [style.--vc]="variantColor(v.name, i)"
+        [title]="v.bg ? 'Recommended background: ' + v.bg : null"
         (click)="rendererService.selectVariant(i)"
       >
         <span class="v-dot"></span>
+        @if (v.bg) {
+          <span
+            class="v-bg-dot"
+            [attr.data-bg]="v.bg"
+            [attr.aria-label]="'Recommended background: ' + v.bg"
+          ></span>
+        }
         {{ v.name }}
       </button>
       }
@@ -129,6 +137,28 @@ function variantColor(name: string, index: number): string {
     .v-tab--active .v-dot {
       opacity: 1;
       box-shadow: 0 0 6px var(--vc);
+    }
+
+    .v-bg-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid var(--prism-border);
+      background: var(--prism-bg-surface);
+    }
+    .v-bg-dot[data-bg="light"] { background: #f7f5fc; border-color: rgba(0,0,0,0.15); }
+    .v-bg-dot[data-bg="dark"]  { background: #07050f; border-color: rgba(255,255,255,0.2); }
+    .v-bg-dot[data-bg="dots"]  { background: color-mix(in srgb, var(--prism-text-muted) 40%, transparent); }
+    .v-bg-dot[data-bg="plain"] { background: transparent; }
+    .v-bg-dot[data-bg="checker"] {
+      background-image:
+        linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--prism-border) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--prism-border) 75%);
+      background-size: 4px 4px;
+      background-position: 0 0, 0 2px, 2px -2px, -2px 0;
     }
 
     .variant-ribbon-right {
