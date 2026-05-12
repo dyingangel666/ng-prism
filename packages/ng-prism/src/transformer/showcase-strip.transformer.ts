@@ -34,7 +34,14 @@ function tryHandleDecorateStatement(
     return undefined;
   }
 
-  const rhs = expr.right;
+  const chain: ts.BinaryExpression[] = [];
+  let current: ts.Expression = expr;
+  while (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+    chain.push(current);
+    current = current.right;
+  }
+
+  const rhs = current;
   if (!ts.isCallExpression(rhs) || !ts.isIdentifier(rhs.expression) || rhs.expression.text !== '__decorate') {
     return undefined;
   }
@@ -56,8 +63,14 @@ function tryHandleDecorateStatement(
 
   const newArray = factory.updateArrayLiteralExpression(decoratorArray, remaining);
   const newCall = factory.updateCallExpression(rhs, rhs.expression, rhs.typeArguments, [newArray, ...args.slice(1)]);
-  const newBinary = factory.updateBinaryExpression(expr, expr.left, expr.operatorToken, newCall);
-  const newStmt = factory.updateExpressionStatement(stmt, newBinary);
+
+  let newRhs: ts.Expression = newCall;
+  for (let i = chain.length - 1; i >= 0; i--) {
+    const link = chain[i];
+    newRhs = factory.updateBinaryExpression(link, link.left, link.operatorToken, newRhs);
+  }
+
+  const newStmt = factory.updateExpressionStatement(stmt, newRhs);
   return { action: 'replace', statement: newStmt };
 }
 
@@ -202,6 +215,28 @@ export function createShowcaseStripTransformer(): ts.TransformerFactory<ts.Sourc
   };
 }
 
+interface LeakLocation {
+  name: string;
+  line: number;
+}
+
+function findShowcaseLeak(sourceFile: ts.SourceFile, names: Set<string>): LeakLocation | undefined {
+  let leak: LeakLocation | undefined;
+
+  function visit(node: ts.Node): void {
+    if (leak) return;
+    if (ts.isIdentifier(node) && names.has(node.text)) {
+      const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+      leak = { name: node.text, line: line + 1 };
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return leak;
+}
+
 export function stripShowcaseDecorators(source: string, fileName = 'file.ts'): string {
   const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true);
 
@@ -212,5 +247,16 @@ export function stripShowcaseDecorators(source: string, fileName = 'file.ts'): s
   const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
   const output = printer.printFile(result.transformed[0]);
   result.dispose();
+
+  const audited = ts.createSourceFile(fileName, output, ts.ScriptTarget.Latest, true);
+  const leak = findShowcaseLeak(audited, importInfo.localNames);
+  if (leak) {
+    throw new Error(
+      `[ng-prism] Showcase reference '${leak.name}' left in output after stripping at ${fileName}:${leak.line}. `
+        + `The Showcase import was removed but a reference remains — this would cause a ReferenceError at runtime. `
+        + `This is a transformer bug; please report the input source.`,
+    );
+  }
+
   return output;
 }
