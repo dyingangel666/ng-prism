@@ -193,6 +193,7 @@ interface Variant {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
+  bg?: CanvasBg;
 }
 ```
 
@@ -203,6 +204,7 @@ interface Variant {
 | `content` | Content projected into `<ng-content>` — string for single slot, record for named slots |
 | `description` | Optional description rendered below the variant tab |
 | `meta` | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`) |
+| `bg` | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`. See [Per-Variant Background](guide/variants.md#per-variant-background). |
 
 ---
 
@@ -217,6 +219,24 @@ interface DirectiveHost {
 ```
 
 Used in `ShowcaseConfig.host` for directive showcases that require an Angular component as the host element. See [Directive Hosting](guide/directive-hosting.md).
+
+---
+
+## CanvasBg
+
+Canvas background mode used by `ShowcaseConfig.bg` and `Variant.bg`.
+
+```typescript
+type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+```
+
+| Value | Visual |
+|-------|--------|
+| `dots` | Default — light dot grid on neutral surface |
+| `plain` | Solid neutral surface, no pattern |
+| `light` | Light surface tuned for components designed for light themes |
+| `dark` | Dark surface tuned for components designed for dark themes |
+| `checker` | Checkerboard pattern, useful for components with transparency |
 
 ---
 

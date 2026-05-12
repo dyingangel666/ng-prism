@@ -40,5 +40,6 @@
 
 - **Architecture**
   - [How the Scanner Works](architecture/scanner.md)
+  - [Canvas State](architecture/canvas-state.md)
   - [Build Pipeline](architecture/pipeline.md)
   - [Plugin Hooks](architecture/plugin-hooks.md)

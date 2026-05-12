@@ -11,6 +11,7 @@ interface Variant {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
+  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
 }
 ```
 
@@ -137,3 +138,23 @@ variants: [
   },
 ],
 ```
+
+## Per-Variant Background
+
+A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically — overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it via the canvas toolbar, but switching variants resets to the recommendation.
+
+```typescript
+@Showcase({
+  title: 'Button',
+  variants: [
+    { name: 'On light', inputs: { variant: 'primary' }, bg: 'light' },
+    { name: 'On dark',  inputs: { variant: 'primary' }, bg: 'dark'  },
+  ],
+})
+```
+
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+
+A small color dot appears inside the variant tab whenever `bg` is set, signalling the recommendation at a glance.
+
+See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.
