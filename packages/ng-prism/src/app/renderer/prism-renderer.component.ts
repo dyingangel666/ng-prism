@@ -32,12 +32,13 @@ import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
+import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
 
 @Component({
   selector: 'prism-renderer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismCanvasRulersComponent, NgComponentOutlet],
+  imports: [PrismCanvasRulersComponent, PrismCanvasBgPillComponent, NgComponentOutlet],
   template: `
     <div class="prism-canvas-stage" [attr.data-bg]="variantBg.effective()">
       <div class="canvas-badges">
@@ -50,6 +51,7 @@ import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.compon
         [class.visible]="canvasService.guides()"
       ></div>
       <prism-canvas-rulers />
+      <prism-canvas-bg-pill />
 
       <div class="demo-wrap" [style.--zoom]="canvasService.zoom()">
         <ng-container #outlet />

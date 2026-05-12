@@ -16,7 +16,7 @@ module.exports = {
       displayName: 'ng-prism:node',
       preset: '../../jest.preset.js',
       testEnvironment: 'node',
-      testPathIgnorePatterns: ['\\.browser\\.spec\\.ts$', 'prism-url-state\\.service\\.spec\\.ts$', 'prism-persistence\\.service\\.spec\\.ts$', 'prism-variant-bg\\.service\\.spec\\.ts$'],
+      testPathIgnorePatterns: ['\\.browser\\.spec\\.ts$', 'prism-url-state\\.service\\.spec\\.ts$', 'prism-persistence\\.service\\.spec\\.ts$', 'prism-variant-bg\\.service\\.spec\\.ts$', 'prism-canvas-bg-pill\\.component\\.spec\\.ts$'],
       transform: {
         '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig],
       },
@@ -28,7 +28,7 @@ module.exports = {
       displayName: 'ng-prism:browser',
       preset: '../../jest.preset.js',
       testEnvironment: 'jsdom',
-      testMatch: ['**/*.browser.spec.ts', '**/prism-url-state.service.spec.ts', '**/prism-persistence.service.spec.ts', '**/prism-variant-bg.service.spec.ts'],
+      testMatch: ['**/*.browser.spec.ts', '**/prism-url-state.service.spec.ts', '**/prism-persistence.service.spec.ts', '**/prism-variant-bg.service.spec.ts', '**/prism-canvas-bg-pill.component.spec.ts'],
       setupFiles: ['<rootDir>/src/test-setup-browser.ts'],
       transform: {
         '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig],
