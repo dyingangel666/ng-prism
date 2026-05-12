@@ -42,6 +42,11 @@ export class PrismLayoutService {
     this.saveToStorage();
   }
 
+  toggleCodeDrawer(): void {
+    this.codeDrawerCollapsed.update(v => !v);
+    this.saveToStorage();
+  }
+
   setSidebarWidth(px: number): void {
     this.sidebarWidth.set(Math.max(160, Math.min(600, px)));
     this.saveToStorage();
