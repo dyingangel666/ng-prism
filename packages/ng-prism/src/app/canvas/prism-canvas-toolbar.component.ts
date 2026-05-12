@@ -4,6 +4,7 @@ import {
   PrismCanvasService,
   type CanvasBg,
 } from '../services/prism-canvas.service.js';
+import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 
 @Component({
   selector: 'prism-canvas-toolbar',
@@ -17,8 +18,8 @@ import {
         @for (bg of bgs; track bg) {
         <button
           class="tool-btn"
-          [class.tool-btn--active]="canvas.bg() === bg"
-          (click)="canvas.setBg(bg)"
+          [class.tool-btn--active]="variantBg.effective() === bg"
+          (click)="setBg(bg)"
         >
           {{ capitalize(bg) }}
         </button>
@@ -127,6 +128,15 @@ import {
 })
 export class PrismCanvasToolbarComponent {
   protected readonly canvas = inject(PrismCanvasService);
+  protected readonly variantBg = inject(PrismVariantBgService);
+
+  protected setBg(bg: CanvasBg): void {
+    if (this.variantBg.recommended() !== null) {
+      this.variantBg.setOverride(bg);
+    } else {
+      this.canvas.setBg(bg);
+    }
+  }
 
   protected readonly bgs: CanvasBg[] = [
     'dots',
