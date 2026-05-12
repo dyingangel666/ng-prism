@@ -7,8 +7,9 @@ const BUTTON: ScannedComponent = {
   showcaseConfig: {
     title: 'Button',
     category: 'Inputs',
+    bg: 'dark',
     variants: [
-      { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' } },
+      { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' }, bg: 'light' },
       { name: 'Danger', inputs: { variant: 'danger', disabled: true } },
     ],
   },
@@ -99,5 +100,12 @@ describe('generateManifest', () => {
     const source = generateManifest([CARD]);
 
     expect(source).toContain('outputs: []');
+  });
+
+  it('should include component-level and variant-level bg', () => {
+    const source = generateManifest([BUTTON]);
+
+    expect(source).toContain('bg: "dark"');
+    expect(source).toContain('bg: "light"');
   });
 });
