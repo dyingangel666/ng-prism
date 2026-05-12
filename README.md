@@ -158,6 +158,10 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 - TypeScript >= 5.5
 - Components must use `input()` / `output()` signals
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, the test workspace workflow, and PR guidelines.
+
 ## License
 
 [MIT](./LICENSE)
