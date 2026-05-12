@@ -116,7 +116,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
         delete cleaned['bg'];
       }
       return cleaned;
-    }) as ShowcaseConfig['variants'];
+    }) as unknown as ShowcaseConfig['variants'];
   }
 
   return config;
