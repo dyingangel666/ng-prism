@@ -4,13 +4,22 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
   };
 })();
 
-Object.defineProperty(global, 'localStorage', { value: localStorageMock, writable: true });
+Object.defineProperty(global, 'localStorage', {
+  value: localStorageMock,
+  writable: true,
+});
 
 function createService(): PrismLayoutService {
   return new PrismLayoutService();
@@ -80,7 +89,10 @@ describe('PrismLayoutService', () => {
   });
 
   it('should restore code drawer state from localStorage', () => {
-    localStorage.setItem('ng-prism-layout', JSON.stringify({ codeDrawerCollapsed: true }));
+    localStorage.setItem(
+      'ng-prism-layout',
+      JSON.stringify({ codeDrawerCollapsed: true })
+    );
     const s = createService();
     expect(s.codeDrawerCollapsed()).toBe(true);
   });
@@ -121,11 +133,14 @@ describe('PrismLayoutService', () => {
   });
 
   it('should restore state from localStorage on construction', () => {
-    localStorage.setItem('ng-prism-layout', JSON.stringify({
-      sidebarVisible: false,
-      sidebarWidth: 360,
-      addonsOrientation: 'right',
-    }));
+    localStorage.setItem(
+      'ng-prism-layout',
+      JSON.stringify({
+        sidebarVisible: false,
+        sidebarWidth: 360,
+        addonsOrientation: 'right',
+      })
+    );
     const s = createService();
     expect(s.sidebarVisible()).toBe(false);
     expect(s.sidebarWidth()).toBe(360);
