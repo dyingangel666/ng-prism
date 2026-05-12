@@ -59,6 +59,32 @@ describe('PrismLayoutService', () => {
     expect(s.addonsOrientation()).toBe('bottom');
   });
 
+  it('should default code drawer to expanded', () => {
+    const s = createService();
+    expect(s.codeDrawerCollapsed()).toBe(false);
+  });
+
+  it('should toggle code drawer', () => {
+    const s = createService();
+    s.toggleCodeDrawer();
+    expect(s.codeDrawerCollapsed()).toBe(true);
+    s.toggleCodeDrawer();
+    expect(s.codeDrawerCollapsed()).toBe(false);
+  });
+
+  it('should persist code drawer state to localStorage', () => {
+    const s = createService();
+    s.toggleCodeDrawer();
+    const stored = JSON.parse(localStorage.getItem('ng-prism-layout')!);
+    expect(stored.codeDrawerCollapsed).toBe(true);
+  });
+
+  it('should restore code drawer state from localStorage', () => {
+    localStorage.setItem('ng-prism-layout', JSON.stringify({ codeDrawerCollapsed: true }));
+    const s = createService();
+    expect(s.codeDrawerCollapsed()).toBe(true);
+  });
+
   it('should clamp sidebar width to [160, 600]', () => {
     const s = createService();
     s.setSidebarWidth(50);
