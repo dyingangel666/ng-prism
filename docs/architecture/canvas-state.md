@@ -32,6 +32,6 @@ The override auto-clears whenever the active variant or component changes, so na
 
 ## UI Affordances
 
-- **Variant ribbon** — a small color dot appears inside the variant tab when `bg` is declared on the variant (passive, always visible while the recommendation exists).
+- **Canvas toolbar — recommendation marker** — a small gold star appears next to the recommended background button (driven by `recommended()`). Tooltip: `Recommended background for this variant`. Passive, always visible while a recommendation is active.
 - **Canvas pill** — `Recommended: <bg> [Reset]` appears in the top-right of the canvas only when `isDeviating()` is true (actionable; the button clears the override and returns to the recommendation).
-- **Canvas toolbar** — the active background button binds to `effective()`. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`).
+- **Canvas toolbar — active state** — the active background button binds to `effective()`. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`).

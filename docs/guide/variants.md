@@ -155,6 +155,6 @@ A variant can declare a recommended canvas background. When the user selects the
 
 Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
 
-A small color dot appears inside the variant tab whenever `bg` is set, signalling the recommendation at a glance.
+A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
 
 See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.

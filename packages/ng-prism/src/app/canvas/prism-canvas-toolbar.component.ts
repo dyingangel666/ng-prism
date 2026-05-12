@@ -19,8 +19,28 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
         <button
           class="tool-btn"
           [class.tool-btn--active]="variantBg.effective() === bg"
+          [class.tool-btn--recommended]="variantBg.recommended() === bg"
+          [title]="
+            variantBg.recommended() === bg
+              ? 'Recommended background for this variant'
+              : null
+          "
           (click)="setBg(bg)"
         >
+          @if (variantBg.recommended() === bg) {
+          <svg
+            class="bg-star"
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="#facc15"
+            aria-label="Recommended"
+          >
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"
+            />
+          </svg>
+          }
           {{ capitalize(bg) }}
         </button>
         }
@@ -106,6 +126,10 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       color: var(--prism-text);
       background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--prism-primary) 30%, transparent);
+    }
+    .bg-star {
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.4));
     }
 
     .tool-sep {
