@@ -63,12 +63,57 @@ ng-prism is an **Nx 22 monorepo** using **npm workspaces**. All packages live un
 
 ### Running the Test Workspace
 
-The `test-workspace/` directory contains a real Angular workspace used for integration testing.
+The `test-workspace/` directory contains a real Angular workspace used as a live demo and integration test target for the local `@ng-prism/*` packages (linked via `file:../packages/*`).
+
+#### Why a local registry?
+
+`test-workspace/` resolves the in-repo packages through a local **Verdaccio** registry (`http://localhost:4873`). This serves two purposes:
+
+1. **Isolated transitive resolution** — Angular and other transitive dependencies of the in-repo packages are fetched through Verdaccio (which proxies to `https://registry.npmjs.org/` for unknown packages, see `.verdaccio/config.yml`).
+2. **No global config pollution** — `test-workspace/.npmrc` pins the registry to `localhost:4873` for this directory only. Your global `~/.npmrc` (e.g. a corporate registry) stays untouched. The `local-registry` Nx target passes `location: none` so Verdaccio itself also leaves your global config alone.
+
+#### Initial setup
+
+Use **two terminals**. Terminal 1 keeps Verdaccio alive; Terminal 2 is for installs and serving.
+
+**Terminal 1** — start Verdaccio (keep running):
 
 ```bash
-npm run test:workspace:setup   # Build ng-prism core
-npm run test:workspace:serve   # Serve the demo app
+npx nx run ng-prism-workspace:local-registry
 ```
+
+Wait until `http address - http://localhost:4873/` appears.
+
+**Terminal 2** — install + serve:
+
+```bash
+npm run test:workspace:setup    # Build ng-prism core into dist/
+cd test-workspace
+npm install                     # Resolves @ng-prism/* via file: links, others via Verdaccio
+cd ..
+npm run test:workspace:serve    # Runs `ng run test-lib:prism`
+```
+
+#### Scripts reference
+
+| Script                       | Purpose                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `test:workspace:setup`       | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build    |
+| `test:workspace:serve`       | Start the prism dev server (`ng run test-lib:prism`)                    |
+| `test:workspace:build`       | Production build of the prism app                                       |
+| `test:workspace:kill`        | Free port 4400 if a previous serve crashed                              |
+| `test:workspace:clean`       | **Destructive.** Removes `test-workspace/node_modules`, `package-lock.json`, `ng-prism.config.ts` and reverts `angular.json` + `package.json` to git state. Use only for a full re-setup. |
+
+After running `test:workspace:clean`, repeat the **Initial setup** steps (Verdaccio + `npm install`). The `ng-prism.config.ts` file is recreated by the `ng add @ng-prism/core` schematic if missing.
+
+#### Troubleshooting
+
+| Symptom                                                                                | Likely cause                                                                                            |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `npm install` hangs indefinitely with a spinner                                        | Verdaccio is not running. Start it in Terminal 1 (see Initial setup).                                   |
+| `Cannot find module '@angular-devkit/build-angular/package.json'` on `serve`           | `test-workspace/node_modules` is missing — usually after `test:workspace:clean`. Run `npm install` in `test-workspace/`. |
+| `EPERM open ~/.npmrc` when starting Verdaccio                                          | Nx tried to mutate your global config. Verify the `local-registry` target in root `package.json` has `"location": "none"`. |
+| Changes in `packages/ng-prism/` not picked up in the test workspace                    | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                          |
 
 ### Viewing Documentation Locally
 
