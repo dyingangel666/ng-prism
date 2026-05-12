@@ -65,6 +65,11 @@ export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'i
       name: 'Readonly',
       inputs: { variant: 'filled', label: 'Readonly', readonly: true },
     },
+    {
+      name: 'On dark',
+      inputs: { variant: 'elevated', label: 'On dark' },
+      bg: 'dark',
+    },
   ],
   tags: ['form', 'action', 'button'],
 })
