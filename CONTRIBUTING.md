@@ -124,6 +124,7 @@ The `test-workspace/` directory is a real Angular workspace used as a live demo 
 | ---------------------------- | ----------------------------------------------------------------------- |
 | `test:workspace:setup`       | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build    |
 | `test:workspace:install`     | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` → `ng-prism.config.ts` if missing. Requires Verdaccio running. |
+| `test:workspace:update`      | Rebuild `ng-prism` + all plugins (Nx-cached), purge Angular esbuild cache, and re-resolve the `file:` deps offline. Use this after editing source. Does **not** require Verdaccio for incremental updates. |
 | `test:workspace:serve`       | Start the Prism dev server on `http://localhost:4400`                   |
 | `test:workspace:build`       | Production build of the Prism app                                       |
 | `test:workspace:kill`        | Free port 4400 if a previous serve crashed                              |
@@ -132,16 +133,18 @@ The `test-workspace/` directory is a real Angular workspace used as a live demo 
 
 #### Common workflows
 
-**Iterating on `packages/ng-prism/` while serving the demo:**
+**Iterating on `packages/ng-prism/` (or any plugin) while serving the demo:**
 
 ```bash
-# Terminal A (keep running): Verdaccio
+# Terminal A (only needed for first install/full reset): Verdaccio
 npx nx run ng-prism-workspace:local-registry
 
-# Terminal B: rebuild core after edits, then restart serve
-npm run test:workspace:setup
-npm run test:workspace:serve
+# Terminal B: after editing source, refresh test-workspace + restart serve
+npm run test:workspace:update    # rebuild + re-sync file: deps + clear Angular cache
+npm run test:workspace:serve     # hard-refresh the browser (Cmd+Shift+R) when reloaded
 ```
+
+`test:workspace:update` uses `npm install --prefer-offline` so it does **not** require Verdaccio to be running once the initial install has populated the npm cache. If you've added a brand-new dependency (rare), start Verdaccio and use `test:workspace:install` instead.
 
 **Pulled latest `main` and something broke:**
 

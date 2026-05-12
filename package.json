@@ -11,6 +11,7 @@
     "test:workspace:kill": "lsof -ti :4400 | xargs kill -9 2>/dev/null || echo 'No process on port 4400'",
     "test:workspace:setup": "nx build ng-prism --skip-nx-cache",
     "test:workspace:install": "cd test-workspace && npm install && (test -f ng-prism.config.ts || cp ng-prism.config.example.ts ng-prism.config.ts)",
+    "test:workspace:update": "nx run-many -t build --projects='ng-prism,plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf' && cd test-workspace && rm -rf .angular/cache && npm install --prefer-offline --no-audit --no-fund",
     "test:workspace:serve": "cd test-workspace && ng run test-lib:prism",
     "test:workspace:build": "cd test-workspace && ng run test-lib:prism-build",
     "test:workspace:clean": "cd test-workspace && rm -rf node_modules package-lock.json ng-prism.config.ts && git checkout -- angular.json package.json",
