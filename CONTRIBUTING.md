@@ -30,7 +30,11 @@ By participating in this project, you agree to maintain a respectful and inclusi
 - **npm** >= 10
 - **Git**
 
-### Fork & Clone
+### First-Time Setup
+
+This walkthrough takes a fresh clone to a fully running test workspace. Follow each step in order.
+
+#### 1. Clone and install root dependencies
 
 ```bash
 git clone https://github.com/<your-username>/ng-prism.git
@@ -38,7 +42,9 @@ cd ng-prism
 npm install
 ```
 
-### Verify Your Setup
+`npm install` activates **npm workspaces** under `packages/*` and installs all monorepo dev dependencies (Nx, Angular SDK, Jest, etc.).
+
+#### 2. Verify the core builds and tests
 
 ```bash
 npx nx build ng-prism       # Build the core package
@@ -46,7 +52,41 @@ npx nx test ng-prism        # Run tests
 npx nx lint ng-prism        # Lint
 ```
 
-All three commands should complete without errors.
+All three should complete without errors. If any fail, fix the environment before continuing — the test-workspace setup depends on a working core build.
+
+#### 3. Start the local registry (separate terminal)
+
+The `test-workspace/` resolves transitive dependencies through a local **Verdaccio** registry. Open a **second terminal** and keep it running:
+
+```bash
+npx nx run ng-prism-workspace:local-registry
+```
+
+Wait until `http address - http://localhost:4873/` appears. This terminal stays open for the entire dev session.
+
+Why Verdaccio? See [Why a local registry?](#why-a-local-registry) below.
+
+#### 4. Install and bootstrap the test workspace
+
+Back in your **first terminal**:
+
+```bash
+npm run test:workspace:install
+```
+
+This does two things:
+- `npm install` inside `test-workspace/` (resolves `@ng-prism/*` via `file:` links, everything else via Verdaccio → proxied to npmjs.org)
+- Creates `ng-prism.config.ts` from `ng-prism.config.example.ts` if it doesn't exist (the actual config file is gitignored)
+
+#### 5. Run the demo
+
+```bash
+npm run test:workspace:serve
+```
+
+The Prism dev server starts on `http://localhost:4400`. Open it to verify your setup works end-to-end.
+
+You're done — your local setup is ready for development.
 
 ## Development Setup
 
@@ -61,59 +101,70 @@ ng-prism is an **Nx 22 monorepo** using **npm workspaces**. All packages live un
 | Nx               | 22      | Monorepo tooling, task orchestration |
 | Jest + SWC       | 30      | Testing                              |
 
-### Running the Test Workspace
+### Test Workspace
 
-The `test-workspace/` directory contains a real Angular workspace used as a live demo and integration test target for the local `@ng-prism/*` packages (linked via `file:../packages/*`).
+The `test-workspace/` directory is a real Angular workspace used as a live demo and integration test target for the local `@ng-prism/*` packages (linked via `file:../packages/*`).
 
 #### Why a local registry?
 
-`test-workspace/` resolves the in-repo packages through a local **Verdaccio** registry (`http://localhost:4873`). This serves two purposes:
+`test-workspace/` resolves transitive dependencies through a local **Verdaccio** registry (`http://localhost:4873`). This serves two purposes:
 
-1. **Isolated transitive resolution** — Angular and other transitive dependencies of the in-repo packages are fetched through Verdaccio (which proxies to `https://registry.npmjs.org/` for unknown packages, see `.verdaccio/config.yml`).
-2. **No global config pollution** — `test-workspace/.npmrc` pins the registry to `localhost:4873` for this directory only. Your global `~/.npmrc` (e.g. a corporate registry) stays untouched. The `local-registry` Nx target passes `location: none` so Verdaccio itself also leaves your global config alone.
+1. **Isolated transitive resolution** — Angular and other transitive deps of the in-repo packages are fetched through Verdaccio, which proxies to `https://registry.npmjs.org/` for unknown packages (see `.verdaccio/config.yml`).
+2. **No global config pollution** — `test-workspace/.npmrc` pins the registry to `localhost:4873` for this directory only. Your global `~/.npmrc` (e.g. a corporate registry) stays untouched. The `local-registry` Nx target also passes `location: none` so Verdaccio itself leaves your global config alone.
 
-#### Initial setup
+#### The `ng-prism.config.ts` file
 
-Use **two terminals**. Terminal 1 keeps Verdaccio alive; Terminal 2 is for installs and serving.
+`test-workspace/ng-prism.config.ts` configures plugins, theme, and other Prism options. It is **gitignored** because it is environment/setup specific — the schematic that ships with `@ng-prism/core` creates a minimal version, and contributors may add or remove plugins as they like.
 
-**Terminal 1** — start Verdaccio (keep running):
-
-```bash
-npx nx run ng-prism-workspace:local-registry
-```
-
-Wait until `http address - http://localhost:4873/` appears.
-
-**Terminal 2** — install + serve:
-
-```bash
-npm run test:workspace:setup    # Build ng-prism core into dist/
-cd test-workspace
-npm install                     # Resolves @ng-prism/* via file: links, others via Verdaccio
-cd ..
-npm run test:workspace:serve    # Runs `ng run test-lib:prism`
-```
+`test-workspace/ng-prism.config.example.ts` is **committed** as a reference. It enables all five official plugins (figma, jsdoc, perf, coverage, box-model). The `test:workspace:install` script copies it to `ng-prism.config.ts` on first run if the latter doesn't exist.
 
 #### Scripts reference
 
 | Script                       | Purpose                                                                 |
 | ---------------------------- | ----------------------------------------------------------------------- |
 | `test:workspace:setup`       | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build    |
-| `test:workspace:serve`       | Start the prism dev server (`ng run test-lib:prism`)                    |
-| `test:workspace:build`       | Production build of the prism app                                       |
+| `test:workspace:install`     | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` → `ng-prism.config.ts` if missing. Requires Verdaccio running. |
+| `test:workspace:serve`       | Start the Prism dev server on `http://localhost:4400`                   |
+| `test:workspace:build`       | Production build of the Prism app                                       |
 | `test:workspace:kill`        | Free port 4400 if a previous serve crashed                              |
 | `test:workspace:clean`       | **Destructive.** Removes `test-workspace/node_modules`, `package-lock.json`, `ng-prism.config.ts` and reverts `angular.json` + `package.json` to git state. Use only for a full re-setup. |
+| `test:workspace:reset`       | `clean` + `setup` + `install` in one. Use after a broken state. Requires Verdaccio running. |
 
-After running `test:workspace:clean`, repeat the **Initial setup** steps (Verdaccio + `npm install`). The `ng-prism.config.ts` file is recreated by the `ng add @ng-prism/core` schematic if missing.
+#### Common workflows
+
+**Iterating on `packages/ng-prism/` while serving the demo:**
+
+```bash
+# Terminal A (keep running): Verdaccio
+npx nx run ng-prism-workspace:local-registry
+
+# Terminal B: rebuild core after edits, then restart serve
+npm run test:workspace:setup
+npm run test:workspace:serve
+```
+
+**Pulled latest `main` and something broke:**
+
+```bash
+# Terminal A: Verdaccio running
+npm run test:workspace:reset
+npm run test:workspace:serve
+```
+
+**Accidentally ran `test:workspace:clean`:**
+
+Same as above — `npm run test:workspace:reset` puts the workspace back into a runnable state.
 
 #### Troubleshooting
 
-| Symptom                                                                                | Likely cause                                                                                            |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `npm install` hangs indefinitely with a spinner                                        | Verdaccio is not running. Start it in Terminal 1 (see Initial setup).                                   |
-| `Cannot find module '@angular-devkit/build-angular/package.json'` on `serve`           | `test-workspace/node_modules` is missing — usually after `test:workspace:clean`. Run `npm install` in `test-workspace/`. |
-| `EPERM open ~/.npmrc` when starting Verdaccio                                          | Nx tried to mutate your global config. Verify the `local-registry` target in root `package.json` has `"location": "none"`. |
-| Changes in `packages/ng-prism/` not picked up in the test workspace                    | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                          |
+| Symptom                                                                                | Likely cause + fix                                                                                                                                                            |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install` (in test-workspace) hangs indefinitely with a spinner                    | Verdaccio is not running. Start it: `npx nx run ng-prism-workspace:local-registry`.                                                                                            |
+| `Cannot find module '@angular-devkit/build-angular/package.json'` on serve             | `test-workspace/node_modules` is missing. Run `npm run test:workspace:install`.                                                                                                |
+| `Angular compilation initialization failed. Error: Debug Failure` on serve             | `ng-prism.config.ts` is missing. Copy the example: `cp test-workspace/ng-prism.config.example.ts test-workspace/ng-prism.config.ts`, or run `npm run test:workspace:install`. |
+| `EPERM open ~/.npmrc` when starting Verdaccio                                          | Nx tried to mutate your global config. The `local-registry` target in root `package.json` should have `"location": "none"` — verify it.                                       |
+| Changes in `packages/ng-prism/` not picked up in the test workspace                    | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                                                                                                |
+| Port 4400 already in use                                                               | `npm run test:workspace:kill`.                                                                                                                                                |
 
 ### Viewing Documentation Locally
 
