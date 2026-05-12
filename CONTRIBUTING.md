@@ -47,12 +47,10 @@ npm install
 #### 2. Verify the core builds and tests
 
 ```bash
-npx nx build ng-prism       # Build the core package
-npx nx test ng-prism        # Run tests
-npx nx lint ng-prism        # Lint
+npm run check       # Format check + test + build + typecheck for all packages
 ```
 
-All three should complete without errors. If any fail, fix the environment before continuing — the test-workspace setup depends on a working core build.
+This is the same gate CI runs (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
 
 #### 3. Start the local registry (separate terminal)
 
@@ -75,6 +73,7 @@ npm run test:workspace:install
 ```
 
 This does two things:
+
 - `npm install` inside `test-workspace/` (resolves `@ng-prism/*` via `file:` links, everything else via Verdaccio → proxied to npmjs.org)
 - Creates `ng-prism.config.ts` from `ng-prism.config.example.ts` if it doesn't exist (the actual config file is gitignored)
 
@@ -94,12 +93,12 @@ ng-prism is an **Nx 22 monorepo** using **npm workspaces**. All packages live un
 
 ### Key Dependencies
 
-| Dependency       | Version | Purpose                              |
-| ---------------- | ------- | ------------------------------------ |
-| Angular          | 21      | Framework                            |
-| TypeScript       | 5.9     | Language                             |
-| Nx               | 22      | Monorepo tooling, task orchestration |
-| Jest + SWC       | 30      | Testing                              |
+| Dependency | Version | Purpose                              |
+| ---------- | ------- | ------------------------------------ |
+| Angular    | 21      | Framework                            |
+| TypeScript | 5.9     | Language                             |
+| Nx         | 22      | Monorepo tooling, task orchestration |
+| Jest + SWC | 30      | Testing                              |
 
 ### Test Workspace
 
@@ -120,16 +119,16 @@ The `test-workspace/` directory is a real Angular workspace used as a live demo 
 
 #### Scripts reference
 
-| Script                       | Purpose                                                                 |
-| ---------------------------- | ----------------------------------------------------------------------- |
-| `test:workspace:setup`       | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build    |
-| `test:workspace:install`     | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` → `ng-prism.config.ts` if missing. Requires Verdaccio running. |
-| `test:workspace:update`      | Rebuild `ng-prism` + all plugins (Nx-cached), purge Angular esbuild cache, and re-resolve the `file:` deps offline. Use this after editing source. Does **not** require Verdaccio for incremental updates. |
-| `test:workspace:serve`       | Start the Prism dev server on `http://localhost:4400`                   |
-| `test:workspace:build`       | Production build of the Prism app                                       |
-| `test:workspace:kill`        | Free port 4400 if a previous serve crashed                              |
-| `test:workspace:clean`       | **Destructive.** Removes `test-workspace/node_modules`, `package-lock.json`, `ng-prism.config.ts` and reverts `angular.json` + `package.json` to git state. Use only for a full re-setup. |
-| `test:workspace:reset`       | `clean` + `setup` + `install` in one. Use after a broken state. Requires Verdaccio running. |
+| Script                   | Purpose                                                                                                                                                                                                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test:workspace:setup`   | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build                                                                                                                                       |
+| `test:workspace:install` | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` → `ng-prism.config.ts` if missing. Requires Verdaccio running.                                                                |
+| `test:workspace:update`  | Rebuild `ng-prism` + all plugins (Nx-cached), purge Angular esbuild cache, and re-resolve the `file:` deps offline. Use this after editing source. Does **not** require Verdaccio for incremental updates. |
+| `test:workspace:serve`   | Start the Prism dev server on `http://localhost:4400`                                                                                                                                                      |
+| `test:workspace:build`   | Production build of the Prism app                                                                                                                                                                          |
+| `test:workspace:kill`    | Free port 4400 if a previous serve crashed                                                                                                                                                                 |
+| `test:workspace:clean`   | **Destructive.** Removes `test-workspace/node_modules`, `package-lock.json`, `ng-prism.config.ts` and reverts `angular.json` + `package.json` to git state. Use only for a full re-setup.                  |
+| `test:workspace:reset`   | `clean` + `setup` + `install` in one. Use after a broken state. Requires Verdaccio running.                                                                                                                |
 
 #### Common workflows
 
@@ -160,14 +159,14 @@ Same as above — `npm run test:workspace:reset` puts the workspace back into a 
 
 #### Troubleshooting
 
-| Symptom                                                                                | Likely cause + fix                                                                                                                                                            |
-| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm install` (in test-workspace) hangs indefinitely with a spinner                    | Verdaccio is not running. Start it: `npx nx run ng-prism-workspace:local-registry`.                                                                                            |
-| `Cannot find module '@angular-devkit/build-angular/package.json'` on serve             | `test-workspace/node_modules` is missing. Run `npm run test:workspace:install`.                                                                                                |
-| `Angular compilation initialization failed. Error: Debug Failure` on serve             | `ng-prism.config.ts` is missing. Copy the example: `cp test-workspace/ng-prism.config.example.ts test-workspace/ng-prism.config.ts`, or run `npm run test:workspace:install`. |
-| `EPERM open ~/.npmrc` when starting Verdaccio                                          | Nx tried to mutate your global config. The `local-registry` target in root `package.json` should have `"location": "none"` — verify it.                                       |
-| Changes in `packages/ng-prism/` not picked up in the test workspace                    | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                                                                                                |
-| Port 4400 already in use                                                               | `npm run test:workspace:kill`.                                                                                                                                                |
+| Symptom                                                                    | Likely cause + fix                                                                                                                                                            |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm install` (in test-workspace) hangs indefinitely with a spinner        | Verdaccio is not running. Start it: `npx nx run ng-prism-workspace:local-registry`.                                                                                           |
+| `Cannot find module '@angular-devkit/build-angular/package.json'` on serve | `test-workspace/node_modules` is missing. Run `npm run test:workspace:install`.                                                                                               |
+| `Angular compilation initialization failed. Error: Debug Failure` on serve | `ng-prism.config.ts` is missing. Copy the example: `cp test-workspace/ng-prism.config.example.ts test-workspace/ng-prism.config.ts`, or run `npm run test:workspace:install`. |
+| `EPERM open ~/.npmrc` when starting Verdaccio                              | Nx tried to mutate your global config. The `local-registry` target in root `package.json` should have `"location": "none"` — verify it.                                       |
+| Changes in `packages/ng-prism/` not picked up in the test workspace        | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                                                                                                |
+| Port 4400 already in use                                                   | `npm run test:workspace:kill`.                                                                                                                                                |
 
 ### Viewing Documentation Locally
 
@@ -209,14 +208,14 @@ git checkout -b feat/my-feature
 
 Use a descriptive branch name with a prefix:
 
-| Prefix       | Use for                      |
-| ------------ | ---------------------------- |
-| `feat/`      | New features                 |
-| `fix/`       | Bug fixes                    |
-| `refactor/`  | Code refactoring             |
-| `docs/`      | Documentation changes        |
-| `test/`      | Test additions or fixes      |
-| `chore/`     | Maintenance, dependencies    |
+| Prefix      | Use for                   |
+| ----------- | ------------------------- |
+| `feat/`     | New features              |
+| `fix/`      | Bug fixes                 |
+| `refactor/` | Code refactoring          |
+| `docs/`     | Documentation changes     |
+| `test/`     | Test additions or fixes   |
+| `chore/`    | Maintenance, dependencies |
 
 ### 2. Make Your Changes
 
@@ -224,20 +223,32 @@ Use a descriptive branch name with a prefix:
 - Keep changes scoped to a single concern
 - Run tests frequently
 
-### 3. Run the Full Check Suite
+### 3. Run the Check Suite
+
+Before opening a PR, run the same checks CI runs on GitHub:
 
 ```bash
-npx nx test ng-prism         # Unit tests
-npx nx lint ng-prism         # Linting
-npx nx build ng-prism        # Build verification
+npm run check       # nx format:check + test + build + typecheck for all packages
 ```
 
-For plugin work, also build and test the specific plugin:
+If `format:check` fails, auto-fix with:
 
 ```bash
-npx nx test plugin-figma
-npx nx build plugin-figma
+npm run check:fix   # nx format:write — rewrites mis-formatted files in place
 ```
+
+Then commit the formatting fixes.
+
+For fast iteration on a single package during development, run targets directly:
+
+```bash
+npx nx test ng-prism         # Unit tests for one project
+npx nx build ng-prism        # Build one project
+npx nx typecheck ng-prism    # Typecheck one project
+npx nx test plugin-figma     # Same for a plugin
+```
+
+These are faster than the full `check` because they only run on the named project. Use them while iterating, then run `npm run check` once before pushing.
 
 ### 4. Submit a Pull Request
 
@@ -313,15 +324,15 @@ This project follows **Conventional Commits**.
 
 ### Types
 
-| Type         | Description                                    |
-| ------------ | ---------------------------------------------- |
-| `feat`       | A new feature                                  |
-| `fix`        | A bug fix                                      |
-| `refactor`   | Code change that neither fixes a bug nor adds a feature |
-| `docs`       | Documentation only changes                     |
-| `test`       | Adding or correcting tests                     |
-| `chore`      | Maintenance tasks, dependency updates          |
-| `release`    | Version bump and release                       |
+| Type       | Description                                             |
+| ---------- | ------------------------------------------------------- |
+| `feat`     | A new feature                                           |
+| `fix`      | A bug fix                                               |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `docs`     | Documentation only changes                              |
+| `test`     | Adding or correcting tests                              |
+| `chore`    | Maintenance tasks, dependency updates                   |
+| `release`  | Version bump and release                                |
 
 ### Examples
 
@@ -342,11 +353,9 @@ docs: update plugin API reference
 
 ### Before Submitting
 
-1. Ensure all tests pass: `npx nx test ng-prism`
-2. Ensure linting passes: `npx nx lint ng-prism`
-3. Ensure the build succeeds: `npx nx build ng-prism`
-4. Update documentation in `docs/` if your change affects public APIs or behavior
-5. Rebase on latest `main` if your branch has fallen behind
+1. Run the full check suite: `npm run check` — must pass clean (this is what CI runs)
+2. Update documentation in `docs/` if your change affects public APIs or behavior
+3. Rebase on latest `main` if your branch has fallen behind
 
 ### PR Requirements
 
@@ -375,12 +384,12 @@ ng-prism has a plugin architecture. Plugins live under `packages/plugin-*/` and 
 
 ### Plugin Hooks
 
-| Hook                 | Phase     | Purpose                                |
-| -------------------- | --------- | -------------------------------------- |
-| `onComponentScanned` | Build     | Enrich component metadata              |
-| `onPageScanned`      | Build     | Modify or add pages                    |
-| `wrapComponent`      | Runtime   | Wrap rendered components               |
-| `panels`             | Runtime   | Add custom panels to the UI            |
+| Hook                 | Phase   | Purpose                     |
+| -------------------- | ------- | --------------------------- |
+| `onComponentScanned` | Build   | Enrich component metadata   |
+| `onPageScanned`      | Build   | Modify or add pages         |
+| `wrapComponent`      | Runtime | Wrap rendered components    |
+| `panels`             | Runtime | Add custom panels to the UI |
 
 ### Plugin Conventions
 

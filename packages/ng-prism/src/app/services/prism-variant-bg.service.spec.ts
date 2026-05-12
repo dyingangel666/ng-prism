@@ -8,7 +8,10 @@ import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 import { PrismVariantBgService } from './prism-variant-bg.service.js';
 
-function makeComponent(bg?: CanvasBg, variants?: { name: string; bg?: CanvasBg }[]): RuntimeComponent {
+function makeComponent(
+  bg?: CanvasBg,
+  variants?: { name: string; bg?: CanvasBg }[]
+): RuntimeComponent {
   return {
     type: class {} as unknown as RuntimeComponent['type'],
     meta: {
@@ -25,7 +28,7 @@ function makeComponent(bg?: CanvasBg, variants?: { name: string; bg?: CanvasBg }
 function activate(
   manifestService: PrismManifestService,
   nav: PrismNavigationService,
-  comp: RuntimeComponent,
+  comp: RuntimeComponent
 ): void {
   manifestService.updateManifest({ components: [comp], pages: [] });
   nav.activeItem.set({ kind: 'component', data: comp });
@@ -71,7 +74,7 @@ describe('PrismVariantBgService', () => {
     activate(
       manifestService,
       nav,
-      makeComponent('dark', [{ name: 'Light variant', bg: 'light' }]),
+      makeComponent('dark', [{ name: 'Light variant', bg: 'light' }])
     );
     renderer.activeVariantIndex.set(0);
     TestBed.flushEffects();

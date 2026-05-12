@@ -1,4 +1,10 @@
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { join } from 'node:path';
 import { createScanner } from './scanner.js';
@@ -18,7 +24,9 @@ describe('createScanner', () => {
   it('should produce correct ButtonComponent data', () => {
     const scanner = createScanner({ entryPoint });
     const manifest = scanner.scan();
-    const button = manifest.components.find((c) => c.className === 'ButtonComponent')!;
+    const button = manifest.components.find(
+      (c) => c.className === 'ButtonComponent'
+    )!;
 
     expect(button).toBeDefined();
     expect(button.showcaseConfig.title).toBe('Button');
@@ -46,7 +54,9 @@ describe('createScanner', () => {
   it('should produce correct CardComponent data', () => {
     const scanner = createScanner({ entryPoint });
     const manifest = scanner.scan();
-    const card = manifest.components.find((c) => c.className === 'CardComponent')!;
+    const card = manifest.components.find(
+      (c) => c.className === 'CardComponent'
+    )!;
 
     expect(card).toBeDefined();
     expect(card.showcaseConfig.title).toBe('Card');
@@ -76,7 +86,9 @@ describe('createScanner', () => {
   it('should produce correct HighlightDirective data', () => {
     const scanner = createScanner({ entryPoint });
     const manifest = scanner.scan();
-    const highlight = manifest.components.find((c) => c.className === 'HighlightDirective')!;
+    const highlight = manifest.components.find(
+      (c) => c.className === 'HighlightDirective'
+    )!;
 
     expect(highlight).toBeDefined();
     expect(highlight.showcaseConfig.title).toBe('Highlight');
@@ -94,8 +106,9 @@ describe('createScanner', () => {
     expect(first.components.length).toBeGreaterThan(0);
 
     const second = scanner.scan();
-    expect(second.components.map((c) => c.className))
-      .toEqual(first.components.map((c) => c.className));
+    expect(second.components.map((c) => c.className)).toEqual(
+      first.components.map((c) => c.className)
+    );
   });
 
   it('should produce the same manifest on repeated scans when files are unchanged', () => {
@@ -105,8 +118,9 @@ describe('createScanner', () => {
     const second = scanner.scan();
 
     expect(second.components).toHaveLength(first.components.length);
-    expect(second.components.map((c) => c.className))
-      .toEqual(first.components.map((c) => c.className));
+    expect(second.components.map((c) => c.className)).toEqual(
+      first.components.map((c) => c.className)
+    );
   });
 
   it('should pick up file changes between scans', () => {
@@ -117,15 +131,22 @@ describe('createScanner', () => {
       const scanner = createScanner({ entryPoint: mutableEntry });
 
       const first = scanner.scan();
-      const originalButton = first.components.find((c) => c.className === 'ButtonComponent')!;
+      const originalButton = first.components.find(
+        (c) => c.className === 'ButtonComponent'
+      )!;
       expect(originalButton.showcaseConfig.title).toBe('Button');
 
       const buttonFile = join(tmpDir, 'button.component.ts');
       const content = readFileSync(buttonFile, 'utf-8');
-      writeFileSync(buttonFile, content.replace("title: 'Button',", "title: 'MutatedButton',"));
+      writeFileSync(
+        buttonFile,
+        content.replace("title: 'Button',", "title: 'MutatedButton',")
+      );
 
       const second = scanner.scan();
-      const mutatedButton = second.components.find((c) => c.className === 'ButtonComponent')!;
+      const mutatedButton = second.components.find(
+        (c) => c.className === 'ButtonComponent'
+      )!;
       expect(mutatedButton.showcaseConfig.title).toBe('MutatedButton');
     } finally {
       rmSync(tmpDir, { recursive: true, force: true });

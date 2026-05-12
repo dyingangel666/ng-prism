@@ -51,7 +51,7 @@ Groups the component in the sidebar. Components without a category land in "Unca
 @Showcase({ title: 'Card', category: 'Molecules' })
 ```
 
-Use ` / ` (space-slash-space) to nest categories under a parent group:
+Use `/` (space-slash-space) to nest categories under a parent group:
 
 ```typescript
 @Showcase({ title: 'Button', category: 'Atoms' })

@@ -204,8 +204,8 @@ interface DirectiveHost {
   selector: string;
   /** Import info for the Angular component */
   import: {
-    name: string;  // exported class name
-    from: string;  // npm package or path
+    name: string; // exported class name
+    from: string; // npm package or path
   };
   /** Static inputs passed to the host component */
   inputs?: Record<string, unknown>;

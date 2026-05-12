@@ -45,7 +45,9 @@ describe('scanComponents', () => {
 
     expect(button.showcaseConfig.title).toBe('Button');
     expect(button.showcaseConfig.category).toBe('Inputs');
-    expect(button.showcaseConfig.description).toBe('A versatile button component');
+    expect(button.showcaseConfig.description).toBe(
+      'A versatile button component'
+    );
     expect(button.showcaseConfig.tags).toEqual(['form', 'action']);
   });
 
@@ -115,7 +117,9 @@ describe('scanComponents', () => {
 
   it('should set isDirective true for directives', () => {
     const components = scanComponents(exports, checker);
-    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+    const highlight = components.find(
+      (c) => c.className === 'HighlightDirective'
+    )!;
 
     expect(highlight.componentMeta.isDirective).toBe(true);
     expect(highlight.componentMeta.selector).toBe('[appHighlight]');
@@ -131,7 +135,9 @@ describe('scanComponents', () => {
 
   it('should extract inputs and outputs from directives', () => {
     const components = scanComponents(exports, checker);
-    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+    const highlight = components.find(
+      (c) => c.className === 'HighlightDirective'
+    )!;
 
     expect(highlight.inputs).toHaveLength(1);
     expect(highlight.inputs[0].name).toBe('highlightColor');
@@ -144,7 +150,9 @@ describe('scanComponents', () => {
 
   it('should extract host config from directive showcase', () => {
     const components = scanComponents(exports, checker);
-    const highlight = components.find((c) => c.className === 'HighlightDirective')!;
+    const highlight = components.find(
+      (c) => c.className === 'HighlightDirective'
+    )!;
 
     expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
   });
@@ -164,9 +172,13 @@ describe('scanComponents', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     const components = scanComponents(exports, checker);
 
-    expect(components.find((c) => c.className === 'MissingTitleComponent')).toBeUndefined();
+    expect(
+      components.find((c) => c.className === 'MissingTitleComponent')
+    ).toBeUndefined();
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('MissingTitleComponent has @Showcase without a "title" field')
+      expect.stringContaining(
+        'MissingTitleComponent has @Showcase without a "title" field'
+      )
     );
 
     warnSpy.mockRestore();
@@ -212,10 +224,14 @@ describe('scanComponents', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
     const components = scanComponents(exports, checker);
 
-    const invalid = components.find((c) => c.className === 'InvalidBgComponent')!;
+    const invalid = components.find(
+      (c) => c.className === 'InvalidBgComponent'
+    )!;
     expect(invalid.showcaseConfig.bg).toBeUndefined();
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('InvalidBgComponent declares invalid bg "rainbow"')
+      expect.stringContaining(
+        'InvalidBgComponent declares invalid bg "rainbow"'
+      )
     );
 
     warnSpy.mockRestore();

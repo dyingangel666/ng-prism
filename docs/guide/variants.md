@@ -41,15 +41,15 @@ When no variants are defined, a single unlabeled canvas is shown and all control
 
 The TypeScript Compiler API extracts the type of each `input()` signal at build time and maps it to the appropriate control in the Controls panel:
 
-| TypeScript type | Control |
-|-----------------|---------|
-| `string` | Text input |
-| `number` | Number input |
-| `boolean` | Checkbox |
+| TypeScript type                            | Control                            |
+| ------------------------------------------ | ---------------------------------- |
+| `string`                                   | Text input                         |
+| `number`                                   | Number input                       |
+| `boolean`                                  | Checkbox                           |
 | `'a' \| 'b' \| 'c'` (string literal union) | Select dropdown with those options |
-| `object` / interface | JSON editor |
-| Array | JSON editor |
-| Other / unknown | Text input (cast to string) |
+| `object` / interface                       | JSON editor                        |
+| Array                                      | JSON editor                        |
+| Other / unknown                            | Text input (cast to string)        |
 
 ### Example
 
@@ -65,6 +65,7 @@ export class TagComponent {
 ```
 
 The Controls panel renders:
+
 - `label` → text input (required, no default)
 - `count` → number input (default `0`)
 - `active` → checkbox (default `false`)
@@ -76,7 +77,7 @@ The Controls panel renders:
 Default values are read from the `input()` call:
 
 ```typescript
-label = input('Click me');         // default: 'Click me'
+label = input('Click me'); // default: 'Click me'
 variant = input<'primary'>('primary'); // default: 'primary'
 ```
 

@@ -38,7 +38,11 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
   selector: 'prism-renderer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismCanvasRulersComponent, PrismCanvasBgPillComponent, NgComponentOutlet],
+  imports: [
+    PrismCanvasRulersComponent,
+    PrismCanvasBgPillComponent,
+    NgComponentOutlet,
+  ],
   template: `
     <div class="prism-canvas-stage" [attr.data-bg]="variantBg.effective()">
       <div class="canvas-badges">
