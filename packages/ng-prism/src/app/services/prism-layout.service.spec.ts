@@ -68,33 +68,35 @@ describe('PrismLayoutService', () => {
     expect(s.addonsOrientation()).toBe('bottom');
   });
 
-  it('should default code drawer to expanded', () => {
+  it('should default template popover to hidden', () => {
     const s = createService();
-    expect(s.codeDrawerCollapsed()).toBe(false);
+    expect(s.templatePopoverVisible()).toBe(false);
   });
 
-  it('should toggle code drawer', () => {
+  it('should toggle template popover', () => {
     const s = createService();
-    s.toggleCodeDrawer();
-    expect(s.codeDrawerCollapsed()).toBe(true);
-    s.toggleCodeDrawer();
-    expect(s.codeDrawerCollapsed()).toBe(false);
+    s.toggleTemplatePopover();
+    expect(s.templatePopoverVisible()).toBe(true);
+    s.toggleTemplatePopover();
+    expect(s.templatePopoverVisible()).toBe(false);
   });
 
-  it('should persist code drawer state to localStorage', () => {
+  it('should close template popover', () => {
     const s = createService();
-    s.toggleCodeDrawer();
-    const stored = JSON.parse(localStorage.getItem('ng-prism-layout')!);
-    expect(stored.codeDrawerCollapsed).toBe(true);
+    s.toggleTemplatePopover();
+    expect(s.templatePopoverVisible()).toBe(true);
+    s.closeTemplatePopover();
+    expect(s.templatePopoverVisible()).toBe(false);
   });
 
-  it('should restore code drawer state from localStorage', () => {
-    localStorage.setItem(
-      'ng-prism-layout',
-      JSON.stringify({ codeDrawerCollapsed: true })
-    );
+  it('should not persist template popover state to localStorage', () => {
     const s = createService();
-    expect(s.codeDrawerCollapsed()).toBe(true);
+    s.toggleTemplatePopover();
+    const raw = localStorage.getItem('ng-prism-layout');
+    if (raw) {
+      const stored = JSON.parse(raw);
+      expect(stored.templatePopoverVisible).toBeUndefined();
+    }
   });
 
   it('should clamp sidebar width to [160, 600]', () => {

@@ -5,6 +5,7 @@ import {
   type CanvasBg,
 } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
+import { PrismLayoutService } from '../services/prism-layout.service.js';
 
 @Component({
   selector: 'prism-canvas-toolbar',
@@ -79,6 +80,19 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
         <prism-icon name="move" [size]="13" />
         Rulers
       </button>
+
+      <div class="tool-spacer"></div>
+
+      <button
+        class="tool-btn tool-btn--tpl"
+        [class.tool-btn--tpl-active]="layout.templatePopoverVisible()"
+        (click)="layout.toggleTemplatePopover()"
+        title="Toggle Angular template"
+        aria-label="Toggle Angular template"
+      >
+        <prism-icon name="code" [size]="13" />
+        Template
+      </button>
     </div>
   `,
   styles: `
@@ -148,11 +162,30 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       margin-right: 2px;
     }
 
+    .tool-spacer { flex: 1; }
+
+    .tool-btn--tpl {
+      color: var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
+      border: 1px solid
+        color-mix(in srgb, var(--prism-primary) 25%, transparent);
+      font-family: var(--font-mono);
+    }
+    .tool-btn--tpl:hover {
+      color: var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 18%, transparent);
+    }
+    .tool-btn--tpl.tool-btn--tpl-active {
+      background: color-mix(in srgb, var(--prism-primary) 22%, transparent);
+      box-shadow: inset 0 0 0 1px
+        color-mix(in srgb, var(--prism-primary) 35%, transparent);
+    }
   `,
 })
 export class PrismCanvasToolbarComponent {
   protected readonly canvas = inject(PrismCanvasService);
   protected readonly variantBg = inject(PrismVariantBgService);
+  protected readonly layout = inject(PrismLayoutService);
 
   protected setBg(bg: CanvasBg): void {
     if (this.variantBg.recommended() !== null) {

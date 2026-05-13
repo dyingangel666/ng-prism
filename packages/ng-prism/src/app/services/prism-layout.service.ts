@@ -11,7 +11,7 @@ export class PrismLayoutService {
   readonly sidebarWidth = signal(280);
   readonly panelHeight = signal(300);
   readonly panelWidth = signal(320);
-  readonly codeDrawerCollapsed = signal(false);
+  readonly templatePopoverVisible = signal(false);
 
   constructor() {
     this.loadFromStorage();
@@ -37,9 +37,12 @@ export class PrismLayoutService {
     this.saveToStorage();
   }
 
-  toggleCodeDrawer(): void {
-    this.codeDrawerCollapsed.update((v) => !v);
-    this.saveToStorage();
+  toggleTemplatePopover(): void {
+    this.templatePopoverVisible.update((v) => !v);
+  }
+
+  closeTemplatePopover(): void {
+    this.templatePopoverVisible.set(false);
   }
 
   setSidebarWidth(px: number): void {
@@ -80,8 +83,6 @@ export class PrismLayoutService {
         this.panelHeight.set(Math.max(100, Math.min(600, d['panelHeight'])));
       if (typeof d['panelWidth'] === 'number')
         this.panelWidth.set(Math.max(200, Math.min(600, d['panelWidth'])));
-      if (typeof d['codeDrawerCollapsed'] === 'boolean')
-        this.codeDrawerCollapsed.set(d['codeDrawerCollapsed']);
     } catch {}
   }
 
@@ -94,7 +95,6 @@ export class PrismLayoutService {
       sidebarWidth: this.sidebarWidth(),
       panelHeight: this.panelHeight(),
       panelWidth: this.panelWidth(),
-      codeDrawerCollapsed: this.codeDrawerCollapsed(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }

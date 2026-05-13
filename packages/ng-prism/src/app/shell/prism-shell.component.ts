@@ -28,7 +28,7 @@ import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.com
 import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
 import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
 import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
-import { PrismCodeDrawerComponent } from '../canvas/prism-code-drawer.component.js';
+import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
 
 @Component({
   selector: 'prism-shell',
@@ -46,7 +46,7 @@ import { PrismCodeDrawerComponent } from '../canvas/prism-code-drawer.component.
     PrismViewPanelHostComponent,
     PrismResizerDirective,
     PrismCanvasToolbarComponent,
-    PrismCodeDrawerComponent,
+    PrismTemplatePopoverComponent,
   ],
   template: `
     <div class="prism-shell" [style]="shellStyle()">
@@ -101,8 +101,8 @@ import { PrismCodeDrawerComponent } from '../canvas/prism-code-drawer.component.
           <div class="prism-canvas-wrap">
             <prism-canvas-toolbar />
             <prism-renderer />
+            <prism-template-popover />
           </div>
-          <prism-code-drawer class="prism-main__code-drawer" />
           } @else {
           <prism-view-panel-host class="prism-main__canvas" />
           } @if (showPanel()) {
@@ -242,8 +242,8 @@ import { PrismCodeDrawerComponent } from '../canvas/prism-code-drawer.component.
       grid-template-rows: auto minmax(0, 1fr);
       background: var(--prism-bg-surface);
       overflow: hidden;
+      position: relative;
     }
-    .prism-main__code-drawer { flex-shrink: 0; }
     .prism-main__view-bar { flex-shrink: 0; }
     .prism-main__canvas { flex: 1; min-height: 0; overflow: auto; }
 
