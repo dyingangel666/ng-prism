@@ -10,6 +10,7 @@
     "check": "nx format:check && nx run-many -t test build typecheck",
     "check:fix": "nx format:write",
     "publish": "./scripts/publish.sh",
+    "verdaccio": "nx run ng-prism-workspace:local-registry",
     "test:workspace:kill": "lsof -ti :4400 | xargs kill -9 2>/dev/null || echo 'No process on port 4400'",
     "test:workspace:setup": "nx build ng-prism --skip-nx-cache",
     "test:workspace:install": "cd test-workspace && npm install && (test -f ng-prism.config.ts || cp ng-prism.config.example.ts ng-prism.config.ts)",
