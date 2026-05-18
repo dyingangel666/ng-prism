@@ -119,6 +119,19 @@ function isDirectory(path: string): boolean {
   }
 }
 
+function findLibraryRoot(filePath: string): string | undefined {
+  let dir = dirname(filePath);
+  let parent = dirname(dir);
+  while (dir !== parent) {
+    if (existsSync(join(dir, 'ng-package.json'))) {
+      return dir;
+    }
+    dir = parent;
+    parent = dirname(dir);
+  }
+  return undefined;
+}
+
 function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
   const configPath = ts.findConfigFile(entryPointDir, ts.sys.fileExists, 'tsconfig.json');
   if (!configPath) return {};
@@ -141,14 +154,23 @@ function scanEntryPoints(
   const absoluteEntryPoint = join(workspaceRoot, options.entryPoint);
   const pathOptions = resolveTsconfigPaths(dirname(absoluteEntryPoint));
 
-  if (!isDirectory(absoluteEntryPoint)) {
+  const entryIsDirectory = isDirectory(absoluteEntryPoint);
+  const libraryRoot = entryIsDirectory
+    ? absoluteEntryPoint
+    : findLibraryRoot(absoluteEntryPoint);
+
+  if (!libraryRoot) {
     return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
   }
 
   const entryPoints = discoverSecondaryEntryPoints(
-    absoluteEntryPoint,
+    libraryRoot,
     options.libraryImportPath,
   );
+
+  if (entryPoints.length === 0 && !entryIsDirectory) {
+    return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
+  }
 
   const allComponents: ScannedComponent[] = [];
 

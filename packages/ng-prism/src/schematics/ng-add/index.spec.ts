@@ -121,7 +121,7 @@ describe('ng-add schematic', () => {
     expect(prismTarget).toBeDefined();
     expect(prismTarget['builder']).toBe('@ng-prism/core:serve');
     const opts = prismTarget['options'] as Record<string, unknown>;
-    expect(opts['entryPoint']).toBe('projects/my-lib/src/public-api.ts');
+    expect(opts['entryPoint']).toBe('projects/my-lib');
     expect(opts['prismProject']).toBe('my-lib-prism');
     expect(opts['libraryProject']).toBe('my-lib');
     expect(opts['port']).toBe(4400);
@@ -142,7 +142,7 @@ describe('ng-add schematic', () => {
     expect(buildTarget).toBeDefined();
     expect(buildTarget['builder']).toBe('@ng-prism/core:build');
     const opts = buildTarget['options'] as Record<string, unknown>;
-    expect(opts['entryPoint']).toBe('projects/my-lib/src/public-api.ts');
+    expect(opts['entryPoint']).toBe('projects/my-lib');
     expect(opts['outputPath']).toBe('dist/my-lib-prism');
 
     const prismAppBuild = workspace.projects['my-lib-prism'].architect['build'];
