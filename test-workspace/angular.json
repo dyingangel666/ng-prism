@@ -52,12 +52,8 @@
             "styles": [
               "node_modules/highlight.js/styles/base16/solarized-dark.min.css"
             ],
-            "polyfills": [
-              "zone.js"
-            ],
-            "allowedCommonJsDependencies": [
-              "highlight.js"
-            ],
+            "polyfills": ["zone.js"],
+            "allowedCommonJsDependencies": ["highlight.js"],
             "preserveSymlinks": true
           },
           "configurations": {

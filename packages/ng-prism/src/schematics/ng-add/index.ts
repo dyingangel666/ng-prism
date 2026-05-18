@@ -189,7 +189,8 @@ function addBuilderTargets(options: NgAddSchemaOptions): Rule {
     const prismProjectName = `${options.project}-prism`;
     const port = options.port ?? 4400;
 
-    const entryPoint = project.root ?? project.sourceRoot ?? `projects/${options.project}`;
+    const entryPoint =
+      project.root ?? project.sourceRoot ?? `projects/${options.project}`;
 
     if (!project.architect) {
       project.architect = {};

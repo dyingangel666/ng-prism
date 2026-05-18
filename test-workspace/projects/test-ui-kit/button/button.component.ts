@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { Showcase } from '@ng-prism/core';
 
 export type ButtonVariantType = 'primary' | 'secondary' | 'ghost';
@@ -6,7 +11,8 @@ export type ButtonVariantType = 'primary' | 'secondary' | 'ghost';
 @Showcase({
   title: 'Button',
   category: 'Inputs',
-  description: 'Button living in the @test-ui-kit/button secondary entry point.',
+  description:
+    'Button living in the @test-ui-kit/button secondary entry point.',
   variants: [
     {
       name: 'Primary',

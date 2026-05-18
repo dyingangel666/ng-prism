@@ -8,7 +8,10 @@ import { Showcase } from '@ng-prism/core';
   variants: [
     {
       name: 'Basic',
-      inputs: { title: 'Hello world', body: 'This card lives in its own secondary entry point.' },
+      inputs: {
+        title: 'Hello world',
+        body: 'This card lives in its own secondary entry point.',
+      },
     },
     {
       name: 'No body',
@@ -24,7 +27,7 @@ import { Showcase } from '@ng-prism/core';
     <article class="uk-card">
       <h3 class="uk-card__title">{{ title() }}</h3>
       @if (body()) {
-        <p class="uk-card__body">{{ body() }}</p>
+      <p class="uk-card__body">{{ body() }}</p>
       }
     </article>
   `,
