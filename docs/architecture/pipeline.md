@@ -26,10 +26,12 @@ Atomic write  (skip if unchanged)
 
 ### 2. Entry Point Scan
 
-`scanEntryPoints()` determines whether `entryPoint` is a file or a directory:
+`scanEntryPoints()` resolves the library root and then dispatches to `discoverSecondaryEntryPoints()`:
 
-- **Single file** — creates one `Scanner` and calls `scan()`
-- **Directory** — calls `discoverSecondaryEntryPoints()` to find all `ng-package.json` files, creates one `Scanner` per entry point
+- **Directory** — used as the library root directly
+- **File** — `findLibraryRoot()` walks upward to the nearest `ng-package.json` and uses that directory as the library root. If no `ng-package.json` is found above the file, or if discovery returns no entries, the pipeline falls back to scanning the file directly (back-compat for non-ng-packagr setups).
+
+Discovery returns one entry per `ng-package.json` (excluding the primary `dest`-rooted one). One `Scanner` is created per entry point and stored in `PrismPipelineState.scanners` (a `Map<entryFile, Scanner>`). The import path attached to each scanned component (`my-lib`, `my-lib/atoms`, ...) is derived from the entry-point's relative directory.
 
 Each scanner is stored in `PrismPipelineState.scanners` (a `Map<entryFile, Scanner>`). On rebuild, the same `Scanner` instance is reused, which means the previous `ts.Program` is passed to `ts.createProgram()` as `oldProgram` — only changed files are re-parsed.
 

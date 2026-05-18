@@ -39,27 +39,34 @@ export function createScanner(options: CreateScannerOptions): Scanner {
 
 ## Entry Point Discovery
 
-### Single file
+The pipeline accepts either a directory or a file as `entryPoint`. The resolution works the same way for both — the file form is just a convenience that gets resolved upward to its containing library.
 
-If `entryPoint` is a `.ts` file, it is treated as a single barrel export:
+### Directory with secondary entry points (recommended)
 
-```
-packages/my-lib/src/index.ts
-  → exports ButtonComponent, CardComponent, ...
-```
-
-### Directory with secondary entry points
-
-If `entryPoint` is a directory, `discoverSecondaryEntryPoints()` walks it recursively looking for `ng-package.json` files. For each `ng-package.json` that does not have a `dest` field (root entry point), the scanner reads `lib.entryFile` (default: `public-api.ts`) and derives the import path from the relative directory name.
+If `entryPoint` is a directory, `discoverSecondaryEntryPoints()` walks it recursively looking for `ng-package.json` files. For each `ng-package.json` that does not have a `dest` field (i.e. a secondary entry point, since `dest` is conventionally only set on the primary), the scanner reads `lib.entryFile` (default: `public-api.ts`) and derives the import path from the relative directory name.
 
 ```
-packages/my-lib/src/
-  index.ts                    → 'my-lib'
-  atoms/ng-package.json       → 'my-lib/atoms'
-  molecules/ng-package.json   → 'my-lib/molecules'
+packages/my-lib/
+  public-api.ts                  ← primary (ng-package.json with `dest`, ignored by discovery)
+  atoms/ng-package.json          → 'my-lib/atoms'
+  molecules/ng-package.json      → 'my-lib/molecules'
 ```
 
 Each secondary entry point gets its own `Scanner` instance stored in `PrismPipelineState.scanners`. Only the entry points whose files changed are re-scanned.
+
+### File entryPoint (auto-detected library root)
+
+If `entryPoint` is a `.ts` file, the pipeline walks upward to find the nearest `ng-package.json` and treats that directory as the library root. The same discovery logic then runs, so secondary entry points are still picked up automatically:
+
+```
+entryPoint = "projects/my-lib/public-api.ts"
+            ↓ walk upward, find ng-package.json
+libraryRoot = "projects/my-lib"
+            ↓ discoverSecondaryEntryPoints()
+[my-lib/atoms, my-lib/molecules, ...]
+```
+
+If no `ng-package.json` is found above the file, or if discovery returns no entries (e.g. for a primary-only library without secondaries), the pipeline falls back to scanning the configured file directly — preserving back-compat for non-ng-packagr setups.
 
 ## How Decorators Are Extracted
 
