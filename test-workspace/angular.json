@@ -81,6 +81,79 @@
           }
         }
       }
+    },
+    "test-ui-kit": {
+      "projectType": "library",
+      "root": "projects/test-ui-kit",
+      "sourceRoot": "projects/test-ui-kit",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/test-ui-kit/ng-package.json"
+          }
+        },
+        "prism": {
+          "builder": "@ng-prism/core:serve",
+          "options": {
+            "entryPoint": "projects/test-ui-kit/public-api.ts",
+            "prismProject": "test-ui-kit-prism",
+            "libraryProject": "test-ui-kit",
+            "port": 4401
+          }
+        },
+        "prism-build": {
+          "builder": "@ng-prism/core:build",
+          "options": {
+            "entryPoint": "projects/test-ui-kit/public-api.ts",
+            "prismProject": "test-ui-kit-prism",
+            "libraryProject": "test-ui-kit",
+            "outputPath": "dist/test-ui-kit-prism"
+          }
+        }
+      }
+    },
+    "test-ui-kit-prism": {
+      "projectType": "application",
+      "root": "projects/test-ui-kit-prism",
+      "sourceRoot": "projects/test-ui-kit-prism/src",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "outputPath": {
+              "base": "dist/test-ui-kit-prism",
+              "browser": ""
+            },
+            "index": "projects/test-ui-kit-prism/src/index.html",
+            "browser": "projects/test-ui-kit-prism/src/main.ts",
+            "tsConfig": "projects/test-ui-kit-prism/tsconfig.app.json",
+            "styles": [
+              "node_modules/highlight.js/styles/base16/solarized-dark.min.css"
+            ],
+            "polyfills": ["zone.js"],
+            "allowedCommonJsDependencies": ["highlight.js"],
+            "preserveSymlinks": true
+          },
+          "configurations": {
+            "production": { "outputHashing": "all" },
+            "development": {
+              "outputHashing": "none",
+              "optimization": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "test-ui-kit-prism:build:development",
+            "port": 4401,
+            "liveReload": true
+          }
+        }
+      }
     }
   }
 }
