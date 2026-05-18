@@ -15,7 +15,9 @@
       "@ng-prism/core": ["node_modules/ng-prism"],
       "@ng-prism/core/*": ["node_modules/ng-prism/*"],
       "ng-prism.config": ["ng-prism.config.ts"],
-      "test-lib": ["projects/test-lib/src/public-api.ts"]
+      "test-lib": ["projects/test-lib/src/public-api.ts"],
+      "test-ui-kit": ["projects/test-ui-kit/public-api.ts"],
+      "test-ui-kit/*": ["projects/test-ui-kit/*/public-api.ts"]
     }
   },
   "angularCompilerOptions": {

@@ -211,6 +211,27 @@ describe('runPrismPipeline multi-entry-point integration', () => {
     expect(content).toContain('type: PillComponent,');
     expect(content).toContain('type: IconComponent,');
   });
+
+  it('should auto-detect library root from a file entryPoint and discover secondaries', async () => {
+    tmp = createMultiEntryWorkspace();
+    const ctx = createMockContext(tmp, 'prism-app/src');
+
+    const result = await runPrismPipeline(
+      { ...multiOptions, entryPoint: 'lib/public-api.ts' },
+      ctx,
+      createPipelineState()
+    );
+
+    expect(result.componentCount).toBe(2);
+
+    const content = readFileSync(
+      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      'utf-8'
+    );
+    expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
+    expect(content).toContain("from 'multi-entry-lib/atoms/pill'");
+    expect(content).not.toContain("from 'multi-entry-lib';");
+  });
 });
 
 describe('createPipelineState', () => {

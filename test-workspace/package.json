@@ -6,6 +6,8 @@
     "ng": "ng",
     "prism": "ng run test-lib:prism",
     "prism-build": "ng run test-lib:prism-build",
+    "prism:ui-kit": "ng run test-ui-kit:prism",
+    "prism-build:ui-kit": "ng run test-ui-kit:prism-build",
     "test-lib-build": "ng build test-lib && npm run strip-showcase",
     "test": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs",
     "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' node ../node_modules/.bin/jest --config=jest.config.cjs --coverage",

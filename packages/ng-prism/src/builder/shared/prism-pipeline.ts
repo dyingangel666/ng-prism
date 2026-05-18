@@ -1,9 +1,20 @@
 import { join, dirname } from 'path';
-import { writeFileSync, readFileSync, mkdirSync, statSync, renameSync, existsSync, unlinkSync } from 'fs';
+import {
+  writeFileSync,
+  readFileSync,
+  mkdirSync,
+  statSync,
+  renameSync,
+  existsSync,
+  unlinkSync,
+} from 'fs';
 import ts from 'typescript';
 import type { BuilderContext } from '@angular-devkit/architect';
 import type { StyleguidePage } from '../../plugin/page.types.js';
-import type { ScannedComponent, PrismManifest } from '../../plugin/plugin.types.js';
+import type {
+  ScannedComponent,
+  PrismManifest,
+} from '../../plugin/plugin.types.js';
 import { createScanner, type Scanner } from '../scanner/scanner.js';
 import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
 import { loadConfig } from '../config-loader/config-loader.js';
@@ -36,7 +47,7 @@ export function createPipelineState(): PrismPipelineState {
 export async function runPrismPipeline(
   options: PrismPipelineOptions,
   context: BuilderContext,
-  state: PrismPipelineState,
+  state: PrismPipelineState
 ): Promise<PrismPipelineResult> {
   const { workspaceRoot } = context;
 
@@ -54,7 +65,7 @@ export async function runPrismPipeline(
   context.reportStatus('Running plugin hooks...');
   const manifest = await runPluginHooks(
     { ...scanResult, pages },
-    config.plugins ?? [],
+    config.plugins ?? []
   );
 
   context.reportStatus('Generating runtime manifest...');
@@ -65,8 +76,9 @@ export async function runPrismPipeline(
   });
 
   const projectMeta = await context.getProjectMetadata(options.prismProject);
-  const sourceRoot = (projectMeta['sourceRoot'] as string | undefined)
-    ?? join('projects', options.prismProject, 'src');
+  const sourceRoot =
+    (projectMeta['sourceRoot'] as string | undefined) ??
+    join('projects', options.prismProject, 'src');
   const manifestPath = join(workspaceRoot, sourceRoot, 'prism-manifest.ts');
 
   mkdirSync(join(workspaceRoot, sourceRoot), { recursive: true });
@@ -77,9 +89,9 @@ export async function runPrismPipeline(
   context.reportStatus('');
   context.logger.info(
     `ng-prism: ${written ? 'Generated' : 'Verified (unchanged)'} manifest ` +
-    `with ${manifest.components.length} component(s)` +
-    (pageCount > 0 ? ` and ${pageCount} page(s)` : '') +
-    ` → ${manifestPath}`,
+      `with ${manifest.components.length} component(s)` +
+      (pageCount > 0 ? ` and ${pageCount} page(s)` : '') +
+      ` → ${manifestPath}`
   );
 
   return {
@@ -90,7 +102,10 @@ export async function runPrismPipeline(
   };
 }
 
-function writeManifestIfChanged(manifestPath: string, newContent: string): boolean {
+function writeManifestIfChanged(
+  manifestPath: string,
+  newContent: string
+): boolean {
   if (existsSync(manifestPath)) {
     const currentContent = readFileSync(manifestPath, 'utf-8');
     if (currentContent === newContent) {
@@ -104,7 +119,11 @@ function writeManifestIfChanged(manifestPath: string, newContent: string): boole
     renameSync(tempPath, manifestPath);
   } catch (err) {
     if (existsSync(tempPath)) {
-      try { unlinkSync(tempPath); } catch { /* best-effort cleanup */ }
+      try {
+        unlinkSync(tempPath);
+      } catch {
+        /* best-effort cleanup */
+      }
     }
     throw err;
   }
@@ -119,14 +138,35 @@ function isDirectory(path: string): boolean {
   }
 }
 
+function findLibraryRoot(filePath: string): string | undefined {
+  let dir = dirname(filePath);
+  let parent = dirname(dir);
+  while (dir !== parent) {
+    if (existsSync(join(dir, 'ng-package.json'))) {
+      return dir;
+    }
+    dir = parent;
+    parent = dirname(dir);
+  }
+  return undefined;
+}
+
 function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
-  const configPath = ts.findConfigFile(entryPointDir, ts.sys.fileExists, 'tsconfig.json');
+  const configPath = ts.findConfigFile(
+    entryPointDir,
+    ts.sys.fileExists,
+    'tsconfig.json'
+  );
   if (!configPath) return {};
 
   const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
   if (configFile.error) return {};
 
-  const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configPath));
+  const parsed = ts.parseJsonConfigFileContent(
+    configFile.config,
+    ts.sys,
+    dirname(configPath)
+  );
   const result: ts.CompilerOptions = {};
   if (parsed.options.paths) result.paths = parsed.options.paths;
   if (parsed.options.baseUrl) result.baseUrl = parsed.options.baseUrl;
@@ -136,19 +176,28 @@ function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
 function scanEntryPoints(
   workspaceRoot: string,
   options: PrismPipelineOptions,
-  state: PrismPipelineState,
+  state: PrismPipelineState
 ): PrismManifest {
   const absoluteEntryPoint = join(workspaceRoot, options.entryPoint);
   const pathOptions = resolveTsconfigPaths(dirname(absoluteEntryPoint));
 
-  if (!isDirectory(absoluteEntryPoint)) {
+  const entryIsDirectory = isDirectory(absoluteEntryPoint);
+  const libraryRoot = entryIsDirectory
+    ? absoluteEntryPoint
+    : findLibraryRoot(absoluteEntryPoint);
+
+  if (!libraryRoot) {
     return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
   }
 
   const entryPoints = discoverSecondaryEntryPoints(
-    absoluteEntryPoint,
-    options.libraryImportPath,
+    libraryRoot,
+    options.libraryImportPath
   );
+
+  if (entryPoints.length === 0 && !entryIsDirectory) {
+    return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
+  }
 
   const allComponents: ScannedComponent[] = [];
 
@@ -167,7 +216,7 @@ function scanEntryPoints(
 function getOrCreateScanner(
   state: PrismPipelineState,
   entryFile: string,
-  compilerOptions: ts.CompilerOptions,
+  compilerOptions: ts.CompilerOptions
 ): Scanner {
   let scanner = state.scanners.get(entryFile);
   if (!scanner) {
