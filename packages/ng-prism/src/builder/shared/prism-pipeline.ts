@@ -11,11 +11,9 @@ import {
 import ts from 'typescript';
 import type { BuilderContext } from '@angular-devkit/architect';
 import type { StyleguidePage } from '../../plugin/page.types.js';
-import type {
-  ScannedComponent,
-  PrismManifest,
-} from '../../plugin/plugin.types.js';
+import type { PrismManifest } from '../../plugin/plugin.types.js';
 import { createScanner, type Scanner } from '../scanner/scanner.js';
+import type { EntryPointInput } from '../scanner/entry-point.scanner.js';
 import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
 import { loadConfig } from '../config-loader/config-loader.js';
 import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
@@ -37,11 +35,13 @@ export interface PrismPipelineResult {
 }
 
 export interface PrismPipelineState {
-  scanners: Map<string, Scanner>;
+  scanner: Scanner | undefined;
+  /** Sorted, joined entry-file paths — used to detect when the entry set changed between rebuilds. */
+  lastEntrySetKey: string | undefined;
 }
 
 export function createPipelineState(): PrismPipelineState {
-  return { scanners: new Map() };
+  return { scanner: undefined, lastEntrySetKey: undefined };
 }
 
 export async function runPrismPipeline(
@@ -173,55 +173,61 @@ function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
   return result;
 }
 
-function scanEntryPoints(
+function resolveEntryPoints(
   workspaceRoot: string,
-  options: PrismPipelineOptions,
-  state: PrismPipelineState
-): PrismManifest {
+  options: PrismPipelineOptions
+): { entryPoints: EntryPointInput[]; compilerOptions: ts.CompilerOptions } {
   const absoluteEntryPoint = join(workspaceRoot, options.entryPoint);
-  const pathOptions = resolveTsconfigPaths(dirname(absoluteEntryPoint));
+  const compilerOptions = resolveTsconfigPaths(dirname(absoluteEntryPoint));
 
   const entryIsDirectory = isDirectory(absoluteEntryPoint);
   const libraryRoot = entryIsDirectory
     ? absoluteEntryPoint
     : findLibraryRoot(absoluteEntryPoint);
 
-  if (!libraryRoot) {
-    return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
-  }
+  const discovered = libraryRoot
+    ? discoverSecondaryEntryPoints(libraryRoot, options.libraryImportPath)
+    : [];
 
-  const entryPoints = discoverSecondaryEntryPoints(
-    libraryRoot,
-    options.libraryImportPath
-  );
+  // Fallback to a direct file scan when:
+  //  - the entry is a file and no ng-package.json was found above it, OR
+  //  - the entry is a file with an ng-package.json above it but discovery found nothing
+  //    (e.g. primary-only library, root ng-package.json carries `dest`).
+  const entryPoints: EntryPointInput[] =
+    discovered.length === 0 && !entryIsDirectory
+      ? [
+          {
+            entryFile: absoluteEntryPoint,
+            importPath: options.libraryImportPath,
+          },
+        ]
+      : discovered;
 
-  if (entryPoints.length === 0 && !entryIsDirectory) {
-    return getOrCreateScanner(state, absoluteEntryPoint, pathOptions).scan();
-  }
-
-  const allComponents: ScannedComponent[] = [];
-
-  for (const ep of entryPoints) {
-    const scanner = getOrCreateScanner(state, ep.entryFile, pathOptions);
-    const result = scanner.scan();
-    for (const comp of result.components) {
-      comp.importPath = ep.importPath;
-      allComponents.push(comp);
-    }
-  }
-
-  return { components: allComponents };
+  return { entryPoints, compilerOptions };
 }
 
-function getOrCreateScanner(
-  state: PrismPipelineState,
-  entryFile: string,
-  compilerOptions: ts.CompilerOptions
-): Scanner {
-  let scanner = state.scanners.get(entryFile);
-  if (!scanner) {
-    scanner = createScanner({ entryPoint: entryFile, compilerOptions });
-    state.scanners.set(entryFile, scanner);
+function scanEntryPoints(
+  workspaceRoot: string,
+  options: PrismPipelineOptions,
+  state: PrismPipelineState
+): PrismManifest {
+  const { entryPoints, compilerOptions } = resolveEntryPoints(
+    workspaceRoot,
+    options
+  );
+
+  const newKey = entryPoints
+    .map((e) => e.entryFile)
+    .slice()
+    .sort()
+    .join('|');
+
+  if (newKey !== state.lastEntrySetKey) {
+    state.scanner = undefined;
+    state.lastEntrySetKey = newKey;
   }
-  return scanner;
+
+  state.scanner ??= createScanner({ entryPoints, compilerOptions });
+
+  return state.scanner.scan();
 }

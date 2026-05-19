@@ -32,6 +32,11 @@ export function scanComponents(
     const classDecl = resolved.declarations?.find(ts.isClassDeclaration);
     if (!classDecl) continue;
 
+    // Perf: cheap pre-filter — skip the full decorator walk for files that don't
+    // mention Showcase at all. False positives (string-literal containing "@Showcase")
+    // just lose the optimization for that file; correctness is unaffected.
+    if (!classDecl.getSourceFile().text.includes('@Showcase')) continue;
+
     const showcaseDecorator = findDecorator(classDecl, 'Showcase');
     if (!showcaseDecorator) continue;
 

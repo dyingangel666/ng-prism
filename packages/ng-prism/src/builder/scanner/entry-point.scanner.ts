@@ -1,37 +1,65 @@
 import ts from 'typescript';
 
-export interface EntryPointResult {
-  program: ts.Program;
+export interface EntryPointInput {
+  entryFile: string;
+  importPath: string;
+}
+
+export interface ResolvedEntryPoint extends EntryPointInput {
   exports: ts.Symbol[];
 }
 
+export interface MultiEntryResult {
+  program: ts.Program;
+  entries: ResolvedEntryPoint[];
+}
+
 /**
- * Resolve all exported symbols from an entry-point file (e.g. public-api.ts).
+ * Resolve all exported symbols for one or more entry-point files (e.g. public-api.ts).
+ * A single shared `ts.Program` is created with every entry file as a root name, so the
+ * transitive type graph (Angular framework typings, etc.) is parsed once and reused
+ * across all entries via the shared `TypeChecker`.
+ *
  * Re-exports (`export * from '...'`) are resolved automatically by TypeScript.
  */
 export function resolveEntryPointExports(
-  entryPointPath: string,
+  entryPoints: ReadonlyArray<EntryPointInput>,
   compilerOptions: ts.CompilerOptions,
-  previousProgram?: ts.Program,
-): EntryPointResult {
+  previousProgram?: ts.Program
+): MultiEntryResult {
   const program = ts.createProgram(
-    [entryPointPath],
+    entryPoints.map((e) => e.entryFile),
     compilerOptions,
     undefined,
-    previousProgram,
+    previousProgram
   );
   const checker = program.getTypeChecker();
-  const sourceFile = program.getSourceFile(entryPointPath);
 
-  if (!sourceFile) {
-    throw new Error(`Could not find source file: ${entryPointPath}`);
-  }
+  const entries: ResolvedEntryPoint[] = entryPoints.map(
+    ({ entryFile, importPath }) => {
+      try {
+        const sourceFile = program.getSourceFile(entryFile);
+        if (!sourceFile) {
+          console.warn(
+            `⚠ ng-prism: source file not found for entry point ${entryFile}, skipping.`
+          );
+          return { entryFile, importPath, exports: [] };
+        }
+        const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
+        const exports = moduleSymbol
+          ? checker.getExportsOfModule(moduleSymbol)
+          : [];
+        return { entryFile, importPath, exports };
+      } catch (err) {
+        console.error(
+          `⚠ ng-prism: failed to resolve exports for ${entryFile}: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        );
+        return { entryFile, importPath, exports: [] };
+      }
+    }
+  );
 
-  const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
-  if (!moduleSymbol) {
-    return { program, exports: [] };
-  }
-
-  const exports = checker.getExportsOfModule(moduleSymbol);
-  return { program, exports };
+  return { program, entries };
 }

@@ -240,12 +240,13 @@ describe('createPipelineState', () => {
     const b = createPipelineState();
 
     expect(a).not.toBe(b);
-    expect(a.scanners).not.toBe(b.scanners);
-    expect(a.scanners.size).toBe(0);
-    expect(b.scanners.size).toBe(0);
+    expect(a.scanner).toBeUndefined();
+    expect(b.scanner).toBeUndefined();
+    expect(a.lastEntrySetKey).toBeUndefined();
+    expect(b.lastEntrySetKey).toBeUndefined();
   });
 
-  it('should populate scanners map after pipeline run', async () => {
+  it('should populate scanner state after pipeline run', async () => {
     const tmp = createTempWorkspace();
     const ctx = createMockContext(tmp, 'prism-app/src');
     const state = createPipelineState();
@@ -262,7 +263,8 @@ describe('createPipelineState', () => {
         state
       );
 
-      expect(state.scanners.size).toBeGreaterThan(0);
+      expect(state.scanner).toBeDefined();
+      expect(state.lastEntrySetKey).toBeDefined();
     } finally {
       rmSync(tmp, { recursive: true, force: true });
     }
@@ -282,15 +284,12 @@ describe('createPipelineState', () => {
       };
 
       await runPrismPipeline(options, ctx, state);
-      const firstScanner = state.scanners.get(
-        join(tmp, 'lib', 'public-api.ts')
-      );
+      const firstScanner = state.scanner;
 
       await runPrismPipeline(options, ctx, state);
-      const secondScanner = state.scanners.get(
-        join(tmp, 'lib', 'public-api.ts')
-      );
+      const secondScanner = state.scanner;
 
+      expect(firstScanner).toBeDefined();
       expect(secondScanner).toBe(firstScanner);
     } finally {
       rmSync(tmp, { recursive: true, force: true });
