@@ -1,1 +1,1 @@
-export { ProgressComponent } from "./progress.component.js";
+export { ProgressComponent } from './progress.component.js';

@@ -1,19 +1,18 @@
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { MatTooltipModule } from "@angular/material/tooltip";
-import { OverlayModule } from "@angular/cdk/overlay";
-import { Showcase } from "@ng-prism/core";
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: "Tooltip",
-  category: "Components",
-  description: "TooltipComponent from test-ui-kit/tooltip secondary entry point.",
-  variants: [
-    { name: "Default", inputs: { label: "Tooltip" } },
-  ],
+  title: 'Tooltip',
+  category: 'Components',
+  description:
+    'TooltipComponent from test-ui-kit/tooltip secondary entry point.',
+  variants: [{ name: 'Default', inputs: { label: 'Tooltip' } }],
 })
 @Component({
-  selector: "uk-tooltip",
+  selector: 'uk-tooltip',
   standalone: true,
   imports: [CommonModule, MatTooltipModule, OverlayModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,5 +20,5 @@ import { Showcase } from "@ng-prism/core";
   styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
 })
 export class TooltipComponent {
-  readonly label = input<string>("Tooltip");
+  readonly label = input<string>('Tooltip');
 }

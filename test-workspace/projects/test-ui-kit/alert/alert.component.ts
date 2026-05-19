@@ -1,19 +1,17 @@
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { MatSnackBarModule } from "@angular/material/snack-bar";
-import { OverlayModule } from "@angular/cdk/overlay";
-import { Showcase } from "@ng-prism/core";
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: "Alert",
-  category: "Components",
-  description: "AlertComponent from test-ui-kit/alert secondary entry point.",
-  variants: [
-    { name: "Default", inputs: { label: "Alert" } },
-  ],
+  title: 'Alert',
+  category: 'Components',
+  description: 'AlertComponent from test-ui-kit/alert secondary entry point.',
+  variants: [{ name: 'Default', inputs: { label: 'Alert' } }],
 })
 @Component({
-  selector: "uk-alert",
+  selector: 'uk-alert',
   standalone: true,
   imports: [CommonModule, MatSnackBarModule, OverlayModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,5 +19,5 @@ import { Showcase } from "@ng-prism/core";
   styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
 })
 export class AlertComponent {
-  readonly label = input<string>("Alert");
+  readonly label = input<string>('Alert');
 }

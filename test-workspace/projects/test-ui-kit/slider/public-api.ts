@@ -1,1 +1,1 @@
-export { SliderComponent } from "./slider.component.js";
+export { SliderComponent } from './slider.component.js';

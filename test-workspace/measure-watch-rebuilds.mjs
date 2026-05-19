@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync } from 'fs';
 
 const ITERATIONS = 100;
 const WARMUP = 5;
-const STEADY_STATE_TOLERANCE = 0.10; // 10%
+const STEADY_STATE_TOLERANCE = 0.1; // 10%
 
 const workspaceRoot = process.cwd();
 const ctx = {
@@ -54,7 +54,9 @@ try {
     const rssMb = (rss / 1024 / 1024).toFixed(1);
     const heapMb = (heap / 1024 / 1024).toFixed(1);
     console.log(
-      `rebuild ${String(i).padStart(3)}: RSS=${rssMb} MB | heap=${heapMb} MB | scan=${dt} ms`
+      `rebuild ${String(i).padStart(
+        3
+      )}: RSS=${rssMb} MB | heap=${heapMb} MB | scan=${dt} ms`
     );
   }
 } finally {
@@ -70,21 +72,26 @@ const heapMin = Math.min(...warm.map((s) => s.heap));
 const heapMax = Math.max(...warm.map((s) => s.heap));
 const heapVar = (heapMax - heapMin) / heapMin;
 
-const dtMean =
-  warm.reduce((sum, s) => sum + s.dt, 0) / warm.length;
-const dtP95 = warm
-  .map((s) => s.dt)
-  .sort((a, b) => a - b)[Math.floor(warm.length * 0.95)];
+const dtMean = warm.reduce((sum, s) => sum + s.dt, 0) / warm.length;
+const dtP95 = warm.map((s) => s.dt).sort((a, b) => a - b)[
+  Math.floor(warm.length * 0.95)
+];
 
-console.log(`\n=== Steady-state summary (rebuilds ${WARMUP}–${ITERATIONS - 1}) ===`);
+console.log(
+  `\n=== Steady-state summary (rebuilds ${WARMUP}–${ITERATIONS - 1}) ===`
+);
 console.log(
   `RSS:  min ${(rssMin / 1024 / 1024).toFixed(1)} MB,  max ${(
-    rssMax / 1024 / 1024
+    rssMax /
+    1024 /
+    1024
   ).toFixed(1)} MB,  variation ${(rssVar * 100).toFixed(1)}%`
 );
 console.log(
   `Heap: min ${(heapMin / 1024 / 1024).toFixed(1)} MB,  max ${(
-    heapMax / 1024 / 1024
+    heapMax /
+    1024 /
+    1024
   ).toFixed(1)} MB,  variation ${(heapVar * 100).toFixed(1)}%`
 );
 console.log(`Scan: mean ${dtMean.toFixed(0)} ms,  p95 ${dtP95} ms`);
@@ -92,8 +99,8 @@ console.log(`Cold scan (rebuild 0): ${samples[0].dt} ms`);
 
 const pass = rssVar <= STEADY_STATE_TOLERANCE;
 console.log(
-  `\nSteady-state criterion (RSS variation ≤ ${(STEADY_STATE_TOLERANCE * 100).toFixed(0)}%): ${
-    pass ? 'PASS ✓' : 'FAIL ✗'
-  }`
+  `\nSteady-state criterion (RSS variation ≤ ${(
+    STEADY_STATE_TOLERANCE * 100
+  ).toFixed(0)}%): ${pass ? 'PASS ✓' : 'FAIL ✗'}`
 );
 process.exit(pass ? 0 : 1);

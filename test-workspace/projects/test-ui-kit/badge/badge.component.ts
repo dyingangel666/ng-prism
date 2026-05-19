@@ -1,19 +1,17 @@
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { MatBadgeModule } from "@angular/material/badge";
-import { OverlayModule } from "@angular/cdk/overlay";
-import { Showcase } from "@ng-prism/core";
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatBadgeModule } from '@angular/material/badge';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: "Badge",
-  category: "Components",
-  description: "BadgeComponent from test-ui-kit/badge secondary entry point.",
-  variants: [
-    { name: "Default", inputs: { label: "Badge" } },
-  ],
+  title: 'Badge',
+  category: 'Components',
+  description: 'BadgeComponent from test-ui-kit/badge secondary entry point.',
+  variants: [{ name: 'Default', inputs: { label: 'Badge' } }],
 })
 @Component({
-  selector: "uk-badge",
+  selector: 'uk-badge',
   standalone: true,
   imports: [CommonModule, MatBadgeModule, OverlayModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,5 +19,5 @@ import { Showcase } from "@ng-prism/core";
   styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
 })
 export class BadgeComponent {
-  readonly label = input<string>("Badge");
+  readonly label = input<string>('Badge');
 }

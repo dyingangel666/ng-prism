@@ -81,7 +81,12 @@ export function createScanner(options: CreateScannerOptions): Scanner {
         if (seen.has(key)) {
           console.warn(
             `⚠ ng-prism: ${c.className} is exported by multiple entry points; ` +
-              `keeping the first occurrence (importPath: ${unique.find((u) => u.className === c.className && u.filePath === c.filePath)?.importPath}).`
+              `keeping the first occurrence (importPath: ${
+                unique.find(
+                  (u) =>
+                    u.className === c.className && u.filePath === c.filePath
+                )?.importPath
+              }).`
           );
           continue;
         }

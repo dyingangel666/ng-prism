@@ -1,1 +1,1 @@
-export { ChipComponent } from "./chip.component.js";
+export { ChipComponent } from './chip.component.js';

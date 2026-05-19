@@ -135,7 +135,9 @@ describe('createScanner', () => {
   });
 
   it('should dedupe a component re-exported by multiple entry points', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const scanner = createScanner({
         entryPoints: [
@@ -166,7 +168,9 @@ describe('createScanner', () => {
   });
 
   it('should isolate a failing entry: other entries still scanned', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const scanner = createScanner({
         entryPoints: [

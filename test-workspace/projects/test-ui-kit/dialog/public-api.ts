@@ -1,1 +1,1 @@
-export { DialogComponent } from "./dialog.component.js";
+export { DialogComponent } from './dialog.component.js';

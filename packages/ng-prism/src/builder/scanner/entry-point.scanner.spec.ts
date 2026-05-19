@@ -46,7 +46,9 @@ describe('resolveEntryPointExports', () => {
   });
 
   it('should warn and return empty exports for a missing entry point (no throw)', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const { entries } = resolveEntryPointExports(
         [{ entryFile: '/non-existent/file.ts', importPath: 'fixture' }],
@@ -63,7 +65,9 @@ describe('resolveEntryPointExports', () => {
   });
 
   it('should isolate per-entry failures: other entries still resolved', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
     try {
       const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
       const { entries } = resolveEntryPointExports(

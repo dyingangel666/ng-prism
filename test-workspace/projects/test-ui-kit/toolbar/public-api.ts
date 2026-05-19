@@ -1,1 +1,1 @@
-export { ToolbarComponent } from "./toolbar.component.js";
+export { ToolbarComponent } from './toolbar.component.js';

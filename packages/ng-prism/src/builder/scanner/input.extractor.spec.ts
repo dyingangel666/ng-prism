@@ -17,7 +17,7 @@ const compilerOptions: ts.CompilerOptions = {
 function getClassDeclaration(
   exports: ts.Symbol[],
   className: string,
-  checker: ts.TypeChecker,
+  checker: ts.TypeChecker
 ): ts.ClassDeclaration {
   let sym = exports.find((s) => s.name === className)!;
   // Resolve alias symbols (from re-exports)
@@ -141,16 +141,30 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should extract all signal inputs from SignalButtonComponent', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
 
     expect(inputs).toHaveLength(5);
     const names = inputs.map((i) => i.name);
-    expect(names).toEqual(['variant', 'label', 'disabled', 'title', 'tabIndex']);
+    expect(names).toEqual([
+      'variant',
+      'label',
+      'disabled',
+      'title',
+      'tabIndex',
+    ]);
   });
 
   it('should resolve union type from signal type argument', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const variant = inputs.find((i) => i.name === 'variant')!;
 
@@ -161,7 +175,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should infer string type from signal default value', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const label = inputs.find((i) => i.name === 'label')!;
 
@@ -171,7 +189,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should infer boolean type from signal default value', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const disabled = inputs.find((i) => i.name === 'disabled')!;
 
@@ -181,7 +203,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should mark input.required() as required with no defaultValue', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const title = inputs.find((i) => i.name === 'title')!;
 
@@ -191,7 +217,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should extract model() inputs like signal inputs', () => {
-    const classDecl = getClassDeclaration(exports, 'ModelInputComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'ModelInputComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
 
     expect(inputs).toHaveLength(2);
@@ -206,7 +236,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should resolve nullable number type (number | null) as number', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const tabIndex = inputs.find((i) => i.name === 'tabIndex')!;
 
@@ -216,7 +250,11 @@ describe('extractInputs (signal-based)', () => {
   });
 
   it('should extract JSDoc comments from signal inputs', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const inputs = extractInputs(classDecl, checker);
     const variant = inputs.find((i) => i.name === 'variant')!;
 
@@ -239,7 +277,11 @@ describe('extractOutputs (signal-based)', () => {
   });
 
   it('should extract all signal outputs from SignalButtonComponent', () => {
-    const classDecl = getClassDeclaration(exports, 'SignalButtonComponent', checker);
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
     const outputs = extractOutputs(classDecl, checker);
 
     expect(outputs).toHaveLength(2);
