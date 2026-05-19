@@ -19,10 +19,13 @@ describe('scanComponents', () => {
   let exports: ts.Symbol[];
 
   beforeAll(() => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const result = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
     checker = result.program.getTypeChecker();
-    exports = result.exports;
+    exports = result.entries[0].exports;
   });
 
   it('should find only @Showcase-annotated components', () => {

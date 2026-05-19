@@ -15,9 +15,12 @@ const compilerOptions: ts.CompilerOptions = {
 
 describe('resolveEntryPointExports', () => {
   it('should resolve all exports from public-api.ts', () => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const { exports } = resolveEntryPointExports(entryPoint, compilerOptions);
-    const names = exports.map((s) => s.name).sort();
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const { entries } = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
+    const names = entries[0].exports.map((s) => s.name).sort();
 
     expect(names).toEqual([
       'ButtonComponent',
@@ -32,16 +35,65 @@ describe('resolveEntryPointExports', () => {
   });
 
   it('should return a valid program', () => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const { program } = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const { program } = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
 
     expect(program).toBeDefined();
     expect(program.getTypeChecker()).toBeDefined();
   });
 
-  it('should throw for missing entry point', () => {
-    expect(() =>
-      resolveEntryPointExports('/non-existent/file.ts', compilerOptions)
-    ).toThrow('Could not find source file');
+  it('should warn and return empty exports for a missing entry point (no throw)', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const { entries } = resolveEntryPointExports(
+        [{ entryFile: '/non-existent/file.ts', importPath: 'fixture' }],
+        compilerOptions
+      );
+      expect(entries).toHaveLength(1);
+      expect(entries[0].exports).toEqual([]);
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('source file not found for entry point')
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('should isolate per-entry failures: other entries still resolved', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+      const { entries } = resolveEntryPointExports(
+        [
+          { entryFile: '/non-existent/file.ts', importPath: 'broken' },
+          { entryFile, importPath: 'good' },
+        ],
+        compilerOptions
+      );
+      expect(entries[0].exports).toEqual([]);
+      expect(entries[1].exports.length).toBeGreaterThan(0);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('should resolve multiple entry points with one shared program', () => {
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const { program, entries } = resolveEntryPointExports(
+      [
+        { entryFile, importPath: 'a' },
+        { entryFile, importPath: 'b' },
+      ],
+      compilerOptions
+    );
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0].importPath).toBe('a');
+    expect(entries[1].importPath).toBe('b');
+    // both entries point at the same SourceFile instance (single shared program)
+    expect(program.getSourceFile(entryFile)).toBeDefined();
   });
 });

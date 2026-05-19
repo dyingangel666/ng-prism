@@ -12,19 +12,20 @@ import { createScanner } from './scanner.js';
 const FIXTURES_DIR = path.join(__dirname, '__fixtures__');
 
 describe('createScanner', () => {
-  const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
+  const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+  const entryPoints = [{ entryFile, importPath: 'fixture' }];
 
   it('should scan the full pipeline from entry point to manifest', () => {
-    const scanner = createScanner({ entryPoint });
-    const manifest = scanner.scan();
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
 
-    expect(manifest.components).toHaveLength(6);
+    expect(result.components).toHaveLength(6);
   });
 
   it('should produce correct ButtonComponent data', () => {
-    const scanner = createScanner({ entryPoint });
-    const manifest = scanner.scan();
-    const button = manifest.components.find(
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
+    const button = result.components.find(
       (c) => c.className === 'ButtonComponent'
     )!;
 
@@ -52,9 +53,9 @@ describe('createScanner', () => {
   });
 
   it('should produce correct CardComponent data', () => {
-    const scanner = createScanner({ entryPoint });
-    const manifest = scanner.scan();
-    const card = manifest.components.find(
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
+    const card = result.components.find(
       (c) => c.className === 'CardComponent'
     )!;
 
@@ -66,27 +67,27 @@ describe('createScanner', () => {
   });
 
   it('should not include non-Showcase components', () => {
-    const scanner = createScanner({ entryPoint });
-    const manifest = scanner.scan();
-    const names = manifest.components.map((c) => c.className);
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
+    const names = result.components.map((c) => c.className);
 
     expect(names).not.toContain('NoShowcaseComponent');
   });
 
   it('should accept custom compiler options', () => {
     const scanner = createScanner({
-      entryPoint,
+      entryPoints,
       compilerOptions: { strict: false },
     });
-    const manifest = scanner.scan();
+    const result = scanner.scan();
 
-    expect(manifest.components).toHaveLength(6);
+    expect(result.components).toHaveLength(6);
   });
 
   it('should produce correct HighlightDirective data', () => {
-    const scanner = createScanner({ entryPoint });
-    const manifest = scanner.scan();
-    const highlight = manifest.components.find(
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
+    const highlight = result.components.find(
       (c) => c.className === 'HighlightDirective'
     )!;
 
@@ -99,8 +100,18 @@ describe('createScanner', () => {
     expect(highlight.outputs).toHaveLength(1);
   });
 
+  it('should tag every scanned component with its entry-point importPath', () => {
+    const scanner = createScanner({ entryPoints });
+    const result = scanner.scan();
+
+    expect(result.components.length).toBeGreaterThan(0);
+    for (const c of result.components) {
+      expect(c.importPath).toBe('fixture');
+    }
+  });
+
   it('should retain program reference across scans (previousProgram threading)', () => {
-    const scanner = createScanner({ entryPoint });
+    const scanner = createScanner({ entryPoints });
 
     const first = scanner.scan();
     expect(first.components.length).toBeGreaterThan(0);
@@ -112,7 +123,7 @@ describe('createScanner', () => {
   });
 
   it('should produce the same manifest on repeated scans when files are unchanged', () => {
-    const scanner = createScanner({ entryPoint });
+    const scanner = createScanner({ entryPoints });
 
     const first = scanner.scan();
     const second = scanner.scan();
@@ -123,12 +134,66 @@ describe('createScanner', () => {
     );
   });
 
+  it('should dedupe a component re-exported by multiple entry points', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const scanner = createScanner({
+        entryPoints: [
+          {
+            entryFile: path.join(FIXTURES_DIR, 'entry-a.ts'),
+            importPath: 'lib/a',
+          },
+          {
+            entryFile: path.join(FIXTURES_DIR, 'entry-b.ts'),
+            importPath: 'lib/b',
+          },
+        ],
+      });
+      const result = scanner.scan();
+
+      const buttons = result.components.filter(
+        (c) => c.className === 'ButtonComponent'
+      );
+      expect(buttons).toHaveLength(1);
+      // First-occurrence wins → importPath should be 'lib/a'
+      expect(buttons[0].importPath).toBe('lib/a');
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('exported by multiple entry points')
+      );
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it('should isolate a failing entry: other entries still scanned', () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const scanner = createScanner({
+        entryPoints: [
+          { entryFile: '/non-existent/file.ts', importPath: 'broken' },
+          { entryFile, importPath: 'good' },
+        ],
+      });
+      const result = scanner.scan();
+
+      // 6 components from the valid entry; the broken entry contributes nothing
+      expect(result.components).toHaveLength(6);
+      for (const c of result.components) {
+        expect(c.importPath).toBe('good');
+      }
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('should pick up file changes between scans', () => {
     const tmpDir = mkdtempSync(join(tmpdir(), 'ng-prism-scanner-'));
     try {
       cpSync(FIXTURES_DIR, tmpDir, { recursive: true });
       const mutableEntry = join(tmpDir, 'public-api.ts');
-      const scanner = createScanner({ entryPoint: mutableEntry });
+      const scanner = createScanner({
+        entryPoints: [{ entryFile: mutableEntry, importPath: 'fixture' }],
+      });
 
       const first = scanner.scan();
       const originalButton = first.components.find(

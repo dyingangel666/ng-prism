@@ -33,10 +33,13 @@ describe('extractInputs', () => {
   let exports: ts.Symbol[];
 
   beforeAll(() => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const result = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
     checker = result.program.getTypeChecker();
-    exports = result.exports;
+    exports = result.entries[0].exports;
   });
 
   it('should extract all inputs from ButtonComponent', () => {
@@ -128,10 +131,13 @@ describe('extractInputs (signal-based)', () => {
   let exports: ts.Symbol[];
 
   beforeAll(() => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const result = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
     checker = result.program.getTypeChecker();
-    exports = result.exports;
+    exports = result.entries[0].exports;
   });
 
   it('should extract all signal inputs from SignalButtonComponent', () => {
@@ -223,10 +229,13 @@ describe('extractOutputs (signal-based)', () => {
   let exports: ts.Symbol[];
 
   beforeAll(() => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const result = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
     checker = result.program.getTypeChecker();
-    exports = result.exports;
+    exports = result.entries[0].exports;
   });
 
   it('should extract all signal outputs from SignalButtonComponent', () => {
@@ -246,10 +255,13 @@ describe('extractOutputs', () => {
   let exports: ts.Symbol[];
 
   beforeAll(() => {
-    const entryPoint = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(entryPoint, compilerOptions);
+    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+    const result = resolveEntryPointExports(
+      [{ entryFile, importPath: 'fixture' }],
+      compilerOptions
+    );
     checker = result.program.getTypeChecker();
-    exports = result.exports;
+    exports = result.entries[0].exports;
   });
 
   it('should extract all outputs from ButtonComponent', () => {
