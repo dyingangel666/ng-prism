@@ -24,10 +24,11 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
   styles: `
     :host {
       position: absolute;
-      top: 12px;
-      right: 20px;
+      top: var(--prism-canvas-overlay-top, 12px);
+      right: var(--prism-canvas-overlay-inline, 20px);
       pointer-events: none;
       z-index: 2;
+      transition: top var(--dur-base), right var(--dur-base);
     }
     .prism-bg-pill {
       display: inline-flex;

@@ -7,6 +7,7 @@ import {
   ElementRef,
 } from '@angular/core';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismThemeService } from '../services/prism-theme.service.js';
 
 const R = 20;
 
@@ -62,6 +63,7 @@ const R = 20;
 })
 export class PrismCanvasRulersComponent {
   protected readonly canvas = inject(PrismCanvasService);
+  private readonly themeService = inject(PrismThemeService);
 
   private readonly rulerTop =
     viewChild<ElementRef<HTMLCanvasElement>>('rulerTop');
@@ -74,6 +76,7 @@ export class PrismCanvasRulersComponent {
     effect(() => {
       const show = this.canvas.rulers();
       const zoom = this.canvas.zoom();
+      this.themeService.theme();
 
       if (!show) {
         this.ro?.disconnect();

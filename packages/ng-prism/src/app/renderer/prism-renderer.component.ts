@@ -44,7 +44,11 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
     NgComponentOutlet,
   ],
   template: `
-    <div class="prism-canvas-stage" [attr.data-bg]="variantBg.effective()">
+    <div
+      class="prism-canvas-stage"
+      [attr.data-bg]="variantBg.effective()"
+      [attr.data-rulers]="canvasService.rulers() ? '' : null"
+    >
       <div class="canvas-badges">
         <span class="c-badge"
           >{{ Math.round(canvasService.zoom() * 100) }}%</span
@@ -87,6 +91,12 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
       background-image: radial-gradient(circle, var(--prism-dot) 1px, transparent 1px);
       background-size: 20px 20px;
       transition: filter var(--dur-base);
+      --prism-canvas-overlay-top: 12px;
+      --prism-canvas-overlay-inline: 20px;
+    }
+    .prism-canvas-stage[data-rulers] {
+      --prism-canvas-overlay-top: 28px;
+      --prism-canvas-overlay-inline: 28px;
     }
 
     .prism-canvas-stage[data-bg="plain"] {
@@ -129,11 +139,12 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
 
     .canvas-badges {
       position: absolute;
-      top: 12px;
-      left: 20px;
+      top: var(--prism-canvas-overlay-top);
+      left: var(--prism-canvas-overlay-inline);
       display: flex;
       gap: 6px;
       pointer-events: none;
+      transition: top var(--dur-base), left var(--dur-base);
     }
     .c-badge {
       font-family: var(--font-mono);
