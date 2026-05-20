@@ -105,10 +105,16 @@ type SubTab = 'bundle' | 'render' | 'memory';
     </div>
   `,
   styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
     .prism-perf-panel {
       display: flex;
       flex-direction: column;
-      height: 340px;
+      height: 100%;
     }
 
     .prism-subtabs {
@@ -217,6 +223,7 @@ type SubTab = 'bundle' | 'render' | 'memory';
     .prism-perf-content {
       flex: 1;
       overflow-y: auto;
+      min-height: 0;
     }
   `,
 })
