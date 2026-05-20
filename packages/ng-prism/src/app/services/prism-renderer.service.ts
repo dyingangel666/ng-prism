@@ -1,6 +1,75 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
+
+export interface ComputedVariantState {
+  values: Record<string, unknown>;
+  activeContent: string | Record<string, string> | undefined;
+}
+
+export function computeVariantState(
+  comp: RuntimeComponent,
+  index: number,
+  options: { onUnknownInput?: (variantName: string, key: string) => void } = {},
+): ComputedVariantState {
+  const defaults: Record<string, unknown> = {};
+  for (const input of comp.meta.inputs) {
+    if (input.defaultValue !== undefined) {
+      defaults[input.name] = input.defaultValue;
+    }
+  }
+
+  const requiredInputNames = new Set(
+    comp.meta.inputs.filter((i) => i.required).map((i) => i.name),
+  );
+
+  const reset: Record<string, unknown> = {};
+  for (const v of comp.meta.showcaseConfig.variants ?? []) {
+    for (const key of Object.keys(v.inputs ?? {})) {
+      if (!requiredInputNames.has(key) && !(key in reset)) {
+        reset[key] = undefined;
+      }
+    }
+  }
+
+  const variant = comp.meta.showcaseConfig.variants?.[index];
+  const variantInputs = variant?.inputs ?? {};
+  const validInputNames = new Set(comp.meta.inputs.map((i) => i.name));
+  for (const key of Object.keys(variantInputs)) {
+    if (!validInputNames.has(key)) {
+      options.onUnknownInput?.(variant?.name ?? String(index), key);
+    }
+  }
+  const filteredVariantInputs = Object.fromEntries(
+    Object.entries(variantInputs).filter(([key]) => validInputNames.has(key)),
+  );
+  const values: Record<string, unknown> = {
+    ...reset,
+    ...defaults,
+    ...filteredVariantInputs,
+  };
+
+  if (comp.meta.componentMeta.isDirective && variant?.content) {
+    values['__prismContent__'] =
+      typeof variant.content === 'string' ? variant.content : '';
+  }
+
+  return {
+    values,
+    activeContent: comp.meta.componentMeta.isDirective ? undefined : variant?.content,
+  };
+}
+
+function valuesEqual(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (a == null || b == null) return false;
+  if (typeof a !== 'object' || typeof b !== 'object') return false;
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
 
 @Injectable({ providedIn: 'root' })
 export class PrismRendererService {
@@ -10,6 +79,22 @@ export class PrismRendererService {
   readonly inputValues = signal<Record<string, unknown>>({});
   readonly activeContent = signal<string | Record<string, string> | undefined>(undefined);
   readonly renderedElement = signal<Element | null>(null);
+
+  readonly dirtyInputCount = computed<number>(() => {
+    const comp = this.navigationService.activeComponent();
+    if (!comp) return 0;
+    const { values: expected } = computeVariantState(comp, this.activeVariantIndex());
+    const current = this.inputValues();
+    const keys = new Set<string>([
+      ...Object.keys(expected),
+      ...Object.keys(current),
+    ]);
+    let count = 0;
+    for (const key of keys) {
+      if (!valuesEqual(expected[key], current[key])) count++;
+    }
+    return count;
+  });
 
   private _lastClassName: string | null = null;
 
@@ -72,45 +157,20 @@ export class PrismRendererService {
     this.inputValues.update((prev) => ({ ...prev, [name]: value }));
   }
 
+  resetInputsToVariantDefaults(): void {
+    const comp = this.navigationService.activeComponent();
+    if (!comp) return;
+    this.applyVariant(this.activeVariantIndex(), comp);
+  }
+
   private applyVariant(index: number, comp: RuntimeComponent): void {
-    const defaults: Record<string, unknown> = {};
-    for (const input of comp.meta.inputs) {
-      if (input.defaultValue !== undefined) {
-        defaults[input.name] = input.defaultValue;
-      }
-    }
-
-    const requiredInputNames = new Set(
-      comp.meta.inputs.filter((i) => i.required).map((i) => i.name),
-    );
-
-    const reset: Record<string, unknown> = {};
-    for (const v of comp.meta.showcaseConfig.variants ?? []) {
-      for (const key of Object.keys(v.inputs ?? {})) {
-        if (!requiredInputNames.has(key) && !(key in reset)) {
-          reset[key] = undefined;
-        }
-      }
-    }
-
-    const variant = comp.meta.showcaseConfig.variants?.[index];
-    const variantInputs = variant?.inputs ?? {};
-    const validInputNames = new Set(comp.meta.inputs.map((i) => i.name));
-    for (const key of Object.keys(variantInputs)) {
-      if (!validInputNames.has(key)) {
-        console.warn(`[ng-prism] Variant "${variant?.name ?? index}" references unknown input "${key}" on ${comp.meta.className} — ignoring.`);
-      }
-    }
-    const filteredVariantInputs = Object.fromEntries(
-      Object.entries(variantInputs).filter(([key]) => validInputNames.has(key)),
-    );
-    const values = { ...reset, ...defaults, ...filteredVariantInputs };
-
-    if (comp.meta.componentMeta.isDirective && variant?.content) {
-      values['__prismContent__'] = typeof variant.content === 'string' ? variant.content : '';
-    }
-
+    const { values, activeContent } = computeVariantState(comp, index, {
+      onUnknownInput: (variantName, key) =>
+        console.warn(
+          `[ng-prism] Variant "${variantName}" references unknown input "${key}" on ${comp.meta.className} — ignoring.`,
+        ),
+    });
     this.inputValues.set(values);
-    this.activeContent.set(comp.meta.componentMeta.isDirective ? undefined : variant?.content);
+    this.activeContent.set(activeContent);
   }
 }

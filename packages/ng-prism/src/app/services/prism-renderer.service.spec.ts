@@ -414,6 +414,92 @@ describe('PrismRendererService', () => {
     });
   });
 
+  describe('dirtyInputCount + resetInputsToVariantDefaults', () => {
+    it('should report 0 dirty inputs immediately after applying a variant', () => {
+      const comp = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', defaultValue: 'Hello', required: false },
+          { name: 'disabled', type: 'boolean', defaultValue: false, required: false },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      expect(renderer.dirtyInputCount()).toBe(0);
+    });
+
+    it('should count inputs that differ from variant defaults', () => {
+      const comp = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', defaultValue: 'Hello', required: false },
+          { name: 'disabled', type: 'boolean', defaultValue: false, required: false },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      renderer.updateInput('label', 'Changed');
+      expect(renderer.dirtyInputCount()).toBe(1);
+
+      renderer.updateInput('disabled', true);
+      expect(renderer.dirtyInputCount()).toBe(2);
+    });
+
+    it('should restore variant defaults via resetInputsToVariantDefaults()', () => {
+      const comp = createComponent({
+        inputs: [
+          { name: 'label', type: 'string', defaultValue: 'Hello', required: false },
+          { name: 'disabled', type: 'boolean', defaultValue: false, required: false },
+        ],
+        variants: [
+          { name: 'Default' },
+          { name: 'Disabled', inputs: { disabled: true } },
+        ],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.selectVariant(1);
+
+      renderer.updateInput('label', 'Custom');
+      renderer.updateInput('disabled', false);
+      expect(renderer.dirtyInputCount()).toBe(2);
+
+      renderer.resetInputsToVariantDefaults();
+
+      expect(renderer.dirtyInputCount()).toBe(0);
+      expect(renderer.inputValues()).toEqual({ label: 'Hello', disabled: true });
+      expect(renderer.activeVariantIndex()).toBe(1);
+    });
+
+    it('should treat deep-equal objects as not dirty', () => {
+      const comp = createComponent({
+        inputs: [{ name: 'data', type: 'object', defaultValue: { a: 1 }, required: false }],
+      });
+      const { renderer, navigation } = setup({ components: [comp] });
+      navigation.select(comp);
+      renderer.resetForComponent(comp);
+
+      renderer.updateInput('data', { a: 1 });
+      expect(renderer.dirtyInputCount()).toBe(0);
+
+      renderer.updateInput('data', { a: 2 });
+      expect(renderer.dirtyInputCount()).toBe(1);
+    });
+
+    it('should be 0 when no active component', () => {
+      const { renderer } = setup({ components: [] });
+      expect(renderer.dirtyInputCount()).toBe(0);
+    });
+
+    it('should be a no-op when no active component', () => {
+      const { renderer } = setup({ components: [] });
+      renderer.resetInputsToVariantDefaults();
+      expect(renderer.inputValues()).toEqual({});
+    });
+  });
+
   describe('directive support', () => {
     it('should set __prismContent__ in inputValues for directive with string content', () => {
       const comp = createComponent({

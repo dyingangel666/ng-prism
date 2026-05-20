@@ -29,6 +29,22 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
   template: `
     @if (navigationService.activeComponent(); as comp) {
     <div class="ctl-panel">
+      @if (rendererService.dirtyInputCount(); as dirtyCount) {
+      <div class="ctl-toolbar">
+        <span class="ctl-dirty-info">
+          <span class="ctl-dirty-dot" aria-hidden="true"></span>
+          {{ dirtyCount }} {{ dirtyCount === 1 ? 'input' : 'inputs' }} modified
+        </span>
+        <button
+          type="button"
+          class="ctl-reset-btn"
+          (click)="rendererService.resetInputsToVariantDefaults()"
+          title="Reset all inputs to variant defaults"
+        >
+          <span aria-hidden="true">&#x21BB;</span> Reset
+        </button>
+      </div>
+      }
       @for (input of comp.meta.inputs; track input.name) {
       <div class="ctl-row">
         @if (getCustomControl(input); as customCtrl) {
@@ -87,6 +103,58 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
     .ctl-panel {
       overflow-y: auto;
       height: 100%;
+    }
+
+    .ctl-toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      background: var(--prism-bg-elevated);
+      border-bottom: 1px solid var(--prism-border);
+    }
+    .ctl-dirty-info {
+      font-size: 11.5px;
+      font-family: var(--font-mono);
+      color: var(--prism-text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ctl-dirty-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--prism-primary);
+      box-shadow: 0 0 6px color-mix(in srgb, var(--prism-primary) 60%, transparent);
+    }
+    .ctl-reset-btn {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 500;
+      font-family: var(--font-sans);
+      color: var(--prism-text-muted);
+      background: transparent;
+      border: 1px solid var(--prism-border);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+    }
+    .ctl-reset-btn:hover {
+      color: var(--prism-text);
+      border-color: color-mix(in srgb, var(--prism-primary) 40%, var(--prism-border));
+      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+    }
+    .ctl-reset-btn:focus-visible {
+      outline: 2px solid var(--prism-primary);
+      outline-offset: 1px;
     }
 
     .ctl-row {
