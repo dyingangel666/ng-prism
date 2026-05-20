@@ -73,6 +73,7 @@
           "options": {
             "buildTarget": "test-lib-prism:build:development",
             "port": 4400,
+            "hmr": true,
             "liveReload": true
           }
         }
@@ -146,6 +147,7 @@
           "options": {
             "buildTarget": "test-ui-kit-prism:build:development",
             "port": 4401,
+            "hmr": true,
             "liveReload": true
           }
         }
