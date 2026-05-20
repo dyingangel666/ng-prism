@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Chip',
+  status: 'beta',
   category: 'Components',
   description: 'ChipComponent from test-ui-kit/chip secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Chip' } }],

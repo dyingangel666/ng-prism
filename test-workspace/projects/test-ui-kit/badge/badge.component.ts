@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Badge',
+  status: 'stable',
   category: 'Components',
   description: 'BadgeComponent from test-ui-kit/badge secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Badge' } }],

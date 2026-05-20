@@ -15,6 +15,7 @@ export type ButtonVariantType =
 
 @Showcase({
   title: 'Button',
+  status: 'stable',
   category: 'Inputs',
   categoryOrder: 1,
   componentOrder: 1,

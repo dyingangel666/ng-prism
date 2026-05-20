@@ -9,6 +9,7 @@ export type SpinnerSizeType = 'sm' | 'md' | 'lg';
  */
 @Showcase({
   title: 'Spinner',
+  status: 'wip',
   category: 'Feedback',
   description: 'Animated circular spinner for loading states in various sizes.',
   variants: [

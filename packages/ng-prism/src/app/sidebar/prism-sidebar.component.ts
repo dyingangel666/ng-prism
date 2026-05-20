@@ -13,6 +13,7 @@ import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import { PrismManifestService } from '../services/prism-manifest.service.js';
+import type { ComponentStatus } from '../../decorator/showcase.types.js';
 
 const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
 
@@ -128,10 +129,17 @@ interface SidebarCategory {
             <button
               class="sb-item"
               [class.sb-item--active]="isActive(item)"
+              [class.sb-item--deprecated]="itemStatus(item) === 'deprecated'"
+              [attr.title]="itemTooltip(item)"
               (click)="onSelect(item)"
             >
               <prism-icon name="box" [size]="12" class="sb-item-icon" />
               <span class="sb-item-name">{{ itemLabel(item) }}</span>
+              @if (itemStatus(item) === 'wip') {
+              <span class="sb-item-status" title="Work in progress">
+                <span class="sb-item-status-dot"></span>
+              </span>
+              }
             </button>
             }
           </div>
@@ -313,6 +321,26 @@ interface SidebarCategory {
       text-overflow: ellipsis;
     }
 
+    .sb-item-status {
+      flex: 0 0 auto;
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+    .sb-item-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--prism-warn);
+    }
+
+    .sb-item--deprecated .sb-item-name {
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+      color: var(--prism-text-ghost);
+      opacity: 0.7;
+    }
+
 
     :focus-visible {
       outline: 2px solid var(--prism-primary);
@@ -400,6 +428,19 @@ export class PrismSidebarComponent {
     return item.kind === 'component'
       ? item.data.meta.showcaseConfig.title
       : item.data.title;
+  }
+
+  protected itemStatus(item: NavigationItem): ComponentStatus | undefined {
+    return item.kind === 'component'
+      ? item.data.meta.showcaseConfig.status
+      : undefined;
+  }
+
+  protected itemTooltip(item: NavigationItem): string | null {
+    const status = this.itemStatus(item);
+    if (status === 'wip') return 'Work in progress';
+    if (status === 'deprecated') return 'Deprecated / Legacy';
+    return null;
   }
 
   protected isActive(item: NavigationItem): boolean {

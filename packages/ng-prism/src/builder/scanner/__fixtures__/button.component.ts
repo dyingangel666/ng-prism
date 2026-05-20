@@ -13,6 +13,7 @@ export interface ShowcaseConfig {
   }[];
   tags?: string[];
   bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+  status?: 'stable' | 'beta' | 'wip' | 'deprecated' | string;
 }
 
 function Showcase(config: ShowcaseConfig): ClassDecorator {
@@ -34,6 +35,7 @@ function Showcase(config: ShowcaseConfig): ClassDecorator {
     { name: 'Danger', inputs: { variant: 'danger', disabled: true } },
   ],
   tags: ['form', 'action'],
+  status: 'beta',
 })
 @Component({
   selector: 'my-button',

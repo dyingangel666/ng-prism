@@ -7,6 +7,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Slider',
+  status: 'wip',
   category: 'Inputs',
   description: 'Range slider with min/max bounds, step control, and optional value label.',
   variants: [

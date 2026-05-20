@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Dialog',
+  status: 'deprecated',
   category: 'Components',
   description: 'DialogComponent from test-ui-kit/dialog secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Dialog' } }],

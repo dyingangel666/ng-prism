@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Alert',
+  status: 'stable',
   category: 'Components',
   description: 'AlertComponent from test-ui-kit/alert secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Alert' } }],

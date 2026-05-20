@@ -8,6 +8,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Toggle',
+  status: 'stable',
   category: 'Inputs',
   description: 'Binary toggle switch with optional label and disabled state.',
   variants: [

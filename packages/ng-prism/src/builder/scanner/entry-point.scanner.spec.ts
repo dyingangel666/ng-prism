@@ -27,6 +27,7 @@ describe('resolveEntryPointExports', () => {
       'CardComponent',
       'HighlightDirective',
       'InvalidBgComponent',
+      'InvalidStatusComponent',
       'MissingTitleComponent',
       'ModelInputComponent',
       'NoShowcaseComponent',

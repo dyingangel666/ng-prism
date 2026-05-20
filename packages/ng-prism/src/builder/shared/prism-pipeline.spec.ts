@@ -70,7 +70,7 @@ describe('runPrismPipeline integration', () => {
       createPipelineState()
     );
 
-    expect(result.componentCount).toBe(6);
+    expect(result.componentCount).toBe(7);
   });
 
   it('should write prism-manifest.ts to expected path', async () => {
@@ -100,7 +100,7 @@ describe('runPrismPipeline integration', () => {
       'utf-8'
     );
     expect(content).toContain(
-      "import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective, InvalidBgComponent } from 'my-lib'"
+      "import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective, InvalidBgComponent, InvalidStatusComponent } from 'my-lib'"
     );
   });
 
@@ -149,7 +149,7 @@ describe('runPrismPipeline integration', () => {
     );
     expect(ctx.reportStatus).toHaveBeenCalledWith('');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 6 component(s)')
+      expect.stringContaining('Generated manifest with 7 component(s)')
     );
   });
 });

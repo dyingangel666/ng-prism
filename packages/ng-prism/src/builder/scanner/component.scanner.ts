@@ -1,7 +1,19 @@
 import ts from 'typescript';
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
-import type { ShowcaseConfig } from '../../decorator/showcase.types.js';
+import type {
+  ComponentStatus,
+  ShowcaseConfig,
+} from '../../decorator/showcase.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+
+const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
+
+function isComponentStatus(value: unknown): value is ComponentStatus {
+  return (
+    typeof value === 'string' &&
+    (COMPONENT_STATUSES as readonly string[]).includes(value)
+  );
+}
 import {
   evaluateExpression,
   findDecorator,
@@ -108,6 +120,19 @@ function extractShowcaseConfig(
   if (obj['host'] !== undefined)
     config.host = obj['host'] as ShowcaseConfig['host'];
   if (obj['renderPage']) config.renderPage = obj['renderPage'] as string;
+
+  if (obj['status'] !== undefined) {
+    if (isComponentStatus(obj['status'])) {
+      config.status = obj['status'];
+    } else {
+      console.warn(
+        `⚠ ng-prism: ${className} declares invalid status "${String(
+          obj['status']
+        )}" — ` +
+          `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
+      );
+    }
+  }
 
   if (obj['bg'] !== undefined) {
     if (isCanvasBg(obj['bg'])) {

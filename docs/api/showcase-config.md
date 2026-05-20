@@ -18,7 +18,10 @@ interface ShowcaseConfig {
   bg?: CanvasBg;
   host?: string | DirectiveHost;
   renderPage?: string;
+  status?: ComponentStatus;
 }
+
+type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 ```
 
 ## Fields
@@ -193,6 +196,36 @@ Optional title of a registered `ComponentPage`. When set, the matching page comp
 ```
 
 The page component can inject `PrismRendererService` to react to variant and controls changes. See [Component Pages](guide/component-pages.md).
+
+---
+
+### `status`
+
+Optional migration / maturity badge. Accepts one of four values from the `ComponentStatus` union:
+
+| Value          | Meaning                                                 |
+| -------------- | ------------------------------------------------------- |
+| `'stable'`     | Migrated and production-ready.                          |
+| `'beta'`       | Functional, but API may still change.                   |
+| `'wip'`        | Work in progress, migration ongoing.                    |
+| `'deprecated'` | Legacy component — do not use in new code.              |
+
+```typescript
+@Showcase({ title: 'Button', status: 'stable' })
+@Showcase({ title: 'Dialog', status: 'deprecated' })
+```
+
+When the property is omitted, the component is treated like `stable` but rendered **without** any indicator — neither in the sidebar nor in the component header. Set the property explicitly only when you want to draw attention to the migration state.
+
+UI impact:
+
+- **Sidebar**
+  - `'wip'` → small amber dot at the right edge of the sidebar item, with a native tooltip "Work in progress".
+  - `'deprecated'` → component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
+  - `'stable'` / `'beta'` / unset → no sidebar decoration.
+- **Component header** — next to the selector pill, an inline status pill renders for every explicit value (Stable, Beta, Work in progress, Deprecated). The pill stays inline with title and `<selector>` pill.
+
+All colors come from the existing theme tokens (`--prism-success`, `--prism-warn`, `--prism-text-muted`, `--prism-text-ghost`, `--prism-input-bg`, `--prism-border-strong`) and adapt automatically to light/dark mode. The Beta accent uses `#60a5fa` because no `--prism-info` token exists yet.
 
 ---
 

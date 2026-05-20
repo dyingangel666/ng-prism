@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Tooltip',
+  status: 'wip',
   category: 'Components',
   description:
     'TooltipComponent from test-ui-kit/tooltip secondary entry point.',

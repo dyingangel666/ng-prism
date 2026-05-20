@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Slider',
+  status: 'wip',
   category: 'Components',
   description: 'SliderComponent from test-ui-kit/slider secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Slider' } }],

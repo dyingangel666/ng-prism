@@ -9,6 +9,7 @@ export type BadgeVariantType = 'default' | 'success' | 'warning' | 'error' | 'in
  */
 @Showcase({
   title: 'Badge',
+  status: 'stable',
   category: 'Data Display',
   description: 'Status indicator badge with multiple semantic variants.',
   variants: [

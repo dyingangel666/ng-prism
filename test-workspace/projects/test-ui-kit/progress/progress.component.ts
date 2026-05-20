@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Progress',
+  status: 'beta',
   category: 'Components',
   description:
     'ProgressComponent from test-ui-kit/progress secondary entry point.',

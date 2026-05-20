@@ -1,6 +1,8 @@
 import type { Provider } from '@angular/core';
 import type { CanvasBg } from '../shared/canvas-bg.type.js';
 
+export type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
+
 export interface DirectiveHost {
   selector: string;
   import: { name: string; from: string };
@@ -41,6 +43,13 @@ export interface ShowcaseConfig {
   host?: string | DirectiveHost;
   /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
   renderPage?: string;
+  /**
+   * Migration / maturity status. When unset, the component is treated as `stable`
+   * but rendered without any indicator in the sidebar or header. Only set it
+   * when you want to draw attention (in-progress or deprecated work) or to
+   * explicitly badge a `stable` / `beta` component.
+   */
+  status?: ComponentStatus;
 }
 
 export interface Variant {

@@ -7,6 +7,7 @@ import { Showcase } from '@ng-prism/core';
  */
 @Showcase({
   title: 'Textarea',
+  status: 'wip',
   category: 'Inputs',
   description: 'Multi-line text input with optional character counter, placeholder, and validation.',
   variants: [

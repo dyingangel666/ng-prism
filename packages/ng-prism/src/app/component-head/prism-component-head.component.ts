@@ -8,6 +8,31 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { A11yAuditService } from '../panels/a11y/a11y-audit.service.js';
 import { PrismStatComponent } from './prism-stat.component.js';
+import type { ComponentStatus } from '../../decorator/showcase.types.js';
+
+interface StatusBadge {
+  label: string;
+  tooltip: string;
+}
+
+const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
+  stable: {
+    label: 'Stable',
+    tooltip: 'Migrated and production-ready',
+  },
+  beta: {
+    label: 'Beta',
+    tooltip: 'Beta — API may change',
+  },
+  wip: {
+    label: 'Work in progress',
+    tooltip: 'Migration in progress',
+  },
+  deprecated: {
+    label: 'Deprecated',
+    tooltip: 'Deprecated / Legacy — do not use in new code',
+  },
+};
 
 @Component({
   selector: 'prism-component-head',
@@ -29,6 +54,21 @@ import { PrismStatComponent } from './prism-stat.component.js';
             <span class="comp-selector"
               >&lt;{{ c.meta.componentMeta.selector }}&gt;</span
             >
+            @if (status(); as s) {
+            <span
+              class="comp-status comp-status--{{ s }}"
+              [attr.title]="statusBadge()!.tooltip"
+            >
+              @if (s === 'stable') {
+              <prism-icon name="check" [size]="13" />
+              } @else if (s === 'wip') {
+              <span class="comp-status-ring" aria-hidden="true"></span>
+              } @else {
+              <span class="comp-status-dot" aria-hidden="true"></span>
+              }
+              <span class="comp-status-label">{{ statusBadge()!.label }}</span>
+            </span>
+            }
           </h1>
           @if (c.meta.showcaseConfig.description) {
           <p class="comp-desc">{{ c.meta.showcaseConfig.description }}</p>
@@ -126,6 +166,57 @@ import { PrismStatComponent } from './prism-stat.component.js';
       font-weight: 500;
     }
 
+    .comp-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 10px 0 8px;
+      border-radius: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border: 1px solid;
+      background: transparent;
+    }
+    .comp-status-label { line-height: 1; }
+    .comp-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .comp-status-ring {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      background: transparent;
+      box-sizing: border-box;
+    }
+    .comp-status prism-icon { display: inline-flex; }
+
+    .comp-status--stable {
+      color: var(--prism-success);
+      background: color-mix(in srgb, var(--prism-success) 10%, transparent);
+      border-color: color-mix(in srgb, var(--prism-success) 35%, transparent);
+    }
+    .comp-status--beta {
+      color: #60a5fa;
+      background: color-mix(in srgb, #60a5fa 10%, transparent);
+      border-color: color-mix(in srgb, #60a5fa 35%, transparent);
+    }
+    .comp-status--wip {
+      color: var(--prism-warn);
+      background: color-mix(in srgb, var(--prism-warn) 10%, transparent);
+      border-color: color-mix(in srgb, var(--prism-warn) 35%, transparent);
+    }
+    .comp-status--deprecated {
+      color: var(--prism-text-muted);
+      background: var(--prism-input-bg);
+      border-color: var(--prism-border-strong);
+    }
+
     .comp-desc {
       margin: 6px 0 0;
       font-size: var(--fs-lg);
@@ -173,6 +264,15 @@ export class PrismComponentHeadComponent {
   protected readonly variantCount = computed(() => {
     const c = this.comp();
     return c?.meta.showcaseConfig.variants?.length ?? 0;
+  });
+
+  protected readonly status = computed<ComponentStatus | undefined>(
+    () => this.comp()?.meta.showcaseConfig.status
+  );
+
+  protected readonly statusBadge = computed<StatusBadge | null>(() => {
+    const s = this.status();
+    return s ? STATUS_BADGES[s] : null;
   });
 
   protected readonly coveragePercent = computed<number | null>(() => {

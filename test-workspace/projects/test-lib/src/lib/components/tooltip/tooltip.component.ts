@@ -9,6 +9,7 @@ export type TooltipPositionType = 'top' | 'bottom' | 'left' | 'right';
  */
 @Showcase({
   title: 'Tooltip',
+  status: 'wip',
   category: 'Overlay',
   description: 'Hover-triggered tooltip with configurable position and text.',
   variants: [

@@ -9,6 +9,7 @@ export type ProgressBarVariantType = 'default' | 'success' | 'warning' | 'error'
  */
 @Showcase({
   title: 'Progress Bar',
+  status: 'beta',
   category: 'Feedback',
   description: 'Horizontal progress indicator with semantic color variants and optional label.',
   variants: [

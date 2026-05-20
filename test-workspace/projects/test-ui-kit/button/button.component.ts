@@ -10,6 +10,7 @@ export type ButtonVariantType = 'primary' | 'secondary' | 'ghost';
 
 @Showcase({
   title: 'Button',
+  status: 'stable',
   category: 'Inputs',
   description:
     'Button living in the @test-ui-kit/button secondary entry point.',

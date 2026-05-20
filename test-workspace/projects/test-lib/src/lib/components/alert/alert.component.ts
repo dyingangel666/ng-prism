@@ -9,6 +9,7 @@ export type AlertSeverityType = 'info' | 'success' | 'warning' | 'error';
  */
 @Showcase({
   title: 'Alert',
+  status: 'stable',
   category: 'Feedback',
   description: 'Contextual alert banner with severity variants and optional dismiss button.',
   variants: [

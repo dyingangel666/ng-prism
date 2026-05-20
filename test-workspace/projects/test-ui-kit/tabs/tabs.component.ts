@@ -6,6 +6,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Tabs',
+  status: 'wip',
   category: 'Components',
   description: 'TabsComponent from test-ui-kit/tabs secondary entry point.',
   variants: [{ name: 'Default', inputs: { label: 'Tabs' } }],

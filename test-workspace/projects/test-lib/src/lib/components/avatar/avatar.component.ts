@@ -9,6 +9,7 @@ export type AvatarSizeType = 'sm' | 'md' | 'lg';
  */
 @Showcase({
   title: 'Avatar',
+  status: 'stable',
   category: 'Data Display',
   description: 'User avatar with image source, initials fallback, and size variants.',
   variants: [

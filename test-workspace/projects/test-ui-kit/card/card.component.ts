@@ -3,6 +3,7 @@ import { Showcase } from '@ng-prism/core';
 
 @Showcase({
   title: 'Card',
+  status: 'stable',
   category: 'Layout',
   description: 'Card living in the @test-ui-kit/card secondary entry point.',
   variants: [

@@ -38,8 +38,9 @@ describe('scanComponents', () => {
     expect(names).toContain('ModelInputComponent');
     expect(names).toContain('HighlightDirective');
     expect(names).toContain('InvalidBgComponent');
+    expect(names).toContain('InvalidStatusComponent');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(6);
+    expect(components).toHaveLength(7);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
@@ -234,6 +235,37 @@ describe('scanComponents', () => {
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         'InvalidBgComponent declares invalid bg "rainbow"'
+      )
+    );
+
+    warnSpy.mockRestore();
+  });
+
+  it('should extract status from showcase config', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.showcaseConfig.status).toBe('beta');
+  });
+
+  it('should leave status undefined when not declared', () => {
+    const components = scanComponents(exports, checker);
+    const card = components.find((c) => c.className === 'CardComponent')!;
+
+    expect(card.showcaseConfig.status).toBeUndefined();
+  });
+
+  it('should warn and skip invalid status values', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const components = scanComponents(exports, checker);
+
+    const invalid = components.find(
+      (c) => c.className === 'InvalidStatusComponent'
+    )!;
+    expect(invalid.showcaseConfig.status).toBeUndefined();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'InvalidStatusComponent declares invalid status "banana"'
       )
     );
 

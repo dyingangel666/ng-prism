@@ -188,6 +188,33 @@ export class RippleDirective { ... }
 
 See [Directive Hosting](guide/directive-hosting.md) for a full walkthrough.
 
+### `status`
+
+Optional migration / maturity badge. Accepts `'stable'`, `'beta'`, `'wip'`, or `'deprecated'` (the `ComponentStatus` union).
+
+```typescript
+@Showcase({ title: 'Button',  status: 'stable' })
+@Showcase({ title: 'Chip',    status: 'beta' })
+@Showcase({ title: 'Slider',  status: 'wip' })
+@Showcase({ title: 'Dialog',  status: 'deprecated' })
+```
+
+When `status` is omitted, the component is treated as stable but renders **without any indicator** — keeping the sidebar quiet. Set it explicitly only when you want to draw attention.
+
+**Visual impact**
+
+| Status         | Sidebar item                                | Component header                                          |
+| -------------- | ------------------------------------------- | --------------------------------------------------------- |
+| _unset_        | unchanged                                   | no status pill                                            |
+| `'stable'`     | unchanged                                   | green "Stable" pill with check icon                       |
+| `'beta'`       | unchanged                                   | blue "Beta" pill                                          |
+| `'wip'`        | amber dot at the right edge (tooltip)       | amber "Work in progress" pill (hollow ring)               |
+| `'deprecated'` | name struck-through + dimmed (tooltip)      | muted "Deprecated" pill                                   |
+
+The status pill is rendered inline with the title and the `<selector>` pill in the component header. All colors come from the existing theme tokens, so light/dark mode are handled automatically — except for the Beta accent (`#60a5fa`) because the design system has no `--prism-info` token yet.
+
+Use this to communicate migration state while moving components from a legacy library into a new one — set `'wip'` on what's actively being migrated, `'deprecated'` on what should no longer be used, and `'stable'` / `'beta'` to badge maturity once a component is done.
+
 ### `renderPage`
 
 Title of a registered `ComponentPage` to render instead of the default component canvas. Use for complex components that need elaborate template projections or mock data that cannot be expressed with simple `content` strings.
