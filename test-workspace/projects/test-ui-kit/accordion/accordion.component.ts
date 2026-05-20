@@ -20,5 +20,5 @@ import { Showcase } from '@ng-prism/core';
   styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
 })
 export class AccordionComponent {
-  readonly label = input<string>('Accordion');
+  readonly label = input<string>('Accordionn');
 }
