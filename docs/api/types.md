@@ -194,9 +194,9 @@ type NavigationItem =
 ## Variant
 
 ```typescript
-interface Variant {
+interface Variant<T = unknown> {
   name: string;
-  inputs?: Record<string, unknown>;
+  inputs?: Partial<InputsOf<T>>;
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
@@ -204,14 +204,57 @@ interface Variant {
 }
 ```
 
+The optional type parameter `T` is the component class. When provided (via `@Showcase<MyComponent>({...})`), `inputs` becomes `Partial<InputsOf<MyComponent>>` and the editor checks both keys and values against the component's signal inputs. When omitted, `T` defaults to `unknown` and `inputs` falls back to `Record<string, unknown>` — fully backwards compatible.
+
 | Field         | Description                                                                                                                                                                               |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`        | Tab label                                                                                                                                                                                 |
-| `inputs`      | Key-value map of input signal names to values                                                                                                                                             |
+| `inputs`      | Key-value map of input signal names to values. Typed via [`InputsOf<T>`](#inputsof) when a component generic is supplied to `@Showcase`.                                                  |
 | `content`     | Content projected into `<ng-content>` — string for single slot, record for named slots                                                                                                    |
 | `description` | Optional description rendered below the variant tab                                                                                                                                       |
 | `meta`        | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`)                                                                                                                                       |
 | `bg`          | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`. See [Per-Variant Background](guide/variants.md#per-variant-background). |
+
+---
+
+## InputsOf
+
+Utility type that maps a component class to a record of its signal-input properties, unwrapped to their write-side value type.
+
+```typescript
+type InputsOf<T>;
+```
+
+**Selection rules**
+
+- Picks fields declared as `input()`, `input.required()`, `model()`, or `input(..., { transform })`.
+- Excludes `output()` and any other class members.
+- Unwraps each signal to its write-side type — for transform inputs (e.g. `input(false, { transform: booleanAttribute })`) this is the **source** type (`string | boolean | ''`), not the parsed value type. That mirrors what callers actually write in `inputs: {...}`.
+- When `T` is `unknown` (the default), evaluates to `Record<string, unknown>`.
+
+**Example**
+
+```typescript
+import { booleanAttribute, input, model, output } from '@angular/core';
+
+class FooComponent {
+  label = input.required<string>();
+  count = input<number>(0);
+  active = input(false, { transform: booleanAttribute });
+  selected = model<string>('');
+  closed = output<void>();
+}
+
+// InputsOf<FooComponent> ≡
+// {
+//   label: string;
+//   count: number;
+//   active: string | boolean | '';
+//   selected: string;
+// }
+```
+
+`closed` is excluded because `output()` is not a signal input. `Variant<FooComponent>['inputs']` is `Partial<InputsOf<FooComponent>>`, so any subset of these keys is valid in a variant.
 
 ---
 

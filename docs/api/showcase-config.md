@@ -5,13 +5,13 @@ Configuration object passed to the `@Showcase` decorator.
 ```typescript
 import type { Provider } from '@angular/core';
 
-interface ShowcaseConfig {
+interface ShowcaseConfig<T = unknown> {
   title: string;
   description?: string;
   category?: string;
   categoryOrder?: number;
   componentOrder?: number;
-  variants?: Variant[];
+  variants?: Variant<T>[];
   tags?: string[];
   providers?: Provider[];
   meta?: Record<string, unknown>;
@@ -23,6 +23,8 @@ interface ShowcaseConfig {
 
 type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 ```
+
+The optional generic parameter `T` is the component class. When set via `@Showcase<MyComponent>({...})`, variant `inputs` are checked against `Partial<InputsOf<MyComponent>>`, giving you autocomplete on input names and type-checking on values. When omitted, `T` defaults to `unknown` and `inputs` accepts any `Record<string, unknown>` — existing call sites keep working unchanged. See [Variants — Type-safe inputs](guide/variants.md#type-safe-inputs) for usage and [`InputsOf<T>`](api/types.md#inputsof) for the type mapping rules.
 
 ## Fields
 

@@ -17,6 +17,27 @@ The decorator is evaluated at build time by the TypeScript Compiler API scanner.
 
 > **Note:** `@Showcase` must always appear _above_ `@Component` or `@Directive`, as decorator application order in Angular matters.
 
+## Type-safe variants (optional)
+
+`@Showcase` is generic: `@Showcase<T>({...})` where `T` is the component class. Supplying it types each variant's `inputs` as `Partial<InputsOf<T>>`, giving you autocomplete on input names and value type-checking against the component's signal inputs.
+
+```typescript
+@Showcase<ButtonComponent>({
+  title: 'Button',
+  variants: [
+    { name: 'Primary', inputs: { label: 'Save',  variant: 'primary' } },
+    { name: 'Danger',  inputs: { label: 'Delete', variant: 'danger'  } },
+  ],
+})
+@Component({ ... })
+export class ButtonComponent {
+  label   = input.required<string>();
+  variant = input<'primary' | 'secondary' | 'danger'>('primary');
+}
+```
+
+Without the generic argument, `inputs` falls back to `Record<string, unknown>` — every existing call site keeps working unchanged. See [Variants — Type-safe inputs](guide/variants.md#type-safe-inputs) and [`InputsOf<T>`](api/types.md#inputsof) for full details.
+
 ## All Fields
 
 ### `title` _(required)_
