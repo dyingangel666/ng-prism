@@ -2,6 +2,10 @@
   "name": "@ng-prism/plugin-jsdoc",
   "version": "21.12.0-beta.2",
   "description": "JSDoc API documentation panel for ng-prism.",
+  "ng-add": {
+    "save": "devDependencies"
+  },
+  "schematics": "./schematics/collection.json",
   "keywords": [
     "@ng-prism/core",
     "jsdoc",
@@ -27,6 +31,7 @@
   },
   "files": [
     "dist",
+    "schematics",
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
