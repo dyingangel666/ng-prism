@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "NgPrismPluginBoxModelNgAdd",
+  "title": "Add @ng-prism/plugin-box-model",
+  "description": "Registers @ng-prism/plugin-box-model in ng-prism.config.ts",
+  "type": "object",
+  "properties": {
+    "configPath": {
+      "type": "string",
+      "description": "Path to ng-prism.config.ts",
+      "default": "ng-prism.config.ts"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

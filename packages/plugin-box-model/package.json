@@ -2,6 +2,8 @@
   "name": "@ng-prism/plugin-box-model",
   "version": "21.12.0-beta.2",
   "description": "CSS box model inspector for ng-prism.",
+  "ng-add": { "save": "devDependencies" },
+  "schematics": "./schematics/collection.json",
   "keywords": [
     "@ng-prism/core",
     "box-model",
@@ -25,6 +27,7 @@
   },
   "files": [
     "dist",
+    "schematics",
     "!**/*.tsbuildinfo"
   ],
   "peerDependencies": {
