@@ -7,7 +7,9 @@ import {
   mkdirSync,
   writeFileSync,
 } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
+import { Tree } from '@angular-devkit/schematics';
+import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { tmpdir } from 'os';
 import type { BuilderContext } from '@angular-devkit/architect';
 import { runPrismPipeline, createPipelineState } from '../builder/shared/prism-pipeline.js';
@@ -179,5 +181,58 @@ describe('test-workspace integration', () => {
     expect(ctx.logger.info).toHaveBeenCalledWith(
       expect.stringContaining('Generated manifest with 14 component(s)'),
     );
+  });
+
+  it('end-to-end: core ng-add → plugin ng-add wires config + deps', async () => {
+    const corePkgRoot = resolve(__dirname, '../..');
+    const jsdocPkgRoot = resolve(corePkgRoot, '../plugin-jsdoc');
+
+    const coreRunner = new SchematicTestRunner(
+      '@ng-prism/core',
+      resolve(corePkgRoot, 'schematics/collection.json')
+    );
+    const jsdocRunner = new SchematicTestRunner(
+      '@ng-prism/plugin-jsdoc',
+      resolve(jsdocPkgRoot, 'schematics/collection.json')
+    );
+
+    let tree = Tree.empty();
+    tree.create(
+      'angular.json',
+      JSON.stringify({
+        $schema: './node_modules/@angular/cli/lib/config/workspace-schema.json',
+        version: 1,
+        projects: {
+          'my-lib': {
+            projectType: 'library',
+            root: 'projects/my-lib',
+            sourceRoot: 'projects/my-lib/src',
+            architect: {
+              build: {
+                builder: '@angular-devkit/build-angular:ng-packagr',
+                options: { project: 'projects/my-lib/ng-package.json' },
+              },
+            },
+          },
+        },
+      }) + '\n'
+    );
+    tree.create('tsconfig.json', '{}');
+    tree.create('package.json', JSON.stringify({ name: 'host' }) + '\n');
+
+    tree = await coreRunner.runSchematic('ng-add', { project: 'my-lib' }, tree);
+    tree = await jsdocRunner.runSchematic('ng-add', {}, tree);
+
+    const config = tree.read('ng-prism.config.ts')!.toString('utf-8');
+    expect(config).toContain(
+      `import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';`
+    );
+    expect(config).toContain('plugins: [jsDocPlugin()]');
+
+    const pkg = JSON.parse(tree.read('package.json')!.toString('utf-8')) as {
+      devDependencies?: Record<string, string>;
+    };
+    expect(pkg.devDependencies?.['highlight.js']).toBeDefined();
+    expect(pkg.devDependencies?.['ngx-highlightjs']).toBeDefined();
   });
 });
