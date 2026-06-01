@@ -8,7 +8,7 @@ import { Showcase } from '@ng-prism/core';
 
 export type ButtonVariantType = 'primary' | 'secondary' | 'ghost';
 
-@Showcase({
+@Showcase<ButtonComponent>({
   title: 'Button',
   status: 'stable',
   category: 'Inputs',
