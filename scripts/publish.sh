@@ -53,6 +53,39 @@ show_menu() {
   echo ""
 }
 
+# ─── Compute peer-dep range from a version string ───
+# Strips any prerelease suffix and returns ^base-0
+# e.g. 21.12.0-beta.5 → ^21.12.0-0   (matches all 21.12.0 prereleases AND 21.x stable)
+#      21.12.0        → ^21.12.0-0   (matches all 21.x stable)
+peer_range_from_version() {
+  local version="$1"
+  local base="${version%%-*}"
+  echo "^${base}-0"
+}
+
+# ─── Sync @ng-prism/core peer-dep in all plugins to match the new version ───
+sync_plugin_peer_deps() {
+  local new_version="$1"
+  local peer_range
+  peer_range=$(peer_range_from_version "$new_version")
+
+  for pkg in "${PACKAGES[@]}"; do
+    # Skip the core package itself — it doesn't depend on itself
+    [[ "$pkg" == "packages/ng-prism" ]] && continue
+
+    node -e "
+      const fs = require('fs');
+      const path = './$pkg/package.json';
+      const p = JSON.parse(fs.readFileSync(path, 'utf-8'));
+      if (p.peerDependencies && p.peerDependencies['@ng-prism/core']) {
+        p.peerDependencies['@ng-prism/core'] = '$peer_range';
+        fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
+      }
+    "
+    info "$(basename "$pkg") peer @ng-prism/core → $peer_range"
+  done
+}
+
 # ─── Bump version across all packages ───
 bump_version() {
   local bump_type="$1"
@@ -80,6 +113,8 @@ bump_version() {
     "
     info "$(basename "$pkg") → $new_version"
   done
+
+  sync_plugin_peer_deps "$new_version"
 
   ok "All packages bumped to $new_version"
   echo "$new_version"
@@ -126,6 +161,8 @@ bump_beta_version() {
     info "$(basename "$pkg") → $new_version"
   done
 
+  sync_plugin_peer_deps "$new_version"
+
   ok "All packages bumped to $new_version"
   echo "$new_version"
 }
@@ -154,6 +191,8 @@ promote_beta_to_stable() {
     "
     info "$(basename "$pkg") → $new_version"
   done
+
+  sync_plugin_peer_deps "$new_version"
 
   ok "All packages promoted to $new_version"
   echo "$new_version"
