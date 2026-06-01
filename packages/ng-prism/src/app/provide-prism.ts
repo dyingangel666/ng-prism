@@ -23,7 +23,7 @@ export function providePrism(
     ? { ...manifest, pages: [...(manifest.pages ?? []), ...options.componentPages.map(o => componentPage(o))] }
     : manifest;
 
-  // Expose a thin discovery view of the manifest to audit tooling (e.g. ng-prism-audit-a11y).
+  // Exposes a thin discovery view of the manifest to external audit tooling.
   // We intentionally only expose className + variant info — no Angular type references.
   if (typeof globalThis !== 'undefined') {
     (globalThis as Record<string, unknown>)['__PRISM_MANIFEST__'] = {

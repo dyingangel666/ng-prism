@@ -50,8 +50,7 @@
     }
   },
   "bin": {
-    "ng-prism-strip": "./dist/transformer/cli.js",
-    "ng-prism-audit-a11y": "./dist/cli/audit-a11y/cli.js"
+    "ng-prism-strip": "./dist/transformer/cli.js"
   },
   "schematics": "./schematics/collection.json",
   "builders": "./builders.json",
@@ -71,9 +70,7 @@
     "@angular-devkit/schematics": ">=21.0.0",
     "typescript": ">=5.5.0",
     "highlight.js": ">=11.0.0",
-    "ngx-highlightjs": ">=14.0.0",
-    "playwright": ">=1.40.0",
-    "axe-core": ">=4.0.0"
+    "ngx-highlightjs": ">=14.0.0"
   },
   "peerDependenciesMeta": {
     "@angular-devkit/architect": {
@@ -81,12 +78,6 @@
     },
     "@angular-devkit/schematics": {
       "optional": false
-    },
-    "playwright": {
-      "optional": true
-    },
-    "axe-core": {
-      "optional": true
     }
   },
   "dependencies": {

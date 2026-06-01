@@ -86,91 +86,77 @@ Use the `meta` field on `@Showcase` to configure axe-core rules for specific com
 
 When disabled, the A11y panel shows a message instead of running the audit.
 
-## Build-Time Audit & Header Badge
+## Library-Wide A11y Score & Header Badge
 
-Beyond the live runtime audit, ng-prism ships a CLI tool that audits the **entire library** with headless Chromium and produces a JSON report. The report is consumed at build-time and surfaces as a color-coded **A11y pill** in the header — green/orange/red depending on whether the library meets your thresholds.
+Beyond the live runtime audit, ng-prism can surface a **library-wide** A11y score as a color-coded **pill in the header** — green/orange/red depending on whether the library meets your thresholds.
 
-### 1. Install peer dependencies (audit-only)
+ng-prism does **not** generate the score itself. Producing an aggregate audit is the consumer's responsibility (same pattern as `coverage-summary.json` for the coverage plugin). ng-prism only **reads** an `a11y-report.json` you place in your workspace.
 
-```bash
-npm install --save-dev playwright axe-core
-npx playwright install chromium
+### 1. Produce `a11y-report.json` in your library project
+
+Write the report at build time using any tool you like — headless browsers + axe-core (Playwright/Puppeteer), an Nx target wrapping `@axe-core/cli`, or your own script. The Prism app exposes a global `window.__PRISM_MANIFEST__` with `{ components: [{ className, variants: [{ name, index }] }], pages: [{ title }] }` so audit scripts can discover what to audit.
+
+The file must match this JSON shape:
+
+```json
+{
+  "total": {
+    "score": 92,
+    "violations": 3,
+    "critical": 0,
+    "serious": 0,
+    "moderate": 2,
+    "minor": 1,
+    "passes": 145,
+    "incomplete": 0,
+    "auditedComponents": 18,
+    "auditedVariants": 47
+  },
+  "components": {
+    "ButtonComponent": { "score": 100, "violations": 0, "critical": 0, "serious": 0, "moderate": 0, "minor": 0, "passes": 12, "incomplete": 0 }
+  },
+  "generatedAt": "2026-06-01T10:00:00.000Z"
+}
 ```
 
-Both `playwright` and `axe-core` are **optional** peerDeps — only required if you actually run the audit CLI.
+`total` is required and drives the header pill. `components` is optional (per-component breakdown for tooltips/drilldown). `generatedAt` is informational.
 
-### 2. Build the Prism app
-
-```bash
-npx nx run my-lib-prism:build
-```
-
-### 3. Run the audit
-
-```bash
-npx ng-prism-audit-a11y \
-  --dist dist/my-lib-prism \
-  --output a11y-report.json \
-  --score 80 \
-  --max-critical 0 \
-  --max-serious 0
-```
-
-The CLI starts a static server on the built output, navigates Chromium to every `@Showcase` component × variant, runs axe-core on each, aggregates a library-wide score, and writes `a11y-report.json`. Exits non-zero when thresholds are violated.
-
-### 4. Re-build to surface the report
-
-```bash
-npx nx run my-lib-prism:build
-```
-
-The build pipeline reads `a11y-report.json` and embeds the aggregate data into the runtime manifest. The header now shows the A11y pill.
-
-### Configure thresholds in ng-prism.config.ts
+### 2. Point ng-prism at the report
 
 ```typescript
+// ng-prism.config.ts
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
   a11y: {
+    reportPath: 'a11y-report.json', // relative to workspace root (default)
     thresholds: {
       score: 85,
       critical: 0,
       serious: 0,
       moderate: 5,
     },
-    reportPath: 'a11y-report.json',
   },
 });
 ```
 
-These thresholds are used **both** by the build pipeline (build fails on violation) and by the header pill (color-coding).
+Thresholds are used **both** by the build pipeline (build fails on violation) and by the header pill (color-coding).
 
-### CLI options
+### 3. Build the Prism app
 
-| Flag | Default | Description |
-|---|---|---|
-| `--dist <path>` | _required_ | Path to the built Prism app (contains `index.html`) |
-| `--output <file>` | `a11y-report.json` | Report output path |
-| `--port <n>` | `4317` | Static-server port |
-| `--include A,B` | _all_ | Only audit these component class names |
-| `--exclude A,B` | none | Skip these component class names |
-| `--score <n>` | `80` | Minimum library-wide avg score |
-| `--max-critical <n>` | `0` | Allowed critical violations |
-| `--max-serious <n>` | `0` | Allowed serious violations |
-| `--max-moderate <n>` | unlimited | Allowed moderate violations |
-| `--no-fail` | — | Write report but never exit non-zero |
+```bash
+npx nx run my-lib-prism:build
+```
+
+The build pipeline reads `a11y-report.json` and embeds the aggregate data into the runtime manifest. The header pill renders if the file exists. If `reportPath` doesn't resolve, the pill is silently omitted.
 
 ### CI integration
 
 ```yaml
 - run: npx nx run my-lib:test --coverage
-- run: npx nx run my-lib-prism:build
-- run: npx ng-prism-audit-a11y --dist dist/my-lib-prism
-- run: npx nx run my-lib-prism:build   # second build embeds the report
+- run: npx nx run my-lib:audit-a11y      # your audit script — writes a11y-report.json
+- run: npx nx run my-lib-prism:build     # reads the report into the manifest
 ```
-
-The second build is intentional — the first build doesn't yet have the report. CI fails when the audit step fails, the second build only runs after a clean audit.
 
 ## Peer Dependency
 
