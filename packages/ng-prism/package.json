@@ -47,11 +47,17 @@
       "types": "./dist/transformer/index.d.ts",
       "import": "./dist/transformer/index.js",
       "default": "./dist/transformer/index.js"
+    },
+    "./schematics/utils": {
+      "types": "./dist/schematics/utils/index.d.ts",
+      "import": "./dist/schematics/utils/index.js",
+      "default": "./dist/schematics/utils/index.js"
     }
   },
   "bin": {
     "ng-prism-strip": "./dist/transformer/cli.js"
   },
+  "ng-add": { "save": "devDependencies" },
   "schematics": "./schematics/collection.json",
   "builders": "./builders.json",
   "files": [
