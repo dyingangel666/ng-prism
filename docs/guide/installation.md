@@ -241,17 +241,28 @@ bootstrapApplication(PrismShellComponent, {
 
 **5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above.
 
+## Adding Plugins
+
+All official plugins ship with their own `ng-add` schematic. Adding a plugin is a single command:
+
+```bash
+ng add @ng-prism/plugin-jsdoc
+ng add @ng-prism/plugin-box-model
+ng add @ng-prism/plugin-coverage
+ng add @ng-prism/plugin-figma
+ng add @ng-prism/plugin-perf
+```
+
+Each command installs the plugin into `devDependencies` and registers it in `ng-prism.config.ts`. Re-running is safe — already-registered plugins are skipped.
+
+See [Plugin Overview](plugins/overview.md) for details on what each plugin provides.
+
 ## Peer Dependencies
 
 Some features require additional peer dependencies:
 
-| Package                            | Required for                              |
-| ---------------------------------- | ----------------------------------------- |
-| `highlight.js` + `ngx-highlightjs` | Code snippet highlighting in the renderer |
-| `axe-core`                         | Built-in accessibility auditing           |
+| Package    | Required for                    |
+| ---------- | ------------------------------- |
+| `axe-core` | Built-in accessibility auditing |
 
-Install them only if you use those features:
-
-```bash
-npm install highlight.js ngx-highlightjs
-```
+> **Note:** `highlight.js` and `ngx-highlightjs` are installed automatically by `ng add @ng-prism/core` — no manual step needed.

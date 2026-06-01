@@ -12,8 +12,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-jsdoc
+ng add @ng-prism/plugin-jsdoc
 ```
+
+This installs the package and registers `jsDocPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-jsdoc` and add it to your config as shown below.
 
 ## Configuration
 

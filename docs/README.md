@@ -54,6 +54,20 @@ ng run my-lib:prism
 - [Your First Showcase](guide/first-showcase.md) — annotate a component step by step
 - [Configuration](guide/configuration.md) — `prism.config.ts` reference
 
+## Official Plugins
+
+All plugins ship with an `ng-add` schematic — one command installs and registers the plugin:
+
+```bash
+ng add @ng-prism/plugin-jsdoc       # JSDoc API documentation panel
+ng add @ng-prism/plugin-figma       # Figma embed + pixel-perfect design diff
+ng add @ng-prism/plugin-box-model   # CSS box model overlay
+ng add @ng-prism/plugin-coverage    # Per-component test coverage from Istanbul/v8
+ng add @ng-prism/plugin-perf        # Render and re-render timing via Performance API
+```
+
+Re-running a command is safe — already-registered plugins are skipped. See [Plugin Overview](plugins/overview.md) for full documentation.
+
 ## Going Further
 
 - [Plugins](plugins/overview.md) — extend the UI with official and custom plugins

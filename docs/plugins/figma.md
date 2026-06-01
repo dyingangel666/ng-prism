@@ -8,8 +8,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-figma
+ng add @ng-prism/plugin-figma
 ```
+
+This installs the package and registers `figmaPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-figma`.
 
 The Design Diff feature additionally needs `html2canvas` and `pixelmatch` (declared as **optional** peer dependencies):
 

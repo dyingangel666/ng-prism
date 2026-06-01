@@ -14,8 +14,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-coverage
+ng add @ng-prism/plugin-coverage
 ```
+
+This installs the package and registers `coveragePlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-coverage`.
 
 ## Configuration
 

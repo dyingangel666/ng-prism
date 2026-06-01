@@ -13,8 +13,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-perf
+ng add @ng-prism/plugin-perf
 ```
+
+This installs the package and registers `perfPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-perf`.
 
 ## Configuration
 
