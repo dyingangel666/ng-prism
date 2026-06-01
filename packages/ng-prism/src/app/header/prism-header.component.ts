@@ -9,14 +9,21 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.component.js';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
+import { BUILTIN_HEADER_WIDGETS } from '../panels/builtin-header-widgets.js';
+import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
+import { PrismHeaderWidgetHostComponent } from './prism-header-widget-host.component.js';
 
 @Component({
   selector: 'prism-header',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent, PrismLayoutMenuComponent],
+  imports: [
+    PrismIconComponent,
+    PrismLayoutMenuComponent,
+    PrismHeaderWidgetHostComponent,
+  ],
   template: `
     <header class="prism-header">
       <div class="prism-header__brand">
@@ -37,7 +44,17 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
           }
         </div>
       </div>
+      @if (widgetsStart().length) {
+      <div class="prism-header__widgets prism-header__widgets--start">
+        @for (w of widgetsStart(); track w.id) {
+        <prism-header-widget-host [widget]="w" />
+        }
+      </div>
+      }
       <div class="prism-header__actions">
+        @for (w of widgetsEnd(); track w.id) {
+        <prism-header-widget-host [widget]="w" />
+        }
         @if (buildInfoLabel()) {
         <span class="prism-header__build-pill">{{ buildInfoLabel() }}</span>
         }
@@ -183,6 +200,17 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
       gap: 6px;
     }
 
+    .prism-header__widgets {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .prism-header__widgets--start {
+      padding-left: 4px;
+      justify-content: flex-start;
+    }
+
     .prism-header__icon-btn {
       width: 32px;
       height: 32px;
@@ -209,8 +237,19 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
 })
 export class PrismHeaderComponent {
   private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
+  private readonly pluginService = inject(PrismPluginService);
   protected readonly searchService = inject(PrismSearchService);
   protected readonly themeService = inject(PrismThemeService);
+
+  protected readonly widgetsStart = computed(() => [
+    ...BUILTIN_HEADER_WIDGETS.filter((w) => w.placement === 'start'),
+    ...this.pluginService.headerWidgetsStart(),
+  ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+
+  protected readonly widgetsEnd = computed(() => [
+    ...BUILTIN_HEADER_WIDGETS.filter((w) => (w.placement ?? 'end') === 'end'),
+    ...this.pluginService.headerWidgetsEnd(),
+  ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
 
   protected readonly logoUrl = computed(() => {
     const logo = this.config.logo;

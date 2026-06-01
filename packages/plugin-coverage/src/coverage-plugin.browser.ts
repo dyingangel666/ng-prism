@@ -18,5 +18,16 @@ export function coveragePlugin(
         position: 'bottom',
       },
     ],
+    headerWidgets: [
+      {
+        id: 'coverage-total',
+        placement: 'end',
+        order: -10,
+        loadComponent: () =>
+          import('./coverage-header-badge.component.js').then(
+            (m) => m.CoverageHeaderBadgeComponent
+          ),
+      },
+    ],
   };
 }

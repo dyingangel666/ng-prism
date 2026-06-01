@@ -36,6 +36,12 @@ export interface CoveragePluginOptions {
   thresholds?: number | Partial<CoverageThresholds>;
 }
 
+/** Shape stored under `manifest.meta.coverage`. */
+export interface CoverageManifestMeta {
+  total: CoverageData;
+  thresholds: CoverageThresholds;
+}
+
 export interface IstanbulFileCoverage {
   statements: MetricDetail;
   branches: MetricDetail;

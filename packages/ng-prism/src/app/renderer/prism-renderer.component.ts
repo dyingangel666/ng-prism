@@ -61,7 +61,11 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
       <prism-canvas-rulers />
       <prism-canvas-bg-pill />
 
-      <div class="demo-wrap" [style.--zoom]="canvasService.zoom()">
+      <div
+        class="demo-wrap"
+        [style.--zoom]="canvasService.zoom()"
+        [attr.data-prism-rendered]="renderedKey()"
+      >
         <ng-container #outlet />
         @if (activeOverlay()) {
         <ng-container
@@ -200,6 +204,14 @@ export class PrismRendererComponent {
 
   private readonly overlayCache = new Map<string, Type<unknown>>();
   readonly activeOverlay = signal<Type<unknown> | null>(null);
+  /** Identifier of the currently rendered component/variant (for audit tooling / e2e). */
+  protected readonly renderedKey = computed(() => {
+    const el = this.rendererService.renderedElement();
+    if (!el) return null;
+    const comp = this.navigationService.activeComponent();
+    if (!comp) return null;
+    return `${comp.meta.className}:${this.rendererService.activeVariantIndex()}`;
+  });
   protected readonly overlayInputs = { rendererService: this.rendererService };
   protected readonly overlayInjector = computed(() => {
     const panelInjector = this.panelService.activePanelInjector();

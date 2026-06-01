@@ -34,7 +34,7 @@
     "typescript": ">=5.5.0",
     "highlight.js": ">=11.0.0",
     "ngx-highlightjs": ">=14.0.0",
-    "@ng-prism/core": ">=21.0.0"
+    "@ng-prism/core": ">=21.0.0-0"
   },
   "devDependencies": {
     "@ng-prism/core": "*"

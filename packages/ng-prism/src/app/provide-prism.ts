@@ -23,6 +23,18 @@ export function providePrism(
     ? { ...manifest, pages: [...(manifest.pages ?? []), ...options.componentPages.map(o => componentPage(o))] }
     : manifest;
 
+  // Expose a thin discovery view of the manifest to audit tooling (e.g. ng-prism-audit-a11y).
+  // We intentionally only expose className + variant info — no Angular type references.
+  if (typeof globalThis !== 'undefined') {
+    (globalThis as Record<string, unknown>)['__PRISM_MANIFEST__'] = {
+      components: mergedManifest.components.map((c) => ({
+        className: c.meta.className,
+        variants: c.meta.showcaseConfig.variants?.map((v, i) => ({ name: v.name, index: i })) ?? [{ name: 'Default', index: 0 }],
+      })),
+      pages: (mergedManifest.pages ?? []).map((p) => ({ title: p.title })),
+    };
+  }
+
   return makeEnvironmentProviders([
     { provide: PRISM_MANIFEST, useValue: mergedManifest },
     { provide: PRISM_BUILTIN_PANELS, useValue: BUILTIN_PANELS },

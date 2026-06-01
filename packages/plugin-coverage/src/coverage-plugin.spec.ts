@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { coveragePlugin, resolveCoverageThresholds } from './coverage-plugin.js';
 import { clearCoverageCache } from './coverage-reader.js';
-import type { ScannedComponent } from '@ng-prism/core/plugin';
+import type { PrismManifest, ScannedComponent } from '@ng-prism/core/plugin';
+import type { CoverageManifestMeta } from './coverage.types.js';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/coverage-summary.json');
 
@@ -159,6 +160,63 @@ describe('coveragePlugin', () => {
         functions: 95,
         statements: 95,
       });
+    });
+  });
+
+  describe('onManifestReady', () => {
+    it('should add manifest-level coverage meta with library total', async () => {
+      const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH });
+      const manifest: PrismManifest = { components: [] };
+      const result = await plugin.onManifestReady!(manifest);
+
+      const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+      expect(meta.total.found).toBe(true);
+      expect(meta.total.score).toBe(Math.round((80 + 70 + 90 + 80) / 4));
+      expect(meta.thresholds).toEqual({
+        lines: 80,
+        branches: 80,
+        functions: 80,
+        statements: 80,
+      });
+    });
+
+    it('should preserve existing manifest meta properties', async () => {
+      const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH });
+      const manifest: PrismManifest = {
+        components: [],
+        meta: { foo: 'bar' },
+      };
+      const result = await plugin.onManifestReady!(manifest);
+
+      expect((result as PrismManifest).meta?.['foo']).toBe('bar');
+      expect((result as PrismManifest).meta?.['coverage']).toBeDefined();
+    });
+
+    it('should set found:false when coverage file is missing', async () => {
+      const plugin = coveragePlugin({ coveragePath: '/nonexistent.json' });
+      const result = await plugin.onManifestReady!({ components: [] });
+
+      const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+      expect(meta.total.found).toBe(false);
+    });
+  });
+
+  describe('headerWidgets', () => {
+    it('should register a coverage-total header widget', () => {
+      const plugin = coveragePlugin();
+      expect(plugin.headerWidgets).toHaveLength(1);
+      const widget = plugin.headerWidgets![0];
+      expect(widget.id).toBe('coverage-total');
+      expect(widget.placement).toBe('end');
+      expect(widget.loadComponent).toBeDefined();
+    });
+
+    it('should lazy-load the header badge component', async () => {
+      const plugin = coveragePlugin();
+      const widget = plugin.headerWidgets![0];
+      const Component = await widget.loadComponent!();
+      expect(Component).toBeDefined();
+      expect(Component.name).toBe('CoverageHeaderBadgeComponent');
     });
   });
 

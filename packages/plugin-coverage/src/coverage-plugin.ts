@@ -40,6 +40,17 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
         },
       };
     },
+    async onManifestReady(manifest) {
+      const { readTotalCoverage } = await import('./coverage-reader.js');
+      const total = readTotalCoverage(coveragePath);
+      return {
+        ...manifest,
+        meta: {
+          ...manifest.meta,
+          coverage: { total, thresholds },
+        },
+      };
+    },
     panels: [
       {
         id: 'coverage',
@@ -47,6 +58,17 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
         loadComponent: () =>
           import('./coverage-panel.component.js').then((m) => m.CoveragePanelComponent),
         position: 'bottom',
+      },
+    ],
+    headerWidgets: [
+      {
+        id: 'coverage-total',
+        placement: 'end',
+        order: -10,
+        loadComponent: () =>
+          import('./coverage-header-badge.component.js').then(
+            (m) => m.CoverageHeaderBadgeComponent,
+          ),
       },
     ],
   };

@@ -59,7 +59,9 @@ export async function runPluginHooks(
     pages[i] = current;
   }
 
-  let result: PrismManifest = { components, pages };
+  let result: PrismManifest = manifest.meta
+    ? { components, pages, meta: manifest.meta }
+    : { components, pages };
 
   for (const plugin of plugins) {
     if (plugin.onManifestReady) {

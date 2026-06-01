@@ -7,6 +7,7 @@ export interface RuntimeManifestOptions {
   components: ScannedComponent[];
   libraryImportPath: string;
   pages?: StyleguidePage[];
+  meta?: Record<string, unknown>;
 }
 
 function inputTypeAnnotation(input: InputMeta): string {
@@ -129,7 +130,7 @@ function groupComponentsByImportPath(
 }
 
 export function generateRuntimeManifest(options: RuntimeManifestOptions): string {
-  const { components, libraryImportPath, pages } = options;
+  const { components, libraryImportPath, pages, meta } = options;
 
   const directives = components.filter((c) => c.componentMeta.isDirective);
   const hasDirectives = directives.length > 0;
@@ -192,6 +193,14 @@ export function generateRuntimeManifest(options: RuntimeManifestOptions): string
 
   if (pages && pages.length > 0) {
     lines.push(`  pages: ${JSON.stringify(pages, null, 2).split('\n').map((l, i) => i === 0 ? l : '  ' + l).join('\n')},`);
+  }
+
+  if (meta && Object.keys(meta).length > 0) {
+    const metaJson = JSON.stringify(meta, null, 2)
+      .split('\n')
+      .map((l, i) => (i === 0 ? l : '  ' + l))
+      .join('\n');
+    lines.push(`  meta: ${metaJson},`);
   }
 
   lines.push('};');

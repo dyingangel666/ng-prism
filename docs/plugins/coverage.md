@@ -5,7 +5,8 @@
 ## What It Does
 
 - Adds a **Coverage** panel to the addon tab bar
-- Shows a **score circle** (like the A11y panel) with the average coverage percentage
+- Shows a **library-wide coverage pill** in the header (average across all four metrics, color-coded against your thresholds: green ≥ target, orange ≥ 75% of target, red below)
+- Shows a **score circle** (like the A11y panel) with the average coverage percentage per component
 - Displays 4 metric bars: Statements, Branches, Functions, Lines
 - Color-coded thresholds: green (>= 80%), yellow (>= 50%), red (< 50%)
 - Works with any test runner that outputs Istanbul-compatible coverage (Jest, Karma, Vitest, nyc, c8)

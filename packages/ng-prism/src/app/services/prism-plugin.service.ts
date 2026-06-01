@@ -1,5 +1,9 @@
 import { computed, inject, Injectable } from '@angular/core';
-import type { ControlDefinition, PanelDefinition } from '../../plugin/plugin.types.js';
+import type {
+  ControlDefinition,
+  HeaderWidgetDefinition,
+  PanelDefinition,
+} from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 
 @Injectable({ providedIn: 'root' })
@@ -33,4 +37,22 @@ export class PrismPluginService {
     }
     return result;
   });
+
+  readonly headerWidgets = computed<HeaderWidgetDefinition[]>(() => {
+    const result: HeaderWidgetDefinition[] = [];
+    for (const plugin of this.config.plugins ?? []) {
+      if (plugin.headerWidgets) {
+        result.push(...plugin.headerWidgets);
+      }
+    }
+    return result.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  });
+
+  readonly headerWidgetsStart = computed<HeaderWidgetDefinition[]>(() =>
+    this.headerWidgets().filter((w) => w.placement === 'start'),
+  );
+
+  readonly headerWidgetsEnd = computed<HeaderWidgetDefinition[]>(() =>
+    this.headerWidgets().filter((w) => (w.placement ?? 'end') === 'end'),
+  );
 }

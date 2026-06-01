@@ -114,6 +114,22 @@ onManifestReady(manifest) {
 }
 ```
 
+Use `manifest.meta` for library-wide values that runtime components (e.g. header widgets) should read:
+
+```typescript
+onManifestReady(manifest) {
+  return {
+    ...manifest,
+    meta: {
+      ...manifest.meta,
+      coverage: { total: readTotalCoverage(path), thresholds },
+    },
+  };
+}
+```
+
+`manifest.meta` is serialized into the runtime manifest and accessible via the `PRISM_MANIFEST` injection token in the browser.
+
 ## Async Hooks
 
 All three hooks accept `Promise` return values. The pipeline runner uses `await` for each hook:

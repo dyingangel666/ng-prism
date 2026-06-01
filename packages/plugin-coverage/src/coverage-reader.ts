@@ -1,5 +1,9 @@
 import { readFileSync, statSync } from 'node:fs';
-import type { CoverageData, IstanbulSummary } from './coverage.types.js';
+import type {
+  CoverageData,
+  CoverageThresholds,
+  IstanbulSummary,
+} from './coverage.types.js';
 
 const EMPTY_METRIC = { total: 0, covered: 0, skipped: 0, pct: 0 };
 
@@ -80,6 +84,33 @@ export function readCoverageForFile(coveragePath: string, componentFilePath: str
     lines: { ...entry.lines },
     found: true,
   };
+}
+
+export function readTotalCoverage(coveragePath: string): CoverageData {
+  const summary = loadSummary(coveragePath);
+  if (!summary) return { ...EMPTY_COVERAGE };
+
+  const total = summary['total'];
+  if (!total) return { ...EMPTY_COVERAGE };
+
+  const score = Math.round(
+    (total.statements.pct + total.branches.pct + total.functions.pct + total.lines.pct) / 4,
+  );
+
+  return {
+    score,
+    statements: { ...total.statements },
+    branches: { ...total.branches },
+    functions: { ...total.functions },
+    lines: { ...total.lines },
+    found: true,
+  };
+}
+
+export function averageThreshold(thresholds: CoverageThresholds): number {
+  return Math.round(
+    (thresholds.lines + thresholds.branches + thresholds.functions + thresholds.statements) / 4,
+  );
 }
 
 export function clearCoverageCache(): void {

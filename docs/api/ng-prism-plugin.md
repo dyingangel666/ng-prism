@@ -10,6 +10,7 @@ interface NgPrismPlugin {
   onManifestReady?: (manifest: PrismManifest)        => PrismManifest | void   | Promise<PrismManifest | void>;
   panels?: PanelDefinition[];
   controls?: ControlDefinition[];
+  headerWidgets?: HeaderWidgetDefinition[];
   wrapComponent?: Type<unknown>;
 }
 ```
@@ -114,6 +115,36 @@ controls: [
 
 ---
 
+### `headerWidgets`
+
+Array of `HeaderWidgetDefinition` objects rendering Angular components inside the Prism shell header bar. Use for library-wide signals — total coverage, perf budgets, version banners.
+
+```typescript
+headerWidgets: [
+  {
+    id: 'coverage-total',
+    placement: 'end',
+    order: -10,
+    loadComponent: () =>
+      import('./coverage-header-badge.component.js')
+        .then((m) => m.CoverageHeaderBadgeComponent),
+  },
+]
+```
+
+Widgets typically inject `PRISM_MANIFEST` and read library-wide data from `manifest.meta`. Set library-wide values from `onManifestReady`:
+
+```typescript
+async onManifestReady(manifest) {
+  return {
+    ...manifest,
+    meta: { ...manifest.meta, myPlugin: aggregate(manifest.components) },
+  };
+}
+```
+
+---
+
 ### `wrapComponent`
 
 An Angular standalone component that wraps every rendered component. Use for providing context (theme, mocks, CDK overlay host) that must exist in the component tree.
@@ -175,3 +206,27 @@ interface ControlDefinition {
 |-------|-------------|
 | `matchType` | Predicate called with the `InputMeta` for each input. Return `true` to use this control. |
 | `component` | Angular standalone component rendered as the input control. Receives `inputMeta: InputMeta` as an `@Input()`. |
+
+---
+
+## HeaderWidgetDefinition
+
+```typescript
+interface HeaderWidgetDefinition {
+  id: string;
+  component?: Type<unknown>;
+  loadComponent?: () => Promise<Type<unknown>>;
+  placement?: 'start' | 'end';
+  order?: number;
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique widget ID. |
+| `component` | Static Angular component — avoid for browser-only deps. |
+| `loadComponent` | Lazy-loaded component — preferred (config is evaluated in Node.js by the builder). |
+| `placement` | `'start'` renders next to the brand block; `'end'` (default) renders inside the existing actions area, before theme/menu buttons. |
+| `order` | Sort order within the same placement (lower = earlier). Default `0`. |
+
+> **Note:** Header widgets are root-level components. They commonly inject `PRISM_MANIFEST` from `@ng-prism/core/plugin` to access library-wide `manifest.meta` data written by `onManifestReady`.

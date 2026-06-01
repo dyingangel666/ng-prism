@@ -32,6 +32,10 @@ interface NgPrismConfig {
   urlState?: boolean;
   persistState?: boolean;
   buildInfo?: { version?: string; gitHash?: string };
+  a11y?: {
+    thresholds?: { score?: number; critical?: number; serious?: number; moderate?: number };
+    reportPath?: string;
+  };
 }
 ```
 
@@ -209,3 +213,36 @@ export default defineConfig({
 | --------- | -------- | ------------------------------------------------- |
 | `version` | `string` | Package version — displayed as `v1.2.3`           |
 | `gitHash` | `string` | Git commit hash — truncated to 7 characters in UI |
+
+---
+
+### `a11y`
+
+Configuration for the library-wide accessibility audit. Drives both:
+
+1. The **A11y header pill** (color-coded against `thresholds`).
+2. The **build-time threshold check** — when an `a11y-report.json` exists and a threshold is violated, `nx run my-lib-prism:build` fails.
+
+```typescript
+export default defineConfig({
+  a11y: {
+    thresholds: {
+      score: 85,
+      critical: 0,
+      serious: 0,
+      moderate: 5,
+    },
+    reportPath: 'reports/a11y.json',
+  },
+});
+```
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `thresholds.score` | `80` | Minimum avg library score (0–100) |
+| `thresholds.critical` | `0` | Maximum allowed critical violations |
+| `thresholds.serious` | `0` | Maximum allowed serious violations |
+| `thresholds.moderate` | unlimited | Maximum allowed moderate violations |
+| `reportPath` | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the report written by `ng-prism-audit-a11y` |
+
+See [Accessibility — Build-Time Audit](guide/accessibility.md#build-time-audit--header-badge) for the CLI workflow.
