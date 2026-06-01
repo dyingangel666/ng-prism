@@ -118,6 +118,8 @@ The embedded viewer is fully interactive — navigate nodes, zoom, inspect prope
 
 The panel is visible whenever the component or any of its variants has a `meta.figma` URL.
 
+The panel registers itself with `keepAlive: true`, so the iframe survives tab switches — switching to Controls and back will not trigger a re-load of the Figma embed. The iframe is only reloaded when the active component (and therefore the Figma URL) changes.
+
 ## Panel: Design Diff
 
 The Design Diff panel renders the component into a canvas (via `html2canvas`), fetches the corresponding Figma node as a PNG (via the Figma REST API), and computes a pixel-by-pixel diff (via `pixelmatch`).

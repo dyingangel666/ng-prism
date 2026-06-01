@@ -138,6 +138,8 @@ interface PanelDefinition {
   position?: 'bottom' | 'right';
   placement?: 'addon' | 'view';
   providers?: Provider[];
+  isVisible?: (component: RuntimeComponent) => boolean;
+  keepAlive?: boolean;
 }
 ```
 
@@ -153,6 +155,8 @@ interface PanelDefinition {
 | `position` | `'bottom'` (horizontal panel) or `'right'` (sidebar panel) |
 | `placement` | `'addon'` = bottom tab bar, `'view'` = view toolbar toggle |
 | `providers` | Providers scoped to this panel's child `EnvironmentInjector` |
+| `isVisible` | Predicate — when provided, the panel tab is only shown if it returns `true` for the active component |
+| `keepAlive` | When `true`, the panel component is rendered once on first activation and merely hidden (instead of destroyed) on tab switch. Use for expensive panels — iframes, remote previews, heavy DOM. Default: `false`. |
 
 > **Note:** Always prefer `loadComponent` over `component`. The config file is evaluated by the Angular builder in Node.js — a static import of a component that uses `DomSanitizer` or any browser global will crash the build.
 

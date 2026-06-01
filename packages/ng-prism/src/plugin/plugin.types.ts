@@ -40,6 +40,16 @@ export interface PanelDefinition {
   providers?: Provider[];
   /** When provided, the panel tab is only shown if this returns true for the active component */
   isVisible?: (component: RuntimeComponent) => boolean;
+  /**
+   * Keep the panel's component instance alive across tab switches.
+   * When `true`, the panel is rendered once on first activation and merely hidden
+   * (instead of destroyed) when the user switches tabs. Use for panels with
+   * expensive setup (iframes, network calls, heavy DOM) — e.g. embedded designs,
+   * remote previews.
+   *
+   * Default: `false`.
+   */
+  keepAlive?: boolean;
 }
 
 export interface ControlDefinition {

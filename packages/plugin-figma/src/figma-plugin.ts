@@ -18,6 +18,7 @@ export function figmaPlugin(options: FigmaPluginOptions = {}): NgPrismPlugin {
         component: FigmaPanelComponent,
         position: 'bottom',
         isVisible: hasFigmaMeta,
+        keepAlive: true,
       },
       {
         id: 'figma-diff',
