@@ -44,6 +44,7 @@ show_menu() {
   echo "  3) Major release    (breaking changes, Angular version bump)"
   echo "  4) Publish current  (no version bump, just build + publish)"
   echo "  5) Dry run          (build + pack, no publish)"
+  echo "  6) Beta release     (prerelease, published with --tag beta)"
   echo ""
   echo -e "  ${DIM}0) Exit${RESET}"
   echo ""
@@ -63,6 +64,51 @@ bump_version() {
   esac
 
   header "Bumping $old_version → $new_version"
+
+  for pkg in "${PACKAGES[@]}"; do
+    node -e "
+      const fs = require('fs');
+      const path = './$pkg/package.json';
+      const p = JSON.parse(fs.readFileSync(path, 'utf-8'));
+      p.version = '$new_version';
+      fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
+    "
+    info "$(basename "$pkg") → $new_version"
+  done
+
+  ok "All packages bumped to $new_version"
+  echo "$new_version"
+}
+
+# ─── Bump beta version across all packages ───
+# Arg 1: "iterate" (increment beta counter) | "patch" | "minor" | "major" (new beta series)
+bump_beta_version() {
+  local mode="$1"
+  local old_version new_version
+  old_version=$(current_version)
+
+  if [[ "$mode" == "iterate" ]]; then
+    if [[ ! "$old_version" =~ -beta\.([0-9]+)$ ]]; then
+      err "Current version $old_version is not a beta — cannot iterate"
+      exit 1
+    fi
+    local base="${old_version%-beta.*}"
+    local beta_num="${BASH_REMATCH[1]}"
+    new_version="${base}-beta.$((beta_num + 1))"
+  else
+    # Strip any existing prerelease suffix before bumping base
+    local clean="${old_version%%-*}"
+    local base
+    case "$mode" in
+      patch) base=$(node -e "const [a,b,c]=process.argv[1].split('.'); console.log([a,b,+c+1].join('.'))" "$clean") ;;
+      minor) base=$(node -e "const [a,b]=process.argv[1].split('.'); console.log([a,+b+1,0].join('.'))" "$clean") ;;
+      major) base=$(node -e "const [a]=process.argv[1].split('.'); console.log([+a+1,0,0].join('.'))" "$clean") ;;
+      *) err "Invalid beta mode: $mode"; exit 1 ;;
+    esac
+    new_version="${base}-beta.0"
+  fi
+
+  header "Bumping $old_version → $new_version (beta)"
 
   for pkg in "${PACKAGES[@]}"; do
     node -e "
@@ -156,6 +202,79 @@ publish_all() {
     cd "$ROOT_DIR"
     ok "$name@$version published"
   done
+}
+
+# ─── Publish (beta) ───
+publish_all_beta() {
+  header "Publishing to npm (--tag beta)"
+
+  for pkg in "${PACKAGES[@]}"; do
+    local name version
+    name=$(node -e "console.log(require('./$pkg/package.json').name)")
+    version=$(node -e "console.log(require('./$pkg/package.json').version)")
+
+    info "Publishing $name@$version (tag: beta)..."
+    cd "$pkg"
+    npm publish --access public --tag beta --userconfig="$ROOT_DIR/.npmrc"
+    cd "$ROOT_DIR"
+    ok "$name@$version published as @beta"
+  done
+}
+
+# ─── Git tag + push (beta — uses current branch, not main) ───
+tag_and_push_beta() {
+  local version="$1"
+  local current_branch
+  current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+  header "Git tag + push (beta — branch: $current_branch)"
+
+  git add -A
+  git commit -m "release: v$version" || true
+  git tag "v$version" -m "Beta release v$version"
+
+  echo ""
+  read -rp "  Push to origin/$current_branch with tag v$version? (y/n) " answer
+  if [[ "$answer" == "y" ]]; then
+    git push origin "$current_branch" --tags
+    ok "Pushed v$version to origin/$current_branch"
+
+    create_github_prerelease "$version"
+  else
+    warn "Skipped push. Run manually: git push origin $current_branch --tags"
+  fi
+}
+
+# ─── GitHub Pre-release ───
+create_github_prerelease() {
+  local version="$1"
+  local tag="v$version"
+
+  if ! command -v gh &>/dev/null; then
+    warn "gh CLI not found — skipping GitHub release"
+    return
+  fi
+
+  header "Creating GitHub pre-release"
+
+  local prev_tag
+  prev_tag=$(git tag --sort=-v:refname | grep -E '^v[0-9]' | sed -n '2p')
+
+  local notes
+  if [[ -n "$prev_tag" ]]; then
+    notes=$(git log --pretty=format:"- %s" "$prev_tag..$tag" -- . ':!node_modules' | grep -v "^- release:")
+  else
+    notes=$(git log --pretty=format:"- %s" "$tag" -- . ':!node_modules' | head -20 | grep -v "^- release:")
+  fi
+
+  [[ -z "$notes" ]] && notes="Pre-release $tag"
+
+  gh release create "$tag" \
+    --title "$tag" \
+    --notes "$notes" \
+    --prerelease
+
+  ok "GitHub pre-release $tag created"
 }
 
 # ─── Git tag + push + GitHub release ───
@@ -258,6 +377,64 @@ main() {
       build_all
       dry_run
       ok "Dry run complete — nothing published"
+      ;;
+
+    6)
+      local current beta_mode
+      current=$(current_version)
+
+      if [[ "$current" =~ -beta\.[0-9]+$ ]]; then
+        echo ""
+        echo "  Current version is a beta: $current"
+        echo "  1) Iterate beta    (next beta.N+1)"
+        echo "  2) New beta series (bump base patch)"
+        echo "  3) New beta series (bump base minor)"
+        echo "  4) New beta series (bump base major)"
+        echo ""
+        read -rp "  Select (default 1): " sub_choice
+        sub_choice=${sub_choice:-1}
+        case "$sub_choice" in
+          1) beta_mode="iterate" ;;
+          2) beta_mode="patch" ;;
+          3) beta_mode="minor" ;;
+          4) beta_mode="major" ;;
+          *) err "Invalid choice"; exit 1 ;;
+        esac
+      else
+        echo ""
+        echo "  Base bump for new beta series:"
+        echo "  1) Patch  (next patch + -beta.0)"
+        echo "  2) Minor  (next minor + -beta.0)"
+        echo "  3) Major  (next major + -beta.0)"
+        echo ""
+        read -rp "  Select (default 2): " sub_choice
+        sub_choice=${sub_choice:-2}
+        case "$sub_choice" in
+          1) beta_mode="patch" ;;
+          2) beta_mode="minor" ;;
+          3) beta_mode="major" ;;
+          *) err "Invalid choice"; exit 1 ;;
+        esac
+      fi
+
+      preflight_checks
+      local new_version
+      new_version=$(bump_beta_version "$beta_mode")
+      run_tests
+      build_all
+      dry_run
+
+      echo ""
+      read -rp "  Ready to publish v$new_version as @beta? (y/n) " answer
+      [[ "$answer" != "y" ]] && { warn "Aborted."; exit 0; }
+
+      publish_all_beta
+      tag_and_push_beta "$new_version"
+
+      echo ""
+      ok "Beta release v$new_version complete!"
+      echo -e "  ${DIM}Install: npm i @ng-prism/core@beta${RESET}"
+      echo -e "  ${DIM}https://www.npmjs.com/package/@ng-prism/core${RESET}"
       ;;
 
     0)
