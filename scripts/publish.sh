@@ -45,6 +45,9 @@ show_menu() {
   echo "  4) Publish current  (no version bump, just build + publish)"
   echo "  5) Dry run          (build + pack, no publish)"
   echo "  6) Beta release     (prerelease, published with --tag beta)"
+  if [[ "$version" =~ -beta\.[0-9]+$ ]]; then
+    echo -e "  ${YELLOW}7) Promote beta     (drop -beta suffix, publish as latest)${RESET}"
+  fi
   echo ""
   echo -e "  ${DIM}0) Exit${RESET}"
   echo ""
@@ -53,14 +56,16 @@ show_menu() {
 # ─── Bump version across all packages ───
 bump_version() {
   local bump_type="$1"
-  local old_version new_version
+  local old_version clean new_version
 
   old_version=$(current_version)
+  # Strip any prerelease suffix (e.g. -beta.0) before bumping
+  clean="${old_version%%-*}"
 
   case "$bump_type" in
-    patch) new_version=$(node -e "const [a,b,c]=process.argv[1].split('.'); console.log([a,b,+c+1].join('.'))" "$old_version") ;;
-    minor) new_version=$(node -e "const [a,b]=process.argv[1].split('.'); console.log([a,+b+1,0].join('.'))" "$old_version") ;;
-    major) new_version=$(node -e "const [a]=process.argv[1].split('.'); console.log([+a+1,0,0].join('.'))" "$old_version") ;;
+    patch) new_version=$(node -e "const [a,b,c]=process.argv[1].split('.'); console.log([a,b,+c+1].join('.'))" "$clean") ;;
+    minor) new_version=$(node -e "const [a,b]=process.argv[1].split('.'); console.log([a,+b+1,0].join('.'))" "$clean") ;;
+    major) new_version=$(node -e "const [a]=process.argv[1].split('.'); console.log([+a+1,0,0].join('.'))" "$clean") ;;
   esac
 
   header "Bumping $old_version → $new_version"
@@ -122,6 +127,35 @@ bump_beta_version() {
   done
 
   ok "All packages bumped to $new_version"
+  echo "$new_version"
+}
+
+# ─── Promote beta → stable (drop -beta.N suffix, no version bump) ───
+promote_beta_to_stable() {
+  local old_version new_version
+  old_version=$(current_version)
+
+  if [[ ! "$old_version" =~ -beta\.[0-9]+$ ]]; then
+    err "Current version $old_version is not a beta — nothing to promote"
+    exit 1
+  fi
+
+  new_version="${old_version%%-*}"
+
+  header "Promoting $old_version → $new_version (stable)"
+
+  for pkg in "${PACKAGES[@]}"; do
+    node -e "
+      const fs = require('fs');
+      const path = './$pkg/package.json';
+      const p = JSON.parse(fs.readFileSync(path, 'utf-8'));
+      p.version = '$new_version';
+      fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
+    "
+    info "$(basename "$pkg") → $new_version"
+  done
+
+  ok "All packages promoted to $new_version"
   echo "$new_version"
 }
 
@@ -367,10 +401,17 @@ main() {
       ;;
 
     4)
+      local current
+      current=$(current_version)
+      if [[ "$current" =~ -beta\.[0-9]+$ ]]; then
+        err "Current version $current is a beta — cannot publish to 'latest'."
+        warn "Use option 6 (re-publish beta) or option 7 (promote to stable) instead."
+        exit 1
+      fi
       preflight_checks
       build_all
       publish_all
-      ok "Published current version $(current_version)"
+      ok "Published current version $current"
       ;;
 
     5)
@@ -434,6 +475,33 @@ main() {
       echo ""
       ok "Beta release v$new_version complete!"
       echo -e "  ${DIM}Install: npm i @ng-prism/core@beta${RESET}"
+      echo -e "  ${DIM}https://www.npmjs.com/package/@ng-prism/core${RESET}"
+      ;;
+
+    7)
+      local current
+      current=$(current_version)
+      if [[ ! "$current" =~ -beta\.[0-9]+$ ]]; then
+        err "Current version $current is not a beta — nothing to promote"
+        exit 1
+      fi
+
+      preflight_checks
+      local new_version
+      new_version=$(promote_beta_to_stable)
+      run_tests
+      build_all
+      dry_run
+
+      echo ""
+      read -rp "  Ready to publish v$new_version as latest? (y/n) " answer
+      [[ "$answer" != "y" ]] && { warn "Aborted."; exit 0; }
+
+      publish_all
+      tag_and_push "$new_version"
+
+      echo ""
+      ok "Promote $current → v$new_version complete!"
       echo -e "  ${DIM}https://www.npmjs.com/package/@ng-prism/core${RESET}"
       ;;
 
