@@ -37,6 +37,23 @@ export default defineConfig({
 | Option | Default | Description |
 |--------|---------|-------------|
 | `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root) |
+| `thresholds` | `80` for all metrics | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. Accepts a number (applied to all metrics) or a partial object with `lines`, `branches`, `functions`, `statements` keys. |
+
+### Thresholds
+
+Highlights values in the per-file coverage table when they fall below the configured threshold. Defaults to `80` for every metric.
+
+```typescript
+// Single value — applied to lines, branches, functions, statements
+coveragePlugin({ thresholds: 90 });
+
+// Per-metric — keys you omit fall back to the default (80)
+coveragePlugin({
+  thresholds: { lines: 95, branches: 70 },
+});
+```
+
+The thresholds affect only the red highlighting in the per-file table. The score circle and its color levels are independent (see [Score Levels](#score-levels)).
 
 ## Usage
 

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { coveragePlugin } from './coverage-plugin.js';
+import { coveragePlugin, resolveCoverageThresholds } from './coverage-plugin.js';
 import { clearCoverageCache } from './coverage-reader.js';
 import type { ScannedComponent } from '@ng-prism/core/plugin';
 
@@ -100,6 +100,94 @@ describe('coveragePlugin', () => {
 
       const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
       expect(coverage.found).toBe(false);
+    });
+
+    it('should inject default thresholds (80) when none configured', async () => {
+      const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH });
+      const result = await plugin.onComponentScanned!(makeComponent());
+
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      expect(coverage.thresholds).toEqual({
+        lines: 80,
+        branches: 80,
+        functions: 80,
+        statements: 80,
+      });
+    });
+
+    it('should accept a numeric threshold shorthand applied to all metrics', async () => {
+      const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH, thresholds: 90 });
+      const result = await plugin.onComponentScanned!(makeComponent());
+
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      expect(coverage.thresholds).toEqual({
+        lines: 90,
+        branches: 90,
+        functions: 90,
+        statements: 90,
+      });
+    });
+
+    it('should accept partial per-metric thresholds and fall back to defaults', async () => {
+      const plugin = coveragePlugin({
+        coveragePath: FIXTURE_PATH,
+        thresholds: { lines: 95, branches: 70 },
+      });
+      const result = await plugin.onComponentScanned!(makeComponent());
+
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      expect(coverage.thresholds).toEqual({
+        lines: 95,
+        branches: 70,
+        functions: 80,
+        statements: 80,
+      });
+    });
+
+    it('should inject thresholds even when no coverage data is found for the file', async () => {
+      const plugin = coveragePlugin({
+        coveragePath: '/nonexistent/coverage-summary.json',
+        thresholds: 95,
+      });
+      const result = await plugin.onComponentScanned!(makeComponent());
+
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      expect(coverage.found).toBe(false);
+      expect(coverage.thresholds).toEqual({
+        lines: 95,
+        branches: 95,
+        functions: 95,
+        statements: 95,
+      });
+    });
+  });
+
+  describe('resolveCoverageThresholds', () => {
+    it('returns defaults when input is undefined', () => {
+      expect(resolveCoverageThresholds()).toEqual({
+        lines: 80,
+        branches: 80,
+        functions: 80,
+        statements: 80,
+      });
+    });
+
+    it('expands a number shorthand to all metrics', () => {
+      expect(resolveCoverageThresholds(70)).toEqual({
+        lines: 70,
+        branches: 70,
+        functions: 70,
+        statements: 70,
+      });
+    });
+
+    it('merges partial thresholds with defaults', () => {
+      expect(resolveCoverageThresholds({ functions: 100 })).toEqual({
+        lines: 80,
+        branches: 80,
+        functions: 100,
+        statements: 80,
+      });
     });
   });
 });

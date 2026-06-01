@@ -1,10 +1,28 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import type { CoveragePluginOptions } from './coverage.types.js';
+import type { CoveragePluginOptions, CoverageThresholds } from './coverage.types.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
 
+export const DEFAULT_COVERAGE_THRESHOLDS: CoverageThresholds = {
+  lines: 80,
+  branches: 80,
+  functions: 80,
+  statements: 80,
+};
+
+export function resolveCoverageThresholds(
+  input?: number | Partial<CoverageThresholds>,
+): CoverageThresholds {
+  if (input === undefined) return { ...DEFAULT_COVERAGE_THRESHOLDS };
+  if (typeof input === 'number') {
+    return { lines: input, branches: input, functions: input, statements: input };
+  }
+  return { ...DEFAULT_COVERAGE_THRESHOLDS, ...input };
+}
+
 export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
   const coveragePath = options?.coveragePath ?? DEFAULT_COVERAGE_PATH;
+  const thresholds = resolveCoverageThresholds(options?.thresholds);
 
   return {
     name: '@ng-prism/plugin-coverage',
@@ -15,7 +33,10 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
         ...component,
         showcaseConfig: {
           ...component.showcaseConfig,
-          meta: { ...component.showcaseConfig.meta, coverage },
+          meta: {
+            ...component.showcaseConfig.meta,
+            coverage: { ...coverage, thresholds },
+          },
         },
       };
     },
