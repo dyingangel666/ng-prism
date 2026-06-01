@@ -5,6 +5,7 @@ import {
   type Tree,
   SchematicsException,
 } from '@angular-devkit/schematics';
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
 import {
   parse as parseJsonc,
   modify as modifyJsonc,
@@ -322,6 +323,43 @@ function addGitignoreEntry(options: NgAddSchemaOptions): Rule {
   };
 }
 
+const RUNTIME_PEER_DEPS: Record<string, string> = {
+  'highlight.js': '^11.0.0',
+  'ngx-highlightjs': '^14.0.0',
+};
+
+function addRuntimePeerDeps(): Rule {
+  return (tree: Tree, context: SchematicContext) => {
+    const pkgPath = 'package.json';
+    const buffer = tree.read(pkgPath);
+    if (!buffer) return tree;
+
+    const pkg = JSON.parse(buffer.toString('utf-8')) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    pkg.devDependencies ??= {};
+
+    let changed = false;
+    for (const [name, version] of Object.entries(RUNTIME_PEER_DEPS)) {
+      const alreadyPresent =
+        pkg.devDependencies[name] || pkg.dependencies?.[name];
+      if (!alreadyPresent) {
+        pkg.devDependencies[name] = version;
+        changed = true;
+        context.logger.info(`  Added ${name}@${version} to devDependencies`);
+      }
+    }
+
+    if (changed) {
+      tree.overwrite(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      context.addTask(new NodePackageInstallTask());
+    }
+
+    return tree;
+  };
+}
+
 function logSetupSummary(options: NgAddSchemaOptions): Rule {
   return (_tree: Tree, context: SchematicContext) => {
     const prismProjectName = `${options.project}-prism`;
@@ -369,6 +407,7 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
     createConfigFile(),
     addStripShowcaseScript(options),
     addGitignoreEntry(options),
+    addRuntimePeerDeps(),
     logSetupSummary(options),
   ]);
 }
