@@ -107,7 +107,8 @@ export function addPluginToConfig(
           newText: `[${options.call}]`,
         });
       } else {
-        const insertPos = arr.getEnd() - 1;
+        const lastElement = arr.elements[arr.elements.length - 1];
+        const insertPos = lastElement.end;
         edits.push({
           start: insertPos,
           end: insertPos,

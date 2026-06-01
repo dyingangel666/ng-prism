@@ -126,6 +126,6 @@ export default defineConfig({
 
     expect(changed).toBe(true);
     const result = tree.read('ng-prism.config.ts')!.toString('utf-8');
-    expect(result).toMatch(/otherPlugin\(\)[\s\S]*jsDocPlugin\(\)/);
+    expect(result).toMatch(/otherPlugin\(\),\s*jsDocPlugin\(\)/);
   });
 });
