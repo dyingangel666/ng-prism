@@ -60,12 +60,21 @@ describe('PrismNavigationService', () => {
     expect(service.activeComponent()).toBe(comp);
   });
 
-  it('should select first component via selectFirst()', () => {
+  it('should select first component via selectFirst() when no pages exist', () => {
     const first = createComponent({ title: 'Alpha', className: 'Alpha' });
     const second = createComponent({ title: 'Beta', className: 'Beta' });
     const { service } = setup({ components: [first, second] });
     service.selectFirst();
     expect(service.activeComponent()).toBe(first);
+  });
+
+  it('should prefer first page over first component in selectFirst()', () => {
+    const comp = createComponent({ title: 'Alpha', className: 'Alpha' });
+    const page = { type: 'component' as const, title: 'Intro', component: class {} as any };
+    const { service } = setup({ components: [comp], pages: [page] });
+    service.selectFirst();
+    expect(service.activePage()).toBe(page);
+    expect(service.activeComponent()).toBeNull();
   });
 
   it('should set null when selectFirst() called on empty manifest', () => {

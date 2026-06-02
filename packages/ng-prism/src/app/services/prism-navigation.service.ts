@@ -89,14 +89,14 @@ export class PrismNavigationService {
   }
 
   selectFirst(): void {
-    const comps = this.searchService.filteredComponents();
-    if (comps.length > 0) {
-      this.activeItem.set({ kind: 'component', data: comps[0] });
-      return;
-    }
     const pages = this.searchService.filteredPages();
     if (pages.length > 0) {
       this.activeItem.set({ kind: 'page', data: pages[0] });
+      return;
+    }
+    const comps = this.searchService.filteredComponents();
+    if (comps.length > 0) {
+      this.activeItem.set({ kind: 'component', data: comps[0] });
       return;
     }
     this.activeItem.set(null);
