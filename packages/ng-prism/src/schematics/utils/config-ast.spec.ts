@@ -1,4 +1,4 @@
-import { Tree, SchematicsException } from '@angular-devkit/schematics';
+import { Tree } from '@angular-devkit/schematics';
 import { addPluginToConfig } from './config-ast.js';
 
 function makeTreeWithConfig(content: string): Tree {
@@ -32,7 +32,8 @@ describe('addPluginToConfig', () => {
   });
 
   it('appends to pre-populated plugins array', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 import { otherPlugin } from '@ng-prism/plugin-other';
 
 export default defineConfig({ plugins: [otherPlugin()] });
@@ -48,7 +49,8 @@ export default defineConfig({ plugins: [otherPlugin()] });
   });
 
   it('is no-op when call already present (exact match)', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({ plugins: [jsDocPlugin()] });
@@ -61,7 +63,8 @@ export default defineConfig({ plugins: [jsDocPlugin()] });
   });
 
   it('is no-op when call is present with options', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({ plugins: [jsDocPlugin({ x: 1 })] });
@@ -74,7 +77,8 @@ export default defineConfig({ plugins: [jsDocPlugin({ x: 1 })] });
   });
 
   it('adds plugins property when missing', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 
 export default defineConfig({});
 `);
@@ -93,7 +97,8 @@ export default defineConfig({});
   });
 
   it('throws when defineConfig is called with variable arg', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 const opts = { plugins: [] };
 export default defineConfig(opts);
 `);
@@ -103,7 +108,8 @@ export default defineConfig(opts);
   });
 
   it('throws when plugins is not an array literal', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 const myPlugins = [];
 export default defineConfig({ plugins: myPlugins });
 `);
@@ -113,7 +119,8 @@ export default defineConfig({ plugins: myPlugins });
   });
 
   it('handles multi-line / formatted arrays robustly', () => {
-    const tree = makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
+    const tree =
+      makeTreeWithConfig(`import { defineConfig } from '@ng-prism/core/config';
 import { otherPlugin } from '@ng-prism/plugin-other';
 
 export default defineConfig({
