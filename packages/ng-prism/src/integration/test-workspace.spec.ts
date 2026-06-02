@@ -7,25 +7,41 @@ import {
   mkdirSync,
   writeFileSync,
 } from 'fs';
-import { join } from 'path';
+import { join, resolve } from 'path';
+import { Tree } from '@angular-devkit/schematics';
+import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import { tmpdir } from 'os';
 import type { BuilderContext } from '@angular-devkit/architect';
-import { runPrismPipeline, createPipelineState } from '../builder/shared/prism-pipeline.js';
+import {
+  runPrismPipeline,
+  createPipelineState,
+} from '../builder/shared/prism-pipeline.js';
 
-const TEST_WORKSPACE_DIR = join(__dirname, '..', '..', '..', '..', 'test-workspace');
+const TEST_WORKSPACE_DIR = join(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '..',
+  'test-workspace'
+);
 
 function createTempWorkspace(): string {
   const tmp = mkdtempSync(join(tmpdir(), 'ng-prism-integration-'));
   cpSync(TEST_WORKSPACE_DIR, tmp, { recursive: true });
 
-  mkdirSync(join(tmp, 'projects', 'test-lib-prism', 'src'), { recursive: true });
+  mkdirSync(join(tmp, 'projects', 'test-lib-prism', 'src'), {
+    recursive: true,
+  });
   writeFileSync(
     join(tmp, 'projects', 'test-lib-prism', 'src', 'main.ts'),
     'export {};\n',
-    'utf-8',
+    'utf-8'
   );
 
-  const angularJson = JSON.parse(readFileSync(join(tmp, 'angular.json'), 'utf-8'));
+  const angularJson = JSON.parse(
+    readFileSync(join(tmp, 'angular.json'), 'utf-8')
+  );
   angularJson.projects['test-lib-prism'] = {
     projectType: 'application',
     root: 'projects/test-lib-prism',
@@ -41,7 +57,11 @@ function createTempWorkspace(): string {
       },
     },
   };
-  writeFileSync(join(tmp, 'angular.json'), JSON.stringify(angularJson, null, 2), 'utf-8');
+  writeFileSync(
+    join(tmp, 'angular.json'),
+    JSON.stringify(angularJson, null, 2),
+    'utf-8'
+  );
 
   writeFileSync(
     join(tmp, 'ng-prism.config.ts'),
@@ -59,7 +79,7 @@ function createTempWorkspace(): string {
       '  ],',
       '};',
     ].join('\n'),
-    'utf-8',
+    'utf-8'
   );
 
   return tmp;
@@ -96,7 +116,11 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
+    const result = await runPrismPipeline(
+      pipelineOptions,
+      ctx,
+      createPipelineState()
+    );
 
     expect(result.componentCount).toBe(14);
   });
@@ -107,7 +131,11 @@ describe('test-workspace integration', () => {
 
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
-    expect(existsSync(join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'))).toBe(true);
+    expect(
+      existsSync(
+        join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts')
+      )
+    ).toBe(true);
   });
 
   it('should generate correct import statement', async () => {
@@ -118,7 +146,7 @@ describe('test-workspace integration', () => {
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
-      'utf-8',
+      'utf-8'
     );
     expect(content).toContain("from 'test-lib'");
     expect(content).toContain('ButtonComponent');
@@ -132,7 +160,7 @@ describe('test-workspace integration', () => {
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
-      'utf-8',
+      'utf-8'
     );
     expect(content).toContain('type: ButtonComponent,');
   });
@@ -145,7 +173,7 @@ describe('test-workspace integration', () => {
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
-      'utf-8',
+      'utf-8'
     );
     expect(content).not.toContain('InternalComponent');
   });
@@ -158,7 +186,7 @@ describe('test-workspace integration', () => {
 
     const content = readFileSync(
       join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
-      'utf-8',
+      'utf-8'
     );
     expect(content).toContain('title: "Button"');
     expect(content).toContain('category: "Inputs"');
@@ -171,13 +199,70 @@ describe('test-workspace integration', () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
-    const result = await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
+    const result = await runPrismPipeline(
+      pipelineOptions,
+      ctx,
+      createPipelineState()
+    );
 
     expect(result.componentCount).toBe(14);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('Running plugin hooks...');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 14 component(s)'),
+      expect.stringContaining('Generated manifest with 14 component(s)')
     );
+  });
+
+  it('end-to-end: core ng-add → plugin ng-add wires config + deps', async () => {
+    const corePkgRoot = resolve(__dirname, '../..');
+    const jsdocPkgRoot = resolve(corePkgRoot, '../plugin-jsdoc');
+
+    const coreRunner = new SchematicTestRunner(
+      '@ng-prism/core',
+      resolve(corePkgRoot, 'schematics/collection.json')
+    );
+    const jsdocRunner = new SchematicTestRunner(
+      '@ng-prism/plugin-jsdoc',
+      resolve(jsdocPkgRoot, 'schematics/collection.json')
+    );
+
+    let tree = Tree.empty();
+    tree.create(
+      'angular.json',
+      JSON.stringify({
+        $schema: './node_modules/@angular/cli/lib/config/workspace-schema.json',
+        version: 1,
+        projects: {
+          'my-lib': {
+            projectType: 'library',
+            root: 'projects/my-lib',
+            sourceRoot: 'projects/my-lib/src',
+            architect: {
+              build: {
+                builder: '@angular-devkit/build-angular:ng-packagr',
+                options: { project: 'projects/my-lib/ng-package.json' },
+              },
+            },
+          },
+        },
+      }) + '\n'
+    );
+    tree.create('tsconfig.json', '{}');
+    tree.create('package.json', JSON.stringify({ name: 'host' }) + '\n');
+
+    tree = await coreRunner.runSchematic('ng-add', { project: 'my-lib' }, tree);
+    tree = await jsdocRunner.runSchematic('ng-add', {}, tree);
+
+    const config = tree.read('ng-prism.config.ts')!.toString('utf-8');
+    expect(config).toContain(
+      `import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';`
+    );
+    expect(config).toContain('plugins: [jsDocPlugin()]');
+
+    const pkg = JSON.parse(tree.read('package.json')!.toString('utf-8')) as {
+      devDependencies?: Record<string, string>;
+    };
+    expect(pkg.devDependencies?.['highlight.js']).toBeDefined();
+    expect(pkg.devDependencies?.['ngx-highlightjs']).toBeDefined();
   });
 });

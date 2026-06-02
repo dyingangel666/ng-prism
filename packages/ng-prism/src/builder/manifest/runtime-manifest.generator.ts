@@ -7,6 +7,7 @@ export interface RuntimeManifestOptions {
   components: ScannedComponent[];
   libraryImportPath: string;
   pages?: StyleguidePage[];
+  meta?: Record<string, unknown>;
 }
 
 function inputTypeAnnotation(input: InputMeta): string {
@@ -27,7 +28,10 @@ function formatInputDeclaration(input: InputMeta): string {
     return `input.required<${typeAnnotation}>()`;
   }
 
-  const def = input.defaultValue !== undefined ? JSON.stringify(input.defaultValue) : "''";
+  const def =
+    input.defaultValue !== undefined
+      ? JSON.stringify(input.defaultValue)
+      : "''";
   const needsAnnotation = input.type === 'union' && input.values;
 
   if (needsAnnotation) {
@@ -43,7 +47,12 @@ function directiveSelector(selector: string): string {
 }
 
 function isBindableInput(input: InputMeta): boolean {
-  if (input.type === 'string' || input.type === 'number' || input.type === 'boolean' || input.type === 'union') {
+  if (
+    input.type === 'string' ||
+    input.type === 'number' ||
+    input.type === 'boolean' ||
+    input.type === 'union'
+  ) {
     return true;
   }
   return input.defaultValue !== undefined;
@@ -113,7 +122,7 @@ function generateWrapperClass(comp: ScannedComponent): string {
 
 function groupComponentsByImportPath(
   components: ScannedComponent[],
-  fallbackImportPath: string,
+  fallbackImportPath: string
 ): Map<string, string[]> {
   const groups = new Map<string, string[]>();
   for (const comp of components) {
@@ -128,8 +137,10 @@ function groupComponentsByImportPath(
   return groups;
 }
 
-export function generateRuntimeManifest(options: RuntimeManifestOptions): string {
-  const { components, libraryImportPath, pages } = options;
+export function generateRuntimeManifest(
+  options: RuntimeManifestOptions
+): string {
+  const { components, libraryImportPath, pages, meta } = options;
 
   const directives = components.filter((c) => c.componentMeta.isDirective);
   const hasDirectives = directives.length > 0;
@@ -191,7 +202,20 @@ export function generateRuntimeManifest(options: RuntimeManifestOptions): string
   lines.push('  ],');
 
   if (pages && pages.length > 0) {
-    lines.push(`  pages: ${JSON.stringify(pages, null, 2).split('\n').map((l, i) => i === 0 ? l : '  ' + l).join('\n')},`);
+    lines.push(
+      `  pages: ${JSON.stringify(pages, null, 2)
+        .split('\n')
+        .map((l, i) => (i === 0 ? l : '  ' + l))
+        .join('\n')},`
+    );
+  }
+
+  if (meta && Object.keys(meta).length > 0) {
+    const metaJson = JSON.stringify(meta, null, 2)
+      .split('\n')
+      .map((l, i) => (i === 0 ? l : '  ' + l))
+      .join('\n');
+    lines.push(`  meta: ${metaJson},`);
   }
 
   lines.push('};');
@@ -213,20 +237,34 @@ function formatMeta(comp: ScannedComponent, baseIndent: number): string {
   const lines = [
     `${indent(inner)}className: ${json(comp.className)},`,
     `${indent(inner)}filePath: ${json(comp.filePath)},`,
-    `${indent(inner)}showcaseConfig: ${formatObject(comp.showcaseConfig as unknown as Record<string, unknown>, inner)},`,
+    `${indent(inner)}showcaseConfig: ${formatObject(
+      comp.showcaseConfig as unknown as Record<string, unknown>,
+      inner
+    )},`,
     `${indent(inner)}inputs: ${formatArray(comp.inputs, inner)},`,
     `${indent(inner)}outputs: ${formatArray(comp.outputs, inner)},`,
-    `${indent(inner)}componentMeta: ${formatObject(comp.componentMeta, inner)},`,
+    `${indent(inner)}componentMeta: ${formatObject(
+      comp.componentMeta,
+      inner
+    )},`,
   ];
 
   if (comp.meta && Object.keys(comp.meta).length > 0) {
-    lines.push(`${indent(inner)}meta: ${formatObject(comp.meta as Record<string, unknown>, inner)},`);
+    lines.push(
+      `${indent(inner)}meta: ${formatObject(
+        comp.meta as Record<string, unknown>,
+        inner
+      )},`
+    );
   }
 
   return `{\n${lines.join('\n')}\n${indent(baseIndent)}}`;
 }
 
-function formatObject(obj: Record<string, unknown>, baseIndent: number): string {
+function formatObject(
+  obj: Record<string, unknown>,
+  baseIndent: number
+): string {
   const entries = Object.entries(obj).filter(([, v]) => v !== undefined);
   if (entries.length === 0) return '{}';
 
@@ -235,8 +273,8 @@ function formatObject(obj: Record<string, unknown>, baseIndent: number): string 
     const formatted = Array.isArray(value)
       ? formatArray(value, inner)
       : typeof value === 'object' && value !== null
-        ? formatObject(value as Record<string, unknown>, inner)
-        : json(value);
+      ? formatObject(value as Record<string, unknown>, inner)
+      : json(value);
     return `${indent(inner)}${key}: ${formatted},`;
   });
 
@@ -248,9 +286,10 @@ function formatArray(arr: unknown[], baseIndent: number): string {
 
   const inner = baseIndent + 2;
   const items = arr.map((item) => {
-    const formatted = typeof item === 'object' && item !== null && !Array.isArray(item)
-      ? formatObject(item as Record<string, unknown>, inner)
-      : json(item);
+    const formatted =
+      typeof item === 'object' && item !== null && !Array.isArray(item)
+        ? formatObject(item as Record<string, unknown>, inner)
+        : json(item);
     return `${indent(inner)}${formatted},`;
   });
 

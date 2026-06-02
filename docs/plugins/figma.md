@@ -8,8 +8,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-figma
+ng add @ng-prism/plugin-figma
 ```
+
+This installs the package and registers `figmaPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-figma`.
 
 The Design Diff feature additionally needs `html2canvas` and `pixelmatch` (declared as **optional** peer dependencies):
 
@@ -38,9 +40,9 @@ export default defineConfig({
 
 ### Options
 
-| Option        | Type     | Required for     | Description                                                                 |
-|---------------|----------|------------------|-----------------------------------------------------------------------------|
-| `accessToken` | `string` | Design Diff only | Personal access token used to fetch node images via the Figma REST API.    |
+| Option        | Type     | Required for     | Description                                                             |
+| ------------- | -------- | ---------------- | ----------------------------------------------------------------------- |
+| `accessToken` | `string` | Design Diff only | Personal access token used to fetch node images via the Figma REST API. |
 
 ### Getting a Figma access token
 
@@ -118,6 +120,8 @@ The embedded viewer is fully interactive — navigate nodes, zoom, inspect prope
 
 The panel is visible whenever the component or any of its variants has a `meta.figma` URL.
 
+The panel registers itself with `keepAlive: true`, so the iframe survives tab switches — switching to Controls and back will not trigger a re-load of the Figma embed. The iframe is only reloaded when the active component (and therefore the Figma URL) changes.
+
 ## Panel: Design Diff
 
 The Design Diff panel renders the component into a canvas (via `html2canvas`), fetches the corresponding Figma node as a PNG (via the Figma REST API), and computes a pixel-by-pixel diff (via `pixelmatch`).
@@ -132,11 +136,11 @@ The panel is visible whenever **any variant** has a `meta.figma` URL — the dif
 
 ### View modes
 
-| Mode             | What you see                                                                 |
-|------------------|------------------------------------------------------------------------------|
-| **Side-by-side** | Component screenshot and Figma export rendered next to each other.          |
+| Mode             | What you see                                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Side-by-side** | Component screenshot and Figma export rendered next to each other.                                                       |
 | **Overlay**      | Figma export layered on top of the component, with an opacity slider (0–100). Great for catching small alignment drifts. |
-| **Diff**         | Just the pixelmatch output — red pixels where component and design diverge.  |
+| **Diff**         | Just the pixelmatch output — red pixels where component and design diverge.                                              |
 
 ### Stats
 
@@ -156,11 +160,11 @@ Click **↺ Erneut** in the toolbar to re-run after editing the component or ref
 
 ### Error states
 
-| Status              | What it means                                                                |
-|---------------------|------------------------------------------------------------------------------|
-| `Access Token fehlt`| `figmaPlugin({ accessToken })` is not configured.                            |
-| `Kein Figma-Node …` | The active variant has no `meta.figma` URL.                                  |
-| `Figma API Fehler`  | The Figma REST API rejected the request. Common causes: invalid token, missing file scope, file/node not accessible to the token's owner. |
+| Status               | What it means                                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Access Token fehlt` | `figmaPlugin({ accessToken })` is not configured.                                                                                         |
+| `Kein Figma-Node …`  | The active variant has no `meta.figma` URL.                                                                                               |
+| `Figma API Fehler`   | The Figma REST API rejected the request. Common causes: invalid token, missing file scope, file/node not accessible to the token's owner. |
 
 ## Lazy loading
 

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "NgPrismPluginFigmaNgAdd",
+  "title": "Add @ng-prism/plugin-figma",
+  "description": "Registers @ng-prism/plugin-figma in ng-prism.config.ts",
+  "type": "object",
+  "properties": {
+    "configPath": {
+      "type": "string",
+      "description": "Path to ng-prism.config.ts",
+      "default": "ng-prism.config.ts"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

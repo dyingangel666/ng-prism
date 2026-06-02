@@ -1,3 +1,10 @@
 export { coveragePlugin } from './coverage-plugin.js';
 export { CoveragePanelComponent } from './coverage-panel.component.js';
-export type { CoverageData, MetricDetail, CoveragePluginOptions } from './coverage.types.js';
+export { CoverageHeaderBadgeComponent } from './coverage-header-badge.component.js';
+export type {
+  CoverageData,
+  CoverageManifestMeta,
+  CoveragePluginOptions,
+  CoverageThresholds,
+  MetricDetail,
+} from './coverage.types.js';

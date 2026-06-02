@@ -28,6 +28,9 @@ module.exports = {
       },
       transformIgnorePatterns: ['node_modules/(?!.*\\.mjs$|@angular)'],
       moduleFileExtensions: ['ts', 'js', 'mjs', 'html'],
+      moduleNameMapper: {
+        '^ora$': '<rootDir>/src/__mocks__/ora.ts',
+      },
       coverageDirectory: 'test-output/jest/coverage',
     },
     {

@@ -59,6 +59,7 @@ onComponentScanned(component) {
 **Chaining:** When plugin A and plugin B both implement `onComponentScanned`, the `ScannedComponent` passed to plugin B is the (possibly modified) output from plugin A.
 
 **Typical uses:**
+
 - Extract JSDoc from `component.filePath` using `ts.createSourceFile()` (JSDoc plugin)
 - Fetch external metadata keyed on `component.className`
 - Validate that required `meta` fields are present and warn if missing
@@ -113,6 +114,22 @@ onManifestReady(manifest) {
   };
 }
 ```
+
+Use `manifest.meta` for library-wide values that runtime components (e.g. header widgets) should read:
+
+```typescript
+onManifestReady(manifest) {
+  return {
+    ...manifest,
+    meta: {
+      ...manifest.meta,
+      coverage: { total: readTotalCoverage(path), thresholds },
+    },
+  };
+}
+```
+
+`manifest.meta` is serialized into the runtime manifest and accessible via the `PRISM_MANIFEST` injection token in the browser.
 
 ## Async Hooks
 

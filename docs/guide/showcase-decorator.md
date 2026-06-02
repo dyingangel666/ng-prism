@@ -17,6 +17,27 @@ The decorator is evaluated at build time by the TypeScript Compiler API scanner.
 
 > **Note:** `@Showcase` must always appear _above_ `@Component` or `@Directive`, as decorator application order in Angular matters.
 
+## Type-safe variants (optional)
+
+`@Showcase` is generic: `@Showcase<T>({...})` where `T` is the component class. Supplying it types each variant's `inputs` as `Partial<InputsOf<T>>`, giving you autocomplete on input names and value type-checking against the component's signal inputs.
+
+```typescript
+@Showcase<ButtonComponent>({
+  title: 'Button',
+  variants: [
+    { name: 'Primary', inputs: { label: 'Save',  variant: 'primary' } },
+    { name: 'Danger',  inputs: { label: 'Delete', variant: 'danger'  } },
+  ],
+})
+@Component({ ... })
+export class ButtonComponent {
+  label   = input.required<string>();
+  variant = input<'primary' | 'secondary' | 'danger'>('primary');
+}
+```
+
+Without the generic argument, `inputs` falls back to `Record<string, unknown>` — every existing call site keeps working unchanged. See [Variants — Type-safe inputs](guide/variants.md#type-safe-inputs) and [`InputsOf<T>`](api/types.md#inputsof) for full details.
+
 ## All Fields
 
 ### `title` _(required)_
@@ -203,13 +224,13 @@ When `status` is omitted, the component is treated as stable but renders **witho
 
 **Visual impact**
 
-| Status         | Sidebar item                                | Component header                                          |
-| -------------- | ------------------------------------------- | --------------------------------------------------------- |
-| _unset_        | unchanged                                   | no status pill                                            |
-| `'stable'`     | unchanged                                   | green "Stable" pill with check icon                       |
-| `'beta'`       | unchanged                                   | blue "Beta" pill                                          |
-| `'wip'`        | amber dot at the right edge (tooltip)       | amber "Work in progress" pill (hollow ring)               |
-| `'deprecated'` | name struck-through + dimmed (tooltip)      | muted "Deprecated" pill                                   |
+| Status         | Sidebar item                           | Component header                            |
+| -------------- | -------------------------------------- | ------------------------------------------- |
+| _unset_        | unchanged                              | no status pill                              |
+| `'stable'`     | unchanged                              | green "Stable" pill with check icon         |
+| `'beta'`       | unchanged                              | blue "Beta" pill                            |
+| `'wip'`        | amber dot at the right edge (tooltip)  | amber "Work in progress" pill (hollow ring) |
+| `'deprecated'` | name struck-through + dimmed (tooltip) | muted "Deprecated" pill                     |
 
 The status pill is rendered inline with the title and the `<selector>` pill in the component header. All colors come from the existing theme tokens, so light/dark mode are handled automatically — except for the Beta accent (`#60a5fa`) because the design system has no `--prism-info` token yet.
 

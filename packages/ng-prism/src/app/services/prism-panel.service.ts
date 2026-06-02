@@ -19,8 +19,15 @@ export class PrismPanelService {
   readonly activePanelId = signal<string>('controls');
   readonly activeViewId = signal<string>('renderer');
 
-  readonly activePanelInjector = computed<EnvironmentInjector | null>(() => {
-    const panelId = this.activePanelId();
+  readonly activePanelInjector = computed<EnvironmentInjector | null>(() =>
+    this.getInjector(this.activePanelId())
+  );
+
+  /**
+   * Returns (and lazily creates) the EnvironmentInjector scoped to the given panel.
+   * Returns `null` when the panel has no providers.
+   */
+  getInjector(panelId: string): EnvironmentInjector | null {
     const allPanels = [...this.builtinPanels, ...this.pluginService.panels()];
     const panel = allPanels.find((p) => p.id === panelId);
     if (!panel?.providers?.length) return null;
@@ -35,5 +42,5 @@ export class PrismPanelService {
       this.injectorCache.set(panel.id, injector);
     }
     return injector;
-  });
+  }
 }

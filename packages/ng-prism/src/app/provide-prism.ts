@@ -1,4 +1,7 @@
-import { makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
+import {
+  makeEnvironmentProviders,
+  type EnvironmentProviders,
+} from '@angular/core';
 import { provideHighlightOptions } from 'ngx-highlightjs';
 import type { NgPrismConfig, RuntimeManifest } from '../plugin/plugin.types.js';
 import type { ComponentPageOptions } from '../plugin/page-helpers.js';
@@ -17,11 +20,32 @@ export interface ProvidePrismOptions {
 export function providePrism(
   manifest: RuntimeManifest,
   config?: NgPrismConfig,
-  options?: ProvidePrismOptions,
+  options?: ProvidePrismOptions
 ): EnvironmentProviders {
   const mergedManifest: RuntimeManifest = options?.componentPages?.length
-    ? { ...manifest, pages: [...(manifest.pages ?? []), ...options.componentPages.map(o => componentPage(o))] }
+    ? {
+        ...manifest,
+        pages: [
+          ...(manifest.pages ?? []),
+          ...options.componentPages.map((o) => componentPage(o)),
+        ],
+      }
     : manifest;
+
+  // Exposes a thin discovery view of the manifest to external audit tooling.
+  // We intentionally only expose className + variant info — no Angular type references.
+  if (typeof globalThis !== 'undefined') {
+    (globalThis as Record<string, unknown>)['__PRISM_MANIFEST__'] = {
+      components: mergedManifest.components.map((c) => ({
+        className: c.meta.className,
+        variants: c.meta.showcaseConfig.variants?.map((v, i) => ({
+          name: v.name,
+          index: i,
+        })) ?? [{ name: 'Default', index: 0 }],
+      })),
+      pages: (mergedManifest.pages ?? []).map((p) => ({ title: p.title })),
+    };
+  }
 
   return makeEnvironmentProviders([
     { provide: PRISM_MANIFEST, useValue: mergedManifest },

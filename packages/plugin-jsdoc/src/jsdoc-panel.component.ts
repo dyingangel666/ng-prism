@@ -2,11 +2,19 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
 } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Highlight } from 'ngx-highlightjs';
 import type { InputMeta, OutputMeta } from '@ng-prism/core/plugin';
 import type { JsDocData, MethodDoc } from './jsdoc.types.js';
+import {
+  parseExample,
+  renderBlockMarkdown,
+  renderInlineMarkdown,
+  type ParsedExample,
+} from './markdown.js';
 
 @Component({
   selector: 'prism-jsdoc-panel',
@@ -19,8 +27,8 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
       <div class="prism-jsdoc-panel__empty">
         Select a component to view API documentation.
       </div>
-      } @else { @if (classDescription()) {
-      <p class="prism-jsdoc-panel__description">{{ classDescription() }}</p>
+      } @else { @if (renderedClassDescription(); as descHtml) {
+      <div class="prism-jsdoc-panel__description" [innerHTML]="descHtml"></div>
       } @if (hasTags()) {
       <div class="prism-jsdoc-panel__meta">
         @if (isDeprecated()) {
@@ -48,10 +56,11 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
       } @if (examples().length) {
       <div class="prism-jsdoc-panel__section">
         <h3 class="prism-jsdoc-panel__heading">Examples</h3>
-        @for (example of examples(); track $index) {
+        @for (example of examples(); track $index) { @let parsed =
+        parseExample(example);
         <pre
           class="prism-jsdoc-panel__code"
-        ><code [highlight]="example" language="typescript"></code></pre>
+        ><code [highlight]="parsed.code" [language]="parsed.lang"></code></pre>
         }
       </div>
       } @if (inputs().length) {
@@ -104,11 +113,13 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
                 }
               </td>
               <td class="prism-jsdoc-panel__cell--doc">
-                {{
-                  inp.doc ?? getMemberSince(inp.name)
-                    ? memberDocLine(inp.name, inp.doc)
-                    : ''
-                }}
+                @if (inp.doc) {
+                <span [innerHTML]="renderInline(inp.doc)"></span>
+                } @if (getMemberSince(inp.name); as since) { @if (inp.doc) {
+                <span class="prism-jsdoc-panel__since-sep"> · </span>
+                }
+                <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
+                }
               </td>
             </tr>
             }
@@ -142,7 +153,13 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
                 }
               </td>
               <td class="prism-jsdoc-panel__cell--doc">
-                {{ memberDocLine(out.name, out.doc) }}
+                @if (out.doc) {
+                <span [innerHTML]="renderInline(out.doc)"></span>
+                } @if (getMemberSince(out.name); as since) { @if (out.doc) {
+                <span class="prism-jsdoc-panel__since-sep"> · </span>
+                }
+                <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
+                }
               </td>
             </tr>
             }
@@ -195,7 +212,9 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
                 }
               </td>
               <td class="prism-jsdoc-panel__cell--doc">
-                {{ method.description ?? '' }}
+                @if (method.description) {
+                <span [innerHTML]="renderInline(method.description)"></span>
+                }
               </td>
             </tr>
             }
@@ -267,7 +286,37 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
       font-family: var(--font-mono);
       font-size: var(--fs-sm); line-height: 1.5;
       padding: 8px 12px; display: block;
+      background: transparent !important;
+      color: var(--prism-text-2);
     }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs { background: transparent; color: var(--prism-text-2); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-tag,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-name,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-selector-tag,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-keyword,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-title,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-title.function_,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-built_in,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-type { color: var(--prism-code-tag); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-attr,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-attribute,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-property,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-variable,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-template-variable,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-params { color: var(--prism-code-attr); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-string,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-doctag,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-regexp,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-symbol,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-number,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-literal { color: var(--prism-code-str); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-comment,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-quote,
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-meta { color: var(--prism-code-com); font-style: italic; }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-deletion { color: var(--prism-danger); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-addition { color: var(--prism-success); }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-emphasis { font-style: italic; }
+    :host ::ng-deep .prism-jsdoc-panel__code .hljs-strong { font-weight: 700; }
     .prism-jsdoc-panel__table {
       width: 100%; border-collapse: collapse;
       font-size: var(--fs-md);
@@ -299,10 +348,69 @@ import type { JsDocData, MethodDoc } from './jsdoc.types.js';
     }
     .prism-jsdoc-panel__muted { color: var(--prism-text-muted); }
     .prism-jsdoc-panel__cell--doc { color: var(--prism-text); line-height: 1.4; }
+    .prism-jsdoc-panel__since-sep { color: var(--prism-text-muted); }
+    .prism-jsdoc-panel__since { color: var(--prism-text-muted); font-size: var(--fs-sm); }
+
+    .prism-jsdoc-panel__description :first-child { margin-top: 0; }
+    .prism-jsdoc-panel__description :last-child { margin-bottom: 0; }
+    .prism-jsdoc-panel__description p { margin: 0 0 8px; line-height: 1.7; }
+    .prism-jsdoc-panel__description h1,
+    .prism-jsdoc-panel__description h2,
+    .prism-jsdoc-panel__description h3 {
+      color: var(--prism-text);
+      font-weight: 600;
+      line-height: 1.3;
+      margin: 18px 0 8px;
+    }
+    .prism-jsdoc-panel__description h1 { font-size: 18px; }
+    .prism-jsdoc-panel__description h2 { font-size: 15px; }
+    .prism-jsdoc-panel__description h3 {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--prism-text-ghost);
+    }
+    .prism-jsdoc-panel__description ul,
+    .prism-jsdoc-panel__description ol {
+      margin: 0 0 8px; padding-left: 20px;
+    }
+    .prism-jsdoc-panel__description li { margin: 2px 0; line-height: 1.6; }
+    .prism-jsdoc-panel__description a {
+      color: var(--prism-primary);
+      text-decoration: none;
+    }
+    .prism-jsdoc-panel__description a:hover { text-decoration: underline; }
+    .prism-jsdoc-panel__description strong { color: var(--prism-text); font-weight: 600; }
+    .prism-jsdoc-panel__description code,
+    .prism-jsdoc-panel__cell--doc code {
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm); color: var(--prism-primary);
+      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+      padding: 1px 5px; border-radius: var(--radius-xs);
+    }
+    .prism-jsdoc-panel__description pre {
+      margin: 0 0 8px; padding: 0;
+      background: var(--prism-bg-surface);
+      border: 1px solid var(--prism-border);
+      border-radius: 8px; overflow: auto;
+    }
+    .prism-jsdoc-panel__description pre code {
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm); line-height: 1.5;
+      padding: 8px 12px; display: block;
+      background: none; color: var(--prism-text);
+    }
+    .prism-jsdoc-panel__description blockquote {
+      margin: 0 0 8px;
+      padding: 4px 12px;
+      border-left: 3px solid var(--prism-border);
+      color: var(--prism-text-2);
+    }
   `,
 })
 export class JsDocPanelComponent {
   readonly activeComponent = input<unknown>(null);
+
+  private readonly sanitizer = inject(DomSanitizer);
 
   protected readonly jsdocData = computed<JsDocData | null>(() => {
     const comp = this.activeComponent() as any;
@@ -321,6 +429,15 @@ export class JsDocPanelComponent {
 
   protected readonly classDescription = computed(
     () => this.jsdocData()?.classDescription
+  );
+
+  // Source is component-author JSDoc compiled into the manifest at build time,
+  // not user input — bypassing sanitization is safe here.
+  protected readonly renderedClassDescription = computed<SafeHtml | null>(
+    () => {
+      const html = renderBlockMarkdown(this.classDescription());
+      return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
+    }
   );
 
   protected readonly classTags = computed(
@@ -349,7 +466,11 @@ export class JsDocPanelComponent {
   );
 
   protected readonly hasTags = computed(
-    () => this.isDeprecated() || !!this.since() || !!this.version() || this.seeRefs().length > 0
+    () =>
+      this.isDeprecated() ||
+      !!this.since() ||
+      !!this.version() ||
+      this.seeRefs().length > 0
   );
 
   protected isMemberDeprecated(name: string): boolean {
@@ -360,12 +481,12 @@ export class JsDocPanelComponent {
     return this.jsdocData()?.memberTags[name]?.since;
   }
 
-  protected memberDocLine(name: string, doc: string | undefined): string {
-    const parts: string[] = [];
-    if (doc) parts.push(doc);
-    const since = this.getMemberSince(name);
-    if (since) parts.push(`Since ${since}`);
-    return parts.join(' · ');
+  protected renderInline(text: string | undefined): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(renderInlineMarkdown(text));
+  }
+
+  protected parseExample(raw: string): ParsedExample {
+    return parseExample(raw);
   }
 
   protected formatDefault(value: unknown): string {

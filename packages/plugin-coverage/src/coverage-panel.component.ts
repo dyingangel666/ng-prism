@@ -4,7 +4,18 @@ import {
   computed,
   input,
 } from '@angular/core';
-import type { CoverageData, FileCoverageDetail } from './coverage.types.js';
+import type {
+  CoverageData,
+  CoverageThresholds,
+  FileCoverageDetail,
+} from './coverage.types.js';
+
+const FALLBACK_THRESHOLDS: CoverageThresholds = {
+  lines: 80,
+  branches: 80,
+  functions: 80,
+  statements: 80,
+};
 
 @Component({
   selector: 'prism-coverage-panel',
@@ -37,16 +48,24 @@ import type { CoverageData, FileCoverageDetail } from './coverage.types.js';
         @for (file of files(); track file.path) {
         <div class="cov-file">
           <span class="cov-file-name">{{ fileName(file.path) }}</span>
-          <span class="cov-file-val" [class.bad]="file.lines.pct < 80"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.lines.pct < thresholds().lines"
             >{{ file.lines.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.branches.pct < 80"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.branches.pct < thresholds().branches"
             >{{ file.branches.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.functions.pct < 80"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.functions.pct < thresholds().functions"
             >{{ file.functions.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.statements.pct < 80"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.statements.pct < thresholds().statements"
             >{{ file.statements.pct }}%</span
           >
         </div>
@@ -183,6 +202,10 @@ export class CoveragePanelComponent {
 
   protected readonly files = computed<FileCoverageDetail[]>(() => {
     return this.coverage()?.files ?? [];
+  });
+
+  protected readonly thresholds = computed<CoverageThresholds>(() => {
+    return this.coverage()?.thresholds ?? FALLBACK_THRESHOLDS;
   });
 
   protected fileName(path: string): string {

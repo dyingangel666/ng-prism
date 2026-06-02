@@ -19,8 +19,26 @@ export interface NgPrismPlugin {
   // Runtime contributions (embedded into the Prism app)
   panels?: PanelDefinition[];
   controls?: ControlDefinition[];
+  /** Header widgets rendered in the Prism shell header bar */
+  headerWidgets?: HeaderWidgetDefinition[];
   /** Angular standalone component that wraps each rendered component */
   wrapComponent?: Type<unknown>;
+}
+
+export interface HeaderWidgetDefinition {
+  /** Unique widget id — used for de-duplication and tracking. */
+  id: string;
+  /** Eager component reference. */
+  component?: Type<unknown>;
+  /**
+   * Lazy-loaded component — use when the widget pulls in browser-only or
+   * heavy dependencies that should not run at config-load time.
+   */
+  loadComponent?: () => Promise<Type<unknown>>;
+  /** Slot in the header: 'start' renders next to the brand, 'end' next to the existing actions. Default: 'end'. */
+  placement?: 'start' | 'end';
+  /** Sort order within the same placement (lower = earlier). Default: 0. */
+  order?: number;
 }
 
 export interface PanelDefinition {
@@ -40,6 +58,16 @@ export interface PanelDefinition {
   providers?: Provider[];
   /** When provided, the panel tab is only shown if this returns true for the active component */
   isVisible?: (component: RuntimeComponent) => boolean;
+  /**
+   * Keep the panel's component instance alive across tab switches.
+   * When `true`, the panel is rendered once on first activation and merely hidden
+   * (instead of destroyed) when the user switches tabs. Use for panels with
+   * expensive setup (iframes, network calls, heavy DOM) — e.g. embedded designs,
+   * remote previews.
+   *
+   * Default: `false`.
+   */
+  keepAlive?: boolean;
 }
 
 export interface ControlDefinition {
@@ -54,6 +82,8 @@ export interface ControlDefinition {
 export interface PrismManifest {
   components: ScannedComponent[];
   pages?: StyleguidePage[];
+  /** Library-wide plugin metadata (e.g. aggregate coverage totals). */
+  meta?: Record<string, unknown>;
 }
 
 export interface ScannedComponent {
@@ -100,6 +130,8 @@ export interface OutputMeta {
 export interface RuntimeManifest {
   components: RuntimeComponent[];
   pages?: StyleguidePage[];
+  /** Library-wide plugin metadata, mirrored from the build-time PrismManifest. */
+  meta?: Record<string, unknown>;
 }
 
 export interface RuntimeComponent {
@@ -143,4 +175,6 @@ export interface NgPrismConfig {
     version?: string;
     gitHash?: string;
   };
+  /** Accessibility (build-time audit + runtime live audit) configuration. */
+  a11y?: import('../app/panels/a11y/a11y.types.js').NgPrismA11yConfig;
 }

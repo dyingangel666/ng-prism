@@ -13,6 +13,13 @@ export interface FileCoverageDetail {
   lines: MetricDetail;
 }
 
+export interface CoverageThresholds {
+  lines: number;
+  branches: number;
+  functions: number;
+  statements: number;
+}
+
 export interface CoverageData {
   score: number;
   statements: MetricDetail;
@@ -21,10 +28,18 @@ export interface CoverageData {
   lines: MetricDetail;
   found: boolean;
   files?: FileCoverageDetail[];
+  thresholds?: CoverageThresholds;
 }
 
 export interface CoveragePluginOptions {
   coveragePath?: string;
+  thresholds?: number | Partial<CoverageThresholds>;
+}
+
+/** Shape stored under `manifest.meta.coverage`. */
+export interface CoverageManifestMeta {
+  total: CoverageData;
+  thresholds: CoverageThresholds;
 }
 
 export interface IstanbulFileCoverage {

@@ -16,6 +16,7 @@ Lightweight, Angular-native component showcase tool. Annotate components with `@
 
 - **Zero-config discovery** — TypeScript Compiler API scans your library at build time
 - **Signal-native** — works with `input()` / `output()` signals
+- **Type-safe variants** — opt-in `@Showcase<MyComponent>` generic gives autocomplete + compile-time checks on variant `inputs`
 - **Directive support** — showcase directives with configurable host elements
 - **Plugin architecture** — JSDoc, A11y, Figma, Performance, Box Model, Coverage
 - **Live Controls** — auto-generated input controls with type-aware editors

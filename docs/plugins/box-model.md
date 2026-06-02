@@ -12,8 +12,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-box-model
+ng add @ng-prism/plugin-box-model
 ```
+
+This installs the package and registers `boxModelPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-box-model`.
 
 ## Configuration
 
@@ -46,5 +48,5 @@ Hovering over child elements within the canvas highlights their individual box m
 boxModelPlugin({
   // highlight child elements on hover (default: true)
   interactive: true,
-})
+});
 ```

@@ -543,6 +543,58 @@ describe('ng-add schematic', () => {
     expect(logs.some((l) => l.includes('ng run my-lib:prism'))).toBe(true);
   });
 
+  it('adds runtime peer deps to devDependencies', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('package.json', JSON.stringify({ name: 'host' }) + '\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+    const pkg = readJson(result, 'package.json') as {
+      devDependencies?: Record<string, string>;
+    };
+
+    expect(pkg.devDependencies?.['highlight.js']).toBe('^11.0.0');
+    expect(pkg.devDependencies?.['ngx-highlightjs']).toBe('^14.0.0');
+  });
+
+  it('does not overwrite existing dependencies', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create(
+      'package.json',
+      JSON.stringify({
+        name: 'host',
+        devDependencies: { 'highlight.js': '^10.0.0' },
+      }) + '\n'
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+    const pkg = readJson(result, 'package.json') as {
+      devDependencies?: Record<string, string>;
+    };
+
+    expect(pkg.devDependencies?.['highlight.js']).toBe('^10.0.0');
+    expect(pkg.devDependencies?.['ngx-highlightjs']).toBe('^14.0.0');
+  });
+
+  it('respects existing entries in dependencies (not devDependencies)', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create(
+      'package.json',
+      JSON.stringify({
+        name: 'host',
+        dependencies: { 'highlight.js': '11.0.0' },
+      }) + '\n'
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+    const pkg = readJson(result, 'package.json') as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+
+    expect(pkg.dependencies?.['highlight.js']).toBe('11.0.0');
+    expect(pkg.devDependencies?.['highlight.js']).toBeUndefined();
+  });
+
   it('should generate main.ts with provideZonelessChangeDetection when zoneless=true', async () => {
     const tree = createTree(defaultLibProject());
 

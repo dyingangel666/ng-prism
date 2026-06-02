@@ -16,7 +16,9 @@ export class PrismNavigationService {
     const item = this.activeItem();
     if (item?.kind !== 'component') return null;
     const manifest = this.manifestService.manifest();
-    const relinked = manifest.components.find((c) => c.meta.className === item.data.meta.className);
+    const relinked = manifest.components.find(
+      (c) => c.meta.className === item.data.meta.className
+    );
     return relinked ?? null;
   });
 
@@ -24,7 +26,9 @@ export class PrismNavigationService {
     const item = this.activeItem();
     if (item?.kind !== 'page') return null;
     const manifest = this.manifestService.manifest();
-    const relinked = manifest.pages?.find((p) => p.title === item.data.title && p.type === item.data.type);
+    const relinked = manifest.pages?.find(
+      (p) => p.title === item.data.title && p.type === item.data.type
+    );
     return relinked ?? null;
   });
 
@@ -47,15 +51,23 @@ export class PrismNavigationService {
 
     for (const items of map.values()) {
       items.sort((a, b) => {
-        const orderA = a.kind === 'component'
-          ? (a.data.meta.showcaseConfig.componentOrder ?? Infinity)
-          : (a.data.order ?? Infinity);
-        const orderB = b.kind === 'component'
-          ? (b.data.meta.showcaseConfig.componentOrder ?? Infinity)
-          : (b.data.order ?? Infinity);
+        const orderA =
+          a.kind === 'component'
+            ? a.data.meta.showcaseConfig.componentOrder ?? Infinity
+            : a.data.order ?? Infinity;
+        const orderB =
+          b.kind === 'component'
+            ? b.data.meta.showcaseConfig.componentOrder ?? Infinity
+            : b.data.order ?? Infinity;
         if (orderA !== orderB) return orderA - orderB;
-        const labelA = a.kind === 'component' ? a.data.meta.showcaseConfig.title : a.data.title;
-        const labelB = b.kind === 'component' ? b.data.meta.showcaseConfig.title : b.data.title;
+        const labelA =
+          a.kind === 'component'
+            ? a.data.meta.showcaseConfig.title
+            : a.data.title;
+        const labelB =
+          b.kind === 'component'
+            ? b.data.meta.showcaseConfig.title
+            : b.data.title;
         return labelA.localeCompare(labelB);
       });
     }
@@ -63,14 +75,14 @@ export class PrismNavigationService {
     const sorted = [...map.entries()].sort(([catA, itemsA], [catB, itemsB]) => {
       const catOrders = itemsA.map((i) =>
         i.kind === 'component'
-          ? (i.data.meta.showcaseConfig.categoryOrder ?? Infinity)
-          : (i.data.categoryOrder ?? Infinity),
+          ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
+          : i.data.categoryOrder ?? Infinity
       );
       const orderA = Math.min(...catOrders);
       const catOrdersB = itemsB.map((i) =>
         i.kind === 'component'
-          ? (i.data.meta.showcaseConfig.categoryOrder ?? Infinity)
-          : (i.data.categoryOrder ?? Infinity),
+          ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
+          : i.data.categoryOrder ?? Infinity
       );
       const orderB = Math.min(...catOrdersB);
       if (orderA !== orderB) return orderA - orderB;
@@ -89,14 +101,14 @@ export class PrismNavigationService {
   }
 
   selectFirst(): void {
-    const comps = this.searchService.filteredComponents();
-    if (comps.length > 0) {
-      this.activeItem.set({ kind: 'component', data: comps[0] });
-      return;
-    }
     const pages = this.searchService.filteredPages();
     if (pages.length > 0) {
       this.activeItem.set({ kind: 'page', data: pages[0] });
+      return;
+    }
+    const comps = this.searchService.filteredComponents();
+    if (comps.length > 0) {
+      this.activeItem.set({ kind: 'component', data: comps[0] });
       return;
     }
     this.activeItem.set(null);

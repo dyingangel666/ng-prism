@@ -5,15 +5,17 @@ Variants are named tabs displayed above the component canvas. Each variant defin
 ## Variant Interface
 
 ```typescript
-interface Variant {
+interface Variant<T = unknown> {
   name: string;
-  inputs?: Record<string, unknown>;
+  inputs?: Partial<InputsOf<T>>;
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
   bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
 }
 ```
+
+`T` is the component class — supply it via `@Showcase<MyComponent>({...})` to type the `inputs` against the component's signal inputs. Without it, `inputs` accepts any `Record<string, unknown>`. See [Type-safe inputs](#type-safe-inputs) below.
 
 ## Defining Variants
 
@@ -36,6 +38,38 @@ interface Variant {
 ```
 
 When no variants are defined, a single unlabeled canvas is shown and all controls start at their default values.
+
+## Type-safe inputs
+
+Pass the component class as a type argument to `@Showcase` to get autocomplete and compile-time type-checking on every variant's `inputs`:
+
+```typescript
+@Showcase<ButtonComponent>({
+  title: 'Button',
+  variants: [
+    { name: 'Primary', inputs: { label: 'Save',  variant: 'primary' } },
+    { name: 'Danger',  inputs: { label: 'Delete', variant: 'danger'  } },
+  ],
+})
+@Component({ ... })
+export class ButtonComponent {
+  label   = input.required<string>();
+  variant = input<'primary' | 'secondary' | 'danger'>('primary');
+  closed  = output<void>();
+}
+```
+
+The compiler now enforces three things:
+
+1. **Keys** — only declared signal inputs (`label`, `variant`) are accepted. A typo like `inputs: { lable: 'Save' }` fails to compile.
+2. **Values** — each value must satisfy the input's declared type. `variant: 'tertiary'` would be rejected because the union does not include it.
+3. **Output exclusion** — `output()` signals (e.g. `closed`) are not accepted as inputs.
+
+For transform inputs (e.g. `input(false, { transform: booleanAttribute })`), the accepted type is the **source** type that the transform reads, not the parsed value — so you can write what you would in an Angular template.
+
+Without the generic parameter, `inputs` falls back to `Record<string, unknown>` and behaves exactly like before. The change is purely additive and opt-in — no existing call site needs to be updated.
+
+See [`InputsOf<T>`](api/types.md#inputsof) for the type mapping rules.
 
 ## Input Types and Controls
 

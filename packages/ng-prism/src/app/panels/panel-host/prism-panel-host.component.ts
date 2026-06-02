@@ -8,6 +8,7 @@ import {
   signal,
   type Type,
   ChangeDetectionStrategy,
+  untracked,
 } from '@angular/core';
 import { PrismIconComponent } from '../../icons/prism-icon.component.js';
 import { BUILTIN_PANELS } from '../builtin-panels.js';
@@ -17,6 +18,14 @@ import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
 import type { A11yCoreConfig } from '../a11y/a11y.types.js';
+import type { PanelDefinition } from '../../../plugin/plugin.types.js';
+
+type RenderedPanelEntry = {
+  id: string;
+  component: Type<unknown>;
+  injector: EnvironmentInjector | null;
+  keepAlive: boolean;
+};
 
 @Component({
   selector: 'prism-panel-host',
@@ -60,14 +69,19 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
         [id]="'panel-' + panelService.activePanelId()"
         role="tabpanel"
       >
-        @if (resolvedComponent()) {
-        <ng-container
-          *ngComponentOutlet="
-            resolvedComponent();
-            inputs: panelInputs();
-            injector: activeInjector()
-          "
-        />
+        @for (entry of renderedPanelsArray(); track entry.id) {
+        <div
+          class="panel-pane"
+          [hidden]="entry.id !== panelService.activePanelId()"
+        >
+          <ng-container
+            *ngComponentOutlet="
+              entry.component;
+              inputs: panelInputs();
+              injector: entry.injector ?? envInjector
+            "
+          />
+        </div>
         }
       </div>
     </div>
@@ -187,6 +201,9 @@ import type { A11yCoreConfig } from '../a11y/a11y.types.js';
     .panel-body::-webkit-scrollbar { width: 8px; height: 8px; }
     .panel-body::-webkit-scrollbar-thumb { background: var(--prism-border-strong); border-radius: 4px; }
 
+    .panel-pane { height: 100%; }
+    .panel-pane[hidden] { display: none; }
+
     :focus-visible {
       outline: 2px solid var(--prism-primary);
       outline-offset: 2px;
@@ -197,7 +214,7 @@ export class PrismPanelHostComponent {
   private readonly pluginService = inject(PrismPluginService);
   private readonly nav = inject(PrismNavigationService);
   protected readonly panelService = inject(PrismPanelService);
-  private readonly envInjector = inject(EnvironmentInjector);
+  protected readonly envInjector = inject(EnvironmentInjector);
   private readonly auditService = inject(A11yAuditService);
   private readonly rendererService = inject(PrismRendererService);
 
@@ -255,15 +272,17 @@ export class PrismPanelHostComponent {
     return panels.filter((p) => !p.isVisible || p.isVisible(comp));
   });
 
-  protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
   protected readonly panelInputs = computed(() => ({
     activeComponent: this.nav.activeComponent(),
   }));
 
   private readonly lazyCache = new Map<string, Type<unknown>>();
 
-  protected readonly activeInjector = computed(
-    () => this.panelService.activePanelInjector() ?? this.envInjector
+  private readonly renderedPanels = signal<Map<string, RenderedPanelEntry>>(
+    new Map()
+  );
+  protected readonly renderedPanelsArray = computed(() =>
+    Array.from(this.renderedPanels().values())
   );
 
   constructor() {
@@ -289,33 +308,74 @@ export class PrismPanelHostComponent {
     });
 
     effect(() => {
-      const panel =
-        this.allPanels().find(
-          (p) => p.id === this.panelService.activePanelId()
-        ) ?? null;
-      if (!panel) {
-        this.resolvedComponent.set(null);
-        return;
-      }
+      const activeId = this.panelService.activePanelId();
+      const panels = this.allPanels();
 
-      if (panel.component) {
-        this.resolvedComponent.set(panel.component);
-        return;
-      }
-
-      if (panel.loadComponent) {
-        const cached = this.lazyCache.get(panel.id);
-        if (cached) {
-          this.resolvedComponent.set(cached);
-          return;
+      untracked(() => {
+        const panel = panels.find((p) => p.id === activeId) ?? null;
+        if (panel) {
+          this.ensurePanelLoaded(panel);
         }
-
-        this.resolvedComponent.set(null);
-        panel.loadComponent().then((comp) => {
-          this.lazyCache.set(panel.id, comp);
-          this.resolvedComponent.set(comp);
-        });
-      }
+        this.pruneRenderedPanels(panels, panel ? activeId : null);
+      });
     });
+  }
+
+  private ensurePanelLoaded(panel: PanelDefinition): void {
+    if (this.renderedPanels().has(panel.id)) return;
+
+    if (panel.component) {
+      this.addRenderedPanel(panel, panel.component);
+      return;
+    }
+
+    if (panel.loadComponent) {
+      const cached = this.lazyCache.get(panel.id);
+      if (cached) {
+        this.addRenderedPanel(panel, cached);
+        return;
+      }
+
+      panel.loadComponent().then((comp) => {
+        this.lazyCache.set(panel.id, comp);
+        if (this.renderedPanels().has(panel.id)) return;
+        this.addRenderedPanel(panel, comp);
+      });
+    }
+  }
+
+  private addRenderedPanel(
+    panel: PanelDefinition,
+    component: Type<unknown>
+  ): void {
+    const next = new Map(this.renderedPanels());
+    next.set(panel.id, {
+      id: panel.id,
+      component,
+      injector: this.panelService.getInjector(panel.id),
+      keepAlive: panel.keepAlive === true,
+    });
+    this.renderedPanels.set(next);
+  }
+
+  private pruneRenderedPanels(
+    visiblePanels: PanelDefinition[],
+    activeId: string | null
+  ): void {
+    const current = this.renderedPanels();
+    if (current.size === 0) return;
+
+    const visibleIds = new Set(visiblePanels.map((p) => p.id));
+    const next = new Map(current);
+    let changed = false;
+    for (const [id, entry] of current) {
+      const isVisible = visibleIds.has(id);
+      const isActive = id === activeId;
+      if (!isVisible || (!isActive && !entry.keepAlive)) {
+        next.delete(id);
+        changed = true;
+      }
+    }
+    if (changed) this.renderedPanels.set(next);
   }
 }

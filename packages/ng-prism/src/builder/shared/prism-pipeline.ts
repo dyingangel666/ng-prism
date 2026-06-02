@@ -18,6 +18,11 @@ import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.j
 import { loadConfig } from '../config-loader/config-loader.js';
 import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
 import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.js';
+import {
+  DEFAULT_A11Y_REPORT_PATH,
+  checkA11yThresholds,
+  readA11yMeta,
+} from '../a11y/a11y-report-reader.js';
 
 export interface PrismPipelineOptions {
   entryPoint: string;
@@ -63,16 +68,39 @@ export async function runPrismPipeline(
   const pages: StyleguidePage[] = config.pages ? [...config.pages] : [];
 
   context.reportStatus('Running plugin hooks...');
-  const manifest = await runPluginHooks(
+  let manifest = await runPluginHooks(
     { ...scanResult, pages },
     config.plugins ?? []
   );
+
+  const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
+  const a11yMeta = readA11yMeta(
+    join(workspaceRoot, a11yReportPath),
+    config.a11y?.thresholds
+  );
+  if (a11yMeta) {
+    const violations = checkA11yThresholds(a11yMeta);
+    if (violations.length > 0) {
+      const summary = violations
+        .map((v) => `${v.metric}: ${v.actual} (threshold ${v.threshold})`)
+        .join(', ');
+      throw new Error(
+        `ng-prism: a11y thresholds violated — ${summary}. ` +
+          `Update components or relax thresholds via config.a11y.thresholds.`
+      );
+    }
+    manifest = {
+      ...manifest,
+      meta: { ...manifest.meta, a11y: a11yMeta },
+    };
+  }
 
   context.reportStatus('Generating runtime manifest...');
   const source = generateRuntimeManifest({
     components: manifest.components,
     libraryImportPath: options.libraryImportPath,
     pages: manifest.pages,
+    meta: manifest.meta,
   });
 
   const projectMeta = await context.getProjectMetadata(options.prismProject);

@@ -12,10 +12,10 @@ npm install @ng-prism/plugin-coverage
 
 ### Peer Dependencies
 
-| Package | Version |
-|---|---|
+| Package          | Version    |
+| ---------------- | ---------- |
 | `@ng-prism/core` | `>=21.0.0` |
-| `@angular/core` | `>=20.0.0` |
+| `@angular/core`  | `>=20.0.0` |
 
 ## Setup
 
@@ -43,9 +43,20 @@ export default defineConfig({
 
 ## Options
 
-| Option | Default | Description |
-|---|---|---|
-| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root) |
+| Option         | Default                            | Description                                                                                                                                                                                          |
+| -------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root)                                                                                                                              |
+| `thresholds`   | `80` for all metrics               | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. Number → applied to all metrics; partial object → keys you omit fall back to `80`. |
+
+```typescript
+// Single value — applied to lines, branches, functions, statements
+coveragePlugin({ thresholds: 90 });
+
+// Per-metric — others fall back to 80
+coveragePlugin({
+  thresholds: { lines: 95, branches: 70 },
+});
+```
 
 ## Example
 

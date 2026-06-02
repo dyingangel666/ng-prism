@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "NgPrismPluginCoverageNgAdd",
+  "title": "Add @ng-prism/plugin-coverage",
+  "description": "Registers @ng-prism/plugin-coverage in ng-prism.config.ts",
+  "type": "object",
+  "properties": {
+    "configPath": {
+      "type": "string",
+      "description": "Path to ng-prism.config.ts",
+      "default": "ng-prism.config.ts"
+    }
+  },
+  "required": [],
+  "additionalProperties": false
+}

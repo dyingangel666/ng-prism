@@ -29,3 +29,21 @@ export class DocumentedButtonComponent {
 export class UndocumentedButtonComponent {
   readonly label = input<string>('');
 }
+
+/**
+ * Loading spinner component.
+ *
+ * ## Size
+ *
+ * - `small` (4px) — inline indicators
+ * - `large` (9px, default) — section-level loading
+ *
+ * @example
+ * ```html
+ * <sgui-loading size="small" color="light" />
+ * ```
+ */
+@Component({ selector: 'doc-loading', standalone: true, template: '' })
+export class DocumentedLoadingComponent {
+  readonly size = input<'small' | 'large'>('large');
+}

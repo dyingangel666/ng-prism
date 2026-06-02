@@ -121,15 +121,15 @@ The schematic adds two targets to the **library project** in `angular.json`:
 
 ### Builder Options
 
-| Option              | Required      | Description                                                                              |
-| ------------------- | ------------- | ---------------------------------------------------------------------------------------- |
+| Option              | Required      | Description                                                                                                                                                                                                                                                                             |
+| ------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `entryPoint`        | Yes           | Path to the library directory (recommended) or to its barrel `public-api.ts` file. When pointed at a file, the pipeline walks upward to find the nearest `ng-package.json` and treats that directory as the library root, so secondary entry points are still discovered automatically. |
-| `prismProject`      | Yes           | Angular project name for the generated showcase app                                      |
-| `libraryProject`    | No            | Angular project name of the library being showcased — only used as a fallback for `libraryImportPath` |
-| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)   |
-| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)               |
-| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                           |
-| `outputPath`        | `:build` only | Output directory for the production build                                                |
+| `prismProject`      | Yes           | Angular project name for the generated showcase app                                                                                                                                                                                                                                     |
+| `libraryProject`    | No            | Angular project name of the library being showcased — only used as a fallback for `libraryImportPath`                                                                                                                                                                                   |
+| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)                                                                                                                                                                                                  |
+| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)                                                                                                                                                                                                              |
+| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                                                                                                                                                                                                                          |
+| `outputPath`        | `:build` only | Output directory for the production build                                                                                                                                                                                                                                               |
 
 ## Showcase App Target Configuration
 
@@ -241,17 +241,28 @@ bootstrapApplication(PrismShellComponent, {
 
 **5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above.
 
+## Adding Plugins
+
+All official plugins ship with their own `ng-add` schematic. Adding a plugin is a single command:
+
+```bash
+ng add @ng-prism/plugin-jsdoc
+ng add @ng-prism/plugin-box-model
+ng add @ng-prism/plugin-coverage
+ng add @ng-prism/plugin-figma
+ng add @ng-prism/plugin-perf
+```
+
+Each command installs the plugin into `devDependencies` and registers it in `ng-prism.config.ts`. Re-running is safe — already-registered plugins are skipped.
+
+See [Plugin Overview](plugins/overview.md) for details on what each plugin provides.
+
 ## Peer Dependencies
 
 Some features require additional peer dependencies:
 
-| Package                            | Required for                              |
-| ---------------------------------- | ----------------------------------------- |
-| `highlight.js` + `ngx-highlightjs` | Code snippet highlighting in the renderer |
-| `axe-core`                         | Built-in accessibility auditing           |
+| Package    | Required for                    |
+| ---------- | ------------------------------- |
+| `axe-core` | Built-in accessibility auditing |
 
-Install them only if you use those features:
-
-```bash
-npm install highlight.js ngx-highlightjs
-```
+> **Note:** `highlight.js` and `ngx-highlightjs` are installed automatically by `ng add @ng-prism/core` — no manual step needed.

@@ -13,8 +13,10 @@
 ## Install
 
 ```bash
-npm install @ng-prism/plugin-perf
+ng add @ng-prism/plugin-perf
 ```
+
+This installs the package and registers `perfPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-perf`.
 
 ## Configuration
 
@@ -43,24 +45,24 @@ export default defineConfig({
 
 Color-coded warning and critical thresholds for each metric:
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `renderWarnMs` | `5` | Render time warning threshold (ms) |
-| `renderCritMs` | `16` | Render time critical threshold (ms) — one frame at 60 fps |
-| `bundleWarnKb` | `20` | Bundle size warning threshold (KB) |
-| `bundleCritKb` | `50` | Bundle size critical threshold (KB) |
-| `memoryWarnMb` | `5` | Memory warning threshold (MB) |
-| `memoryLeakMb` | `0.5` | Memory leak detection threshold per render (MB) |
+| Option         | Default | Description                                               |
+| -------------- | ------- | --------------------------------------------------------- |
+| `renderWarnMs` | `5`     | Render time warning threshold (ms)                        |
+| `renderCritMs` | `16`    | Render time critical threshold (ms) — one frame at 60 fps |
+| `bundleWarnKb` | `20`    | Bundle size warning threshold (KB)                        |
+| `bundleCritKb` | `50`    | Bundle size critical threshold (KB)                       |
+| `memoryWarnMb` | `5`     | Memory warning threshold (MB)                             |
+| `memoryLeakMb` | `0.5`   | Memory leak detection threshold per render (MB)           |
 
 ### `bundle`
 
 ```typescript
 perfPlugin({
   bundle: {
-    maxTreeDepth: 5,          // limit import tree analysis depth
-    excludeImports: ['rxjs'],  // skip certain packages from analysis
+    maxTreeDepth: 5, // limit import tree analysis depth
+    excludeImports: ['rxjs'], // skip certain packages from analysis
   },
-})
+});
 ```
 
 ### `render`
@@ -68,10 +70,10 @@ perfPlugin({
 ```typescript
 perfPlugin({
   render: {
-    bufferSize: 50,   // number of samples to keep in the rolling window
-    autoStart: true,  // start profiling immediately on panel open
+    bufferSize: 50, // number of samples to keep in the rolling window
+    autoStart: true, // start profiling immediately on panel open
   },
-})
+});
 ```
 
 ### `memory`
@@ -79,9 +81,9 @@ perfPlugin({
 ```typescript
 perfPlugin({
   memory: {
-    gcDelayMs: 200,  // delay after forced GC before measuring baseline
+    gcDelayMs: 200, // delay after forced GC before measuring baseline
   },
-})
+});
 ```
 
 ## Metrics
@@ -98,13 +100,13 @@ Shows timing for the last N renders with a mini sparkline chart. Values are colo
 
 Analyzes the component's static import graph at build time:
 
-| Metric | Description |
-|--------|-------------|
-| Source size | Raw source bytes of the component file |
-| Gzip estimate | Estimated gzip-compressed size |
-| Direct imports | Number of direct `import` statements |
-| Import list | All resolved imports |
-| Tree depth | Maximum depth of the import graph |
+| Metric         | Description                            |
+| -------------- | -------------------------------------- |
+| Source size    | Raw source bytes of the component file |
+| Gzip estimate  | Estimated gzip-compressed size         |
+| Direct imports | Number of direct `import` statements   |
+| Import list    | All resolved imports                   |
+| Tree depth     | Maximum depth of the import graph      |
 
 ### Memory Panel
 

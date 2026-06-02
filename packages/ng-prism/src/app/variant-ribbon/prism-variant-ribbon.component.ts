@@ -1,7 +1,11 @@
 import {
   Component,
+  ElementRef,
   inject,
   computed,
+  effect,
+  viewChild,
+  viewChildren,
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
@@ -30,17 +34,20 @@ function variantColor(name: string, index: number): string {
   template: `
     @if (variants().length > 0) {
     <nav class="variant-ribbon">
-      @for (v of variants(); track v.name; let i = $index) {
-      <button
-        class="v-tab"
-        [class.v-tab--active]="rendererService.activeVariantIndex() === i"
-        [style.--vc]="variantColor(v.name, i)"
-        (click)="rendererService.selectVariant(i)"
-      >
-        <span class="v-dot"></span>
-        {{ v.name }}
-      </button>
-      }
+      <div class="variant-ribbon-tabs" #tabsContainer>
+        @for (v of variants(); track v.name; let i = $index) {
+        <button
+          #tabButton
+          class="v-tab"
+          [class.v-tab--active]="rendererService.activeVariantIndex() === i"
+          [style.--vc]="variantColor(v.name, i)"
+          (click)="rendererService.selectVariant(i)"
+        >
+          <span class="v-dot"></span>
+          {{ v.name }}
+        </button>
+        }
+      </div>
       <div class="variant-ribbon-right">
         <button
           class="tool-btn"
@@ -80,11 +87,19 @@ function variantColor(name: string, index: number): string {
       background: var(--prism-bg);
       border-bottom: 1px solid var(--prism-border);
       height: 42px;
+    }
+
+    .variant-ribbon-tabs {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
       gap: 2px;
+      height: 100%;
       overflow-x: auto;
       scrollbar-width: none;
     }
-    .variant-ribbon::-webkit-scrollbar { display: none; }
+    .variant-ribbon-tabs::-webkit-scrollbar { display: none; }
 
     .v-tab {
       position: relative;
@@ -132,11 +147,12 @@ function variantColor(name: string, index: number): string {
     }
 
     .variant-ribbon-right {
-      margin-left: auto;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       gap: 8px;
       padding-left: 12px;
+      margin-left: 12px;
       border-left: 1px solid var(--prism-border);
       height: 24px;
     }
@@ -172,10 +188,35 @@ export class PrismVariantRibbonComponent {
   private readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
 
+  private readonly tabsContainer =
+    viewChild<ElementRef<HTMLElement>>('tabsContainer');
+  private readonly tabButtons =
+    viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
+
   protected readonly variants = computed(() => {
     const comp = this.navigationService.activeComponent();
     return comp?.meta.showcaseConfig.variants ?? [];
   });
+
+  constructor() {
+    effect(() => {
+      const idx = this.rendererService.activeVariantIndex();
+      const container = this.tabsContainer()?.nativeElement;
+      const button = this.tabButtons()[idx]?.nativeElement;
+      if (!container || !button) return;
+
+      const buttonLeft = button.offsetLeft;
+      const buttonRight = buttonLeft + button.offsetWidth;
+      const viewLeft = container.scrollLeft;
+      const viewRight = viewLeft + container.clientWidth;
+
+      if (buttonLeft < viewLeft) {
+        container.scrollLeft = buttonLeft;
+      } else if (buttonRight > viewRight) {
+        container.scrollLeft = buttonRight - container.clientWidth;
+      }
+    });
+  }
 
   protected variantColor(name: string, index: number): string {
     return variantColor(name, index);

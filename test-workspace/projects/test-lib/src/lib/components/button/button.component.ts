@@ -13,6 +13,31 @@ export type ButtonVariantType =
   | 'text'
   | 'icon-only';
 
+/**
+ * Flexible button component with five visual variants.
+ *
+ * ## Variants
+ *
+ * - `filled` — primary actions, highest emphasis
+ * - `outlined` — secondary actions
+ * - `elevated` — floating actions on neutral surfaces
+ * - `text` — low-emphasis actions, e.g. dialog buttons
+ * - `icon-only` — compact actions, label replaced by an icon
+ *
+ * Supports `label` text, `icon-only` mode, and the `disabled`/`readonly` states.
+ * See **[ButtonVariantType](#)** for the full type union.
+ *
+ * @since 1.0.0
+ * @see ButtonVariantType
+ * @example
+ * ```html
+ * <lib-button label="Save" variant="filled" />
+ * ```
+ * @example
+ * ```html
+ * <lib-button variant="icon-only" icon="★" />
+ * ```
+ */
 @Showcase({
   title: 'Button',
   status: 'stable',
@@ -215,18 +240,11 @@ export type ButtonVariantType =
     }
   `,
 })
-/**
- * Flexible button component with five visual variants.
- * Supports label text, icon-only mode, disabled and readonly states.
- * @since 1.0.0
- * @see ButtonVariantType
- * @example
- * <lib-button label="Save" variant="filled" />
- * @example
- * <lib-button variant="icon-only" icon="★" />
- */
 export class ButtonComponent {
-  /** Visual style variant of the button. */
+  /**
+   * Visual style **variant** of the button.
+   * Use `icon-only` to render `icon` instead of `label`.
+   */
   readonly variant = input<ButtonVariantType>('filled');
 
   /** Label text displayed inside the button. Not rendered in `icon-only` variant. */
@@ -242,11 +260,11 @@ export class ButtonComponent {
   readonly disabled = input<boolean>(false);
 
   /**
-   * Puts the button into a readonly visual state without disabling it at the DOM level.
+   * Puts the button into a *readonly* visual state without disabling it at the DOM level.
    * @since 1.1.0
    */
   readonly readonly = input<boolean>(false);
 
-  /** Emits when the button is clicked. Not emitted when disabled. */
+  /** Emits when the button is clicked. Not emitted when `disabled`. */
   readonly clicked = output<void>();
 }

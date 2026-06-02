@@ -1,4 +1,4 @@
-import type { Provider } from '@angular/core';
+import type { InputSignalWithTransform, Provider } from '@angular/core';
 import type { CanvasBg } from '../shared/canvas-bg.type.js';
 
 export type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
@@ -9,7 +9,36 @@ export interface DirectiveHost {
   inputs?: Record<string, unknown>;
 }
 
-export interface ShowcaseConfig {
+// Angular's signal-input brand types are invariant in their type parameters,
+// so the filter has to use `any` to match `InputSignal<X>`, `ModelSignal<X>`
+// and `InputSignalWithTransform<X, Y>` for arbitrary X/Y. We unwrap to the
+// write-side type so consumers can pass transform-input source values (e.g.
+// a `string` for an input typed `boolean` behind `booleanAttribute`).
+type UnwrapSignalInput<S> = S extends InputSignalWithTransform<
+  any,
+  infer WriteT
+>
+  ? WriteT
+  : never;
+
+/**
+ * Maps a component class `T` to a record of its signal-input properties
+ * (`input()`, `input.required()`, `model()`), unwrapping each to its value type.
+ * `output()` and other properties are excluded.
+ *
+ * When `T` is `unknown` (the default — no generic argument given), falls back
+ * to `Record<string, unknown>` so existing call sites without a generic param
+ * keep working.
+ */
+export type InputsOf<T> = [unknown] extends [T]
+  ? Record<string, unknown>
+  : {
+      [K in keyof T as T[K] extends InputSignalWithTransform<any, any>
+        ? K
+        : never]: UnwrapSignalInput<T[K]>;
+    };
+
+export interface ShowcaseConfig<T = unknown> {
   /** Display name in the ng-prism UI */
   title: string;
   /** Description text — Markdown supported */
@@ -21,7 +50,7 @@ export interface ShowcaseConfig {
   /** Controls the order of this component within its category (lower = higher). Components without this sort alphabetically after ordered ones. */
   componentOrder?: number;
   /** Predefined variants shown as tabs */
-  variants?: Variant[];
+  variants?: Variant<T>[];
   /** Tags for search and filtering */
   tags?: string[];
   /**
@@ -52,11 +81,11 @@ export interface ShowcaseConfig {
   status?: ComponentStatus;
 }
 
-export interface Variant {
+export interface Variant<T = unknown> {
   /** Tab label */
   name: string;
-  /** @Input() values for this variant */
-  inputs?: Record<string, unknown>;
+  /** Signal input values for this variant. Pass a component type to `@Showcase<MyComponent>` to get autocomplete and type-checking here. */
+  inputs?: Partial<InputsOf<T>>;
   /**
    * Content projected into <ng-content>.
    * - string → projected into the default (unnamed) slot
