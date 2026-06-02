@@ -8,6 +8,9 @@
       },
       "inputs": ["production", "^production"],
       "outputs": ["{projectRoot}/dist"]
+    },
+    "test": {
+      "dependsOn": ["^build", "plugin-jsdoc:build"]
     }
   }
 }
