@@ -1,6 +1,6 @@
 {
   "name": "@ng-prism/plugin-coverage",
-  "version": "21.12.0-beta.2",
+  "version": "21.12.0",
   "description": "Test coverage panel for ng-prism.",
   "ng-add": {
     "save": "devDependencies"
