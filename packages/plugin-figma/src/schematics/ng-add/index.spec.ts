@@ -72,8 +72,8 @@ describe('plugin-figma ng-add', () => {
     tree.create('ng-prism.config.ts', EMPTY_CONFIG);
     await run(tree);
 
-    expect(
-      logCalls.some((c) => c.msg.includes('html2canvas pixelmatch'))
-    ).toBe(true);
+    expect(logCalls.some((c) => c.msg.includes('html2canvas pixelmatch'))).toBe(
+      true
+    );
   });
 });

@@ -48,5 +48,5 @@ Hovering over child elements within the canvas highlights their individual box m
 boxModelPlugin({
   // highlight child elements on hover (default: true)
   interactive: true,
-})
+});
 ```

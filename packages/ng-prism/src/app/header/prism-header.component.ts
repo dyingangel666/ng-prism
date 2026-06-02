@@ -54,8 +54,7 @@ import { PrismHeaderWidgetHostComponent } from './prism-header-widget-host.compo
       <div class="prism-header__actions">
         @for (w of widgetsEnd(); track w.id) {
         <prism-header-widget-host [widget]="w" />
-        }
-        @if (buildInfoLabel()) {
+        } @if (buildInfoLabel()) {
         <span class="prism-header__build-pill">{{ buildInfoLabel() }}</span>
         }
         <button
@@ -241,15 +240,19 @@ export class PrismHeaderComponent {
   protected readonly searchService = inject(PrismSearchService);
   protected readonly themeService = inject(PrismThemeService);
 
-  protected readonly widgetsStart = computed(() => [
-    ...BUILTIN_HEADER_WIDGETS.filter((w) => w.placement === 'start'),
-    ...this.pluginService.headerWidgetsStart(),
-  ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+  protected readonly widgetsStart = computed(() =>
+    [
+      ...BUILTIN_HEADER_WIDGETS.filter((w) => w.placement === 'start'),
+      ...this.pluginService.headerWidgetsStart(),
+    ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  );
 
-  protected readonly widgetsEnd = computed(() => [
-    ...BUILTIN_HEADER_WIDGETS.filter((w) => (w.placement ?? 'end') === 'end'),
-    ...this.pluginService.headerWidgetsEnd(),
-  ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+  protected readonly widgetsEnd = computed(() =>
+    [
+      ...BUILTIN_HEADER_WIDGETS.filter((w) => (w.placement ?? 'end') === 'end'),
+      ...this.pluginService.headerWidgetsEnd(),
+    ].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+  );
 
   protected readonly logoUrl = computed(() => {
     const logo = this.config.logo;

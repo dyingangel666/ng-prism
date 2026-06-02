@@ -298,12 +298,12 @@ Optional migration / maturity badge used by `ShowcaseConfig.status`.
 type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 ```
 
-| Value          | Meaning                                          |
-| -------------- | ------------------------------------------------ |
-| `stable`       | Migrated and production-ready                    |
-| `beta`         | Functional, but API may still change             |
-| `wip`          | Work in progress, migration ongoing              |
-| `deprecated`   | Legacy component — do not use in new code        |
+| Value        | Meaning                                   |
+| ------------ | ----------------------------------------- |
+| `stable`     | Migrated and production-ready             |
+| `beta`       | Functional, but API may still change      |
+| `wip`        | Work in progress, migration ongoing       |
+| `deprecated` | Legacy component — do not use in new code |
 
 When `status` is omitted, no indicator renders. See [`ShowcaseConfig.status`](api/showcase-config.md#status) for the full UI behavior in sidebar and header.
 

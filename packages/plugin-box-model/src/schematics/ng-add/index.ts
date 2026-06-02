@@ -22,7 +22,9 @@ function injectPlugin(options: NgAddSchemaOptions): Rule {
     if (changed) {
       context.logger.info(`  ${PLUGIN_IMPORT_FROM} → added to ${configPath}`);
     } else {
-      context.logger.info(`  ${PLUGIN_IMPORT_FROM} already configured — skipped`);
+      context.logger.info(
+        `  ${PLUGIN_IMPORT_FROM} already configured — skipped`
+      );
     }
     return tree;
   };

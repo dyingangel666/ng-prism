@@ -33,7 +33,12 @@ interface NgPrismConfig {
   persistState?: boolean;
   buildInfo?: { version?: string; gitHash?: string };
   a11y?: {
-    thresholds?: { score?: number; critical?: number; serious?: number; moderate?: number };
+    thresholds?: {
+      score?: number;
+      critical?: number;
+      serious?: number;
+      moderate?: number;
+    };
     reportPath?: string;
   };
 }
@@ -237,12 +242,12 @@ export default defineConfig({
 });
 ```
 
-| Key | Default | Description |
-| --- | --- | --- |
-| `thresholds.score` | `80` | Minimum avg library score (0–100) |
-| `thresholds.critical` | `0` | Maximum allowed critical violations |
-| `thresholds.serious` | `0` | Maximum allowed serious violations |
-| `thresholds.moderate` | unlimited | Maximum allowed moderate violations |
-| `reportPath` | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the library-wide a11y report. Generation is the consumer's responsibility — see the guide for the JSON shape. |
+| Key                   | Default              | Description                                                                                                                                                                    |
+| --------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `thresholds.score`    | `80`                 | Minimum avg library score (0–100)                                                                                                                                              |
+| `thresholds.critical` | `0`                  | Maximum allowed critical violations                                                                                                                                            |
+| `thresholds.serious`  | `0`                  | Maximum allowed serious violations                                                                                                                                             |
+| `thresholds.moderate` | unlimited            | Maximum allowed moderate violations                                                                                                                                            |
+| `reportPath`          | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the library-wide a11y report. Generation is the consumer's responsibility — see the guide for the JSON shape. |
 
 See [Accessibility — Library-Wide A11y Score](guide/accessibility.md#library-wide-a11y-score--header-badge) for the report shape and integration workflow.

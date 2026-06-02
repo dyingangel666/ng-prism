@@ -1,19 +1,28 @@
 import path from 'node:path';
-import { coveragePlugin, resolveCoverageThresholds } from './coverage-plugin.js';
+import {
+  coveragePlugin,
+  resolveCoverageThresholds,
+} from './coverage-plugin.js';
 import { clearCoverageCache } from './coverage-reader.js';
 import type { PrismManifest, ScannedComponent } from '@ng-prism/core/plugin';
 import type { CoverageManifestMeta } from './coverage.types.js';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/coverage-summary.json');
 
-function makeComponent(overrides?: Partial<ScannedComponent>): ScannedComponent {
+function makeComponent(
+  overrides?: Partial<ScannedComponent>
+): ScannedComponent {
   return {
     className: 'ButtonComponent',
     filePath: '/workspace/src/app/button/button.component.ts',
     showcaseConfig: { title: 'Button' },
     inputs: [],
     outputs: [],
-    componentMeta: { selector: 'app-button', standalone: true, isDirective: false },
+    componentMeta: {
+      selector: 'app-button',
+      standalone: true,
+      isDirective: false,
+    },
     ...overrides,
   };
 }
@@ -73,7 +82,10 @@ describe('coveragePlugin', () => {
     it('should preserve existing showcaseConfig.meta properties', async () => {
       const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH });
       const component = makeComponent({
-        showcaseConfig: { title: 'Button', meta: { figma: 'https://figma.com/foo' } },
+        showcaseConfig: {
+          title: 'Button',
+          meta: { figma: 'https://figma.com/foo' },
+        },
       });
       const result = await plugin.onComponentScanned!(component);
 
@@ -89,17 +101,23 @@ describe('coveragePlugin', () => {
       });
       const result = await plugin.onComponentScanned!(component);
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.found).toBe(false);
       expect(coverage.score).toBe(0);
     });
 
     it('should inject found:false when coverage file does not exist', async () => {
-      const plugin = coveragePlugin({ coveragePath: '/nonexistent/coverage-summary.json' });
+      const plugin = coveragePlugin({
+        coveragePath: '/nonexistent/coverage-summary.json',
+      });
       const component = makeComponent();
       const result = await plugin.onComponentScanned!(component);
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.found).toBe(false);
     });
 
@@ -107,7 +125,9 @@ describe('coveragePlugin', () => {
       const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH });
       const result = await plugin.onComponentScanned!(makeComponent());
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.thresholds).toEqual({
         lines: 80,
         branches: 80,
@@ -117,10 +137,15 @@ describe('coveragePlugin', () => {
     });
 
     it('should accept a numeric threshold shorthand applied to all metrics', async () => {
-      const plugin = coveragePlugin({ coveragePath: FIXTURE_PATH, thresholds: 90 });
+      const plugin = coveragePlugin({
+        coveragePath: FIXTURE_PATH,
+        thresholds: 90,
+      });
       const result = await plugin.onComponentScanned!(makeComponent());
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.thresholds).toEqual({
         lines: 90,
         branches: 90,
@@ -136,7 +161,9 @@ describe('coveragePlugin', () => {
       });
       const result = await plugin.onComponentScanned!(makeComponent());
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.thresholds).toEqual({
         lines: 95,
         branches: 70,
@@ -152,7 +179,9 @@ describe('coveragePlugin', () => {
       });
       const result = await plugin.onComponentScanned!(makeComponent());
 
-      const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+      const coverage = (result as ScannedComponent).showcaseConfig.meta?.[
+        'coverage'
+      ] as any;
       expect(coverage.found).toBe(false);
       expect(coverage.thresholds).toEqual({
         lines: 95,
@@ -169,7 +198,9 @@ describe('coveragePlugin', () => {
       const manifest: PrismManifest = { components: [] };
       const result = await plugin.onManifestReady!(manifest);
 
-      const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+      const meta = (result as PrismManifest).meta?.[
+        'coverage'
+      ] as CoverageManifestMeta;
       expect(meta.total.found).toBe(true);
       expect(meta.total.score).toBe(Math.round((80 + 70 + 90 + 80) / 4));
       expect(meta.thresholds).toEqual({
@@ -196,7 +227,9 @@ describe('coveragePlugin', () => {
       const plugin = coveragePlugin({ coveragePath: '/nonexistent.json' });
       const result = await plugin.onManifestReady!({ components: [] });
 
-      const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+      const meta = (result as PrismManifest).meta?.[
+        'coverage'
+      ] as CoverageManifestMeta;
       expect(meta.total.found).toBe(false);
     });
   });

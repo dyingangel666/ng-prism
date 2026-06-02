@@ -14,7 +14,10 @@ export interface DirectiveHost {
 // and `InputSignalWithTransform<X, Y>` for arbitrary X/Y. We unwrap to the
 // write-side type so consumers can pass transform-input source values (e.g.
 // a `string` for an input typed `boolean` behind `booleanAttribute`).
-type UnwrapSignalInput<S> = S extends InputSignalWithTransform<any, infer WriteT>
+type UnwrapSignalInput<S> = S extends InputSignalWithTransform<
+  any,
+  infer WriteT
+>
   ? WriteT
   : never;
 

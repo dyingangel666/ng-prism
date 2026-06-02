@@ -224,13 +224,13 @@ When `status` is omitted, the component is treated as stable but renders **witho
 
 **Visual impact**
 
-| Status         | Sidebar item                                | Component header                                          |
-| -------------- | ------------------------------------------- | --------------------------------------------------------- |
-| _unset_        | unchanged                                   | no status pill                                            |
-| `'stable'`     | unchanged                                   | green "Stable" pill with check icon                       |
-| `'beta'`       | unchanged                                   | blue "Beta" pill                                          |
-| `'wip'`        | amber dot at the right edge (tooltip)       | amber "Work in progress" pill (hollow ring)               |
-| `'deprecated'` | name struck-through + dimmed (tooltip)      | muted "Deprecated" pill                                   |
+| Status         | Sidebar item                           | Component header                            |
+| -------------- | -------------------------------------- | ------------------------------------------- |
+| _unset_        | unchanged                              | no status pill                              |
+| `'stable'`     | unchanged                              | green "Stable" pill with check icon         |
+| `'beta'`       | unchanged                              | blue "Beta" pill                            |
+| `'wip'`        | amber dot at the right edge (tooltip)  | amber "Work in progress" pill (hollow ring) |
+| `'deprecated'` | name struck-through + dimmed (tooltip) | muted "Deprecated" pill                     |
 
 The status pill is rendered inline with the title and the `<selector>` pill in the component header. All colors come from the existing theme tokens, so light/dark mode are handled automatically — except for the Beta accent (`#60a5fa`) because the design system has no `--prism-info` token yet.
 

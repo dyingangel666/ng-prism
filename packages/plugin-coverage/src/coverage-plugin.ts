@@ -1,5 +1,8 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import type { CoveragePluginOptions, CoverageThresholds } from './coverage.types.js';
+import type {
+  CoveragePluginOptions,
+  CoverageThresholds,
+} from './coverage.types.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
 
@@ -11,11 +14,16 @@ export const DEFAULT_COVERAGE_THRESHOLDS: CoverageThresholds = {
 };
 
 export function resolveCoverageThresholds(
-  input?: number | Partial<CoverageThresholds>,
+  input?: number | Partial<CoverageThresholds>
 ): CoverageThresholds {
   if (input === undefined) return { ...DEFAULT_COVERAGE_THRESHOLDS };
   if (typeof input === 'number') {
-    return { lines: input, branches: input, functions: input, statements: input };
+    return {
+      lines: input,
+      branches: input,
+      functions: input,
+      statements: input,
+    };
   }
   return { ...DEFAULT_COVERAGE_THRESHOLDS, ...input };
 }
@@ -56,7 +64,9 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
         id: 'coverage',
         label: 'Coverage',
         loadComponent: () =>
-          import('./coverage-panel.component.js').then((m) => m.CoveragePanelComponent),
+          import('./coverage-panel.component.js').then(
+            (m) => m.CoveragePanelComponent
+          ),
         position: 'bottom',
       },
     ],
@@ -67,7 +77,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
         order: -10,
         loadComponent: () =>
           import('./coverage-header-badge.component.js').then(
-            (m) => m.CoverageHeaderBadgeComponent,
+            (m) => m.CoverageHeaderBadgeComponent
           ),
       },
     ],

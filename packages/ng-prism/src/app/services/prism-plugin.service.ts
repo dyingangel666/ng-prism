@@ -21,11 +21,11 @@ export class PrismPluginService {
   });
 
   readonly addonPanels = computed<PanelDefinition[]>(() =>
-    this.panels().filter((p) => p.placement !== 'view'),
+    this.panels().filter((p) => p.placement !== 'view')
   );
 
   readonly viewPanels = computed<PanelDefinition[]>(() =>
-    this.panels().filter((p) => p.placement === 'view'),
+    this.panels().filter((p) => p.placement === 'view')
   );
 
   readonly controls = computed<ControlDefinition[]>(() => {
@@ -49,10 +49,10 @@ export class PrismPluginService {
   });
 
   readonly headerWidgetsStart = computed<HeaderWidgetDefinition[]>(() =>
-    this.headerWidgets().filter((w) => w.placement === 'start'),
+    this.headerWidgets().filter((w) => w.placement === 'start')
   );
 
   readonly headerWidgetsEnd = computed<HeaderWidgetDefinition[]>(() =>
-    this.headerWidgets().filter((w) => (w.placement ?? 'end') === 'end'),
+    this.headerWidgets().filter((w) => (w.placement ?? 'end') === 'end')
   );
 }

@@ -11,7 +11,7 @@ export const DEFAULT_A11Y_THRESHOLDS: A11yThresholds = {
 };
 
 export function resolveA11yThresholds(
-  input?: Partial<A11yThresholds>,
+  input?: Partial<A11yThresholds>
 ): A11yThresholds {
   if (!input) return { ...DEFAULT_A11Y_THRESHOLDS };
   return { ...DEFAULT_A11Y_THRESHOLDS, ...input };

@@ -1,4 +1,8 @@
-import { parseExample, renderInlineMarkdown, renderBlockMarkdown } from './markdown.js';
+import {
+  parseExample,
+  renderInlineMarkdown,
+  renderBlockMarkdown,
+} from './markdown.js';
 
 describe('parseExample', () => {
   it('extracts language and body from a fenced block', () => {
@@ -8,7 +12,10 @@ describe('parseExample', () => {
 
   it('falls back to typescript when the fence has no language tag', () => {
     const raw = '```\nconst x = 1;\n```';
-    expect(parseExample(raw)).toEqual({ lang: 'typescript', code: 'const x = 1;' });
+    expect(parseExample(raw)).toEqual({
+      lang: 'typescript',
+      code: 'const x = 1;',
+    });
   });
 
   it('returns the raw text and typescript when no fence is present', () => {
@@ -21,12 +28,18 @@ describe('parseExample', () => {
 
   it('handles leading/trailing whitespace around the fence', () => {
     const raw = '\n   ```scss\n.foo { color: red; }\n```   \n';
-    expect(parseExample(raw)).toEqual({ lang: 'scss', code: '.foo { color: red; }' });
+    expect(parseExample(raw)).toEqual({
+      lang: 'scss',
+      code: '.foo { color: red; }',
+    });
   });
 
   it('preserves internal newlines in the body', () => {
     const raw = '```html\n<a>\n  <b />\n</a>\n```';
-    expect(parseExample(raw)).toEqual({ lang: 'html', code: '<a>\n  <b />\n</a>' });
+    expect(parseExample(raw)).toEqual({
+      lang: 'html',
+      code: '<a>\n  <b />\n</a>',
+    });
   });
 });
 

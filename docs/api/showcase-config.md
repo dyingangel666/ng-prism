@@ -205,12 +205,12 @@ The page component can inject `PrismRendererService` to react to variant and con
 
 Optional migration / maturity badge. Accepts one of four values from the `ComponentStatus` union:
 
-| Value          | Meaning                                                 |
-| -------------- | ------------------------------------------------------- |
-| `'stable'`     | Migrated and production-ready.                          |
-| `'beta'`       | Functional, but API may still change.                   |
-| `'wip'`        | Work in progress, migration ongoing.                    |
-| `'deprecated'` | Legacy component — do not use in new code.              |
+| Value          | Meaning                                    |
+| -------------- | ------------------------------------------ |
+| `'stable'`     | Migrated and production-ready.             |
+| `'beta'`       | Functional, but API may still change.      |
+| `'wip'`        | Work in progress, migration ongoing.       |
+| `'deprecated'` | Legacy component — do not use in new code. |
 
 ```typescript
 @Showcase({ title: 'Button', status: 'stable' })

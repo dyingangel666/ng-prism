@@ -128,7 +128,7 @@ export class A11yHeaderBadgeComponent {
   private computeVariant(
     score: number,
     total: A11yManifestMeta['total'],
-    thresholds: A11yThresholds,
+    thresholds: A11yThresholds
   ): Variant {
     if (total.critical > thresholds.critical) return 'danger';
     if (total.serious > thresholds.serious) return 'danger';

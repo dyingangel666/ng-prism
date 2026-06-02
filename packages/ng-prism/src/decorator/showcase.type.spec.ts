@@ -21,15 +21,27 @@ class FixtureComponent {
 type FixtureInputs = InputsOf<FixtureComponent>;
 
 type AssertExtends<A, B> = A extends B ? true : false;
-type AssertEqual<A, B> =
-  (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
+type AssertEqual<A, B> = (<T>() => T extends A ? 1 : 2) extends <
+  T
+>() => T extends B ? 1 : 2
+  ? true
+  : false;
 
 // (a) Valid keys + values compile.
-const okPrimary: AssertExtends<{ variant: 'primary' }, Partial<FixtureInputs>> = true;
+const okPrimary: AssertExtends<
+  { variant: 'primary' },
+  Partial<FixtureInputs>
+> = true;
 const okLabel: AssertExtends<{ label: string }, Partial<FixtureInputs>> = true;
-const okRequiredTitle: AssertExtends<{ title: string }, Partial<FixtureInputs>> = true;
+const okRequiredTitle: AssertExtends<
+  { title: string },
+  Partial<FixtureInputs>
+> = true;
 const okModel: AssertExtends<{ value: string }, Partial<FixtureInputs>> = true;
-const okNullableTabIndex: AssertExtends<{ tabIndex: null }, Partial<FixtureInputs>> = true;
+const okNullableTabIndex: AssertExtends<
+  { tabIndex: null },
+  Partial<FixtureInputs>
+> = true;
 void okPrimary;
 void okLabel;
 void okRequiredTitle;
@@ -96,7 +108,10 @@ void inputKeysMatch;
 @Showcase({
   title: 'NoGeneric',
   variants: [
-    { name: 'Anything', inputs: { anyKey: 1, other: 'string', nested: { x: 1 } } },
+    {
+      name: 'Anything',
+      inputs: { anyKey: 1, other: 'string', nested: { x: 1 } },
+    },
   ],
 })
 class NoGenericUsage {}

@@ -37,7 +37,10 @@ function loadSummary(coveragePath: string): IstanbulSummary | null {
   }
 }
 
-function findEntry(summary: IstanbulSummary, componentPath: string): string | undefined {
+function findEntry(
+  summary: IstanbulSummary,
+  componentPath: string
+): string | undefined {
   const normalizedComponent = normalizePath(componentPath);
   const keys = Object.keys(summary).filter((k) => k !== 'total');
 
@@ -64,7 +67,10 @@ function findEntry(summary: IstanbulSummary, componentPath: string): string | un
   return undefined;
 }
 
-export function readCoverageForFile(coveragePath: string, componentFilePath: string): CoverageData {
+export function readCoverageForFile(
+  coveragePath: string,
+  componentFilePath: string
+): CoverageData {
   const summary = loadSummary(coveragePath);
   if (!summary) return { ...EMPTY_COVERAGE };
 
@@ -73,7 +79,11 @@ export function readCoverageForFile(coveragePath: string, componentFilePath: str
 
   const entry = summary[entryKey];
   const score = Math.round(
-    (entry.statements.pct + entry.branches.pct + entry.functions.pct + entry.lines.pct) / 4,
+    (entry.statements.pct +
+      entry.branches.pct +
+      entry.functions.pct +
+      entry.lines.pct) /
+      4
   );
 
   return {
@@ -94,7 +104,11 @@ export function readTotalCoverage(coveragePath: string): CoverageData {
   if (!total) return { ...EMPTY_COVERAGE };
 
   const score = Math.round(
-    (total.statements.pct + total.branches.pct + total.functions.pct + total.lines.pct) / 4,
+    (total.statements.pct +
+      total.branches.pct +
+      total.functions.pct +
+      total.lines.pct) /
+      4
   );
 
   return {
@@ -109,7 +123,11 @@ export function readTotalCoverage(coveragePath: string): CoverageData {
 
 export function averageThreshold(thresholds: CoverageThresholds): number {
   return Math.round(
-    (thresholds.lines + thresholds.branches + thresholds.functions + thresholds.statements) / 4,
+    (thresholds.lines +
+      thresholds.branches +
+      thresholds.functions +
+      thresholds.statements) /
+      4
   );
 }
 

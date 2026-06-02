@@ -28,10 +28,7 @@ import {
         Select a component to view API documentation.
       </div>
       } @else { @if (renderedClassDescription(); as descHtml) {
-      <div
-        class="prism-jsdoc-panel__description"
-        [innerHTML]="descHtml"
-      ></div>
+      <div class="prism-jsdoc-panel__description" [innerHTML]="descHtml"></div>
       } @if (hasTags()) {
       <div class="prism-jsdoc-panel__meta">
         @if (isDeprecated()) {
@@ -60,7 +57,8 @@ import {
       <div class="prism-jsdoc-panel__section">
         <h3 class="prism-jsdoc-panel__heading">Examples</h3>
         @for (example of examples(); track $index) { @let parsed =
-        parseExample(example); <pre
+        parseExample(example);
+        <pre
           class="prism-jsdoc-panel__code"
         ><code [highlight]="parsed.code" [language]="parsed.lang"></code></pre>
         }
@@ -119,7 +117,8 @@ import {
                 <span [innerHTML]="renderInline(inp.doc)"></span>
                 } @if (getMemberSince(inp.name); as since) { @if (inp.doc) {
                 <span class="prism-jsdoc-panel__since-sep"> · </span>
-                } <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
+                }
+                <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
                 }
               </td>
             </tr>
@@ -158,7 +157,8 @@ import {
                 <span [innerHTML]="renderInline(out.doc)"></span>
                 } @if (getMemberSince(out.name); as since) { @if (out.doc) {
                 <span class="prism-jsdoc-panel__since-sep"> · </span>
-                } <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
+                }
+                <span class="prism-jsdoc-panel__since">Since {{ since }}</span>
                 }
               </td>
             </tr>
@@ -433,10 +433,12 @@ export class JsDocPanelComponent {
 
   // Source is component-author JSDoc compiled into the manifest at build time,
   // not user input — bypassing sanitization is safe here.
-  protected readonly renderedClassDescription = computed<SafeHtml | null>(() => {
-    const html = renderBlockMarkdown(this.classDescription());
-    return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
-  });
+  protected readonly renderedClassDescription = computed<SafeHtml | null>(
+    () => {
+      const html = renderBlockMarkdown(this.classDescription());
+      return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
+    }
+  );
 
   protected readonly classTags = computed(
     () => this.jsdocData()?.classTags ?? {}
@@ -464,7 +466,11 @@ export class JsDocPanelComponent {
   );
 
   protected readonly hasTags = computed(
-    () => this.isDeprecated() || !!this.since() || !!this.version() || this.seeRefs().length > 0
+    () =>
+      this.isDeprecated() ||
+      !!this.since() ||
+      !!this.version() ||
+      this.seeRefs().length > 0
   );
 
   protected isMemberDeprecated(name: string): boolean {

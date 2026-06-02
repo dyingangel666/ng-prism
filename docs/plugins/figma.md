@@ -40,9 +40,9 @@ export default defineConfig({
 
 ### Options
 
-| Option        | Type     | Required for     | Description                                                                 |
-|---------------|----------|------------------|-----------------------------------------------------------------------------|
-| `accessToken` | `string` | Design Diff only | Personal access token used to fetch node images via the Figma REST API.    |
+| Option        | Type     | Required for     | Description                                                             |
+| ------------- | -------- | ---------------- | ----------------------------------------------------------------------- |
+| `accessToken` | `string` | Design Diff only | Personal access token used to fetch node images via the Figma REST API. |
 
 ### Getting a Figma access token
 
@@ -136,11 +136,11 @@ The panel is visible whenever **any variant** has a `meta.figma` URL — the dif
 
 ### View modes
 
-| Mode             | What you see                                                                 |
-|------------------|------------------------------------------------------------------------------|
-| **Side-by-side** | Component screenshot and Figma export rendered next to each other.          |
+| Mode             | What you see                                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Side-by-side** | Component screenshot and Figma export rendered next to each other.                                                       |
 | **Overlay**      | Figma export layered on top of the component, with an opacity slider (0–100). Great for catching small alignment drifts. |
-| **Diff**         | Just the pixelmatch output — red pixels where component and design diverge.  |
+| **Diff**         | Just the pixelmatch output — red pixels where component and design diverge.                                              |
 
 ### Stats
 
@@ -160,11 +160,11 @@ Click **↺ Erneut** in the toolbar to re-run after editing the component or ref
 
 ### Error states
 
-| Status              | What it means                                                                |
-|---------------------|------------------------------------------------------------------------------|
-| `Access Token fehlt`| `figmaPlugin({ accessToken })` is not configured.                            |
-| `Kein Figma-Node …` | The active variant has no `meta.figma` URL.                                  |
-| `Figma API Fehler`  | The Figma REST API rejected the request. Common causes: invalid token, missing file scope, file/node not accessible to the token's owner. |
+| Status               | What it means                                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `Access Token fehlt` | `figmaPlugin({ accessToken })` is not configured.                                                                                         |
+| `Kein Figma-Node …`  | The active variant has no `meta.figma` URL.                                                                                               |
+| `Figma API Fehler`   | The Figma REST API rejected the request. Common causes: invalid token, missing file scope, file/node not accessible to the token's owner. |
 
 ## Lazy loading
 

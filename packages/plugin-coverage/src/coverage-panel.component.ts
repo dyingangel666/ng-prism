@@ -48,16 +48,24 @@ const FALLBACK_THRESHOLDS: CoverageThresholds = {
         @for (file of files(); track file.path) {
         <div class="cov-file">
           <span class="cov-file-name">{{ fileName(file.path) }}</span>
-          <span class="cov-file-val" [class.bad]="file.lines.pct < thresholds().lines"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.lines.pct < thresholds().lines"
             >{{ file.lines.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.branches.pct < thresholds().branches"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.branches.pct < thresholds().branches"
             >{{ file.branches.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.functions.pct < thresholds().functions"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.functions.pct < thresholds().functions"
             >{{ file.functions.pct }}%</span
           >
-          <span class="cov-file-val" [class.bad]="file.statements.pct < thresholds().statements"
+          <span
+            class="cov-file-val"
+            [class.bad]="file.statements.pct < thresholds().statements"
             >{{ file.statements.pct }}%</span
           >
         </div>

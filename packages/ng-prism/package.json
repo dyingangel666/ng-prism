@@ -57,7 +57,9 @@
   "bin": {
     "ng-prism-strip": "./dist/transformer/cli.js"
   },
-  "ng-add": { "save": "devDependencies" },
+  "ng-add": {
+    "save": "devDependencies"
+  },
   "schematics": "./schematics/collection.json",
   "builders": "./builders.json",
   "files": [

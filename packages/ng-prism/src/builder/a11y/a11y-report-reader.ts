@@ -27,7 +27,7 @@ export function loadA11yReport(reportPath: string): A11yReport | null {
 
 export function readA11yMeta(
   reportPath: string,
-  thresholdsInput?: Partial<A11yThresholds>,
+  thresholdsInput?: Partial<A11yThresholds>
 ): A11yManifestMeta | null {
   const report = loadA11yReport(reportPath);
   if (!report?.total) return null;
@@ -45,23 +45,39 @@ export interface ThresholdViolation {
 }
 
 export function checkA11yThresholds(
-  meta: A11yManifestMeta,
+  meta: A11yManifestMeta
 ): ThresholdViolation[] {
   const violations: ThresholdViolation[] = [];
   const t = meta.thresholds;
   const total = meta.total;
 
   if (total.score < t.score) {
-    violations.push({ metric: 'score', actual: total.score, threshold: t.score });
+    violations.push({
+      metric: 'score',
+      actual: total.score,
+      threshold: t.score,
+    });
   }
   if (total.critical > t.critical) {
-    violations.push({ metric: 'critical', actual: total.critical, threshold: t.critical });
+    violations.push({
+      metric: 'critical',
+      actual: total.critical,
+      threshold: t.critical,
+    });
   }
   if (total.serious > t.serious) {
-    violations.push({ metric: 'serious', actual: total.serious, threshold: t.serious });
+    violations.push({
+      metric: 'serious',
+      actual: total.serious,
+      threshold: t.serious,
+    });
   }
   if (total.moderate > t.moderate) {
-    violations.push({ metric: 'moderate', actual: total.moderate, threshold: t.moderate });
+    violations.push({
+      metric: 'moderate',
+      actual: total.moderate,
+      threshold: t.moderate,
+    });
   }
   return violations;
 }

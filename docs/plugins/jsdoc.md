@@ -34,13 +34,13 @@ The plugin adds a **Docs** tab to the addon panel for every component that has J
 
 ## Supported Tags
 
-| Tag | Rendering |
-|-----|-----------|
-| `@description` (or block comment) | Rendered as block Markdown above the API table |
-| `@deprecated` | Shown as a warning banner with the deprecation message |
-| `@since` | Displayed as a version badge |
-| `@see` | Rendered as a link list |
-| `@example` | Code block with syntax highlighting (language detected from the fence, see below) |
+| Tag                               | Rendering                                                                         |
+| --------------------------------- | --------------------------------------------------------------------------------- |
+| `@description` (or block comment) | Rendered as block Markdown above the API table                                    |
+| `@deprecated`                     | Shown as a warning banner with the deprecation message                            |
+| `@since`                          | Displayed as a version badge                                                      |
+| `@see`                            | Rendered as a link list                                                           |
+| `@example`                        | Code block with syntax highlighting (language detected from the fence, see below) |
 
 ## Component-Level JSDoc
 
@@ -103,7 +103,7 @@ Supported syntax:
 - Ordered and unordered lists
 - Inline code (`` `code` ``), bold (`**text**`), italic (`*text*`)
 - Links (`[text](url)`)
-- Fenced code blocks with a language hint (`` ```html ``, `` ```scss `` …)
+- Fenced code blocks with a language hint (` ```html `, ` ```scss ` …)
 
 ````typescript
 /**

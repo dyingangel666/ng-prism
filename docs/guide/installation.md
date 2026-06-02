@@ -121,15 +121,15 @@ The schematic adds two targets to the **library project** in `angular.json`:
 
 ### Builder Options
 
-| Option              | Required      | Description                                                                              |
-| ------------------- | ------------- | ---------------------------------------------------------------------------------------- |
+| Option              | Required      | Description                                                                                                                                                                                                                                                                             |
+| ------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `entryPoint`        | Yes           | Path to the library directory (recommended) or to its barrel `public-api.ts` file. When pointed at a file, the pipeline walks upward to find the nearest `ng-package.json` and treats that directory as the library root, so secondary entry points are still discovered automatically. |
-| `prismProject`      | Yes           | Angular project name for the generated showcase app                                      |
-| `libraryProject`    | No            | Angular project name of the library being showcased — only used as a fallback for `libraryImportPath` |
-| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)   |
-| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)               |
-| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                           |
-| `outputPath`        | `:build` only | Output directory for the production build                                                |
+| `prismProject`      | Yes           | Angular project name for the generated showcase app                                                                                                                                                                                                                                     |
+| `libraryProject`    | No            | Angular project name of the library being showcased — only used as a fallback for `libraryImportPath`                                                                                                                                                                                   |
+| `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)                                                                                                                                                                                                  |
+| `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)                                                                                                                                                                                                              |
+| `port`              | No            | Dev server port for `:serve` (default: `4400`)                                                                                                                                                                                                                                          |
+| `outputPath`        | `:build` only | Output directory for the production build                                                                                                                                                                                                                                               |
 
 ## Showcase App Target Configuration
 

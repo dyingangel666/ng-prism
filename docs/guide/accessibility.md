@@ -10,12 +10,12 @@ The A11y panel has four sub-tabs:
 
 Runs an axe-core audit against the currently rendered component variant. Results are sorted by impact level:
 
-| Level | Color | Meaning |
-|---|---|---|
-| Critical | Red | Must fix — blocks users entirely |
-| Serious | Orange | Should fix — significant barrier |
+| Level    | Color  | Meaning                               |
+| -------- | ------ | ------------------------------------- |
+| Critical | Red    | Must fix — blocks users entirely      |
+| Serious  | Orange | Should fix — significant barrier      |
 | Moderate | Yellow | Consider fixing — some users affected |
-| Minor | Blue | Nice to fix — minor inconvenience |
+| Minor    | Blue   | Nice to fix — minor inconvenience     |
 
 The audit re-runs automatically when you switch variants or change input values in the Controls panel. A score ring visualizes the pass rate.
 
@@ -113,7 +113,16 @@ The file must match this JSON shape:
     "auditedVariants": 47
   },
   "components": {
-    "ButtonComponent": { "score": 100, "violations": 0, "critical": 0, "serious": 0, "moderate": 0, "minor": 0, "passes": 12, "incomplete": 0 }
+    "ButtonComponent": {
+      "score": 100,
+      "violations": 0,
+      "critical": 0,
+      "serious": 0,
+      "moderate": 0,
+      "minor": 0,
+      "passes": 12,
+      "incomplete": 0
+    }
   },
   "generatedAt": "2026-06-01T10:00:00.000Z"
 }
@@ -154,8 +163,8 @@ The build pipeline reads `a11y-report.json` and embeds the aggregate data into t
 
 ```yaml
 - run: npx nx run my-lib:test --coverage
-- run: npx nx run my-lib:audit-a11y      # your audit script — writes a11y-report.json
-- run: npx nx run my-lib-prism:build     # reads the report into the manifest
+- run: npx nx run my-lib:audit-a11y # your audit script — writes a11y-report.json
+- run: npx nx run my-lib-prism:build # reads the report into the manifest
 ```
 
 ## Peer Dependency
@@ -176,13 +185,13 @@ Add it to `allowedCommonJsDependencies` in your prism app's `angular.json` build
 
 The A11y system consists of several services:
 
-| Service | Responsibility |
-|---|---|
-| `A11yAuditService` | Runs axe-core against the rendered DOM element |
-| `A11yKeyboardService` | Analyzes tab order and focus behavior |
-| `A11yTreeService` | Builds the ARIA role tree from DOM |
-| `A11ySrService` | Generates screen reader announcement sequence |
+| Service                  | Responsibility                                  |
+| ------------------------ | ----------------------------------------------- |
+| `A11yAuditService`       | Runs axe-core against the rendered DOM element  |
+| `A11yKeyboardService`    | Analyzes tab order and focus behavior           |
+| `A11yTreeService`        | Builds the ARIA role tree from DOM              |
+| `A11ySrService`          | Generates screen reader announcement sequence   |
 | `A11yPerspectiveService` | Manages visual/screen-reader perspective toggle |
-| `A11yPanelStateService` | Tracks active sub-tab for overlay visibility |
+| `A11yPanelStateService`  | Tracks active sub-tab for overlay visibility    |
 
 The audit uses `PrismRendererService.renderedElement` signal to access the component's DOM element. When the element or input values change, the audit debounces (500ms) and re-runs automatically.

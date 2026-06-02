@@ -28,7 +28,10 @@ export interface A11yThresholds {
 /** A11y-Report shape produced by the build-time audit (or any user script). */
 export interface A11yReport {
   /** Aggregate library-wide score data (avg + sum of violations). */
-  total: A11yScoreResult & { auditedComponents: number; auditedVariants: number };
+  total: A11yScoreResult & {
+    auditedComponents: number;
+    auditedVariants: number;
+  };
   /** Optional per-component breakdown (className → score). Used for tooltips/drilldown. */
   components?: Record<string, A11yScoreResult>;
   /** Timestamp the report was generated. */

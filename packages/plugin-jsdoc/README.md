@@ -12,12 +12,12 @@ npm install @ng-prism/plugin-jsdoc
 
 ### Peer Dependencies
 
-| Package | Version |
-|---|---|
-| `@ng-prism/core` | `>=21.0.0` |
-| `@angular/core` | `>=20.0.0` |
-| `typescript` | `>=5.5.0` |
-| `highlight.js` | `>=11.0.0` |
+| Package           | Version    |
+| ----------------- | ---------- |
+| `@ng-prism/core`  | `>=21.0.0` |
+| `@angular/core`   | `>=20.0.0` |
+| `typescript`      | `>=5.5.0`  |
+| `highlight.js`    | `>=11.0.0` |
 | `ngx-highlightjs` | `>=14.0.0` |
 
 ## Setup
@@ -49,7 +49,7 @@ JSDoc descriptions are rendered as Markdown:
 - Headings (`#`, `##`, `###`)
 - Lists (ordered/unordered) and inline code (`` `code` ``)
 - Bold (`**text**`), italic (`*text*`), and links (`[text](url)`)
-- Fenced code blocks with a language hint (`` ```html ``, `` ```scss `` …)
+- Fenced code blocks with a language hint (` ```html `, ` ```scss ` …)
 
 Class descriptions are rendered as block Markdown; input/output/method descriptions are
 rendered inline (no wrapping `<p>`). Existing plain-text descriptions keep working

@@ -2,7 +2,9 @@
   "name": "@ng-prism/plugin-perf",
   "version": "21.12.0-beta.2",
   "description": "Performance profiling panel for ng-prism — bundle size, render time, memory footprint.",
-  "ng-add": { "save": "devDependencies" },
+  "ng-add": {
+    "save": "devDependencies"
+  },
   "schematics": "./schematics/collection.json",
   "keywords": [
     "@ng-prism/core",

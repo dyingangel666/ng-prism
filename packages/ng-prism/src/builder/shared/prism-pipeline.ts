@@ -76,7 +76,7 @@ export async function runPrismPipeline(
   const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
   const a11yMeta = readA11yMeta(
     join(workspaceRoot, a11yReportPath),
-    config.a11y?.thresholds,
+    config.a11y?.thresholds
   );
   if (a11yMeta) {
     const violations = checkA11yThresholds(a11yMeta);
@@ -86,7 +86,7 @@ export async function runPrismPipeline(
         .join(', ');
       throw new Error(
         `ng-prism: a11y thresholds violated — ${summary}. ` +
-          `Update components or relax thresholds via config.a11y.thresholds.`,
+          `Update components or relax thresholds via config.a11y.thresholds.`
       );
     }
     manifest = {

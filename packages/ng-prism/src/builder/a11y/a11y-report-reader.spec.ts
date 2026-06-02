@@ -62,7 +62,8 @@ describe('a11y-report-reader', () => {
       loadA11yReport(reportPath);
       loadA11yReport(reportPath);
       const matchingCalls = spy.mock.calls.filter(
-        (c) => typeof c[0] === 'string' && (c[0] as string).includes('a11y-report'),
+        (c) =>
+          typeof c[0] === 'string' && (c[0] as string).includes('a11y-report')
       );
       expect(matchingCalls).toHaveLength(1);
       spy.mockRestore();
@@ -87,7 +88,12 @@ describe('a11y-report-reader', () => {
     it('returns empty when nothing is violated', () => {
       const meta = {
         total: makeReport().total,
-        thresholds: { score: 80, critical: 0, serious: 0, moderate: A11Y_UNLIMITED },
+        thresholds: {
+          score: 80,
+          critical: 0,
+          serious: 0,
+          moderate: A11Y_UNLIMITED,
+        },
       };
       expect(checkA11yThresholds(meta)).toEqual([]);
     });
@@ -95,25 +101,45 @@ describe('a11y-report-reader', () => {
     it('flags score below threshold', () => {
       const meta = {
         total: makeReport({ score: 70 }).total,
-        thresholds: { score: 80, critical: 0, serious: 0, moderate: A11Y_UNLIMITED },
+        thresholds: {
+          score: 80,
+          critical: 0,
+          serious: 0,
+          moderate: A11Y_UNLIMITED,
+        },
       };
       const violations = checkA11yThresholds(meta);
-      expect(violations).toEqual([{ metric: 'score', actual: 70, threshold: 80 }]);
+      expect(violations).toEqual([
+        { metric: 'score', actual: 70, threshold: 80 },
+      ]);
     });
 
     it('flags excess critical and serious violations', () => {
       const meta = {
         total: makeReport({ critical: 2, serious: 1 }).total,
-        thresholds: { score: 80, critical: 0, serious: 0, moderate: A11Y_UNLIMITED },
+        thresholds: {
+          score: 80,
+          critical: 0,
+          serious: 0,
+          moderate: A11Y_UNLIMITED,
+        },
       };
       const violations = checkA11yThresholds(meta);
-      expect(violations.map((v) => v.metric).sort()).toEqual(['critical', 'serious']);
+      expect(violations.map((v) => v.metric).sort()).toEqual([
+        'critical',
+        'serious',
+      ]);
     });
 
     it('does not flag moderate violations when unlimited (default)', () => {
       const meta = {
         total: makeReport({ moderate: 50 }).total,
-        thresholds: { score: 80, critical: 0, serious: 0, moderate: A11Y_UNLIMITED },
+        thresholds: {
+          score: 80,
+          critical: 0,
+          serious: 0,
+          moderate: A11Y_UNLIMITED,
+        },
       };
       expect(checkA11yThresholds(meta)).toEqual([]);
     });
@@ -124,7 +150,9 @@ describe('a11y-report-reader', () => {
         thresholds: { score: 80, critical: 0, serious: 0, moderate: 2 },
       };
       const violations = checkA11yThresholds(meta);
-      expect(violations).toEqual([{ metric: 'moderate', actual: 3, threshold: 2 }]);
+      expect(violations).toEqual([
+        { metric: 'moderate', actual: 3, threshold: 2 },
+      ]);
     });
   });
 });

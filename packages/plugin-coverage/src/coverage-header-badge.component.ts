@@ -107,15 +107,15 @@ export class CoverageHeaderBadgeComponent {
     const score = meta.total.score;
     const t = meta.thresholds;
     const avgThreshold = Math.round(
-      (t.lines + t.branches + t.functions + t.statements) / 4,
+      (t.lines + t.branches + t.functions + t.statements) / 4
     );
 
     const variant: Variant =
       score >= avgThreshold
         ? 'ok'
         : score >= avgThreshold * 0.75
-          ? 'warn'
-          : 'danger';
+        ? 'warn'
+        : 'danger';
 
     return {
       score,

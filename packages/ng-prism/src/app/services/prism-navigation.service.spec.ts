@@ -1,12 +1,19 @@
 import { Injector, runInInjectionContext } from '@angular/core';
-import type { RuntimeComponent, RuntimeManifest } from '../../plugin/plugin.types.js';
+import type {
+  RuntimeComponent,
+  RuntimeManifest,
+} from '../../plugin/plugin.types.js';
 import { PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismManifestService } from './prism-manifest.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismSearchService } from './prism-search.service.js';
 
 function createComponent(
-  overrides: Partial<{ title: string; category: string; className: string }> = {},
+  overrides: Partial<{
+    title: string;
+    category: string;
+    className: string;
+  }> = {}
 ): RuntimeComponent {
   return {
     type: class {} as any,
@@ -24,17 +31,23 @@ function createComponent(
   };
 }
 
-function setup(manifest: RuntimeManifest): { service: PrismNavigationService; manifestService: PrismManifestService } {
+function setup(manifest: RuntimeManifest): {
+  service: PrismNavigationService;
+  manifestService: PrismManifestService;
+} {
   const rootInjector = Injector.create({
     providers: [{ provide: PRISM_MANIFEST, useValue: manifest }],
   });
-  const manifestService = runInInjectionContext(rootInjector, () => new PrismManifestService());
+  const manifestService = runInInjectionContext(
+    rootInjector,
+    () => new PrismManifestService()
+  );
   const searchService = runInInjectionContext(
     Injector.create({
       providers: [{ provide: PrismManifestService, useValue: manifestService }],
       parent: rootInjector,
     }),
-    () => new PrismSearchService(),
+    () => new PrismSearchService()
   );
   const navInjector = Injector.create({
     providers: [
@@ -43,7 +56,10 @@ function setup(manifest: RuntimeManifest): { service: PrismNavigationService; ma
     ],
     parent: rootInjector,
   });
-  const service = runInInjectionContext(navInjector, () => new PrismNavigationService());
+  const service = runInInjectionContext(
+    navInjector,
+    () => new PrismNavigationService()
+  );
   return { service, manifestService };
 }
 
@@ -70,7 +86,11 @@ describe('PrismNavigationService', () => {
 
   it('should prefer first page over first component in selectFirst()', () => {
     const comp = createComponent({ title: 'Alpha', className: 'Alpha' });
-    const page = { type: 'component' as const, title: 'Intro', component: class {} as any };
+    const page = {
+      type: 'component' as const,
+      title: 'Intro',
+      component: class {} as any,
+    };
     const { service } = setup({ components: [comp], pages: [page] });
     service.selectFirst();
     expect(service.activePage()).toBe(page);
@@ -94,9 +114,7 @@ describe('PrismNavigationService', () => {
       { kind: 'component', data: a },
       { kind: 'component', data: b },
     ]);
-    expect(tree.get('Layout')).toEqual([
-      { kind: 'component', data: c },
-    ]);
+    expect(tree.get('Layout')).toEqual([{ kind: 'component', data: c }]);
   });
 
   it('should re-link activeComponent to new reference when manifest updates with same className', () => {
@@ -114,7 +132,9 @@ describe('PrismNavigationService', () => {
   it('should return null for activeComponent when active component is removed from manifest', () => {
     const removed = createComponent({ className: 'Removed' });
     const survivor = createComponent({ className: 'Survivor' });
-    const { service, manifestService } = setup({ components: [removed, survivor] });
+    const { service, manifestService } = setup({
+      components: [removed, survivor],
+    });
     service.select(removed);
 
     manifestService.updateManifest({ components: [survivor] });
@@ -133,11 +153,24 @@ describe('PrismNavigationService', () => {
   });
 
   it('should re-link activePage by title when manifest updates', () => {
-    const page = { type: 'component' as const, title: 'Intro', category: 'Docs', component: class {} as any };
-    const { service, manifestService } = setup({ components: [], pages: [page] });
+    const page = {
+      type: 'component' as const,
+      title: 'Intro',
+      category: 'Docs',
+      component: class {} as any,
+    };
+    const { service, manifestService } = setup({
+      components: [],
+      pages: [page],
+    });
     service.selectPage(page);
 
-    const updatedPage = { type: 'component' as const, title: 'Intro', category: 'Docs', component: class {} as any };
+    const updatedPage = {
+      type: 'component' as const,
+      title: 'Intro',
+      category: 'Docs',
+      component: class {} as any,
+    };
     manifestService.updateManifest({ components: [], pages: [updatedPage] });
 
     expect(service.activePage()).toBe(updatedPage);

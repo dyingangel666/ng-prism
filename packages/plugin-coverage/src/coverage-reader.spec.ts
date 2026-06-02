@@ -18,7 +18,7 @@ describe('readCoverageForFile', () => {
   it('should return coverage data for a matching file path', () => {
     const result = readCoverageForFile(
       FIXTURE_PATH,
-      '/workspace/src/app/button/button.component.ts',
+      '/workspace/src/app/button/button.component.ts'
     );
 
     expect(result.found).toBe(true);
@@ -31,7 +31,7 @@ describe('readCoverageForFile', () => {
   it('should calculate score as average of all 4 metrics', () => {
     const result = readCoverageForFile(
       FIXTURE_PATH,
-      '/workspace/src/app/button/button.component.ts',
+      '/workspace/src/app/button/button.component.ts'
     );
 
     expect(result.score).toBe(Math.round((80 + 75 + 100 + 90) / 4));
@@ -40,7 +40,7 @@ describe('readCoverageForFile', () => {
   it('should match by normalized path suffix', () => {
     const result = readCoverageForFile(
       FIXTURE_PATH,
-      '/different/root/src/app/button/button.component.ts',
+      '/different/root/src/app/button/button.component.ts'
     );
 
     expect(result.found).toBe(true);
@@ -50,7 +50,7 @@ describe('readCoverageForFile', () => {
   it('should return found:false for a non-matching file path', () => {
     const result = readCoverageForFile(
       FIXTURE_PATH,
-      '/workspace/src/app/unknown/unknown.component.ts',
+      '/workspace/src/app/unknown/unknown.component.ts'
     );
 
     expect(result.found).toBe(false);
@@ -61,7 +61,7 @@ describe('readCoverageForFile', () => {
   it('should return found:false when coverage file does not exist', () => {
     const result = readCoverageForFile(
       '/nonexistent/coverage-summary.json',
-      '/workspace/src/app/button/button.component.ts',
+      '/workspace/src/app/button/button.component.ts'
     );
 
     expect(result.found).toBe(false);
@@ -72,11 +72,19 @@ describe('readCoverageForFile', () => {
     const fs = require('node:fs');
     const spy = jest.spyOn(fs, 'readFileSync');
 
-    readCoverageForFile(FIXTURE_PATH, '/workspace/src/app/button/button.component.ts');
-    readCoverageForFile(FIXTURE_PATH, '/workspace/src/app/card/card.component.ts');
+    readCoverageForFile(
+      FIXTURE_PATH,
+      '/workspace/src/app/button/button.component.ts'
+    );
+    readCoverageForFile(
+      FIXTURE_PATH,
+      '/workspace/src/app/card/card.component.ts'
+    );
 
     const matchingCalls = spy.mock.calls.filter(
-      (call) => typeof call[0] === 'string' && (call[0] as string).includes('coverage-summary'),
+      (call) =>
+        typeof call[0] === 'string' &&
+        (call[0] as string).includes('coverage-summary')
     );
     expect(matchingCalls).toHaveLength(1);
   });
@@ -84,7 +92,7 @@ describe('readCoverageForFile', () => {
   it('should handle low-coverage components correctly', () => {
     const result = readCoverageForFile(
       FIXTURE_PATH,
-      '/workspace/src/app/card/card.component.ts',
+      '/workspace/src/app/card/card.component.ts'
     );
 
     expect(result.found).toBe(true);
@@ -123,7 +131,13 @@ describe('readTotalCoverage', () => {
 
 describe('averageThreshold', () => {
   it('should return the rounded average of all four thresholds', () => {
-    expect(averageThreshold({ lines: 80, branches: 70, functions: 90, statements: 80 }))
-      .toBe(Math.round((80 + 70 + 90 + 80) / 4));
+    expect(
+      averageThreshold({
+        lines: 80,
+        branches: 70,
+        functions: 90,
+        statements: 80,
+      })
+    ).toBe(Math.round((80 + 70 + 90 + 80) / 4));
   });
 });

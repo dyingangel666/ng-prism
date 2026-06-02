@@ -210,7 +210,9 @@ export class PrismRendererComponent {
     if (!el) return null;
     const comp = this.navigationService.activeComponent();
     if (!comp) return null;
-    return `${comp.meta.className}:${this.rendererService.activeVariantIndex()}`;
+    return `${
+      comp.meta.className
+    }:${this.rendererService.activeVariantIndex()}`;
   });
   protected readonly overlayInputs = { rendererService: this.rendererService };
   protected readonly overlayInjector = computed(() => {

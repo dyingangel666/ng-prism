@@ -37,10 +37,10 @@ export default defineConfig({
 
 ## Options
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root) |
-| `thresholds` | `80` for all metrics | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. Accepts a number (applied to all metrics) or a partial object with `lines`, `branches`, `functions`, `statements` keys. |
+| Option         | Default                            | Description                                                                                                                                                                                                                               |
+| -------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root)                                                                                                                                                                   |
+| `thresholds`   | `80` for all metrics               | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. Accepts a number (applied to all metrics) or a partial object with `lines`, `branches`, `functions`, `statements` keys. |
 
 ### Thresholds
 
@@ -93,22 +93,22 @@ Run your tests with coverage before starting or rebuilding the showcase. In watc
 
 The panel displays four coverage categories per component:
 
-| Metric | Description |
-|--------|-------------|
-| Statements | Percentage of statements executed |
-| Branches | Percentage of branches (if/else, switch, ternary) covered |
-| Functions | Percentage of functions called |
-| Lines | Percentage of lines executed |
+| Metric     | Description                                               |
+| ---------- | --------------------------------------------------------- |
+| Statements | Percentage of statements executed                         |
+| Branches   | Percentage of branches (if/else, switch, ternary) covered |
+| Functions  | Percentage of functions called                            |
+| Lines      | Percentage of lines executed                              |
 
 The **score** shown in the tab circle is the average of all four metrics, rounded to the nearest integer.
 
 ## Score Levels
 
-| Score | Color | Level |
-|-------|-------|-------|
-| >= 80% | Green | Good |
+| Score  | Color  | Level   |
+| ------ | ------ | ------- |
+| >= 80% | Green  | Good    |
 | >= 50% | Yellow | Warning |
-| < 50% | Red | Bad |
+| < 50%  | Red    | Bad     |
 
 ## File Matching
 
