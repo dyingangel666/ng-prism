@@ -29,6 +29,7 @@ export interface PrismPipelineOptions {
   libraryImportPath: string;
   prismProject: string;
   configFile: string;
+  /** Absolute path. If omitted, defaults to `<workspaceRoot>/node_modules/.cache/ng-prism/<prismProject>`. */
   cacheDir?: string;
 }
 
