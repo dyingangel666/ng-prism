@@ -1,20 +1,17 @@
 import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
 import type { json } from '@angular-devkit/core';
-import { join, isAbsolute } from 'path';
+import { join } from 'path';
 import { existsSync } from 'fs';
 import type { ServeBuilderSchema } from './schema.js';
 import { runPrismPipeline, createPipelineState, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
+import { resolveCacheDir } from '../shared/resolve-cache-dir.js';
 import { startWatcher } from '../watcher/index.js';
 
 async function createServeBuilder(
   options: ServeBuilderSchema,
   context: BuilderContext,
 ): Promise<BuilderOutput> {
-  const cacheDir = options.cacheDir
-    ? isAbsolute(options.cacheDir)
-      ? options.cacheDir
-      : join(context.workspaceRoot, options.cacheDir)
-    : undefined;
+  const cacheDir = resolveCacheDir(options.cacheDir, context.workspaceRoot);
 
   const pipelineOptions: PrismPipelineOptions = {
     entryPoint: options.entryPoint,
