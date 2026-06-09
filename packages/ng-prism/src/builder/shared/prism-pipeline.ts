@@ -29,6 +29,7 @@ export interface PrismPipelineOptions {
   libraryImportPath: string;
   prismProject: string;
   configFile: string;
+  cacheDir?: string;
 }
 
 export interface PrismPipelineResult {
@@ -103,13 +104,18 @@ export async function runPrismPipeline(
     meta: manifest.meta,
   });
 
-  const projectMeta = await context.getProjectMetadata(options.prismProject);
-  const sourceRoot =
-    (projectMeta['sourceRoot'] as string | undefined) ??
-    join('projects', options.prismProject, 'src');
-  const manifestPath = join(workspaceRoot, sourceRoot, 'prism-manifest.ts');
+  const cacheDir =
+    options.cacheDir ??
+    join(
+      workspaceRoot,
+      'node_modules',
+      '.cache',
+      'ng-prism',
+      options.prismProject
+    );
+  const manifestPath = join(cacheDir, 'prism-manifest.ts');
 
-  mkdirSync(join(workspaceRoot, sourceRoot), { recursive: true });
+  mkdirSync(cacheDir, { recursive: true });
   const written = writeManifestIfChanged(manifestPath, source);
 
   const pageCount = (manifest.pages ?? []).length;
