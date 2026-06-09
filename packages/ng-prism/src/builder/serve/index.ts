@@ -1,6 +1,6 @@
 import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
 import type { json } from '@angular-devkit/core';
-import { join } from 'path';
+import { join, isAbsolute } from 'path';
 import { existsSync } from 'fs';
 import type { ServeBuilderSchema } from './schema.js';
 import { runPrismPipeline, createPipelineState, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
@@ -10,11 +10,19 @@ async function createServeBuilder(
   options: ServeBuilderSchema,
   context: BuilderContext,
 ): Promise<BuilderOutput> {
+  const cacheDir = options.cacheDir
+    ? isAbsolute(options.cacheDir)
+      ? options.cacheDir
+      : join(context.workspaceRoot, options.cacheDir)
+    : undefined;
+
   const pipelineOptions: PrismPipelineOptions = {
     entryPoint: options.entryPoint,
-    libraryImportPath: options.libraryImportPath ?? options.libraryProject ?? options.prismProject,
+    libraryImportPath:
+      options.libraryImportPath ?? options.libraryProject ?? options.prismProject,
     prismProject: options.prismProject,
     configFile: options.configFile ?? 'ng-prism.config.ts',
+    cacheDir,
   };
 
   const state = createPipelineState();
