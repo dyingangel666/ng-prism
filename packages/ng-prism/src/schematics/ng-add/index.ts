@@ -231,13 +231,13 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
     const sourceRoot = project.sourceRoot ?? `${project.root}/src`;
 
     addTsConfigPath(tree, tsConfigPath, 'ng-prism.config', [
-      'ng-prism.config.ts',
+      './ng-prism.config.ts',
     ]);
     addTsConfigPath(tree, tsConfigPath, options.project, [
-      `${sourceRoot}/public-api.ts`,
+      `./${sourceRoot}/public-api.ts`,
     ]);
     addTsConfigPath(tree, tsConfigPath, 'prism-manifest/*', [
-      '.ng-prism/*/prism-manifest.ts',
+      './.ng-prism/*/prism-manifest.ts',
     ]);
 
     return tree;

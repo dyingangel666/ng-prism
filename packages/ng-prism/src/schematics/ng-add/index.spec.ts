@@ -268,13 +268,13 @@ describe('ng-add schematic', () => {
       compilerOptions?: { paths?: Record<string, string[]> };
     };
     expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual([
-      'ng-prism.config.ts',
+      './ng-prism.config.ts',
     ]);
     expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
-      'projects/my-lib/src/public-api.ts',
+      './projects/my-lib/src/public-api.ts',
     ]);
     expect(tsConfig.compilerOptions?.paths?.['prism-manifest/*']).toEqual([
-      '.ng-prism/*/prism-manifest.ts',
+      './.ng-prism/*/prism-manifest.ts',
     ]);
   });
 
@@ -358,7 +358,7 @@ describe('ng-add schematic', () => {
       compilerOptions?: { paths?: Record<string, string[]> };
     };
     expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual([
-      'ng-prism.config.ts',
+      './ng-prism.config.ts',
     ]);
   });
 

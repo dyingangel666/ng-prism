@@ -246,7 +246,7 @@ The import specifier `prism-manifest/<prism-project>` is resolved via a wildcard
 {
   "compilerOptions": {
     "paths": {
-      "prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
+      "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
     }
   }
 }

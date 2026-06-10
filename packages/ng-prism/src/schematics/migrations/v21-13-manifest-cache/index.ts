@@ -76,7 +76,7 @@ function rewriteMainTs(
 
 function addTsConfigMapping(tree: Tree): void {
   addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest/*', [
-    '.ng-prism/*/prism-manifest.ts',
+    './.ng-prism/*/prism-manifest.ts',
   ]);
 }
 

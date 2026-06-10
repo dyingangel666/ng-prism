@@ -167,7 +167,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
-      '.ng-prism/*/prism-manifest.ts',
+      './.ng-prism/*/prism-manifest.ts',
     ]);
   });
 
@@ -355,7 +355,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
-      '.ng-prism/*/prism-manifest.ts',
+      './.ng-prism/*/prism-manifest.ts',
     ]);
 
     expect(

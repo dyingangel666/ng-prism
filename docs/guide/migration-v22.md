@@ -98,9 +98,9 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 ```diff
   "compilerOptions": {
     "paths": {
-      "ng-prism.config": ["ng-prism.config.ts"],
-      "my-lib": ["projects/my-lib/src/public-api.ts"],
-+     "prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
+      "ng-prism.config": ["./ng-prism.config.ts"],
+      "my-lib": ["./projects/my-lib/src/public-api.ts"],
++     "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
     }
   }
 ```
@@ -130,10 +130,10 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 If you have **multiple prism projects** in the same workspace, the wildcard mapping resolves each one to its own cache file:
 
 ```jsonc
-"prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
+"prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
 ```
 
-So `from 'prism-manifest/test-lib-prism'` resolves to `.ng-prism/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `.ng-prism/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier — no per-tsconfig.app.json overrides needed.
+So `from 'prism-manifest/test-lib-prism'` resolves to `./.ng-prism/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `./.ng-prism/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier — no per-tsconfig.app.json overrides needed.
 
 ## Manual migration
 
@@ -159,13 +159,13 @@ Add the wildcard mapping under `compilerOptions.paths`:
   "compilerOptions": {
     "paths": {
       // ... your existing mappings ...
-      "prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
+      "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
     }
   }
 }
 ```
 
-This entry is a single line workspace-wide — it covers all prism projects via the `*` wildcard.
+This entry is a single line workspace-wide — it covers all prism projects via the `*` wildcard. The leading `./` is required for TypeScript 6 when `baseUrl` is not set.
 
 ### Step 3 — Delete the legacy manifest file
 
