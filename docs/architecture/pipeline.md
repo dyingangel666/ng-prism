@@ -31,9 +31,9 @@ Atomic write  (skip if unchanged)
 - **Directory** — used as the library root directly
 - **File** — `findLibraryRoot()` walks upward to the nearest `ng-package.json` and uses that directory as the library root. If no `ng-package.json` is found above the file, or if discovery returns no entries, the pipeline falls back to scanning the file directly (back-compat for non-ng-packagr setups).
 
-Discovery returns one entry per `ng-package.json` (excluding the primary `dest`-rooted one). One `Scanner` is created per entry point and stored in `PrismPipelineState.scanners` (a `Map<entryFile, Scanner>`). The import path attached to each scanned component (`my-lib`, `my-lib/atoms`, ...) is derived from the entry-point's relative directory.
+Discovery returns one entry per `ng-package.json` (excluding the primary `dest`-rooted one). All discovered entry points are fed into a **single** `Scanner` instance that is cached on `PrismPipelineState.scanner`. The import path attached to each scanned component (`my-lib`, `my-lib/atoms`, ...) is derived from the entry-point's relative directory.
 
-Each scanner is stored in `PrismPipelineState.scanners` (a `Map<entryFile, Scanner>`). On rebuild, the same `Scanner` instance is reused, which means the previous `ts.Program` is passed to `ts.createProgram()` as `oldProgram` — only changed files are re-parsed.
+On rebuild, the same `Scanner` instance is reused, which means the previous `ts.Program` is passed to `ts.createProgram()` as `oldProgram` — only changed files are re-parsed. See [PrismPipelineState](#prismpipelinestate-scanner-reuse-across-rebuilds) below for how the cached scanner is invalidated when the entry-point set itself changes.
 
 ### 3. Merge Config Pages
 
@@ -82,11 +82,17 @@ Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/.ng-prism/<prism
 
 ```typescript
 export interface PrismPipelineState {
-  scanners: Map<string, Scanner>;
+  scanner: Scanner | undefined;
+  lastEntrySetKey: string | undefined;
 }
 ```
 
-The builder creates one `PrismPipelineState` per builder run (not per file change). It is passed into every `runPrismPipeline()` call. When the same entry file appears in a subsequent scan, its `Scanner` is retrieved from the map and reused — TypeScript incremental parsing kicks in automatically.
+The builder creates one `PrismPipelineState` per builder run (not per file change). It is passed into every `runPrismPipeline()` call and caches two things:
+
+- **`scanner`** — a single `Scanner` instance that owns the underlying `ts.Program`. When it is reused across rebuilds, the previous program is passed in as `oldProgram` and TypeScript's incremental parser only re-parses changed files.
+- **`lastEntrySetKey`** — the sorted-and-joined list of entry-file paths from the previous run. It acts as a fingerprint of the entry-point set.
+
+Before each scan the pipeline computes a fresh entry-set key. If it differs from `lastEntrySetKey` — for example because a new secondary entry point was added or removed — the cached `scanner` is discarded (`state.scanner = undefined`) so the next call constructs a fresh one with the new entry set. Otherwise the existing scanner is reused, preserving its incremental-compilation state for fast rebuilds.
 
 ## Serve Builder
 

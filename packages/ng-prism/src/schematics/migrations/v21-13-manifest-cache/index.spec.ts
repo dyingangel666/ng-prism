@@ -368,4 +368,26 @@ describe('migration v21-13-manifest-cache', () => {
       "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
   });
+
+  it('does not rewrite a commented-out PRISM_RUNTIME_MANIFEST import line', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    const mainTs = [
+      "// import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism';",
+      '',
+    ].join('\n');
+    tree.create('projects/my-lib-prism/src/main.ts', mainTs);
+
+    const result = await run(tree);
+
+    const after = result
+      .read('projects/my-lib-prism/src/main.ts')!
+      .toString('utf-8');
+    // commented line untouched
+    expect(after).toContain(
+      "// import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';"
+    );
+    // live import already correct, unchanged
+    expect(after.match(/PRISM_RUNTIME_MANIFEST/g)?.length).toBe(2);
+  });
 });

@@ -3,7 +3,7 @@
   "schematics": {
     "migration-v21.13-manifest-cache": {
       "version": "21.13.0",
-      "description": "Move generated prism-manifest.ts into node_modules/.cache and switch to a tsconfig path mapping.",
+      "description": "Move generated prism-manifest.ts into <workspaceRoot>/.ng-prism/<prismProject>/ and resolve it via a wildcard tsconfig path mapping.",
       "factory": "../dist/schematics/migrations/v21-13-manifest-cache/index#migrate"
     }
   }

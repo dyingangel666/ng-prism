@@ -31,7 +31,7 @@
     },
     "cacheDir": {
       "type": "string",
-      "description": "Override directory for the generated prism-manifest.ts. Default: node_modules/.cache/ng-prism/<prismProject>/. Relative paths resolve against workspaceRoot. Useful for CI sandboxes with read-only node_modules."
+      "description": "Override directory for the generated prism-manifest.ts. Default: <workspaceRoot>/.ng-prism/<prismProject>/. Relative paths resolve against workspaceRoot."
     }
   },
   "required": ["entryPoint", "prismProject"],
