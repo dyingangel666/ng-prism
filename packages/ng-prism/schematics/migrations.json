@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
     "migration-v22-manifest-cache": {
-      "version": "22.0.0",
+      "version": "22.0.0-beta.0",
       "description": "Move generated prism-manifest.ts into <workspaceRoot>/.ng-prism/<prismProject>/ and resolve it via a wildcard tsconfig path mapping.",
       "factory": "../dist/schematics/migrations/v21-13-manifest-cache/index#migrate"
     }
