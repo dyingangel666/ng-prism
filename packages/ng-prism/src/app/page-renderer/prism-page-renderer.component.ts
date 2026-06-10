@@ -1,26 +1,23 @@
 import { Component, effect, ElementRef, inject } from '@angular/core';
-import { NgComponentOutlet } from '@angular/common';
+import { JsonPipe, NgComponentOutlet } from '@angular/common';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 
 @Component({
   selector: 'prism-page-renderer',
   standalone: true,
-  imports: [NgComponentOutlet],
+  imports: [JsonPipe, NgComponentOutlet],
   template: `
     @if (page(); as p) {
-      <div class="prism-page-renderer">
-        <h2 class="prism-page-renderer__title">{{ p.title }}</h2>
-        @switch (p.type) {
-          @case ('custom') {
-            <pre class="prism-page-renderer__json">{{ $any(p).data | json }}</pre>
-          }
-          @case ('component') {
-            <div class="prism-page-renderer__component">
-              <ng-container *ngComponentOutlet="$any(p).component" />
-            </div>
-          }
-        }
+    <div class="prism-page-renderer">
+      <h2 class="prism-page-renderer__title">{{ p.title }}</h2>
+      @switch (p.type) { @case ('custom') {
+      <pre class="prism-page-renderer__json">{{ $any(p).data | json }}</pre>
+      } @case ('component') {
+      <div class="prism-page-renderer__component">
+        <ng-container *ngComponentOutlet="$any(p).component" />
       </div>
+      } }
+    </div>
     }
   `,
   styles: `
