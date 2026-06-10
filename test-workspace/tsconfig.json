@@ -15,6 +15,7 @@
       "@ng-prism/core": ["node_modules/ng-prism"],
       "@ng-prism/core/*": ["node_modules/ng-prism/*"],
       "ng-prism.config": ["ng-prism.config.ts"],
+      "prism-manifest": ["node_modules/.cache/ng-prism/test-lib-prism/prism-manifest.ts"],
       "test-lib": ["projects/test-lib/src/public-api.ts"],
       "test-ui-kit": ["projects/test-ui-kit/public-api.ts"],
       "test-ui-kit/*": ["projects/test-ui-kit/*/public-api.ts"]

@@ -4,7 +4,7 @@ import { ButtonTooltipPageComponent } from '../../test-lib/src/lib/directives/to
 import { DesignTokensPageComponent } from './pages/design-tokens-page.component';
 import { GettingStartedPageComponent } from './pages/getting-started-page.component';
 import { ButtonPatternsPageComponent } from './pages/button-patterns-page.component';
-import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';
+import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';
 import config from 'ng-prism.config';
 
 bootstrapApplication(PrismShellComponent, {
