@@ -174,6 +174,7 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
 
       > * {
         flex: 1 1 auto;
+        text-align: center;
       }
     }
 
