@@ -80,9 +80,15 @@ You probably bumped `@ng-prism/core` without also bumping the plugin packages (w
 
 **Build fails with `TS6059: File '...prism-manifest.ts' is not under rootDir`**
 
-Your `projects/<lib>-prism/tsconfig.app.json` does not include the cache directory. The migration in v22.0.0-beta.0 missed this update — open the file and add the cache path to the `include` array:
+Your `projects/<lib>-prism/tsconfig.app.json` doesn't widen `rootDir` to the workspace root. The migration in v22.0.0-beta.0 missed this update — open the file and add both `rootDir` and the include glob:
 
 ```diff
+  "compilerOptions": {
+    "outDir": "../../out-tsc/app",
++   "rootDir": "../..",
+    "types": []
+  },
+  ...
   "include": [
     "src/**/*.d.ts",
 +   "../../.ng-prism/<lib>-prism/**/*.ts"
@@ -149,16 +155,27 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 + .ng-prism/
 ```
 
-### 6. Extends each prism `tsconfig.app.json`'s `include` array
+### 6. Updates each prism `tsconfig.app.json`
 
 ```diff
+  "compilerOptions": {
+    "outDir": "../../out-tsc/app",
++   "rootDir": "../..",
+    "types": []
+  },
+  "files": ["src/main.ts"],
   "include": [
     "src/**/*.d.ts",
 +   "../../.ng-prism/<lib>-prism/**/*.ts"
   ]
 ```
 
-Without this entry, TypeScript would reject the generated manifest with `TS6059: File ... is not under rootDir` because the manifest lives outside the prism project's source tree.
+Both changes are required:
+
+- `include` tells TypeScript that the cache file is part of the project (otherwise it isn't loaded into the compilation).
+- `rootDir: ../..` widens the project's root to the workspace so the cache file is _under_ rootDir — without this, TypeScript rejects with `TS6059: File ... is not under rootDir` even when the file is included.
+
+An existing user-defined `rootDir` is preserved; the migration only sets the default when no `rootDir` is declared.
 
 ## Wildcard path mapping
 
@@ -228,18 +245,24 @@ Add a single workspace-wide ignore:
 + .ng-prism/
 ```
 
-### Step 5 — Extend `projects/<lib>-prism/tsconfig.app.json`
+### Step 5 — Update `projects/<lib>-prism/tsconfig.app.json`
 
-Add the cache directory to the `include` array so TypeScript counts the generated manifest as part of the project:
+Two changes:
 
 ```diff
+  "compilerOptions": {
+    "outDir": "../../out-tsc/app",
++   "rootDir": "../..",
+    "types": []
+  },
+  "files": ["src/main.ts"],
   "include": [
     "src/**/*.d.ts",
 +   "../../.ng-prism/<lib>-prism/**/*.ts"
   ]
 ```
 
-Without this entry, the Angular bundle will fail with `TS6059: File ... is not under rootDir`.
+`include` adds the cache file to the program; `rootDir: ../..` makes the workspace root the project root so the cache file is _under_ rootDir. Without both, TypeScript fails with `TS6059`.
 
 ### Step 6 — Run a build to populate the cache
 

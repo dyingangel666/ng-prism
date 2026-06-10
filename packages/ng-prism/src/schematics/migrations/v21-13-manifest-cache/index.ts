@@ -118,19 +118,33 @@ function addCacheIncludeToTsconfigApp(
   if (!buffer) return;
 
   const sourceText = buffer.toString('utf-8');
-  let parsed: { include?: unknown };
+  let parsed: { compilerOptions?: Record<string, unknown>; include?: unknown };
   try {
-    parsed = JSON.parse(sourceText) as { include?: unknown };
+    parsed = JSON.parse(sourceText) as {
+      compilerOptions?: Record<string, unknown>;
+      include?: unknown;
+    };
   } catch {
     return;
   }
+
   const include = Array.isArray(parsed.include)
     ? (parsed.include as string[])
     : [];
-  const entry = `../../.ng-prism/${prismProject}/**/*.ts`;
-  if (include.includes(entry)) return;
+  const includeEntry = `../../.ng-prism/${prismProject}/**/*.ts`;
+  const includeChanged = !include.includes(includeEntry);
+  const nextInclude = includeChanged ? [...include, includeEntry] : include;
 
-  const next = { ...parsed, include: [...include, entry] };
+  const compilerOptions = { ...(parsed.compilerOptions ?? {}) };
+  const hasRootDir = typeof compilerOptions['rootDir'] === 'string';
+  const rootDirChanged = !hasRootDir;
+  if (!hasRootDir) {
+    compilerOptions['rootDir'] = '../..';
+  }
+
+  if (!includeChanged && !rootDirChanged) return;
+
+  const next = { ...parsed, compilerOptions, include: nextInclude };
   tree.overwrite(path, JSON.stringify(next, null, 2) + '\n');
 }
 

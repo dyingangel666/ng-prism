@@ -297,7 +297,7 @@ describe('migration v21-13-manifest-cache', () => {
     expect(gitignore).toContain('.ng-prism/');
   });
 
-  it('adds the cache manifest to the prism tsconfig.app.json include array', async () => {
+  it('adds the cache include and sets rootDir on the prism tsconfig.app.json', async () => {
     const tree = createWorkspaceTree(defaultProjects());
     tree.create(
       'projects/my-lib-prism/tsconfig.app.json',
@@ -317,11 +317,39 @@ describe('migration v21-13-manifest-cache', () => {
 
     const tsconfigApp = JSON.parse(
       result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
-    ) as { include: string[] };
+    ) as {
+      compilerOptions: { rootDir?: string };
+      include: string[];
+    };
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
     expect(tsconfigApp.include).toContain('src/**/*.d.ts');
     expect(tsconfigApp.include).toContain(
       '../../.ng-prism/my-lib-prism/**/*.ts'
     );
+  });
+
+  it('does not overwrite a user-defined rootDir in tsconfig.app.json', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/tsconfig.app.json',
+      JSON.stringify(
+        {
+          extends: '../../tsconfig.json',
+          compilerOptions: { rootDir: 'custom/root', types: [] },
+          files: ['src/main.ts'],
+          include: ['src/**/*.d.ts'],
+        },
+        null,
+        2
+      )
+    );
+
+    const result = await run(tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as { compilerOptions: { rootDir?: string } };
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('custom/root');
   });
 
   it('does not duplicate the cache include if already present', async () => {

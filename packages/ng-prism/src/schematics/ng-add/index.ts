@@ -107,6 +107,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         extends: '../../tsconfig.json',
         compilerOptions: {
           outDir: '../../out-tsc/app',
+          rootDir: '../..',
           types: [],
         },
         files: ['src/main.ts'],

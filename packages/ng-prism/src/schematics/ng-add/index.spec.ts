@@ -317,7 +317,11 @@ describe('ng-add schematic', () => {
 
     const tsconfigApp = JSON.parse(
       result.read('/projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
-    ) as { include: string[] };
+    ) as {
+      compilerOptions: { rootDir?: string };
+      include: string[];
+    };
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
     expect(tsconfigApp.include).toContain('src/**/*.d.ts');
     expect(tsconfigApp.include).toContain(
       '../../.ng-prism/my-lib-prism/**/*.ts'
