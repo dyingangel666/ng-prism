@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Angular 21+ workspace
+- Angular 20+ workspace (tested against 20, 21, 22)
 - Node.js 20+, npm 10+
 
 ## Automatic Setup — `ng add`

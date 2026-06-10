@@ -2,7 +2,7 @@
 
 **ng-prism** is the Angular-native Storybook alternative. A lightweight component showcase tool that scans your library at build time and renders interactive demos — annotate components with `@Showcase`, no separate story files needed.
 
-[![Angular](https://img.shields.io/badge/Angular-21+-dd0031)](https://angular.dev)
+[![Angular](https://img.shields.io/badge/Angular-20%20%7C%2021%20%7C%2022-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
@@ -87,10 +87,7 @@ export default defineConfig({
     '--prism-font-sans': "'Inter', sans-serif",
   },
 
-  appProviders: [
-    provideAnimationsAsync(),
-    provideHttpClient(),
-  ],
+  appProviders: [provideAnimationsAsync(), provideHttpClient()],
 });
 ```
 
@@ -138,19 +135,19 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Official Plugins
 
-| Plugin | Package | Description |
-|---|---|---|
-| JSDoc | `@ng-prism/plugin-jsdoc` | API documentation from JSDoc comments |
-| Figma | `@ng-prism/plugin-figma` | Figma design embed + visual diff |
-| Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector |
-| Perf | `@ng-prism/plugin-perf` | Render performance profiling |
-| Coverage | `@ng-prism/plugin-coverage` | Per-component test coverage from Istanbul/v8 |
+| Plugin    | Package                      | Description                                  |
+| --------- | ---------------------------- | -------------------------------------------- |
+| JSDoc     | `@ng-prism/plugin-jsdoc`     | API documentation from JSDoc comments        |
+| Figma     | `@ng-prism/plugin-figma`     | Figma design embed + visual diff             |
+| Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector                      |
+| Perf      | `@ng-prism/plugin-perf`      | Render performance profiling                 |
+| Coverage  | `@ng-prism/plugin-coverage`  | Per-component test coverage from Istanbul/v8 |
 
 > **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
 
 ## Requirements
 
-- Angular >= 21
+- Angular >= 20 (Angular 20, 21, and 22 are supported)
 - TypeScript >= 5.5
 - Components must use `input()` / `output()` signals
 

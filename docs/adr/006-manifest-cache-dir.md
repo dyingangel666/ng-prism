@@ -2,6 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-06-10
+**Release:** `@ng-prism/core@22.0.0` (Major Bump aligned mit Angular 22 Release; gleichzeitig wird die peerDependency-Range auf `>=20.0.0` geöffnet — Angular 20, 21 und 22 werden unterstützt.)
 
 ## Context
 
