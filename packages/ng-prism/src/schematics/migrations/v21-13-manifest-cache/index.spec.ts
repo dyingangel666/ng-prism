@@ -7,7 +7,10 @@ interface AngularProject {
   projectType?: string;
   root?: string;
   sourceRoot?: string;
-  architect?: Record<string, { builder: string; options?: Record<string, unknown> }>;
+  architect?: Record<
+    string,
+    { builder: string; options?: Record<string, unknown> }
+  >;
 }
 
 function createWorkspaceTree(projects: Record<string, AngularProject>): Tree {
@@ -37,7 +40,10 @@ function defaultProjects(): Record<string, AngularProject> {
       architect: {
         prism: {
           builder: '@ng-prism/core:serve',
-          options: { entryPoint: 'projects/my-lib', prismProject: 'my-lib-prism' },
+          options: {
+            entryPoint: 'projects/my-lib',
+            prismProject: 'my-lib-prism',
+          },
         },
       },
     },
@@ -225,7 +231,9 @@ describe('migration v21-13-manifest-cache', () => {
     const result = await run(tree);
 
     const gitignore = result.read('.gitignore')!.toString('utf-8');
-    expect(gitignore).not.toContain('projects/my-lib-prism/src/prism-manifest.ts');
+    expect(gitignore).not.toContain(
+      'projects/my-lib-prism/src/prism-manifest.ts'
+    );
     expect(gitignore).toContain('node_modules');
     expect(gitignore).toContain('dist');
   });
@@ -298,7 +306,10 @@ describe('migration v21-13-manifest-cache', () => {
         architect: {
           prism: {
             builder: '@ng-prism/core:serve',
-            options: { entryPoint: 'projects/lib-a', prismProject: 'lib-a-prism' },
+            options: {
+              entryPoint: 'projects/lib-a',
+              prismProject: 'lib-a-prism',
+            },
           },
         },
       },
@@ -314,7 +325,10 @@ describe('migration v21-13-manifest-cache', () => {
         architect: {
           prism: {
             builder: '@ng-prism/core:serve',
-            options: { entryPoint: 'projects/lib-b', prismProject: 'lib-b-prism' },
+            options: {
+              entryPoint: 'projects/lib-b',
+              prismProject: 'lib-b-prism',
+            },
           },
         },
       },

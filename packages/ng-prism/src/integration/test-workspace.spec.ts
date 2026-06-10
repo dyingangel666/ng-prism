@@ -132,9 +132,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     expect(
-      existsSync(
-        join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts')
-      )
+      existsSync(join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'))
     ).toBe(true);
   });
 

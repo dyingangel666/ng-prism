@@ -106,8 +106,7 @@ export async function runPrismPipeline(
   });
 
   const cacheDir =
-    options.cacheDir ??
-    join(workspaceRoot, '.ng-prism', options.prismProject);
+    options.cacheDir ?? join(workspaceRoot, '.ng-prism', options.prismProject);
   const manifestPath = join(cacheDir, 'prism-manifest.ts');
 
   mkdirSync(cacheDir, { recursive: true });

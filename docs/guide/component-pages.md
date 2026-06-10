@@ -4,13 +4,13 @@ Component Pages are free-form Angular components registered as styleguide pages.
 
 ## When to Use @Showcase vs Component Pages
 
-| Situation | Recommendation |
-|-----------|----------------|
-| Standard component with `input()` signals | `@Showcase` |
-| Component needing complex template projections | `@Showcase` + `renderPage` |
-| Pattern overview page (multiple components together) | Component Page |
-| Color palette, token display, icon catalog | Component Page |
-| Component with mock data that requires Angular bindings | Component Page |
+| Situation                                               | Recommendation             |
+| ------------------------------------------------------- | -------------------------- |
+| Standard component with `input()` signals               | `@Showcase`                |
+| Component needing complex template projections          | `@Showcase` + `renderPage` |
+| Pattern overview page (multiple components together)    | Component Page             |
+| Color palette, token display, icon catalog              | Component Page             |
+| Component with mock data that requires Angular bindings | Component Page             |
 
 ## Creating a Page Component
 
@@ -68,13 +68,13 @@ bootstrapApplication(PrismShellComponent, {
 
 ## Page Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Display name in the sidebar |
-| `category` | `string` | Groups the page alongside components |
-| `categoryOrder` | `number` | Controls category sort order |
-| `order` | `number` | Sort position within the category |
-| `component` | `Type<unknown>` | The Angular component to render |
+| Field           | Type            | Description                          |
+| --------------- | --------------- | ------------------------------------ |
+| `title`         | `string`        | Display name in the sidebar          |
+| `category`      | `string`        | Groups the page alongside components |
+| `categoryOrder` | `number`        | Controls category sort order         |
+| `order`         | `number`        | Sort position within the category    |
+| `component`     | `Type<unknown>` | The Angular component to render      |
 
 ## Mixing Pages and Components in One Category
 
@@ -119,23 +119,21 @@ import { PrismRendererService } from '@ng-prism/core';
 @Component({
   selector: 'app-data-table-demo',
   standalone: true,
-  template: `
-    <lib-data-table
-      [rows]="rows()"
-      [loading]="loading()"
-    />
-  `,
+  template: ` <lib-data-table [rows]="rows()" [loading]="loading()" /> `,
 })
 export class DataTableDemoComponent {
   private readonly renderer = inject(PrismRendererService);
 
   readonly rows = computed(() => {
-    const rowCount = this.renderer.inputValues()['rowCount'] as number ?? 0;
-    return Array.from({ length: rowCount }, (_, i) => ({ id: i, name: `Row ${i}` }));
+    const rowCount = (this.renderer.inputValues()['rowCount'] as number) ?? 0;
+    return Array.from({ length: rowCount }, (_, i) => ({
+      id: i,
+      name: `Row ${i}`,
+    }));
   });
 
   readonly loading = computed(
-    () => this.renderer.inputValues()['loading'] as boolean ?? false,
+    () => (this.renderer.inputValues()['loading'] as boolean) ?? false
   );
 }
 ```

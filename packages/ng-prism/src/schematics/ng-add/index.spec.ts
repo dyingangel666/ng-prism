@@ -539,7 +539,9 @@ describe('ng-add schematic', () => {
     const tsConfigAfterFirst = readJson(tree, '/tsconfig.json') as {
       compilerOptions: { paths: Record<string, string[]> };
     };
-    tsConfigAfterFirst.compilerOptions.paths['prism-manifest/*'] = ['custom/path.ts'];
+    tsConfigAfterFirst.compilerOptions.paths['prism-manifest/*'] = [
+      'custom/path.ts',
+    ];
     tree.overwrite(
       'tsconfig.json',
       JSON.stringify(tsConfigAfterFirst, null, 2) + '\n'
@@ -550,9 +552,9 @@ describe('ng-add schematic', () => {
     const tsConfigAfterSecond = readJson(result, '/tsconfig.json') as {
       compilerOptions: { paths: Record<string, string[]> };
     };
-    expect(tsConfigAfterSecond.compilerOptions.paths['prism-manifest/*']).toEqual([
-      'custom/path.ts',
-    ]);
+    expect(
+      tsConfigAfterSecond.compilerOptions.paths['prism-manifest/*']
+    ).toEqual(['custom/path.ts']);
   });
 
   it('should log setup summary', async () => {

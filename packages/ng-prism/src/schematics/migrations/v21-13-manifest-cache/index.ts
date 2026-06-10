@@ -4,14 +4,18 @@ import { addTsConfigPath } from '../../utils/tsconfig-paths.js';
 interface AngularProject {
   sourceRoot?: string;
   root?: string;
-  architect?: Record<string, { builder: string; options?: Record<string, unknown> }>;
+  architect?: Record<
+    string,
+    { builder: string; options?: Record<string, unknown> }
+  >;
 }
 
 interface AngularWorkspace {
   projects?: Record<string, AngularProject>;
 }
 
-const OLD_IMPORT = /^import\s+\{\s*PRISM_RUNTIME_MANIFEST\s*\}\s+from\s+['"](?:\.\/prism-manifest|prism-manifest)['"]\s*;?$/m;
+const OLD_IMPORT =
+  /^import\s+\{\s*PRISM_RUNTIME_MANIFEST\s*\}\s+from\s+['"](?:\.\/prism-manifest|prism-manifest)['"]\s*;?$/m;
 
 function buildNewImport(prismProject: string): string {
   return `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProject}';`;
@@ -31,7 +35,10 @@ function findPrismProjects(workspace: AngularWorkspace): string[] {
     for (const target of Object.values(architect)) {
       if (target.builder === '@ng-prism/core:serve') {
         const prismProject = target.options?.['prismProject'];
-        if (typeof prismProject === 'string' && !result.includes(prismProject)) {
+        if (
+          typeof prismProject === 'string' &&
+          !result.includes(prismProject)
+        ) {
           result.push(prismProject);
         }
       }

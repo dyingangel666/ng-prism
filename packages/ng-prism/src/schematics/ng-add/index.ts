@@ -327,7 +327,8 @@ function addNgPrismGitignoreEntry(): Rule {
     const buffer = tree.read(gitignorePath);
     if (buffer) {
       const content = buffer.toString('utf-8');
-      if (content.split('\n').some((line) => line.trim() === entry)) return tree;
+      if (content.split('\n').some((line) => line.trim() === entry))
+        return tree;
       tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
     } else {
       tree.create(gitignorePath, entry + '\n');

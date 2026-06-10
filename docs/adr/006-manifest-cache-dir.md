@@ -28,6 +28,7 @@ import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/<prism-project>';
 ## Consequences
 
 **Positive:**
+
 - Keine "rote" generierte Datei im Source-Tree / in IDE-File-Listings.
 - Workspace-weite `.gitignore`-Zeile statt per-Projekt-Pfade.
 - Multi-Project-Workspaces (mehrere Prism-Setups in einer Workspace) sind kollisionsfrei, weil das Wildcard-Mapping pro Projekt auflöst.
@@ -35,6 +36,7 @@ import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/<prism-project>';
 - Folgt etablierter Konvention (`.angular/`, `.nx/`, `.next/`).
 
 **Negative / Trade-offs:**
+
 - Path-Mapping ist eine zusätzliche Indirektion gegenüber relativem Import. Trade: −1 Zeile `.gitignore` und ein verschwundenes Artifact aus `src/`, +1 Zeile `tsconfig.json`.
 - `main.ts`-Import enthält den Prism-Projektnamen — das ist explizit, aber bedeutet, dass das Umbenennen eines Prism-Projekts einen `main.ts`-Edit zusätzlich zur `angular.json`-Anpassung verlangt.
 - Erstmalige `ng-update`-Infrastruktur war nötig, um existierende Installationen sauber zu migrieren.
