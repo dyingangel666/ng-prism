@@ -60,6 +60,9 @@
   "ng-add": {
     "save": "devDependencies"
   },
+  "ng-update": {
+    "migrations": "./schematics/migrations.json"
+  },
   "schematics": "./schematics/collection.json",
   "builders": "./builders.json",
   "files": [
