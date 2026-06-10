@@ -171,6 +171,10 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
       width: 100%;
       height: 100%;
       max-width: 600px;
+
+      > * {
+        flex: 1 1 auto;
+      }
     }
 
   `,
