@@ -2,15 +2,42 @@
 
 `@ng-prism/core@22.0.0` moves the auto-generated `prism-manifest.ts` out of your source tree into a workspace-level cache directory and switches the import to a tsconfig path mapping. This is a **breaking change** — the previous layout will not work against the new pipeline.
 
-> The upgrade is automated. Run `ng update @ng-prism/core` once and you are done. The rest of this page documents what the migration changes and how to perform the same edits manually if you can't use `ng update`.
+> **This guide is for existing ng-prism installations** being upgraded from `21.x` to `22.x`. If you have not used ng-prism in this workspace before, you want a fresh install instead — see [Installation & Setup](installation.md).
 
-## TL;DR — recommended upgrade
+## Prerequisites
+
+- Angular CLI **22+** in your workspace. The migration schematic is shipped as ESM; older CLI versions silently skip it or report "package does not provide any `ng add` actions". Run `ng version` to check.
+- Node.js **22+** (Angular CLI 22 requirement).
+
+## TL;DR — upgrade an existing 21.x install
+
+Update **core AND every installed `@ng-prism/plugin-*` in a single call** so peer dependencies resolve together. While `22.0.0` is in beta, use the `@beta` dist-tag:
 
 ```bash
-ng update @ng-prism/core
+ng update @ng-prism/core@beta \
+  @ng-prism/plugin-box-model@beta \
+  @ng-prism/plugin-coverage@beta \
+  @ng-prism/plugin-figma@beta \
+  @ng-prism/plugin-jsdoc@beta \
+  @ng-prism/plugin-perf@beta
 ```
 
-That's it. The Angular CLI will pull in `22.0.0`, run the migration schematic, and leave your workspace in the new layout. Manual `main.ts` customizations (component pages, zoneless setup, custom providers) are preserved — only the manifest import line is touched.
+Drop any plugins you don't have installed. Once `22.0.0` stable is published, the `@beta` suffix can be omitted:
+
+```bash
+ng update @ng-prism/core @ng-prism/plugin-box-model @ng-prism/plugin-coverage \
+  @ng-prism/plugin-figma @ng-prism/plugin-jsdoc @ng-prism/plugin-perf
+```
+
+The Angular CLI will pull in the new versions, run the migration schematic, and leave your workspace in the new layout. Manual `main.ts` customizations (component pages, zoneless setup, custom providers) are preserved — only the manifest import line is touched.
+
+> **Why core + plugins together?** Each plugin declares `@ng-prism/core` as a peer dependency pinned to its major. If you update core to `22` without bumping plugins, npm rejects the install with a peer-dependency conflict. Bundling them in one `ng update` call lets the CLI resolve the whole set at once.
+
+If you see peer-dependency warnings about `@angular-devkit/architect`, `@angular-devkit/core`, or `@angular-devkit/schematics`, those packages are available transitively via `@angular/cli` / `@angular-devkit/build-angular` in any Angular workspace. The warning is npm being strict about direct declarations — add `--force` to acknowledge:
+
+```bash
+ng update @ng-prism/core@beta @ng-prism/plugin-...@beta --force
+```
 
 After the update, verify:
 
@@ -20,6 +47,36 @@ ng run my-lib:prism-build  # production build still succeeds
 ```
 
 You should see the manifest generated at `<workspaceRoot>/.ng-prism/<my-lib>-prism/prism-manifest.ts` (where `<my-lib>` is your library project name).
+
+## Troubleshooting
+
+**`ng update` says "Package '@ng-prism/core' does not exist within the registry"**
+
+You probably used `--next=true`. That flag looks for a `next` dist-tag specifically; ng-prism uses `beta` instead. Use `@beta` (or pin the explicit version) as shown above.
+
+**`ng update` says "already up to date"**
+
+You don't have an older ng-prism installed — there is nothing to migrate. If you intended a fresh install, use `ng add @ng-prism/core@beta` (see [Installation & Setup](installation.md)). If `ng add` reports "Package does not provide any `ng add` actions", run the schematic directly:
+
+```bash
+ng generate @ng-prism/core:ng-add --project=<your-library>
+```
+
+(Replace `<your-library>` with the name of your Angular library project from `angular.json`.)
+
+**`ng update` runs but my `main.ts` and `tsconfig.json` look unchanged**
+
+Confirm your Angular CLI is on version 22 or newer (`ng version`). ng-prism's schematics are ESM modules; older CLI versions cannot load them and may skip them silently. Upgrade CLI first:
+
+```bash
+ng update @angular/cli @angular/core --next
+```
+
+Then re-run the ng-prism migration.
+
+**`ng update` fails with "Incompatible peer dependencies found"**
+
+You probably bumped `@ng-prism/core` without also bumping the plugin packages (which still pin to the previous major). Re-run the combined update above so core and every installed `@ng-prism/plugin-*` move in lockstep.
 
 ## What the migration does
 
