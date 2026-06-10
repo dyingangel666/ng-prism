@@ -54,7 +54,7 @@ All hooks are awaited — async plugins are fully supported.
 `generateRuntimeManifest()` converts the `PrismManifest` (plain JSON-safe data) into a TypeScript source string that the showcase app can import. The generated file contains real `import` statements:
 
 ```typescript
-// prism-manifest.ts (generated)
+// .ng-prism/<prism-project>/prism-manifest.ts (generated)
 import { ButtonComponent } from 'my-lib';
 import { CardComponent } from 'my-lib/molecules';
 
@@ -73,6 +73,10 @@ This avoids JSON serialization of Angular class references and keeps tree-shakin
 `writeManifestIfChanged()` reads the existing manifest and compares it string-for-string with the new content. If identical, the write is skipped and `result.written` is `false`.
 
 When the file must be written, it is first written to `prism-manifest.ts.tmp` then renamed to `prism-manifest.ts`. This prevents the Angular dev server from seeing a partially-written file mid-recompile.
+
+### Manifest Output Location
+
+Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/.ng-prism/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `.ng-prism/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst). Hintergrund siehe [ADR 006](../adr/006-manifest-cache-dir.md).
 
 ## PrismPipelineState — Scanner Reuse Across Rebuilds
 

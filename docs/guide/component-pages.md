@@ -45,13 +45,13 @@ Register pages via the third argument to `providePrism()` in `main.ts`:
 import { bootstrapApplication } from '@angular/platform-browser';
 import { PrismShellComponent, providePrism } from '@ng-prism/core';
 import { componentPage } from '@ng-prism/core';
-import manifest from './prism-manifest.js';
+import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism';
 import config from './prism.config.js';
 import { ButtonPatternsPageComponent } from './pages/button-patterns.page.js';
 
 bootstrapApplication(PrismShellComponent, {
   providers: [
-    providePrism(manifest, config, {
+    providePrism(PRISM_RUNTIME_MANIFEST, config, {
       componentPages: [
         componentPage({
           title: 'Button Patterns',
