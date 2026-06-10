@@ -106,6 +106,34 @@ function deleteLegacyManifest(
   }
 }
 
+function addCacheIncludeToTsconfigApp(
+  tree: Tree,
+  workspace: AngularWorkspace,
+  prismProject: string
+): void {
+  const project = workspace.projects?.[prismProject];
+  const projectRoot = project?.root ?? `projects/${prismProject}`;
+  const path = `${projectRoot}/tsconfig.app.json`;
+  const buffer = tree.read(path);
+  if (!buffer) return;
+
+  const sourceText = buffer.toString('utf-8');
+  let parsed: { include?: unknown };
+  try {
+    parsed = JSON.parse(sourceText) as { include?: unknown };
+  } catch {
+    return;
+  }
+  const include = Array.isArray(parsed.include)
+    ? (parsed.include as string[])
+    : [];
+  const entry = `../../.ng-prism/${prismProject}/**/*.ts`;
+  if (include.includes(entry)) return;
+
+  const next = { ...parsed, include: [...include, entry] };
+  tree.overwrite(path, JSON.stringify(next, null, 2) + '\n');
+}
+
 function removeGitignoreEntry(tree: Tree, prismProject: string): void {
   const path = '.gitignore';
   const buffer = tree.read(path);
@@ -131,6 +159,7 @@ export function migrate(): Rule {
     for (const prismProject of prismProjects) {
       rewriteMainTs(tree, context, workspace, prismProject);
       addTsConfigMapping(tree);
+      addCacheIncludeToTsconfigApp(tree, workspace, prismProject);
       deleteLegacyManifest(tree, workspace, prismProject);
       removeGitignoreEntry(tree, prismProject);
     }

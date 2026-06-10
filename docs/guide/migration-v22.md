@@ -78,6 +78,30 @@ Then re-run the ng-prism migration.
 
 You probably bumped `@ng-prism/core` without also bumping the plugin packages (which still pin to the previous major). Re-run the combined update above so core and every installed `@ng-prism/plugin-*` move in lockstep.
 
+**Build fails with `TS6059: File '...prism-manifest.ts' is not under rootDir`**
+
+Your `projects/<lib>-prism/tsconfig.app.json` does not include the cache directory. The migration in v22.0.0-beta.0 missed this update — open the file and add the cache path to the `include` array:
+
+```diff
+  "include": [
+    "src/**/*.d.ts",
++   "../../.ng-prism/<lib>-prism/**/*.ts"
+  ]
+```
+
+Fixed automatically in v22.0.0-beta.1 onward.
+
+**Build fails with `TS5090: Non-relative paths are not allowed when 'baseUrl' is not set`**
+
+Your root `tsconfig.json`'s `paths` values lack a `./` prefix. The migration in v22.0.0-beta.0 wrote the path mapping value without it. Open `tsconfig.json` and add the prefix:
+
+```diff
+- "prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
++ "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
+```
+
+Same applies to any other ng-prism path mappings (`ng-prism.config`, `<lib>`) if they lack the prefix. Fixed automatically in v22.0.0-beta.1 onward.
+
 ## What the migration does
 
 The migration schematic runs four steps per prism project found in your `angular.json`, plus one workspace-level step:
@@ -124,6 +148,17 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 ```diff
 + .ng-prism/
 ```
+
+### 6. Extends each prism `tsconfig.app.json`'s `include` array
+
+```diff
+  "include": [
+    "src/**/*.d.ts",
++   "../../.ng-prism/<lib>-prism/**/*.ts"
+  ]
+```
+
+Without this entry, TypeScript would reject the generated manifest with `TS6059: File ... is not under rootDir` because the manifest lives outside the prism project's source tree.
 
 ## Wildcard path mapping
 
@@ -193,7 +228,20 @@ Add a single workspace-wide ignore:
 + .ng-prism/
 ```
 
-### Step 5 — Run a build to populate the cache
+### Step 5 — Extend `projects/<lib>-prism/tsconfig.app.json`
+
+Add the cache directory to the `include` array so TypeScript counts the generated manifest as part of the project:
+
+```diff
+  "include": [
+    "src/**/*.d.ts",
++   "../../.ng-prism/<lib>-prism/**/*.ts"
+  ]
+```
+
+Without this entry, the Angular bundle will fail with `TS6059: File ... is not under rootDir`.
+
+### Step 6 — Run a build to populate the cache
 
 ```bash
 ng run my-lib:prism-build

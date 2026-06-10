@@ -297,6 +297,59 @@ describe('migration v21-13-manifest-cache', () => {
     expect(gitignore).toContain('.ng-prism/');
   });
 
+  it('adds the cache manifest to the prism tsconfig.app.json include array', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/tsconfig.app.json',
+      JSON.stringify(
+        {
+          extends: '../../tsconfig.json',
+          compilerOptions: { outDir: '../../out-tsc/app', types: [] },
+          files: ['src/main.ts'],
+          include: ['src/**/*.d.ts'],
+        },
+        null,
+        2
+      )
+    );
+
+    const result = await run(tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as { include: string[] };
+    expect(tsconfigApp.include).toContain('src/**/*.d.ts');
+    expect(tsconfigApp.include).toContain(
+      '../../.ng-prism/my-lib-prism/**/*.ts'
+    );
+  });
+
+  it('does not duplicate the cache include if already present', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/tsconfig.app.json',
+      JSON.stringify(
+        {
+          extends: '../../tsconfig.json',
+          files: ['src/main.ts'],
+          include: ['src/**/*.d.ts', '../../.ng-prism/my-lib-prism/**/*.ts'],
+        },
+        null,
+        2
+      )
+    );
+
+    const result = await run(tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as { include: string[] };
+    const occurrences = tsconfigApp.include.filter(
+      (entry) => entry === '../../.ng-prism/my-lib-prism/**/*.ts'
+    );
+    expect(occurrences).toHaveLength(1);
+  });
+
   it('migrates all prism projects in a multi-library workspace', async () => {
     const projects: Record<string, AngularProject> = {
       'lib-a': {

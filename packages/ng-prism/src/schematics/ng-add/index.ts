@@ -110,7 +110,10 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
           types: [],
         },
         files: ['src/main.ts'],
-        include: ['src/**/*.d.ts'],
+        include: [
+          'src/**/*.d.ts',
+          `../../.ng-prism/${prismProjectName}/**/*.ts`,
+        ],
       };
       tree.create(tsconfigAppPath, JSON.stringify(tsconfigApp, null, 2) + '\n');
     }

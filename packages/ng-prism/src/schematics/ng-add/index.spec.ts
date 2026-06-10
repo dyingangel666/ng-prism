@@ -310,6 +310,20 @@ describe('ng-add schematic', () => {
     expect(matches).toHaveLength(1);
   });
 
+  it('should include the cache manifest in the prism tsconfig.app.json so it satisfies rootDir', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('/projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as { include: string[] };
+    expect(tsconfigApp.include).toContain('src/**/*.d.ts');
+    expect(tsconfigApp.include).toContain(
+      '../../.ng-prism/my-lib-prism/**/*.ts'
+    );
+  });
+
   it('should not overwrite existing main.ts', async () => {
     const tree = createTree(defaultLibProject());
     tree.create('projects/my-lib-prism/src/main.ts', 'custom main');
