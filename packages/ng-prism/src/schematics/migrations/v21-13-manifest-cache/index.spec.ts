@@ -293,10 +293,10 @@ describe('migration v21-13-manifest-cache', () => {
 
     const result = await run(tree);
 
-    // NOTE: a workspace with multiple prism projects sharing the same key 'prism-manifest'
-    // ends up with the LAST project's mapping. The cache path is namespaced per project,
-    // so this scenario already requires manual per-tsconfig.app.json overrides. The
-    // migration ensures at least one canonical mapping is in place.
+    // NOTE: multiple prism projects share a single 'prism-manifest' key in the root
+    // tsconfig. addTsConfigPath is idempotent, so the FIRST project iterated wins.
+    // Cache paths are per-project namespaced, so multi-project setups need additional
+    // per-tsconfig.app.json overrides. The migration guarantees one canonical mapping.
     const tsconfig = JSON.parse(
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
