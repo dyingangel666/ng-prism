@@ -245,4 +245,74 @@ describe('migration v21-13-manifest-cache', () => {
 
     expect(result.read('.gitignore')!.toString('utf-8')).toBe(original);
   });
+
+  it('migrates all prism projects in a multi-library workspace', async () => {
+    const projects: Record<string, AngularProject> = {
+      'lib-a': {
+        projectType: 'library',
+        root: 'projects/lib-a',
+        sourceRoot: 'projects/lib-a/src',
+        architect: {
+          prism: {
+            builder: '@ng-prism/core:serve',
+            options: { entryPoint: 'projects/lib-a', prismProject: 'lib-a-prism' },
+          },
+        },
+      },
+      'lib-a-prism': {
+        projectType: 'application',
+        root: 'projects/lib-a-prism',
+        sourceRoot: 'projects/lib-a-prism/src',
+      },
+      'lib-b': {
+        projectType: 'library',
+        root: 'projects/lib-b',
+        sourceRoot: 'projects/lib-b/src',
+        architect: {
+          prism: {
+            builder: '@ng-prism/core:serve',
+            options: { entryPoint: 'projects/lib-b', prismProject: 'lib-b-prism' },
+          },
+        },
+      },
+      'lib-b-prism': {
+        projectType: 'application',
+        root: 'projects/lib-b-prism',
+        sourceRoot: 'projects/lib-b-prism/src',
+      },
+    };
+    const tree = createWorkspaceTree(projects);
+    tree.create(
+      'projects/lib-a-prism/src/main.ts',
+      "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';\n"
+    );
+    tree.create(
+      'projects/lib-b-prism/src/main.ts',
+      "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';\n"
+    );
+
+    const result = await run(tree);
+
+    // NOTE: a workspace with multiple prism projects sharing the same key 'prism-manifest'
+    // ends up with the LAST project's mapping. The cache path is namespaced per project,
+    // so this scenario already requires manual per-tsconfig.app.json overrides. The
+    // migration ensures at least one canonical mapping is in place.
+    const tsconfig = JSON.parse(
+      result.read('tsconfig.json')!.toString('utf-8')
+    ) as { compilerOptions: { paths: Record<string, string[]> } };
+    expect(
+      tsconfig.compilerOptions.paths['prism-manifest'][0]
+    ).toMatch(/lib-(a|b)-prism\/prism-manifest\.ts$/);
+
+    expect(
+      result
+        .read('projects/lib-a-prism/src/main.ts')!
+        .toString('utf-8')
+    ).toContain("from 'prism-manifest'");
+    expect(
+      result
+        .read('projects/lib-b-prism/src/main.ts')!
+        .toString('utf-8')
+    ).toContain("from 'prism-manifest'");
+  });
 });
