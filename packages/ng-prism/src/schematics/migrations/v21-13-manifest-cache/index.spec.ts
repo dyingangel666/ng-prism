@@ -151,4 +151,42 @@ describe('migration v21-13-manifest-cache', () => {
       '{ "compilerOptions": {} }'
     );
   });
+
+  it('adds prism-manifest path mapping for each prism project', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+
+    const result = await run(tree);
+
+    const tsconfig = JSON.parse(
+      result.read('tsconfig.json')!.toString('utf-8')
+    ) as { compilerOptions: { paths: Record<string, string[]> } };
+    expect(tsconfig.compilerOptions.paths['prism-manifest']).toEqual([
+      'node_modules/.cache/ng-prism/my-lib-prism/prism-manifest.ts',
+    ]);
+  });
+
+  it('is idempotent: does not overwrite an existing prism-manifest mapping', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.overwrite(
+      'tsconfig.json',
+      JSON.stringify(
+        {
+          compilerOptions: {
+            paths: { 'prism-manifest': ['custom/elsewhere.ts'] },
+          },
+        },
+        null,
+        2
+      )
+    );
+
+    const result = await run(tree);
+
+    const tsconfig = JSON.parse(
+      result.read('tsconfig.json')!.toString('utf-8')
+    ) as { compilerOptions: { paths: Record<string, string[]> } };
+    expect(tsconfig.compilerOptions.paths['prism-manifest']).toEqual([
+      'custom/elsewhere.ts',
+    ]);
+  });
 });

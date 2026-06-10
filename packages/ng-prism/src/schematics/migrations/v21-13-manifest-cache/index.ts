@@ -1,4 +1,5 @@
 import type { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
+import { addTsConfigPath } from '../../utils/tsconfig-paths.js';
 
 interface AngularProject {
   sourceRoot?: string;
@@ -62,6 +63,12 @@ function rewriteMainTs(
   tree.overwrite(mainPath, content.replace(OLD_IMPORT, NEW_IMPORT));
 }
 
+function addTsConfigMapping(tree: Tree, prismProject: string): void {
+  addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest', [
+    `node_modules/.cache/ng-prism/${prismProject}/prism-manifest.ts`,
+  ]);
+}
+
 export function migrate(): Rule {
   return (tree: Tree, context: SchematicContext) => {
     const workspace = readWorkspace(tree);
@@ -70,6 +77,7 @@ export function migrate(): Rule {
     const prismProjects = findPrismProjects(workspace);
     for (const prismProject of prismProjects) {
       rewriteMainTs(tree, context, workspace, prismProject);
+      addTsConfigMapping(tree, prismProject);
     }
 
     return tree;
