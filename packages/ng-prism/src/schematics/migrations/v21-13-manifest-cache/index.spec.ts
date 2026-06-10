@@ -88,7 +88,7 @@ describe('migration v21-13-manifest-cache', () => {
       .read('projects/my-lib-prism/src/main.ts')!
       .toString('utf-8');
     expect(mainTs).toContain(
-      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest'"
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
     expect(mainTs).not.toContain(
       "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest'"
@@ -99,7 +99,7 @@ describe('migration v21-13-manifest-cache', () => {
     const tree = createWorkspaceTree(defaultProjects());
     const migratedMain = [
       "import { bootstrapApplication } from '@angular/platform-browser';",
-      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';",
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism';",
       '',
     ].join('\n');
     tree.create('projects/my-lib-prism/src/main.ts', migratedMain);
@@ -160,8 +160,8 @@ describe('migration v21-13-manifest-cache', () => {
     const tsconfig = JSON.parse(
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
-    expect(tsconfig.compilerOptions.paths['prism-manifest']).toEqual([
-      '.ng-prism/my-lib-prism/prism-manifest.ts',
+    expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
+      '.ng-prism/*/prism-manifest.ts',
     ]);
   });
 
@@ -172,7 +172,7 @@ describe('migration v21-13-manifest-cache', () => {
       JSON.stringify(
         {
           compilerOptions: {
-            paths: { 'prism-manifest': ['custom/elsewhere.ts'] },
+            paths: { 'prism-manifest/*': ['custom/elsewhere.ts'] },
           },
         },
         null,
@@ -185,7 +185,7 @@ describe('migration v21-13-manifest-cache', () => {
     const tsconfig = JSON.parse(
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
-    expect(tsconfig.compilerOptions.paths['prism-manifest']).toEqual([
+    expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
       'custom/elsewhere.ts',
     ]);
   });
@@ -336,26 +336,36 @@ describe('migration v21-13-manifest-cache', () => {
 
     const result = await run(tree);
 
-    // NOTE: multiple prism projects share a single 'prism-manifest' key in the root
-    // tsconfig. addTsConfigPath is idempotent, so the FIRST project iterated wins.
-    // Cache paths are per-project namespaced, so multi-project setups need additional
-    // per-tsconfig.app.json overrides. The migration guarantees one canonical mapping.
+    // Wildcard mapping makes both projects coexist cleanly.
     const tsconfig = JSON.parse(
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
-    expect(
-      tsconfig.compilerOptions.paths['prism-manifest'][0]
-    ).toMatch(/^\.ng-prism\/lib-(a|b)-prism\/prism-manifest\.ts$/);
+    expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
+      '.ng-prism/*/prism-manifest.ts',
+    ]);
 
     expect(
-      result
-        .read('projects/lib-a-prism/src/main.ts')!
-        .toString('utf-8')
-    ).toContain("from 'prism-manifest'");
+      result.read('projects/lib-a-prism/src/main.ts')!.toString('utf-8')
+    ).toContain("from 'prism-manifest/lib-a-prism'");
     expect(
-      result
-        .read('projects/lib-b-prism/src/main.ts')!
-        .toString('utf-8')
-    ).toContain("from 'prism-manifest'");
+      result.read('projects/lib-b-prism/src/main.ts')!.toString('utf-8')
+    ).toContain("from 'prism-manifest/lib-b-prism'");
+  });
+
+  it('migrates a workspace already on the intermediate single-key import form', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/src/main.ts',
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';\n"
+    );
+
+    const result = await run(tree);
+
+    const mainTs = result
+      .read('projects/my-lib-prism/src/main.ts')!
+      .toString('utf-8');
+    expect(mainTs).toContain(
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
+    );
   });
 });

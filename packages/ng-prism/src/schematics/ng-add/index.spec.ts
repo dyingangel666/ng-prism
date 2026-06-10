@@ -85,7 +85,7 @@ describe('ng-add schematic', () => {
       "import { PrismShellComponent, providePrism } from '@ng-prism/core'"
     );
     expect(mainTs).toContain(
-      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest'"
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
     expect(mainTs).toContain("import config from 'ng-prism.config'");
     expect(mainTs).toContain('providePrism(PRISM_RUNTIME_MANIFEST, config)');
@@ -273,8 +273,8 @@ describe('ng-add schematic', () => {
     expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
       'projects/my-lib/src/public-api.ts',
     ]);
-    expect(tsConfig.compilerOptions?.paths?.['prism-manifest']).toEqual([
-      '.ng-prism/my-lib-prism/prism-manifest.ts',
+    expect(tsConfig.compilerOptions?.paths?.['prism-manifest/*']).toEqual([
+      '.ng-prism/*/prism-manifest.ts',
     ]);
   });
 
@@ -539,7 +539,7 @@ describe('ng-add schematic', () => {
     const tsConfigAfterFirst = readJson(tree, '/tsconfig.json') as {
       compilerOptions: { paths: Record<string, string[]> };
     };
-    tsConfigAfterFirst.compilerOptions.paths['prism-manifest'] = ['custom/path.ts'];
+    tsConfigAfterFirst.compilerOptions.paths['prism-manifest/*'] = ['custom/path.ts'];
     tree.overwrite(
       'tsconfig.json',
       JSON.stringify(tsConfigAfterFirst, null, 2) + '\n'
@@ -550,7 +550,7 @@ describe('ng-add schematic', () => {
     const tsConfigAfterSecond = readJson(result, '/tsconfig.json') as {
       compilerOptions: { paths: Record<string, string[]> };
     };
-    expect(tsConfigAfterSecond.compilerOptions.paths['prism-manifest']).toEqual([
+    expect(tsConfigAfterSecond.compilerOptions.paths['prism-manifest/*']).toEqual([
       'custom/path.ts',
     ]);
   });

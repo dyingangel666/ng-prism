@@ -11,8 +11,11 @@ interface AngularWorkspace {
   projects?: Record<string, AngularProject>;
 }
 
-const OLD_IMPORT = /import\s+\{\s*PRISM_RUNTIME_MANIFEST\s*\}\s+from\s+['"]\.\/prism-manifest['"]\s*;?/;
-const NEW_IMPORT = "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';";
+const OLD_IMPORT = /import\s+\{\s*PRISM_RUNTIME_MANIFEST\s*\}\s+from\s+['"](?:\.\/prism-manifest|prism-manifest)['"]\s*;?/;
+
+function buildNewImport(prismProject: string): string {
+  return `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProject}';`;
+}
 
 function readWorkspace(tree: Tree): AngularWorkspace | undefined {
   const buffer = tree.read('angular.json');
@@ -49,23 +52,24 @@ function rewriteMainTs(
   const buffer = tree.read(mainPath);
   if (!buffer) return;
 
+  const newImport = buildNewImport(prismProject);
   const content = buffer.toString('utf-8');
-  if (content.includes(NEW_IMPORT)) return;
+  if (content.includes(newImport)) return;
 
   if (!OLD_IMPORT.test(content)) {
     context.logger.warn(
       `ng-prism migration: could not find PRISM_RUNTIME_MANIFEST import in ${mainPath}. ` +
-        `Update it manually to: ${NEW_IMPORT}`
+        `Update it manually to: ${newImport}`
     );
     return;
   }
 
-  tree.overwrite(mainPath, content.replace(OLD_IMPORT, NEW_IMPORT));
+  tree.overwrite(mainPath, content.replace(OLD_IMPORT, newImport));
 }
 
-function addTsConfigMapping(tree: Tree, prismProject: string): void {
-  addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest', [
-    `.ng-prism/${prismProject}/prism-manifest.ts`,
+function addTsConfigMapping(tree: Tree): void {
+  addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest/*', [
+    '.ng-prism/*/prism-manifest.ts',
   ]);
 }
 
@@ -119,7 +123,7 @@ export function migrate(): Rule {
     const prismProjects = findPrismProjects(workspace);
     for (const prismProject of prismProjects) {
       rewriteMainTs(tree, context, workspace, prismProject);
-      addTsConfigMapping(tree, prismProject);
+      addTsConfigMapping(tree);
       deleteLegacyManifest(tree, workspace, prismProject);
       removeGitignoreEntry(tree, prismProject);
     }

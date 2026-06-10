@@ -54,7 +54,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
           "import { provideZonelessChangeDetection } from '@angular/core';",
           "import { bootstrapApplication } from '@angular/platform-browser';",
           "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
-          "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';",
+          `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
           '',
           'bootstrapApplication(PrismShellComponent, {',
@@ -68,7 +68,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
       : [
           "import { bootstrapApplication } from '@angular/platform-browser';",
           "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
-          "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';",
+          `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
           '',
           'bootstrapApplication(PrismShellComponent, {',
@@ -229,7 +229,6 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
     const workspace = readWorkspace(tree);
     const project = workspace.projects[options.project];
     const sourceRoot = project.sourceRoot ?? `${project.root}/src`;
-    const prismProjectName = `${options.project}-prism`;
 
     addTsConfigPath(tree, tsConfigPath, 'ng-prism.config', [
       'ng-prism.config.ts',
@@ -237,8 +236,8 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
     addTsConfigPath(tree, tsConfigPath, options.project, [
       `${sourceRoot}/public-api.ts`,
     ]);
-    addTsConfigPath(tree, tsConfigPath, 'prism-manifest', [
-      `.ng-prism/${prismProjectName}/prism-manifest.ts`,
+    addTsConfigPath(tree, tsConfigPath, 'prism-manifest/*', [
+      '.ng-prism/*/prism-manifest.ts',
     ]);
 
     return tree;
