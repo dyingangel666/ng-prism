@@ -209,4 +209,40 @@ describe('migration v21-13-manifest-cache', () => {
 
     await expect(run(tree)).resolves.toBeDefined();
   });
+
+  it('removes the specific prism-manifest entry from .gitignore', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      '.gitignore',
+      [
+        'node_modules',
+        'dist',
+        'projects/my-lib-prism/src/prism-manifest.ts',
+        '',
+      ].join('\n')
+    );
+
+    const result = await run(tree);
+
+    const gitignore = result.read('.gitignore')!.toString('utf-8');
+    expect(gitignore).not.toContain('projects/my-lib-prism/src/prism-manifest.ts');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('dist');
+  });
+
+  it('is a no-op when .gitignore does not exist', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+
+    await expect(run(tree)).resolves.toBeDefined();
+  });
+
+  it('is a no-op when the specific entry is not present', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    const original = 'node_modules\ndist\n';
+    tree.create('.gitignore', original);
+
+    const result = await run(tree);
+
+    expect(result.read('.gitignore')!.toString('utf-8')).toBe(original);
+  });
 });

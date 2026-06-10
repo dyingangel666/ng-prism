@@ -82,6 +82,22 @@ function deleteLegacyManifest(
   }
 }
 
+function removeGitignoreEntry(tree: Tree, prismProject: string): void {
+  const path = '.gitignore';
+  const buffer = tree.read(path);
+  if (!buffer) return;
+
+  const targetEntry = `projects/${prismProject}/src/prism-manifest.ts`;
+  const content = buffer.toString('utf-8');
+  if (!content.includes(targetEntry)) return;
+
+  const cleaned = content
+    .split('\n')
+    .filter((line) => line.trim() !== targetEntry)
+    .join('\n');
+  tree.overwrite(path, cleaned);
+}
+
 export function migrate(): Rule {
   return (tree: Tree, context: SchematicContext) => {
     const workspace = readWorkspace(tree);
@@ -92,6 +108,7 @@ export function migrate(): Rule {
       rewriteMainTs(tree, context, workspace, prismProject);
       addTsConfigMapping(tree, prismProject);
       deleteLegacyManifest(tree, workspace, prismProject);
+      removeGitignoreEntry(tree, prismProject);
     }
 
     return tree;
