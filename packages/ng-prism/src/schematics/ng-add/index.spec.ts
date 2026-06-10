@@ -274,8 +274,40 @@ describe('ng-add schematic', () => {
       'projects/my-lib/src/public-api.ts',
     ]);
     expect(tsConfig.compilerOptions?.paths?.['prism-manifest']).toEqual([
-      'node_modules/.cache/ng-prism/my-lib-prism/prism-manifest.ts',
+      '.ng-prism/my-lib-prism/prism-manifest.ts',
     ]);
+  });
+
+  it('should add .ng-prism/ entry to .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    expect(result.exists('/.gitignore')).toBe(true);
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('.ng-prism/');
+  });
+
+  it('should append .ng-prism/ to an existing .gitignore without duplicating', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', 'node_modules\ndist\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('.ng-prism/');
+  });
+
+  it('should not duplicate .ng-prism/ entry in .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', '.ng-prism/\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    const matches = gitignore.match(/\.ng-prism\//g);
+    expect(matches).toHaveLength(1);
   });
 
   it('should not overwrite existing main.ts', async () => {

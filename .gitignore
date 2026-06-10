@@ -63,3 +63,4 @@ test-workspace/tsconfig.tsbuildinfo
 
 **/plugin-registry.ts
 .worktrees/
+.ng-prism/

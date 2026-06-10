@@ -65,8 +65,21 @@ function rewriteMainTs(
 
 function addTsConfigMapping(tree: Tree, prismProject: string): void {
   addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest', [
-    `node_modules/.cache/ng-prism/${prismProject}/prism-manifest.ts`,
+    `.ng-prism/${prismProject}/prism-manifest.ts`,
   ]);
+}
+
+function ensureNgPrismGitignoreEntry(tree: Tree): void {
+  const path = '.gitignore';
+  const entry = '.ng-prism/';
+  const buffer = tree.read(path);
+  if (!buffer) {
+    tree.create(path, entry + '\n');
+    return;
+  }
+  const content = buffer.toString('utf-8');
+  if (content.split('\n').some((line) => line.trim() === entry)) return;
+  tree.overwrite(path, content.trimEnd() + '\n' + entry + '\n');
 }
 
 function deleteLegacyManifest(
@@ -110,6 +123,7 @@ export function migrate(): Rule {
       deleteLegacyManifest(tree, workspace, prismProject);
       removeGitignoreEntry(tree, prismProject);
     }
+    ensureNgPrismGitignoreEntry(tree);
 
     return tree;
   };

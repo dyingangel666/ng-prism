@@ -238,7 +238,7 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
       `${sourceRoot}/public-api.ts`,
     ]);
     addTsConfigPath(tree, tsConfigPath, 'prism-manifest', [
-      `node_modules/.cache/ng-prism/${prismProjectName}/prism-manifest.ts`,
+      `.ng-prism/${prismProjectName}/prism-manifest.ts`,
     ]);
 
     return tree;
@@ -320,6 +320,24 @@ function logSetupSummary(options: NgAddSchemaOptions): Rule {
   };
 }
 
+function addNgPrismGitignoreEntry(): Rule {
+  return (tree: Tree) => {
+    const entry = '.ng-prism/';
+    const gitignorePath = '.gitignore';
+
+    const buffer = tree.read(gitignorePath);
+    if (buffer) {
+      const content = buffer.toString('utf-8');
+      if (content.split('\n').some((line) => line.trim() === entry)) return tree;
+      tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
+    } else {
+      tree.create(gitignorePath, entry + '\n');
+    }
+
+    return tree;
+  };
+}
+
 function addStripShowcaseScript(options: NgAddSchemaOptions): Rule {
   return (tree: Tree) => {
     const pkgPath = 'package.json';
@@ -347,6 +365,7 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
     addPrismAppProject(options),
     addBuilderTargets(options),
     addTsConfigPaths(options),
+    addNgPrismGitignoreEntry(),
     createConfigFile(),
     addStripShowcaseScript(options),
     addRuntimePeerDeps(),

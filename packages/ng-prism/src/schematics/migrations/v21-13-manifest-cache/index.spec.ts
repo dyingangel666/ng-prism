@@ -161,7 +161,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(tsconfig.compilerOptions.paths['prism-manifest']).toEqual([
-      'node_modules/.cache/ng-prism/my-lib-prism/prism-manifest.ts',
+      '.ng-prism/my-lib-prism/prism-manifest.ts',
     ]);
   });
 
@@ -230,10 +230,15 @@ describe('migration v21-13-manifest-cache', () => {
     expect(gitignore).toContain('dist');
   });
 
-  it('is a no-op when .gitignore does not exist', async () => {
+  it('creates .gitignore with .ng-prism/ when it does not exist', async () => {
     const tree = createWorkspaceTree(defaultProjects());
 
-    await expect(run(tree)).resolves.toBeDefined();
+    const result = await run(tree);
+
+    expect(result.exists('.gitignore')).toBe(true);
+    expect(result.read('.gitignore')!.toString('utf-8')).toContain(
+      '.ng-prism/'
+    );
   });
 
   it('is a no-op when the specific entry is not present', async () => {
@@ -243,7 +248,45 @@ describe('migration v21-13-manifest-cache', () => {
 
     const result = await run(tree);
 
-    expect(result.read('.gitignore')!.toString('utf-8')).toBe(original);
+    // NOTE: removeGitignoreEntry leaves the file untouched, but ensureNgPrismGitignoreEntry
+    // still appends .ng-prism/. The original entries are preserved.
+    const gitignore = result.read('.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('dist');
+    expect(gitignore).toContain('.ng-prism/');
+  });
+
+  it('ensures .ng-prism/ is in .gitignore', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+
+    const result = await run(tree);
+
+    const gitignore = result.read('.gitignore');
+    expect(gitignore).not.toBeNull();
+    expect(gitignore!.toString('utf-8')).toContain('.ng-prism/');
+  });
+
+  it('does not duplicate .ng-prism/ when already in .gitignore', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create('.gitignore', 'node_modules\n.ng-prism/\n');
+
+    const result = await run(tree);
+
+    const gitignore = result.read('.gitignore')!.toString('utf-8');
+    const matches = gitignore.match(/\.ng-prism\//g);
+    expect(matches).toHaveLength(1);
+  });
+
+  it('preserves existing entries when adding .ng-prism/', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create('.gitignore', 'node_modules\ndist\n');
+
+    const result = await run(tree);
+
+    const gitignore = result.read('.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('dist');
+    expect(gitignore).toContain('.ng-prism/');
   });
 
   it('migrates all prism projects in a multi-library workspace', async () => {
@@ -302,7 +345,7 @@ describe('migration v21-13-manifest-cache', () => {
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(
       tsconfig.compilerOptions.paths['prism-manifest'][0]
-    ).toMatch(/lib-(a|b)-prism\/prism-manifest\.ts$/);
+    ).toMatch(/^\.ng-prism\/lib-(a|b)-prism\/prism-manifest\.ts$/);
 
     expect(
       result
