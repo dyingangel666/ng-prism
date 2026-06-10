@@ -189,4 +189,24 @@ describe('migration v21-13-manifest-cache', () => {
       'custom/elsewhere.ts',
     ]);
   });
+
+  it('deletes the legacy prism-manifest.ts from sourceRoot', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/src/prism-manifest.ts',
+      '// auto-generated\n'
+    );
+
+    const result = await run(tree);
+
+    expect(result.exists('projects/my-lib-prism/src/prism-manifest.ts')).toBe(
+      false
+    );
+  });
+
+  it('is a no-op when the legacy prism-manifest.ts is already gone', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+
+    await expect(run(tree)).resolves.toBeDefined();
+  });
 });

@@ -69,6 +69,19 @@ function addTsConfigMapping(tree: Tree, prismProject: string): void {
   ]);
 }
 
+function deleteLegacyManifest(
+  tree: Tree,
+  workspace: AngularWorkspace,
+  prismProject: string
+): void {
+  const project = workspace.projects?.[prismProject];
+  const sourceRoot = project?.sourceRoot ?? `projects/${prismProject}/src`;
+  const manifestPath = `${sourceRoot}/prism-manifest.ts`;
+  if (tree.exists(manifestPath)) {
+    tree.delete(manifestPath);
+  }
+}
+
 export function migrate(): Rule {
   return (tree: Tree, context: SchematicContext) => {
     const workspace = readWorkspace(tree);
@@ -78,6 +91,7 @@ export function migrate(): Rule {
     for (const prismProject of prismProjects) {
       rewriteMainTs(tree, context, workspace, prismProject);
       addTsConfigMapping(tree, prismProject);
+      deleteLegacyManifest(tree, workspace, prismProject);
     }
 
     return tree;
