@@ -23,8 +23,7 @@ const OLD_IMPORT =
  * argument so the rewrite preserves the original callback and trailing
  * code verbatim.
  */
-const OLD_HMR_ACCEPT =
-  /\.accept\s*\(\s*(['"])\.\/prism-manifest\1\s*(,)/g;
+const OLD_HMR_ACCEPT = /\.accept\s*\(\s*(['"])\.\/prism-manifest\1\s*(,)/g;
 
 function buildNewImport(prismProject: string): string {
   return `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProject}';`;

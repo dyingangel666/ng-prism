@@ -1,5 +1,9 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';
+import {
+  enablePrismHmr,
+  PrismShellComponent,
+  providePrism,
+} from '@ng-prism/core';
 import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/test-ui-kit-prism';
 import config from 'ng-prism.config';
 
@@ -9,7 +13,9 @@ const hot = (
       accept(
         dep: string,
         cb: (
-          mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined
+          mod:
+            | { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST }
+            | undefined
         ) => void
       ): void;
     };

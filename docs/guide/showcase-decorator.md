@@ -180,9 +180,9 @@ Wrapper sizing mode for the canvas. Controls how `.demo-wrap` (the wrapper aroun
 
 Accepted values: `'fit'` (default) and `'stretch'`.
 
-| Value       | Behavior                                                                                                                                                                                          |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size; the stage's flexbox centers it. Use for the vast majority of components.                                        |
+| Value       | Behavior                                                                                                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size; the stage's flexbox centers it. Use for the vast majority of components.                                              |
 | `'stretch'` | Wrapper becomes `display: block; width: 100%; max-width: 800px`. Use when the component has no intrinsic width (horizontal divider via `border-bottom`) or opts into `width: 100%` (full-width button). |
 
 ```typescript

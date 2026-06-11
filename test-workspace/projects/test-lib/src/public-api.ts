@@ -1,15 +1,46 @@
-export { ButtonComponent, type ButtonVariantType } from './lib/components/button/button.component.js';
+export {
+  ButtonComponent,
+  type ButtonVariantType,
+} from './lib/components/button/button.component.js';
 export { ToggleComponent } from './lib/components/toggle/toggle.component.js';
-export { BadgeComponent, type BadgeVariantType } from './lib/components/badge/badge.component.js';
-export { AvatarComponent, type AvatarSizeType } from './lib/components/avatar/avatar.component.js';
+export {
+  BadgeComponent,
+  type BadgeVariantType,
+} from './lib/components/badge/badge.component.js';
+export {
+  AvatarComponent,
+  type AvatarSizeType,
+} from './lib/components/avatar/avatar.component.js';
 export { ChipComponent } from './lib/components/chip/chip.component.js';
-export { ProgressBarComponent, type ProgressBarVariantType } from './lib/components/progress-bar/progress-bar.component.js';
-export { AlertComponent, type AlertSeverityType } from './lib/components/alert/alert.component.js';
+export {
+  ProgressBarComponent,
+  type ProgressBarVariantType,
+} from './lib/components/progress-bar/progress-bar.component.js';
+export {
+  AlertComponent,
+  type AlertSeverityType,
+} from './lib/components/alert/alert.component.js';
 export { CardComponent } from './lib/components/card/card.component.js';
-export { TabsComponent, type TabItem } from './lib/components/tabs/tabs.component.js';
+export {
+  TabsComponent,
+  type TabItem,
+} from './lib/components/tabs/tabs.component.js';
 export { SliderComponent } from './lib/components/slider/slider.component.js';
 export { TextareaComponent } from './lib/components/textarea/textarea.component.js';
-export { TooltipComponent, type TooltipPositionType } from './lib/components/tooltip/tooltip.component.js';
-export { SpinnerComponent, type SpinnerSizeType } from './lib/components/spinner/spinner.component.js';
-export { TooltipDirective, type TooltipDirectivePositionType } from './lib/directives/tooltip/tooltip.directive.js';
-export { DividerComponent, type DividerOrientationType, type DividerVariantType } from './lib/components/divider/divider.component.js';
+export {
+  TooltipComponent,
+  type TooltipPositionType,
+} from './lib/components/tooltip/tooltip.component.js';
+export {
+  SpinnerComponent,
+  type SpinnerSizeType,
+} from './lib/components/spinner/spinner.component.js';
+export {
+  TooltipDirective,
+  type TooltipDirectivePositionType,
+} from './lib/directives/tooltip/tooltip.directive.js';
+export {
+  DividerComponent,
+  type DividerOrientationType,
+  type DividerVariantType,
+} from './lib/components/divider/divider.component.js';

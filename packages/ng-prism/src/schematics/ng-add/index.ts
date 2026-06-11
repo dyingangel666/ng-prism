@@ -50,7 +50,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
 
     const zoneless = options.zoneless === true;
     const hotConst =
-      "const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;";
+      'const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;';
     const hmrThen = [
       '.then((appRef) => {',
       `  hot?.accept('prism-manifest/${prismProjectName}', (mod) => {`,

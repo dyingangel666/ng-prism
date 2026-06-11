@@ -130,7 +130,7 @@ The schematic adds two targets to the **library project** in `angular.json`:
 | `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)                                                                                                                                                                                                              |
 | `port`              | No            | Dev server port for `:serve` (default: `4400`)                                                                                                                                                                                                                                          |
 | `outputPath`        | `:build` only | Output directory for the production build                                                                                                                                                                                                                                               |
-| `cacheDir`          | No            | Override directory for the generated `prism-manifest.ts`. Default: `<workspaceRoot>/ng-prism-cache/<prismProject>/`. Relative paths resolve against `workspaceRoot`. Useful for CI sandboxes.                                                                                                |
+| `cacheDir`          | No            | Override directory for the generated `prism-manifest.ts`. Default: `<workspaceRoot>/ng-prism-cache/<prismProject>/`. Relative paths resolve against `workspaceRoot`. Useful for CI sandboxes.                                                                                           |
 
 ## Showcase App Target Configuration
 

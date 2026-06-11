@@ -139,8 +139,7 @@ function extractShowcaseConfig(
       console.warn(
         `⚠ ng-prism: ${className} declares invalid status "${String(
           obj['status']
-        )}" — ` +
-          `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
+        )}" — ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
       );
     }
   }
@@ -165,8 +164,7 @@ function extractShowcaseConfig(
       console.warn(
         `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(
           obj['canvasLayout']
-        )}" — ` +
-          `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
+        )}" — ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
       );
     }
   }

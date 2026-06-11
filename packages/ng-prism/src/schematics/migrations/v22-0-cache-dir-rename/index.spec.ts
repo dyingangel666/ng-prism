@@ -147,10 +147,7 @@ describe('migration v22-0-cache-dir-rename', () => {
           extends: '../../tsconfig.json',
           compilerOptions: { outDir: '../../out-tsc/app', rootDir: '../..' },
           files: ['src/main.ts'],
-          include: [
-            'src/**/*.d.ts',
-            '../../.ng-prism/my-lib-prism/**/*.ts',
-          ],
+          include: ['src/**/*.d.ts', '../../.ng-prism/my-lib-prism/**/*.ts'],
         },
         null,
         2
@@ -221,9 +218,7 @@ describe('migration v22-0-cache-dir-rename', () => {
     expect(result.read('tsconfig.json')!.toString('utf-8')).toBe(
       before.tsconfig
     );
-    expect(result.read('.gitignore')!.toString('utf-8')).toBe(
-      before.gitignore
-    );
+    expect(result.read('.gitignore')!.toString('utf-8')).toBe(before.gitignore);
   });
 
   it('skips projects without an @ng-prism/core:serve builder', async () => {

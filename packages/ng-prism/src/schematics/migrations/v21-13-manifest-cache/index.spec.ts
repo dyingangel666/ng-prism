@@ -110,11 +110,11 @@ describe('migration v21-13-manifest-cache', () => {
         "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
         "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
         '',
-        "const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;",
+        'const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;',
         '',
         'bootstrapApplication(PrismShellComponent, {',
         '  providers: [providePrism(PRISM_RUNTIME_MANIFEST)],',
-        "}).then((appRef) => {",
+        '}).then((appRef) => {',
         "  hot?.accept('./prism-manifest', (mod) => {",
         '    if (mod) enablePrismHmr(appRef, mod.PRISM_RUNTIME_MANIFEST);',
         '  });',
@@ -131,9 +131,7 @@ describe('migration v21-13-manifest-cache', () => {
     expect(mainTs).toContain(
       "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
-    expect(mainTs).toContain(
-      "hot?.accept('prism-manifest/my-lib-prism',"
-    );
+    expect(mainTs).toContain("hot?.accept('prism-manifest/my-lib-prism',");
     expect(mainTs).not.toContain("'./prism-manifest'");
   });
 
@@ -396,7 +394,10 @@ describe('migration v21-13-manifest-cache', () => {
         {
           extends: '../../tsconfig.json',
           files: ['src/main.ts'],
-          include: ['src/**/*.d.ts', '../../ng-prism-cache/my-lib-prism/**/*.ts'],
+          include: [
+            'src/**/*.d.ts',
+            '../../ng-prism-cache/my-lib-prism/**/*.ts',
+          ],
         },
         null,
         2

@@ -242,9 +242,7 @@ describe('createScanner', () => {
 
       const buttonFile = join(tmpDir, 'button.component.ts');
       const content = readFileSync(buttonFile, 'utf-8');
-      const danger = content.match(
-        /\s*\{\s*name:\s*'Danger',[^}]*\},?/
-      );
+      const danger = content.match(/\s*\{\s*name:\s*'Danger',[^}]*\},?/);
       if (!danger) throw new Error('Danger variant block not found in fixture');
       writeFileSync(buttonFile, content.replace(danger[0], ''));
 
@@ -252,9 +250,9 @@ describe('createScanner', () => {
       const mutatedButton = second.components.find(
         (c) => c.className === 'ButtonComponent'
       )!;
-      expect(mutatedButton.showcaseConfig.variants?.map((v) => v.name)).toEqual([
-        'Primary',
-      ]);
+      expect(mutatedButton.showcaseConfig.variants?.map((v) => v.name)).toEqual(
+        ['Primary']
+      );
     } finally {
       rmSync(tmpDir, { recursive: true, force: true });
     }

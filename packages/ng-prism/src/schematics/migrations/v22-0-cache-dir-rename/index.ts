@@ -136,10 +136,7 @@ function renameGitignoreEntry(tree: Tree): void {
   if (!changed) {
     // Ensure the new entry exists even if the old one was already missing.
     if (next.some((line) => line.trim() === NEW_GITIGNORE_ENTRY)) return;
-    tree.overwrite(
-      path,
-      content.trimEnd() + '\n' + NEW_GITIGNORE_ENTRY + '\n'
-    );
+    tree.overwrite(path, content.trimEnd() + '\n' + NEW_GITIGNORE_ENTRY + '\n');
     return;
   }
   tree.overwrite(path, next.join('\n'));

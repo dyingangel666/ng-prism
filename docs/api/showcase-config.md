@@ -166,9 +166,9 @@ Optional canvas layout mode for the rendered component. Controls how `.demo-wrap
 
 Accepted values: `'fit'` (default), `'stretch'`.
 
-| Value       | Behavior                                                                                                                                                                                            |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size. The canvas stage's flexbox centers it. Use for the vast majority of components — buttons, badges, cards, alerts. |
+| Value       | Behavior                                                                                                                                                                                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size. The canvas stage's flexbox centers it. Use for the vast majority of components — buttons, badges, cards, alerts.                                                                  |
 | `'stretch'` | Wrapper becomes `display: block; width: 100%; max-width: 800px`. Use when the component has no intrinsic width (e.g. a horizontal divider rendered via `border-bottom`) or explicitly opts into filling its container (e.g. a full-width button via `width: 100%`). |
 
 A `Variant.canvasLayout` overrides the component-level setting.

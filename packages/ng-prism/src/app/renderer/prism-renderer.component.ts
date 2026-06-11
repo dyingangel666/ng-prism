@@ -223,7 +223,9 @@ export class PrismRendererComponent {
       comp.meta.showcaseConfig.variants?.[
         this.rendererService.activeVariantIndex()
       ];
-    return variant?.canvasLayout ?? comp.meta.showcaseConfig.canvasLayout ?? 'fit';
+    return (
+      variant?.canvasLayout ?? comp.meta.showcaseConfig.canvasLayout ?? 'fit'
+    );
   });
   protected readonly overlayInputs = { rendererService: this.rendererService };
   protected readonly overlayInjector = computed(() => {

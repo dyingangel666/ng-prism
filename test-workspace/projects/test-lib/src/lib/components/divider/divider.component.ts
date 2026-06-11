@@ -27,12 +27,25 @@ export type DividerVariantType = 'default' | 'dark';
   title: 'Divider',
   status: 'stable',
   category: 'Layout',
-  description: 'Horizontal or vertical divider line with variant and weight options.',
+  description:
+    'Horizontal or vertical divider line with variant and weight options.',
   tags: ['divider', 'separator', 'hr', 'layout'],
   variants: [
-    { name: 'Horizontal', inputs: { orientation: 'horizontal' }, canvasLayout: 'stretch' },
-    { name: 'Horizontal Dark', inputs: { orientation: 'horizontal', variant: 'dark' }, canvasLayout: 'stretch' },
-    { name: 'Horizontal Bold', inputs: { orientation: 'horizontal', bold: true }, canvasLayout: 'stretch' },
+    {
+      name: 'Horizontal',
+      inputs: { orientation: 'horizontal' },
+      canvasLayout: 'stretch',
+    },
+    {
+      name: 'Horizontal Dark',
+      inputs: { orientation: 'horizontal', variant: 'dark' },
+      canvasLayout: 'stretch',
+    },
+    {
+      name: 'Horizontal Bold',
+      inputs: { orientation: 'horizontal', bold: true },
+      canvasLayout: 'stretch',
+    },
     { name: 'Vertical', inputs: { orientation: 'vertical' } },
     { name: 'Vertical Bold', inputs: { orientation: 'vertical', bold: true } },
   ],
