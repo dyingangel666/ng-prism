@@ -1,11 +1,24 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { PrismShellComponent, providePrism } from '@ng-prism/core';
+import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';
 import { ButtonTooltipPageComponent } from '../../test-lib/src/lib/directives/tooltip/button-tooltip-page.component';
 import { DesignTokensPageComponent } from './pages/design-tokens-page.component';
 import { GettingStartedPageComponent } from './pages/getting-started-page.component';
 import { ButtonPatternsPageComponent } from './pages/button-patterns-page.component';
 import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/test-lib-prism';
 import config from 'ng-prism.config';
+
+const hot = (
+  import.meta as ImportMeta & {
+    hot?: {
+      accept(
+        dep: string,
+        cb: (
+          mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined
+        ) => void
+      ): void;
+    };
+  }
+).hot;
 
 bootstrapApplication(PrismShellComponent, {
   providers: [
@@ -37,4 +50,8 @@ bootstrapApplication(PrismShellComponent, {
       ],
     }),
   ],
+}).then((appRef) => {
+  hot?.accept('prism-manifest/test-lib-prism', (mod) => {
+    if (mod) enablePrismHmr(appRef, mod.PRISM_RUNTIME_MANIFEST);
+  });
 });
