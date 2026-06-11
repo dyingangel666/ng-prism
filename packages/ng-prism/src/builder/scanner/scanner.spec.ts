@@ -221,4 +221,40 @@ describe('createScanner', () => {
       rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it('should pick up variant array changes between scans', () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), 'ng-prism-scanner-'));
+    try {
+      cpSync(FIXTURES_DIR, tmpDir, { recursive: true });
+      const mutableEntry = join(tmpDir, 'public-api.ts');
+      const scanner = createScanner({
+        entryPoints: [{ entryFile: mutableEntry, importPath: 'fixture' }],
+      });
+
+      const first = scanner.scan();
+      const firstButton = first.components.find(
+        (c) => c.className === 'ButtonComponent'
+      )!;
+      expect(firstButton.showcaseConfig.variants?.map((v) => v.name)).toEqual([
+        'Primary',
+        'Danger',
+      ]);
+
+      const buttonFile = join(tmpDir, 'button.component.ts');
+      const content = readFileSync(buttonFile, 'utf-8');
+      const danger = content.match(/\s*\{\s*name:\s*'Danger',[^}]*\},?/);
+      if (!danger) throw new Error('Danger variant block not found in fixture');
+      writeFileSync(buttonFile, content.replace(danger[0], ''));
+
+      const second = scanner.scan();
+      const mutatedButton = second.components.find(
+        (c) => c.className === 'ButtonComponent'
+      )!;
+      expect(mutatedButton.showcaseConfig.variants?.map((v) => v.name)).toEqual(
+        ['Primary']
+      );
+    } finally {
+      rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
 });

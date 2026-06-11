@@ -29,6 +29,10 @@
       "type": "string",
       "default": "ng-prism.config.ts",
       "description": "Path to the ng-prism config file"
+    },
+    "cacheDir": {
+      "type": "string",
+      "description": "Override directory for the generated prism-manifest.ts. Default: <workspaceRoot>/.ng-prism/<prismProject>/. Relative paths resolve against workspaceRoot."
     }
   },
   "required": ["entryPoint", "prismProject"],

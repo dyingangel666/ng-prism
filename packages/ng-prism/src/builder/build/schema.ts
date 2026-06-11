@@ -5,4 +5,5 @@ export interface BuildBuilderSchema {
   outputPath?: string;
   libraryImportPath?: string;
   configFile?: string;
+  cacheDir?: string;
 }

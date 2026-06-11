@@ -122,7 +122,7 @@ describe('test-workspace integration', () => {
       createPipelineState()
     );
 
-    expect(result.componentCount).toBe(14);
+    expect(result.componentCount).toBe(15);
   });
 
   it('should write prism-manifest.ts into prism project', async () => {
@@ -133,7 +133,7 @@ describe('test-workspace integration', () => {
 
     expect(
       existsSync(
-        join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts')
+        join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts')
       )
     ).toBe(true);
   });
@@ -145,7 +145,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'test-lib'");
@@ -159,7 +159,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: ButtonComponent,');
@@ -172,7 +172,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).not.toContain('InternalComponent');
@@ -185,7 +185,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'projects', 'test-lib-prism', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('title: "Button"');
@@ -205,11 +205,11 @@ describe('test-workspace integration', () => {
       createPipelineState()
     );
 
-    expect(result.componentCount).toBe(14);
+    expect(result.componentCount).toBe(15);
     expect(ctx.reportStatus).toHaveBeenCalledWith('Loading ng-prism config...');
     expect(ctx.reportStatus).toHaveBeenCalledWith('Running plugin hooks...');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 14 component(s)')
+      expect.stringContaining('Generated manifest with 15 component(s)')
     );
   });
 

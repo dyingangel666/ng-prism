@@ -15,8 +15,8 @@
     "test:workspace:setup": "nx build ng-prism --skip-nx-cache",
     "test:workspace:install": "cd test-workspace && npm install && (test -f ng-prism.config.ts || cp ng-prism.config.example.ts ng-prism.config.ts)",
     "test:workspace:update": "nx run-many -t build --projects='ng-prism,plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf' && cd test-workspace && rm -rf .angular/cache && npm install --prefer-offline --no-audit --no-fund",
-    "test:workspace:serve": "cd test-workspace && ng run test-lib:prism",
-    "test:workspace:build": "cd test-workspace && ng run test-lib:prism-build",
+    "test:workspace:serve": "cd test-workspace && npx ng run test-lib:prism",
+    "test:workspace:build": "cd test-workspace && npx ng run test-lib:prism-build",
     "test:workspace:clean": "cd test-workspace && rm -rf node_modules package-lock.json ng-prism.config.ts && git checkout -- angular.json package.json",
     "test:workspace:reset": "npm run test:workspace:clean && npm run test:workspace:setup && npm run test:workspace:install"
   },
@@ -25,14 +25,14 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@angular-devkit/architect": "0.2101.4",
-    "@angular-devkit/core": "^21.0.0",
-    "@angular-devkit/schematics": "^21.1.0",
-    "@angular/common": "^21.1.0",
-    "@angular/compiler": "^21.1.0",
-    "@angular/compiler-cli": "^21.1.0",
-    "@angular/core": "^21.1.0",
-    "@angular/platform-browser": "^21.1.0",
+    "@angular-devkit/architect": "^0.2200.0",
+    "@angular-devkit/core": "^22.0.0",
+    "@angular-devkit/schematics": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/compiler": "^22.0.0",
+    "@angular/compiler-cli": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
     "@nx/jest": "22.5.2",
     "@nx/js": "22.5.2",
     "@swc-node/register": "1.11.1",
@@ -57,7 +57,7 @@
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
     "tslib": "^2.3.0",
-    "typescript": "~5.9.2",
+    "typescript": "~6.0.3",
     "verdaccio": "^6.0.5"
   },
   "nx": {

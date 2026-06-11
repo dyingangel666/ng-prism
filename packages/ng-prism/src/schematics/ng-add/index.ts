@@ -6,11 +6,7 @@ import {
   SchematicsException,
 } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
-import {
-  parse as parseJsonc,
-  modify as modifyJsonc,
-  applyEdits as applyJsoncEdits,
-} from 'jsonc-parser';
+import { addTsConfigPath } from '../utils/tsconfig-paths.js';
 import type { NgAddSchemaOptions } from './schema.js';
 
 interface WorkspaceProject {
@@ -22,14 +18,6 @@ interface WorkspaceProject {
 
 interface WorkspaceSchema {
   projects: Record<string, WorkspaceProject>;
-  [key: string]: unknown;
-}
-
-interface TsConfigSchema {
-  compilerOptions?: {
-    paths?: Record<string, string[]>;
-    [key: string]: unknown;
-  };
   [key: string]: unknown;
 }
 
@@ -61,31 +49,44 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
     const prismSrc = `${prismRoot}/src`;
 
     const zoneless = options.zoneless === true;
+    const hotConst =
+      'const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;';
+    const hmrThen = [
+      '.then((appRef) => {',
+      `  hot?.accept('prism-manifest/${prismProjectName}', (mod) => {`,
+      '    if (mod) enablePrismHmr(appRef, mod.PRISM_RUNTIME_MANIFEST);',
+      '  });',
+      '});',
+    ].join('\n');
     const mainTs = zoneless
       ? [
           "import { provideZonelessChangeDetection } from '@angular/core';",
           "import { bootstrapApplication } from '@angular/platform-browser';",
-          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
-          "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+          "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
+          `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
+          '',
+          hotConst,
           '',
           'bootstrapApplication(PrismShellComponent, {',
           '  providers: [',
           '    provideZonelessChangeDetection(),',
           '    providePrism(PRISM_RUNTIME_MANIFEST, config),',
           '  ],',
-          '});',
+          '})' + hmrThen,
           '',
         ].join('\n')
       : [
           "import { bootstrapApplication } from '@angular/platform-browser';",
-          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
-          "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+          "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
+          `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
+          '',
+          hotConst,
           '',
           'bootstrapApplication(PrismShellComponent, {',
           '  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],',
-          '});',
+          '})' + hmrThen,
           '',
         ].join('\n');
 
@@ -119,10 +120,14 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         extends: '../../tsconfig.json',
         compilerOptions: {
           outDir: '../../out-tsc/app',
+          rootDir: '../..',
           types: [],
         },
         files: ['src/main.ts'],
-        include: ['src/**/*.d.ts'],
+        include: [
+          'src/**/*.d.ts',
+          `../../ng-prism-cache/${prismProjectName}/**/*.ts`,
+        ],
       };
       tree.create(tsconfigAppPath, JSON.stringify(tsconfigApp, null, 2) + '\n');
     }
@@ -236,48 +241,21 @@ function addBuilderTargets(options: NgAddSchemaOptions): Rule {
 function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
     const tsConfigPath = 'tsconfig.json';
-    const buffer = tree.read(tsConfigPath);
-    if (!buffer) {
-      return tree;
-    }
-
-    const sourceText = buffer.toString('utf-8');
-    const tsConfig = parseJsonc(sourceText) as TsConfigSchema;
-    const existingPaths = tsConfig.compilerOptions?.paths ?? {};
+    if (!tree.read(tsConfigPath)) return tree;
 
     const workspace = readWorkspace(tree);
     const project = workspace.projects[options.project];
     const sourceRoot = project.sourceRoot ?? `${project.root}/src`;
 
-    const formattingOptions = { tabSize: 2, insertSpaces: true };
-    let nextText = sourceText;
-    let changed = false;
-
-    if (!existingPaths['ng-prism.config']) {
-      const edits = modifyJsonc(
-        nextText,
-        ['compilerOptions', 'paths', 'ng-prism.config'],
-        ['ng-prism.config.ts'],
-        { formattingOptions }
-      );
-      nextText = applyJsoncEdits(nextText, edits);
-      changed = true;
-    }
-
-    if (!existingPaths[options.project]) {
-      const edits = modifyJsonc(
-        nextText,
-        ['compilerOptions', 'paths', options.project],
-        [`${sourceRoot}/public-api.ts`],
-        { formattingOptions }
-      );
-      nextText = applyJsoncEdits(nextText, edits);
-      changed = true;
-    }
-
-    if (changed) {
-      tree.overwrite(tsConfigPath, nextText);
-    }
+    addTsConfigPath(tree, tsConfigPath, 'ng-prism.config', [
+      './ng-prism.config.ts',
+    ]);
+    addTsConfigPath(tree, tsConfigPath, options.project, [
+      `./${sourceRoot}/public-api.ts`,
+    ]);
+    addTsConfigPath(tree, tsConfigPath, 'prism-manifest/*', [
+      './ng-prism-cache/*/prism-manifest.ts',
+    ]);
 
     return tree;
   };
@@ -299,25 +277,6 @@ function createConfigFile(): Rule {
     ].join('\n');
 
     tree.create(configPath, content);
-
-    return tree;
-  };
-}
-
-function addGitignoreEntry(options: NgAddSchemaOptions): Rule {
-  return (tree: Tree) => {
-    const prismProjectName = `${options.project}-prism`;
-    const entry = `projects/${prismProjectName}/src/prism-manifest.ts`;
-    const gitignorePath = '.gitignore';
-
-    const buffer = tree.read(gitignorePath);
-    if (buffer) {
-      const content = buffer.toString('utf-8');
-      if (content.includes(entry)) return tree;
-      tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
-    } else {
-      tree.create(gitignorePath, entry + '\n');
-    }
 
     return tree;
   };
@@ -377,6 +336,25 @@ function logSetupSummary(options: NgAddSchemaOptions): Rule {
   };
 }
 
+function addNgPrismGitignoreEntry(): Rule {
+  return (tree: Tree) => {
+    const entry = 'ng-prism-cache/';
+    const gitignorePath = '.gitignore';
+
+    const buffer = tree.read(gitignorePath);
+    if (buffer) {
+      const content = buffer.toString('utf-8');
+      if (content.split('\n').some((line) => line.trim() === entry))
+        return tree;
+      tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
+    } else {
+      tree.create(gitignorePath, entry + '\n');
+    }
+
+    return tree;
+  };
+}
+
 function addStripShowcaseScript(options: NgAddSchemaOptions): Rule {
   return (tree: Tree) => {
     const pkgPath = 'package.json';
@@ -404,9 +382,9 @@ export function ngAdd(options: NgAddSchemaOptions): Rule {
     addPrismAppProject(options),
     addBuilderTargets(options),
     addTsConfigPaths(options),
+    addNgPrismGitignoreEntry(),
     createConfigFile(),
     addStripShowcaseScript(options),
-    addGitignoreEntry(options),
     addRuntimePeerDeps(),
     logSetupSummary(options),
   ]);

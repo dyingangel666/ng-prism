@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": "./",
+    "ignoreDeprecations": "6.0",
     "target": "ES2022",
     "module": "ES2022",
     "moduleResolution": "bundler",
@@ -15,6 +16,7 @@
       "@ng-prism/core": ["node_modules/ng-prism"],
       "@ng-prism/core/*": ["node_modules/ng-prism/*"],
       "ng-prism.config": ["ng-prism.config.ts"],
+      "prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"],
       "test-lib": ["projects/test-lib/src/public-api.ts"],
       "test-ui-kit": ["projects/test-ui-kit/public-api.ts"],
       "test-ui-kit/*": ["projects/test-ui-kit/*/public-api.ts"]

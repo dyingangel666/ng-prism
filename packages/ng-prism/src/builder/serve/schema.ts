@@ -5,4 +5,5 @@ export interface ServeBuilderSchema {
   port?: number;
   libraryImportPath?: string;
   configFile?: string;
+  cacheDir?: string;
 }

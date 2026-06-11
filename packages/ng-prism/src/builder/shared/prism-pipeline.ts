@@ -4,9 +4,7 @@ import {
   readFileSync,
   mkdirSync,
   statSync,
-  renameSync,
   existsSync,
-  unlinkSync,
 } from 'fs';
 import ts from 'typescript';
 import type { BuilderContext } from '@angular-devkit/architect';
@@ -29,6 +27,8 @@ export interface PrismPipelineOptions {
   libraryImportPath: string;
   prismProject: string;
   configFile: string;
+  /** Absolute path. If omitted, defaults to `<workspaceRoot>/ng-prism-cache/<prismProject>`. */
+  cacheDir?: string;
 }
 
 export interface PrismPipelineResult {
@@ -103,13 +103,11 @@ export async function runPrismPipeline(
     meta: manifest.meta,
   });
 
-  const projectMeta = await context.getProjectMetadata(options.prismProject);
-  const sourceRoot =
-    (projectMeta['sourceRoot'] as string | undefined) ??
-    join('projects', options.prismProject, 'src');
-  const manifestPath = join(workspaceRoot, sourceRoot, 'prism-manifest.ts');
+  const cacheRoot = options.cacheDir ?? join(workspaceRoot, 'ng-prism-cache');
+  const cacheDir = join(cacheRoot, options.prismProject);
+  const manifestPath = join(cacheDir, 'prism-manifest.ts');
 
-  mkdirSync(join(workspaceRoot, sourceRoot), { recursive: true });
+  mkdirSync(cacheDir, { recursive: true });
   const written = writeManifestIfChanged(manifestPath, source);
 
   const pageCount = (manifest.pages ?? []).length;
@@ -141,20 +139,17 @@ function writeManifestIfChanged(
     }
   }
 
-  const tempPath = manifestPath + '.tmp';
-  writeFileSync(tempPath, newContent, 'utf-8');
-  try {
-    renameSync(tempPath, manifestPath);
-  } catch (err) {
-    if (existsSync(tempPath)) {
-      try {
-        unlinkSync(tempPath);
-      } catch {
-        /* best-effort cleanup */
-      }
-    }
-    throw err;
-  }
+  // In-place write (truncate + write to the existing inode). The previous
+  // implementation used a temp file + atomic rename, which produces a fresh
+  // inode on every write. That breaks file watchers — most importantly Vite's
+  // — when the manifest lives in a cache dir outside the prism project's
+  // source root: Vite watches the file by path/inode, loses the handle on
+  // rename, and never picks up subsequent rewrites. The result for the user
+  // is that @Showcase changes never trigger an HMR / reload. The window
+  // between truncate and write is small (single syscall for kilobyte-sized
+  // manifests), so the risk of a bundler observing a partial file is
+  // negligible in practice.
+  writeFileSync(manifestPath, newContent, 'utf-8');
   return true;
 }
 

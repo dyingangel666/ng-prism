@@ -33,14 +33,11 @@ function createMultiEntryWorkspace(): string {
   return tmp;
 }
 
-function createMockContext(workspaceRoot: string, sourceRoot?: string) {
+function createMockContext(workspaceRoot: string) {
   return {
     workspaceRoot,
     reportStatus: jest.fn(),
     logger: { info: jest.fn() },
-    getProjectMetadata: jest
-      .fn()
-      .mockResolvedValue(sourceRoot !== undefined ? { sourceRoot } : {}),
   } as unknown as BuilderContext;
 }
 
@@ -62,7 +59,7 @@ describe('runPrismPipeline integration', () => {
 
   it('should return correct componentCount', async () => {
     tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     const result = await runPrismPipeline(
       defaultOptions,
@@ -75,7 +72,7 @@ describe('runPrismPipeline integration', () => {
 
   it('should write prism-manifest.ts to expected path', async () => {
     tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     const result = await runPrismPipeline(
       defaultOptions,
@@ -85,18 +82,18 @@ describe('runPrismPipeline integration', () => {
 
     expect(existsSync(result.manifestPath)).toBe(true);
     expect(result.manifestPath).toBe(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts')
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts')
     );
   });
 
   it('should generate manifest with component imports', async () => {
     tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain(
@@ -106,12 +103,12 @@ describe('runPrismPipeline integration', () => {
 
   it('should include component type references (not strings)', async () => {
     tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: ButtonComponent,');
@@ -119,7 +116,7 @@ describe('runPrismPipeline integration', () => {
     expect(content).toContain('type: SignalButtonComponent,');
   });
 
-  it('should use fallback sourceRoot when metadata is empty', async () => {
+  it('should write to default cache path when cacheDir option is undefined', async () => {
     tmp = createTempWorkspace();
     const ctx = createMockContext(tmp);
 
@@ -130,14 +127,31 @@ describe('runPrismPipeline integration', () => {
     );
 
     expect(result.manifestPath).toBe(
-      join(tmp, 'projects', 'my-lib-prism', 'src', 'prism-manifest.ts')
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts')
+    );
+    expect(existsSync(result.manifestPath)).toBe(true);
+  });
+
+  it('should write to cacheDir override when provided', async () => {
+    tmp = createTempWorkspace();
+    const ctx = createMockContext(tmp);
+    const customCacheDir = join(tmp, '.custom-cache');
+
+    const result = await runPrismPipeline(
+      { ...defaultOptions, cacheDir: customCacheDir },
+      ctx,
+      createPipelineState()
+    );
+
+    expect(result.manifestPath).toBe(
+      join(customCacheDir, 'my-lib-prism', 'prism-manifest.ts')
     );
     expect(existsSync(result.manifestPath)).toBe(true);
   });
 
   it('should call reportStatus and logger.info', async () => {
     tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
@@ -172,7 +186,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
 
   it('should discover and scan secondary entry points', async () => {
     tmp = createMultiEntryWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     const result = await runPrismPipeline(
       multiOptions,
@@ -185,12 +199,12 @@ describe('runPrismPipeline multi-entry-point integration', () => {
 
   it('should generate grouped imports per entry point', async () => {
     tmp = createMultiEntryWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
@@ -200,12 +214,12 @@ describe('runPrismPipeline multi-entry-point integration', () => {
 
   it('should include component type references', async () => {
     tmp = createMultiEntryWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: PillComponent,');
@@ -214,7 +228,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
 
   it('should auto-detect library root from a file entryPoint and discover secondaries', async () => {
     tmp = createMultiEntryWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     const result = await runPrismPipeline(
       { ...multiOptions, entryPoint: 'lib/public-api.ts' },
@@ -225,7 +239,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
     expect(result.componentCount).toBe(2);
 
     const content = readFileSync(
-      join(tmp, 'prism-app', 'src', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
@@ -248,7 +262,7 @@ describe('createPipelineState', () => {
 
   it('should populate scanner state after pipeline run', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
     const state = createPipelineState();
 
     try {
@@ -272,7 +286,7 @@ describe('createPipelineState', () => {
 
   it('should reuse the same scanner across pipeline invocations', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
     const state = createPipelineState();
 
     try {
@@ -300,7 +314,7 @@ describe('createPipelineState', () => {
 describe('runPrismPipeline skip-write behavior', () => {
   it('should return written: true on first invocation', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
 
     try {
       const result = await runPrismPipeline(
@@ -322,7 +336,7 @@ describe('runPrismPipeline skip-write behavior', () => {
 
   it('should return written: false when content is unchanged', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
     const state = createPipelineState();
     const options = {
       entryPoint: 'lib/public-api.ts',
@@ -343,7 +357,7 @@ describe('runPrismPipeline skip-write behavior', () => {
 
   it('should leave file mtime unchanged when skip-write triggers', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
     const state = createPipelineState();
     const options = {
       entryPoint: 'lib/public-api.ts',
@@ -367,9 +381,40 @@ describe('runPrismPipeline skip-write behavior', () => {
     }
   });
 
+  it('should preserve the manifest file inode across rewrites (file watchers depend on this)', async () => {
+    const tmp = createTempWorkspace();
+    const ctx = createMockContext(tmp);
+    const state = createPipelineState();
+    const options = {
+      entryPoint: 'lib/public-api.ts',
+      libraryImportPath: 'my-lib',
+      prismProject: 'my-lib-prism',
+      configFile: 'ng-prism.config.ts',
+    };
+
+    try {
+      const first = await runPrismPipeline(options, ctx, state);
+      const firstInode = statSync(first.manifestPath).ino;
+
+      const buttonFile = join(tmp, 'lib', 'button.component.ts');
+      const content = readFileSync(buttonFile, 'utf-8');
+      const { writeFileSync } = await import('fs');
+      writeFileSync(
+        buttonFile,
+        content.replace("title: 'Button',", "title: 'MutatedButton',")
+      );
+
+      const second = await runPrismPipeline(options, ctx, state);
+      expect(second.written).toBe(true);
+      expect(statSync(second.manifestPath).ino).toBe(firstInode);
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   it('should log "Generated" when written, "Verified (unchanged)" when skipped', async () => {
     const tmp = createTempWorkspace();
-    const ctx = createMockContext(tmp, 'prism-app/src');
+    const ctx = createMockContext(tmp);
     const state = createPipelineState();
     const options = {
       entryPoint: 'lib/public-api.ts',

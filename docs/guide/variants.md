@@ -12,6 +12,7 @@ interface Variant<T = unknown> {
   description?: string;
   meta?: Record<string, unknown>;
   bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+  canvasLayout?: 'fit' | 'stretch';
 }
 ```
 
@@ -193,3 +194,34 @@ Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
 A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
 
 See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.
+
+## Per-Variant Canvas Layout
+
+A variant can override the wrapper layout used in the canvas. The default is `'fit'` — the wrapper shrinks to the component's intrinsic size and the canvas stage centers it via flexbox. Switch to `'stretch'` for variants where you need a real container width — e.g. a horizontal divider (no intrinsic width because it's just a `border-bottom`) or a "full width" button variant (`width: 100%` only resolves against a sized parent).
+
+```typescript
+@Showcase({
+  title: 'Button',
+  variants: [
+    { name: 'Default',    inputs: { variant: 'primary' } },
+    { name: 'Full width', inputs: { variant: 'primary', fullWidth: true }, canvasLayout: 'stretch' },
+  ],
+})
+```
+
+```typescript
+@Showcase({
+  title: 'Divider',
+  // Set at component level — most variants need stretch.
+  canvasLayout: 'stretch',
+  variants: [
+    { name: 'Horizontal', inputs: { orientation: 'horizontal' } },
+    // Vertical dividers are intrinsic-sized — opt back into 'fit'.
+    { name: 'Vertical',   inputs: { orientation: 'vertical' }, canvasLayout: 'fit' },
+  ],
+})
+```
+
+In `'stretch'` mode `.demo-wrap` becomes `display: block; width: 100%; max-width: 800px`, giving children a real container width to size against. The variant-level value always wins over the component-level value.
+
+See [Showcase Decorator — canvasLayout](guide/showcase-decorator.md#canvaslayout) for the component-level setting and the [`CanvasLayout`](api/types.md#canvaslayout) type for the wrapper styles applied in each mode.

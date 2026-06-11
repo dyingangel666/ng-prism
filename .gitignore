@@ -61,7 +61,6 @@ test-workspace/ng-prism.config.ts
 test-workspace/**/*.d.ts
 test-workspace/tsconfig.tsbuildinfo
 
-# Auto-generiertes Prism-Manifest (wird zur Laufzeit generiert)
-**/prism-manifest.ts
 **/plugin-registry.ts
 .worktrees/
+ng-prism-cache/

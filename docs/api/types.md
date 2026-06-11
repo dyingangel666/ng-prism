@@ -201,19 +201,21 @@ interface Variant<T = unknown> {
   description?: string;
   meta?: Record<string, unknown>;
   bg?: CanvasBg;
+  canvasLayout?: CanvasLayout;
 }
 ```
 
 The optional type parameter `T` is the component class. When provided (via `@Showcase<MyComponent>({...})`), `inputs` becomes `Partial<InputsOf<MyComponent>>` and the editor checks both keys and values against the component's signal inputs. When omitted, `T` defaults to `unknown` and `inputs` falls back to `Record<string, unknown>` — fully backwards compatible.
 
-| Field         | Description                                                                                                                                                                               |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`        | Tab label                                                                                                                                                                                 |
-| `inputs`      | Key-value map of input signal names to values. Typed via [`InputsOf<T>`](#inputsof) when a component generic is supplied to `@Showcase`.                                                  |
-| `content`     | Content projected into `<ng-content>` — string for single slot, record for named slots                                                                                                    |
-| `description` | Optional description rendered below the variant tab                                                                                                                                       |
-| `meta`        | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`)                                                                                                                                       |
-| `bg`          | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`. See [Per-Variant Background](guide/variants.md#per-variant-background). |
+| Field          | Description                                                                                                                                                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`         | Tab label                                                                                                                                                                                                                         |
+| `inputs`       | Key-value map of input signal names to values. Typed via [`InputsOf<T>`](#inputsof) when a component generic is supplied to `@Showcase`.                                                                                          |
+| `content`      | Content projected into `<ng-content>` — string for single slot, record for named slots                                                                                                                                            |
+| `description`  | Optional description rendered below the variant tab                                                                                                                                                                               |
+| `meta`         | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`)                                                                                                                                                                               |
+| `bg`           | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`. See [Per-Variant Background](guide/variants.md#per-variant-background).                                         |
+| `canvasLayout` | Canvas layout mode for this variant. Overrides `ShowcaseConfig.canvasLayout`. One of `fit`, `stretch`. See [Per-Variant Canvas Layout](guide/variants.md#per-variant-canvas-layout) and the [`CanvasLayout`](#canvaslayout) type. |
 
 ---
 
@@ -287,6 +289,23 @@ type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker';
 | `light`   | Light surface tuned for components designed for light themes  |
 | `dark`    | Dark surface tuned for components designed for dark themes    |
 | `checker` | Checkerboard pattern, useful for components with transparency |
+
+---
+
+## CanvasLayout
+
+Wrapper sizing mode used by `ShowcaseConfig.canvasLayout` and `Variant.canvasLayout`. Controls how `.demo-wrap` (the inner wrapper of the canvas stage) sizes itself around the rendered component.
+
+```typescript
+type CanvasLayout = 'fit' | 'stretch';
+```
+
+| Value     | Wrapper styles                                      | When to use                                                                                                                                                    |
+| --------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fit`     | `display: inline-block` — shrinks to component size | Default. The vast majority of components — buttons, badges, cards, alerts — render at their intrinsic size and are centered by the canvas stage flex.          |
+| `stretch` | `display: block; width: 100%; max-width: 800px`     | Components without intrinsic width (horizontal dividers via `border-bottom`) or that opt into filling their container (full-width buttons with `width: 100%`). |
+
+The variant-level value always wins over the component-level value; the default is `'fit'`.
 
 ---
 

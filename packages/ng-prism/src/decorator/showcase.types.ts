@@ -1,5 +1,6 @@
 import type { InputSignalWithTransform, Provider } from '@angular/core';
 import type { CanvasBg } from '../shared/canvas-bg.type.js';
+import type { CanvasLayout } from '../shared/canvas-layout.type.js';
 
 export type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 
@@ -68,6 +69,15 @@ export interface ShowcaseConfig<T = unknown> {
    * resets when switching variants or components.
    */
   bg?: CanvasBg;
+  /**
+   * Canvas layout mode for the rendered component.
+   * - `'fit'` (default): wrapper shrinks to content, component is centered in the canvas.
+   * - `'stretch'`: wrapper takes full canvas width (up to a sensible max) so block-level
+   *   components without intrinsic width (e.g. horizontal dividers) and components that
+   *   opt into `width: 100%` (e.g. full-width buttons) render correctly.
+   * A `Variant.canvasLayout` overrides this.
+   */
+  canvasLayout?: CanvasLayout;
   /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
   host?: string | DirectiveHost;
   /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
@@ -98,4 +108,6 @@ export interface Variant<T = unknown> {
   meta?: Record<string, unknown>;
   /** Recommended canvas background for this variant. Overrides `ShowcaseConfig.bg`. */
   bg?: CanvasBg;
+  /** Canvas layout mode for this variant. Overrides `ShowcaseConfig.canvasLayout`. See `ShowcaseConfig.canvasLayout` for semantics. */
+  canvasLayout?: CanvasLayout;
 }

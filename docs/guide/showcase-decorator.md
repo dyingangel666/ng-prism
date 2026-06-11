@@ -174,6 +174,26 @@ Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
 
 Variants can also declare a recommended `bg` — variant-level always wins over component-level. See [Variants](guide/variants.md#per-variant-background).
 
+### `canvasLayout`
+
+Wrapper sizing mode for the canvas. Controls how `.demo-wrap` (the wrapper around the rendered component) sizes itself within the canvas stage.
+
+Accepted values: `'fit'` (default) and `'stretch'`.
+
+| Value       | Behavior                                                                                                                                                                                                |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size; the stage's flexbox centers it. Use for the vast majority of components.                                              |
+| `'stretch'` | Wrapper becomes `display: block; width: 100%; max-width: 800px`. Use when the component has no intrinsic width (horizontal divider via `border-bottom`) or opts into `width: 100%` (full-width button). |
+
+```typescript
+@Showcase({
+  title: 'Divider',
+  canvasLayout: 'stretch',
+})
+```
+
+Variants can override this with their own `canvasLayout`. See [Variants — Per-Variant Canvas Layout](guide/variants.md#per-variant-canvas-layout) and the [`CanvasLayout`](api/types.md#canvaslayout) type for the exact wrapper styles applied in each mode.
+
 ### `host`
 
 Targets directives that cannot render on their own. Tells ng-prism what element or component to host the directive on.

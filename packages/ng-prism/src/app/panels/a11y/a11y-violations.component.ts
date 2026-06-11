@@ -21,7 +21,7 @@ const IMPACT_COLOR: Record<string, string> = {
   minor: 'var(--prism-text-muted)',
 };
 
-function sevColor(impact: string | undefined): string {
+function sevColor(impact: string | null | undefined): string {
   return IMPACT_COLOR[impact ?? ''] ?? 'var(--prism-success)';
 }
 
@@ -214,7 +214,7 @@ export class A11yViolationsComponent {
     return [...violations, ...passes];
   });
 
-  protected sevColor(impact: string | undefined): string {
+  protected sevColor(impact: string | null | undefined): string {
     return sevColor(impact);
   }
 }

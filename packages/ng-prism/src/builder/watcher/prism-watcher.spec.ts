@@ -1,4 +1,7 @@
-jest.mock('chokidar', () => ({ __esModule: true, default: { watch: jest.fn() } }));
+jest.mock('chokidar', () => ({
+  __esModule: true,
+  default: { watch: jest.fn() },
+}));
 
 import chokidar from 'chokidar';
 import { createChangeHandler, startWatcher } from './prism-watcher.js';
@@ -29,14 +32,14 @@ describe('startWatcher', () => {
     const logger = createLogger();
     const handle = startWatcher({
       entryPoint: '/some/lib',
-      ignorePaths: ['/some/lib/.ng-prism'],
+      ignorePaths: ['/some/lib/ng-prism-cache'],
       onRebuild: jest.fn().mockResolvedValue(undefined),
       logger,
     });
 
     const [, watchOptions] = mockChokidarWatch.mock.calls[0];
     expect(Array.isArray(watchOptions.ignored)).toBe(true);
-    expect(watchOptions.ignored).toContain('/some/lib/.ng-prism');
+    expect(watchOptions.ignored).toContain('/some/lib/ng-prism-cache');
 
     handle.close();
   });
@@ -76,7 +79,9 @@ describe('createChangeHandler', () => {
     await Promise.resolve();
 
     expect(onRebuild).toHaveBeenCalledTimes(1);
-    expect(logger.info).toHaveBeenCalledWith('ng-prism: Change detected, re-scanning...');
+    expect(logger.info).toHaveBeenCalledWith(
+      'ng-prism: Change detected, re-scanning...'
+    );
 
     handler.dispose();
   });
@@ -156,7 +161,9 @@ describe('createChangeHandler', () => {
     await Promise.resolve();
     await Promise.resolve();
 
-    expect(logger.error).toHaveBeenCalledWith('ng-prism: Re-scan failed — scan failed');
+    expect(logger.error).toHaveBeenCalledWith(
+      'ng-prism: Re-scan failed — scan failed'
+    );
 
     handler.dispose();
   });
@@ -164,7 +171,10 @@ describe('createChangeHandler', () => {
   it('should queue changes that arrive during a rebuild and run another rebuild after completion', async () => {
     const resolvers: Array<() => void> = [];
     const onRebuild = jest.fn().mockImplementation(
-      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolvers.push(resolve);
+        })
     );
     const logger = createLogger();
     const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
@@ -193,7 +203,10 @@ describe('createChangeHandler', () => {
   it('should coalesce multiple changes during a rebuild into a single follow-up rebuild', async () => {
     const resolvers: Array<() => void> = [];
     const onRebuild = jest.fn().mockImplementation(
-      () => new Promise<void>((resolve) => { resolvers.push(resolve); }),
+      () =>
+        new Promise<void>((resolve) => {
+          resolvers.push(resolve);
+        })
     );
     const logger = createLogger();
     const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });

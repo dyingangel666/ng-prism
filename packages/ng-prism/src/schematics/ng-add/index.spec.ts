@@ -82,13 +82,15 @@ describe('ng-add schematic', () => {
       "import { bootstrapApplication } from '@angular/platform-browser'"
     );
     expect(mainTs).toContain(
-      "import { PrismShellComponent, providePrism } from '@ng-prism/core'"
+      "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core'"
     );
     expect(mainTs).toContain(
-      "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest'"
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
     expect(mainTs).toContain("import config from 'ng-prism.config'");
     expect(mainTs).toContain('providePrism(PRISM_RUNTIME_MANIFEST, config)');
+    expect(mainTs).toContain('enablePrismHmr');
+    expect(mainTs).toContain("hot?.accept('prism-manifest/my-lib-prism',");
   });
 
   it('should add prism app project to angular.json', async () => {
@@ -268,11 +270,64 @@ describe('ng-add schematic', () => {
       compilerOptions?: { paths?: Record<string, string[]> };
     };
     expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual([
-      'ng-prism.config.ts',
+      './ng-prism.config.ts',
     ]);
     expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
-      'projects/my-lib/src/public-api.ts',
+      './projects/my-lib/src/public-api.ts',
     ]);
+    expect(tsConfig.compilerOptions?.paths?.['prism-manifest/*']).toEqual([
+      './ng-prism-cache/*/prism-manifest.ts',
+    ]);
+  });
+
+  it('should add ng-prism-cache/ entry to .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    expect(result.exists('/.gitignore')).toBe(true);
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('ng-prism-cache/');
+  });
+
+  it('should append ng-prism-cache/ to an existing .gitignore without duplicating', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', 'node_modules\ndist\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    expect(gitignore).toContain('node_modules');
+    expect(gitignore).toContain('ng-prism-cache/');
+  });
+
+  it('should not duplicate ng-prism-cache/ entry in .gitignore', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('.gitignore', 'ng-prism-cache/\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const gitignore = result.read('/.gitignore')!.toString('utf-8');
+    const matches = gitignore.match(/ng-prism-cache\//g);
+    expect(matches).toHaveLength(1);
+  });
+
+  it('should include the cache manifest in the prism tsconfig.app.json so it satisfies rootDir', async () => {
+    const tree = createTree(defaultLibProject());
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('/projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as {
+      compilerOptions: { rootDir?: string };
+      include: string[];
+    };
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
+    expect(tsconfigApp.include).toContain('src/**/*.d.ts');
+    expect(tsconfigApp.include).toContain(
+      '../../ng-prism-cache/my-lib-prism/**/*.ts'
+    );
   });
 
   it('should not overwrite existing main.ts', async () => {
@@ -323,7 +378,7 @@ describe('ng-add schematic', () => {
       compilerOptions?: { paths?: Record<string, string[]> };
     };
     expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual([
-      'ng-prism.config.ts',
+      './ng-prism.config.ts',
     ]);
   });
 
@@ -399,38 +454,6 @@ describe('ng-add schematic', () => {
       scripts: Record<string, string>;
     };
     expect(pkg.scripts['strip-showcase']).toBe('custom-command');
-  });
-
-  it('should add prism-manifest to .gitignore', async () => {
-    const tree = createTree(defaultLibProject());
-
-    const result = await runSchematic({ project: 'my-lib' }, tree);
-
-    expect(result.exists('/.gitignore')).toBe(true);
-    const gitignore = result.read('/.gitignore')!.toString('utf-8');
-    expect(gitignore).toContain('projects/my-lib-prism/src/prism-manifest.ts');
-  });
-
-  it('should append to existing .gitignore without duplicating', async () => {
-    const tree = createTree(defaultLibProject());
-    tree.create('.gitignore', 'node_modules\ndist\n');
-
-    const result = await runSchematic({ project: 'my-lib' }, tree);
-
-    const gitignore = result.read('/.gitignore')!.toString('utf-8');
-    expect(gitignore).toContain('node_modules');
-    expect(gitignore).toContain('projects/my-lib-prism/src/prism-manifest.ts');
-  });
-
-  it('should not duplicate prism-manifest entry in .gitignore', async () => {
-    const tree = createTree(defaultLibProject());
-    tree.create('.gitignore', 'projects/my-lib-prism/src/prism-manifest.ts\n');
-
-    const result = await runSchematic({ project: 'my-lib' }, tree);
-
-    const gitignore = result.read('/.gitignore')!.toString('utf-8');
-    const matches = gitignore.match(/prism-manifest\.ts/g);
-    expect(matches).toHaveLength(1);
   });
 
   it('should be idempotent: second run preserves manually customized prism app config', async () => {
@@ -528,6 +551,32 @@ describe('ng-add schematic', () => {
     ]);
   });
 
+  it('should be idempotent: second run preserves manually customized prism-manifest path', async () => {
+    const tree = createTree(defaultLibProject());
+
+    await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfigAfterFirst = readJson(tree, '/tsconfig.json') as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    tsConfigAfterFirst.compilerOptions.paths['prism-manifest/*'] = [
+      'custom/path.ts',
+    ];
+    tree.overwrite(
+      'tsconfig.json',
+      JSON.stringify(tsConfigAfterFirst, null, 2) + '\n'
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfigAfterSecond = readJson(result, '/tsconfig.json') as {
+      compilerOptions: { paths: Record<string, string[]> };
+    };
+    expect(
+      tsConfigAfterSecond.compilerOptions.paths['prism-manifest/*']
+    ).toEqual(['custom/path.ts']);
+  });
+
   it('should log setup summary', async () => {
     const tree = createTree(defaultLibProject());
     const logs: string[] = [];
@@ -617,6 +666,8 @@ describe('ng-add schematic', () => {
     expect(zonelessIndex).toBeGreaterThan(-1);
     expect(providePrismIndex).toBeGreaterThan(-1);
     expect(zonelessIndex).toBeLessThan(providePrismIndex);
+    expect(mainTs).toContain('enablePrismHmr');
+    expect(mainTs).toContain("hot?.accept('prism-manifest/my-lib-prism',");
   });
 
   it('should write empty polyfills array when zoneless=true', async () => {

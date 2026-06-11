@@ -5,6 +5,10 @@ import type {
   ShowcaseConfig,
 } from '../../decorator/showcase.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+import {
+  CANVAS_LAYOUTS,
+  type CanvasLayout,
+} from '../../shared/canvas-layout.type.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -25,6 +29,13 @@ function isCanvasBg(value: unknown): value is CanvasBg {
   return (
     typeof value === 'string' &&
     (CANVAS_BGS as readonly string[]).includes(value)
+  );
+}
+
+function isCanvasLayout(value: unknown): value is CanvasLayout {
+  return (
+    typeof value === 'string' &&
+    (CANVAS_LAYOUTS as readonly string[]).includes(value)
   );
 }
 
@@ -128,8 +139,7 @@ function extractShowcaseConfig(
       console.warn(
         `⚠ ng-prism: ${className} declares invalid status "${String(
           obj['status']
-        )}" — ` +
-          `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
+        )}" — ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
       );
     }
   }
@@ -143,6 +153,18 @@ function extractShowcaseConfig(
           obj['bg']
         )}" — ` +
           `expected one of: dots, plain, light, dark, checker. Skipping.`
+      );
+    }
+  }
+
+  if (obj['canvasLayout'] !== undefined) {
+    if (isCanvasLayout(obj['canvasLayout'])) {
+      config.canvasLayout = obj['canvasLayout'];
+    } else {
+      console.warn(
+        `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(
+          obj['canvasLayout']
+        )}" — ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
       );
     }
   }
@@ -161,6 +183,20 @@ function extractShowcaseConfig(
               )}" — expected one of: dots, plain, light, dark, checker. Skipping.`
           );
           delete cleaned['bg'];
+        }
+        if (
+          variant['canvasLayout'] !== undefined &&
+          !isCanvasLayout(variant['canvasLayout'])
+        ) {
+          console.warn(
+            `⚠ ng-prism: ${className} variant "${String(
+              variant['name']
+            )}" declares ` +
+              `invalid canvasLayout "${String(
+                variant['canvasLayout']
+              )}" — expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
+          );
+          delete cleaned['canvasLayout'];
         }
         return cleaned;
       }

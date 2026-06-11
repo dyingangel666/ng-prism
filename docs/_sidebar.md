@@ -7,6 +7,7 @@
   - [Your First Showcase](guide/first-showcase.md)
   - [Configuration](guide/configuration.md)
   - [Publishing Libraries](guide/library-publishing.md)
+  - [Migrating to v22](guide/migration-v22.md)
 
 - **Core Concepts**
 
