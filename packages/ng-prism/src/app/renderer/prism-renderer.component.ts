@@ -163,19 +163,12 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
 
     .demo-wrap {
       position: relative;
+      display: block;
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
       transform: scale(var(--zoom, 1));
       transition: transform 0.18s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      max-width: 600px;
-
-      > * {
-        flex: 1 1 auto;
-        text-align: center;
-      }
     }
 
   `,

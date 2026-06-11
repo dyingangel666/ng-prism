@@ -12,3 +12,4 @@ export { TextareaComponent } from './lib/components/textarea/textarea.component.
 export { TooltipComponent, type TooltipPositionType } from './lib/components/tooltip/tooltip.component.js';
 export { SpinnerComponent, type SpinnerSizeType } from './lib/components/spinner/spinner.component.js';
 export { TooltipDirective, type TooltipDirectivePositionType } from './lib/directives/tooltip/tooltip.directive.js';
+export { DividerComponent, type DividerOrientationType, type DividerVariantType } from './lib/components/divider/divider.component.js';

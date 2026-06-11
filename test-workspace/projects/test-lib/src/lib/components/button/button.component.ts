@@ -106,6 +106,10 @@ export type ButtonVariantType =
       inputs: { variant: 'elevated', label: 'On dark' },
       bg: 'dark',
     },
+    {
+      name: 'Full width',
+      inputs: { variant: 'filled', label: 'Full width', fullWidth: true },
+    },
   ],
   tags: ['form', 'action', 'button'],
 })
@@ -113,6 +117,9 @@ export type ButtonVariantType =
   selector: 'lib-button',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.btn-host--full-width]': 'fullWidth()',
+  },
   template: `
     <button
       class="btn"
@@ -130,6 +137,16 @@ export type ButtonVariantType =
   styles: `
     :host {
       display: inline-block;
+    }
+
+    :host(.btn-host--full-width) {
+      display: block;
+      width: 100%;
+    }
+
+    :host(.btn-host--full-width) .btn {
+      display: flex;
+      width: 100%;
     }
 
     .btn {
@@ -258,6 +275,9 @@ export class ButtonComponent {
 
   /** Disables the button — prevents interaction and reduces opacity. */
   readonly disabled = input<boolean>(false);
+
+  /** Stretches the button to fill the container width. */
+  readonly fullWidth = input<boolean>(false);
 
   /**
    * Puts the button into a *readonly* visual state without disabling it at the DOM level.
