@@ -109,6 +109,7 @@ export type ButtonVariantType =
     {
       name: 'Full width',
       inputs: { variant: 'filled', label: 'Full width', fullWidth: true },
+      canvasLayout: 'stretch',
     },
   ],
   tags: ['form', 'action', 'button'],

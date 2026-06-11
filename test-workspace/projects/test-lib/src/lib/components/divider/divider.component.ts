@@ -30,9 +30,9 @@ export type DividerVariantType = 'default' | 'dark';
   description: 'Horizontal or vertical divider line with variant and weight options.',
   tags: ['divider', 'separator', 'hr', 'layout'],
   variants: [
-    { name: 'Horizontal', inputs: { orientation: 'horizontal' } },
-    { name: 'Horizontal Dark', inputs: { orientation: 'horizontal', variant: 'dark' } },
-    { name: 'Horizontal Bold', inputs: { orientation: 'horizontal', bold: true } },
+    { name: 'Horizontal', inputs: { orientation: 'horizontal' }, canvasLayout: 'stretch' },
+    { name: 'Horizontal Dark', inputs: { orientation: 'horizontal', variant: 'dark' }, canvasLayout: 'stretch' },
+    { name: 'Horizontal Bold', inputs: { orientation: 'horizontal', bold: true }, canvasLayout: 'stretch' },
     { name: 'Vertical', inputs: { orientation: 'vertical' } },
     { name: 'Vertical Bold', inputs: { orientation: 'vertical', bold: true } },
   ],

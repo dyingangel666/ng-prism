@@ -65,6 +65,7 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
         class="demo-wrap"
         [style.--zoom]="canvasService.zoom()"
         [attr.data-prism-rendered]="renderedKey()"
+        [attr.data-canvas-layout]="canvasLayout()"
       >
         <ng-container #outlet />
         @if (activeOverlay()) {
@@ -163,12 +164,14 @@ import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.compo
 
     .demo-wrap {
       position: relative;
+      display: inline-block;
+      transform: scale(var(--zoom, 1));
+      transition: transform 0.18s;
+    }
+    .demo-wrap[data-canvas-layout="stretch"] {
       display: block;
       width: 100%;
       max-width: 800px;
-      text-align: center;
-      transform: scale(var(--zoom, 1));
-      transition: transform 0.18s;
     }
 
   `,
@@ -211,6 +214,16 @@ export class PrismRendererComponent {
     return `${
       comp.meta.className
     }:${this.rendererService.activeVariantIndex()}`;
+  });
+  /** Resolved canvas layout for the active variant — variant overrides component config; defaults to 'fit'. */
+  protected readonly canvasLayout = computed(() => {
+    const comp = this.navigationService.activeComponent();
+    if (!comp) return 'fit';
+    const variant =
+      comp.meta.showcaseConfig.variants?.[
+        this.rendererService.activeVariantIndex()
+      ];
+    return variant?.canvasLayout ?? comp.meta.showcaseConfig.canvasLayout ?? 'fit';
   });
   protected readonly overlayInputs = { rendererService: this.rendererService };
   protected readonly overlayInjector = computed(() => {
