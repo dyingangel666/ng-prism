@@ -82,13 +82,17 @@ describe('ng-add schematic', () => {
       "import { bootstrapApplication } from '@angular/platform-browser'"
     );
     expect(mainTs).toContain(
-      "import { PrismShellComponent, providePrism } from '@ng-prism/core'"
+      "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core'"
     );
     expect(mainTs).toContain(
       "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
     );
     expect(mainTs).toContain("import config from 'ng-prism.config'");
     expect(mainTs).toContain('providePrism(PRISM_RUNTIME_MANIFEST, config)');
+    expect(mainTs).toContain('enablePrismHmr');
+    expect(mainTs).toContain(
+      "hot?.accept('prism-manifest/my-lib-prism',"
+    );
   });
 
   it('should add prism app project to angular.json', async () => {
@@ -664,6 +668,10 @@ describe('ng-add schematic', () => {
     expect(zonelessIndex).toBeGreaterThan(-1);
     expect(providePrismIndex).toBeGreaterThan(-1);
     expect(zonelessIndex).toBeLessThan(providePrismIndex);
+    expect(mainTs).toContain('enablePrismHmr');
+    expect(mainTs).toContain(
+      "hot?.accept('prism-manifest/my-lib-prism',"
+    );
   });
 
   it('should write empty polyfills array when zoneless=true', async () => {

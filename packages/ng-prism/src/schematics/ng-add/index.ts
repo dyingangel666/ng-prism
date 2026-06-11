@@ -49,31 +49,44 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
     const prismSrc = `${prismRoot}/src`;
 
     const zoneless = options.zoneless === true;
+    const hotConst =
+      "const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;";
+    const hmrThen = [
+      '.then((appRef) => {',
+      `  hot?.accept('prism-manifest/${prismProjectName}', (mod) => {`,
+      '    if (mod) enablePrismHmr(appRef, mod.PRISM_RUNTIME_MANIFEST);',
+      '  });',
+      '});',
+    ].join('\n');
     const mainTs = zoneless
       ? [
           "import { provideZonelessChangeDetection } from '@angular/core';",
           "import { bootstrapApplication } from '@angular/platform-browser';",
-          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
+          "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
           `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
+          '',
+          hotConst,
           '',
           'bootstrapApplication(PrismShellComponent, {',
           '  providers: [',
           '    provideZonelessChangeDetection(),',
           '    providePrism(PRISM_RUNTIME_MANIFEST, config),',
           '  ],',
-          '});',
+          '})' + hmrThen,
           '',
         ].join('\n')
       : [
           "import { bootstrapApplication } from '@angular/platform-browser';",
-          "import { PrismShellComponent, providePrism } from '@ng-prism/core';",
+          "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
           `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProjectName}';`,
           "import config from 'ng-prism.config';",
           '',
+          hotConst,
+          '',
           'bootstrapApplication(PrismShellComponent, {',
           '  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],',
-          '});',
+          '})' + hmrThen,
           '',
         ].join('\n');
 

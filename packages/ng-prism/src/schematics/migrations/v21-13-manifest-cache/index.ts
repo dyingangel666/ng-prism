@@ -17,8 +17,21 @@ interface AngularWorkspace {
 const OLD_IMPORT =
   /^import\s+\{\s*PRISM_RUNTIME_MANIFEST\s*\}\s+from\s+['"](?:\.\/prism-manifest|prism-manifest)['"]\s*;?$/m;
 
+/**
+ * Matches a Vite HMR accept call whose dependency target is the legacy
+ * `./prism-manifest` module specifier. Captures everything after the dep
+ * argument so the rewrite preserves the original callback and trailing
+ * code verbatim.
+ */
+const OLD_HMR_ACCEPT =
+  /\.accept\s*\(\s*(['"])\.\/prism-manifest\1\s*(,)/g;
+
 function buildNewImport(prismProject: string): string {
   return `import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/${prismProject}';`;
+}
+
+function buildNewHmrAcceptTarget(prismProject: string): string {
+  return `.accept('prism-manifest/${prismProject}',`;
 }
 
 function readWorkspace(tree: Tree): AngularWorkspace | undefined {
@@ -60,18 +73,32 @@ function rewriteMainTs(
   if (!buffer) return;
 
   const newImport = buildNewImport(prismProject);
+  const newHmrTarget = buildNewHmrAcceptTarget(prismProject);
   const content = buffer.toString('utf-8');
-  if (content.includes(newImport)) return;
 
-  if (!OLD_IMPORT.test(content)) {
+  const importMatches = OLD_IMPORT.test(content);
+  const hmrMatches = OLD_HMR_ACCEPT.test(content);
+  OLD_HMR_ACCEPT.lastIndex = 0;
+
+  if (content.includes(newImport) && !hmrMatches) return;
+
+  let next = content;
+  if (importMatches) {
+    next = next.replace(OLD_IMPORT, newImport);
+  } else if (!next.includes(newImport)) {
     context.logger.warn(
       `ng-prism migration: could not find PRISM_RUNTIME_MANIFEST import in ${mainPath}. ` +
         `Update it manually to: ${newImport}`
     );
-    return;
   }
 
-  tree.overwrite(mainPath, content.replace(OLD_IMPORT, newImport));
+  if (hmrMatches) {
+    next = next.replace(OLD_HMR_ACCEPT, newHmrTarget);
+  }
+
+  if (next !== content) {
+    tree.overwrite(mainPath, next);
+  }
 }
 
 function addTsConfigMapping(tree: Tree): void {

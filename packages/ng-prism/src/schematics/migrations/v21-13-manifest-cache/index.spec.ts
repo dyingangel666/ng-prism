@@ -101,6 +101,42 @@ describe('migration v21-13-manifest-cache', () => {
     );
   });
 
+  it('rewrites a Vite hot.accept target from ./prism-manifest to the path-mapped specifier', async () => {
+    const tree = createWorkspaceTree(defaultProjects());
+    tree.create(
+      'projects/my-lib-prism/src/main.ts',
+      [
+        "import { bootstrapApplication } from '@angular/platform-browser';",
+        "import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';",
+        "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';",
+        '',
+        "const hot = (import.meta as ImportMeta & { hot?: { accept(dep: string, cb: (mod: { PRISM_RUNTIME_MANIFEST: typeof PRISM_RUNTIME_MANIFEST } | undefined) => void): void } }).hot;",
+        '',
+        'bootstrapApplication(PrismShellComponent, {',
+        '  providers: [providePrism(PRISM_RUNTIME_MANIFEST)],',
+        "}).then((appRef) => {",
+        "  hot?.accept('./prism-manifest', (mod) => {",
+        '    if (mod) enablePrismHmr(appRef, mod.PRISM_RUNTIME_MANIFEST);',
+        '  });',
+        '});',
+        '',
+      ].join('\n')
+    );
+
+    const result = await run(tree);
+
+    const mainTs = result
+      .read('projects/my-lib-prism/src/main.ts')!
+      .toString('utf-8');
+    expect(mainTs).toContain(
+      "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'"
+    );
+    expect(mainTs).toContain(
+      "hot?.accept('prism-manifest/my-lib-prism',"
+    );
+    expect(mainTs).not.toContain("'./prism-manifest'");
+  });
+
   it('is idempotent: a second run does not touch already-migrated main.ts', async () => {
     const tree = createWorkspaceTree(defaultProjects());
     const migratedMain = [
