@@ -16,6 +16,7 @@ interface ShowcaseConfig<T = unknown> {
   providers?: Provider[];
   meta?: Record<string, unknown>;
   bg?: CanvasBg;
+  canvasLayout?: CanvasLayout;
   host?: string | DirectiveHost;
   renderPage?: string;
   status?: ComponentStatus;
@@ -156,6 +157,36 @@ Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
 When the user has deviated from the recommended background, a small floating pill appears in the canvas labelled `Recommended: <bg>` with a one-click `Reset` button.
 
 See also: [Variants — Per-Variant Background](guide/variants.md#per-variant-background) for the variant-level override and [Canvas State](architecture/canvas-state.md) for the full fallback model.
+
+---
+
+### `canvasLayout`
+
+Optional canvas layout mode for the rendered component. Controls how `.demo-wrap` (the wrapper inside the canvas stage) sizes itself around the component.
+
+Accepted values: `'fit'` (default), `'stretch'`.
+
+| Value       | Behavior                                                                                                                                                                                            |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size. The canvas stage's flexbox centers it. Use for the vast majority of components — buttons, badges, cards, alerts. |
+| `'stretch'` | Wrapper becomes `display: block; width: 100%; max-width: 800px`. Use when the component has no intrinsic width (e.g. a horizontal divider rendered via `border-bottom`) or explicitly opts into filling its container (e.g. a full-width button via `width: 100%`). |
+
+A `Variant.canvasLayout` overrides the component-level setting.
+
+```typescript
+@Showcase({
+  title: 'Divider',
+  // Most variants render horizontally and need a width reference.
+  canvasLayout: 'stretch',
+  variants: [
+    { name: 'Horizontal', inputs: { orientation: 'horizontal' } },
+    // Vertical dividers are intrinsic-sized — opt back into 'fit'.
+    { name: 'Vertical',   inputs: { orientation: 'vertical' }, canvasLayout: 'fit' },
+  ],
+})
+```
+
+See also: [Variants — Per-Variant Canvas Layout](guide/variants.md#per-variant-canvas-layout) for variant-level overrides.
 
 ---
 
