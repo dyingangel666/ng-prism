@@ -46,7 +46,7 @@ ng run my-lib:prism        # dev server still starts
 ng run my-lib:prism-build  # production build still succeeds
 ```
 
-You should see the manifest generated at `<workspaceRoot>/.ng-prism/<my-lib>-prism/prism-manifest.ts` (where `<my-lib>` is your library project name).
+You should see the manifest generated at `<workspaceRoot>/ng-prism-cache/<my-lib>-prism/prism-manifest.ts` (where `<my-lib>` is your library project name).
 
 ## Troubleshooting
 
@@ -91,7 +91,7 @@ Your `projects/<lib>-prism/tsconfig.app.json` doesn't widen `rootDir` to the wor
   ...
   "include": [
     "src/**/*.d.ts",
-+   "../../.ng-prism/<lib>-prism/**/*.ts"
++   "../../ng-prism-cache/<lib>-prism/**/*.ts"
   ]
 ```
 
@@ -102,8 +102,8 @@ Fixed automatically in v22.0.0-beta.1 onward.
 Your root `tsconfig.json`'s `paths` values lack a `./` prefix. The migration in v22.0.0-beta.0 wrote the path mapping value without it. Open `tsconfig.json` and add the prefix:
 
 ```diff
-- "prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]
-+ "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
+- "prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]
++ "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
 ```
 
 Same applies to any other ng-prism path mappings (`ng-prism.config`, `<lib>`) if they lack the prefix. Fixed automatically in v22.0.0-beta.1 onward.
@@ -130,7 +130,7 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
     "paths": {
       "ng-prism.config": ["./ng-prism.config.ts"],
       "my-lib": ["./projects/my-lib/src/public-api.ts"],
-+     "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
++     "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
     }
   }
 ```
@@ -152,7 +152,7 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 ### 5. Adds a single workspace-wide ignore (runs once, not per project)
 
 ```diff
-+ .ng-prism/
++ ng-prism-cache/
 ```
 
 ### 6. Updates each prism `tsconfig.app.json`
@@ -166,7 +166,7 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
   "files": ["src/main.ts"],
   "include": [
     "src/**/*.d.ts",
-+   "../../.ng-prism/<lib>-prism/**/*.ts"
++   "../../ng-prism-cache/<lib>-prism/**/*.ts"
   ]
 ```
 
@@ -182,10 +182,10 @@ An existing user-defined `rootDir` is preserved; the migration only sets the def
 If you have **multiple prism projects** in the same workspace, the wildcard mapping resolves each one to its own cache file:
 
 ```jsonc
-"prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
+"prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
 ```
 
-So `from 'prism-manifest/test-lib-prism'` resolves to `./.ng-prism/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `./.ng-prism/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier — no per-tsconfig.app.json overrides needed.
+So `from 'prism-manifest/test-lib-prism'` resolves to `./ng-prism-cache/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `./ng-prism-cache/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier — no per-tsconfig.app.json overrides needed.
 
 ## Manual migration
 
@@ -211,7 +211,7 @@ Add the wildcard mapping under `compilerOptions.paths`:
   "compilerOptions": {
     "paths": {
       // ... your existing mappings ...
-      "prism-manifest/*": ["./.ng-prism/*/prism-manifest.ts"]
+      "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
     }
   }
 }
@@ -242,7 +242,7 @@ Remove any per-project manifest lines:
 Add a single workspace-wide ignore:
 
 ```diff
-+ .ng-prism/
++ ng-prism-cache/
 ```
 
 ### Step 5 — Update `projects/<lib>-prism/tsconfig.app.json`
@@ -258,7 +258,7 @@ Two changes:
   "files": ["src/main.ts"],
   "include": [
     "src/**/*.d.ts",
-+   "../../.ng-prism/<lib>-prism/**/*.ts"
++   "../../ng-prism-cache/<lib>-prism/**/*.ts"
   ]
 ```
 
@@ -270,7 +270,7 @@ Two changes:
 ng run my-lib:prism-build
 ```
 
-The pipeline will generate `<workspaceRoot>/.ng-prism/<lib>-prism/prism-manifest.ts` on first run. The Angular bundle should compile cleanly.
+The pipeline will generate `<workspaceRoot>/ng-prism-cache/<lib>-prism/prism-manifest.ts` on first run. The Angular bundle should compile cleanly.
 
 ## What if I skip the migration?
 
@@ -308,6 +308,6 @@ Relative paths resolve against `workspaceRoot`. If you set this option, also upd
 
 ## Related
 
-- ADR 006: [`prism-manifest.ts` lebt in `.ng-prism/`](../adr/006-manifest-cache-dir.md)
+- ADR 006: [`prism-manifest.ts` lebt in `ng-prism-cache/`](../adr/006-manifest-cache-dir.md)
 - Issue [#13](https://github.com/dyingangel666/ng-prism/issues/13)
 - Follow-up RFC [#14](https://github.com/dyingangel666/ng-prism/issues/14) — drop the separate `<lib>-prism` project entirely

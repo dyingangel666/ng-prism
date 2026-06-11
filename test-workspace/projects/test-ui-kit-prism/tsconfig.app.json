@@ -6,5 +6,5 @@
     "types": []
   },
   "files": ["src/main.ts"],
-  "include": ["src/**/*.d.ts", "../../.ng-prism/test-ui-kit-prism/**/*.ts"]
+  "include": ["src/**/*.d.ts", "../../ng-prism-cache/test-ui-kit-prism/**/*.ts"]
 }

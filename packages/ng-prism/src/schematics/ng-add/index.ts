@@ -126,7 +126,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         files: ['src/main.ts'],
         include: [
           'src/**/*.d.ts',
-          `../../.ng-prism/${prismProjectName}/**/*.ts`,
+          `../../ng-prism-cache/${prismProjectName}/**/*.ts`,
         ],
       };
       tree.create(tsconfigAppPath, JSON.stringify(tsconfigApp, null, 2) + '\n');
@@ -254,7 +254,7 @@ function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
       `./${sourceRoot}/public-api.ts`,
     ]);
     addTsConfigPath(tree, tsConfigPath, 'prism-manifest/*', [
-      './.ng-prism/*/prism-manifest.ts',
+      './ng-prism-cache/*/prism-manifest.ts',
     ]);
 
     return tree;
@@ -338,7 +338,7 @@ function logSetupSummary(options: NgAddSchemaOptions): Rule {
 
 function addNgPrismGitignoreEntry(): Rule {
   return (tree: Tree) => {
-    const entry = '.ng-prism/';
+    const entry = 'ng-prism-cache/';
     const gitignorePath = '.gitignore';
 
     const buffer = tree.read(gitignorePath);

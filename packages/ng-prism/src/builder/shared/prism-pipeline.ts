@@ -27,7 +27,7 @@ export interface PrismPipelineOptions {
   libraryImportPath: string;
   prismProject: string;
   configFile: string;
-  /** Absolute path. If omitted, defaults to `<workspaceRoot>/.ng-prism/<prismProject>`. */
+  /** Absolute path. If omitted, defaults to `<workspaceRoot>/ng-prism-cache/<prismProject>`. */
   cacheDir?: string;
 }
 
@@ -103,8 +103,8 @@ export async function runPrismPipeline(
     meta: manifest.meta,
   });
 
-  const cacheDir =
-    options.cacheDir ?? join(workspaceRoot, '.ng-prism', options.prismProject);
+  const cacheRoot = options.cacheDir ?? join(workspaceRoot, 'ng-prism-cache');
+  const cacheDir = join(cacheRoot, options.prismProject);
   const manifestPath = join(cacheDir, 'prism-manifest.ts');
 
   mkdirSync(cacheDir, { recursive: true });

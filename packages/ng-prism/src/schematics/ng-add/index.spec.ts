@@ -278,21 +278,21 @@ describe('ng-add schematic', () => {
       './projects/my-lib/src/public-api.ts',
     ]);
     expect(tsConfig.compilerOptions?.paths?.['prism-manifest/*']).toEqual([
-      './.ng-prism/*/prism-manifest.ts',
+      './ng-prism-cache/*/prism-manifest.ts',
     ]);
   });
 
-  it('should add .ng-prism/ entry to .gitignore', async () => {
+  it('should add ng-prism-cache/ entry to .gitignore', async () => {
     const tree = createTree(defaultLibProject());
 
     const result = await runSchematic({ project: 'my-lib' }, tree);
 
     expect(result.exists('/.gitignore')).toBe(true);
     const gitignore = result.read('/.gitignore')!.toString('utf-8');
-    expect(gitignore).toContain('.ng-prism/');
+    expect(gitignore).toContain('ng-prism-cache/');
   });
 
-  it('should append .ng-prism/ to an existing .gitignore without duplicating', async () => {
+  it('should append ng-prism-cache/ to an existing .gitignore without duplicating', async () => {
     const tree = createTree(defaultLibProject());
     tree.create('.gitignore', 'node_modules\ndist\n');
 
@@ -300,17 +300,17 @@ describe('ng-add schematic', () => {
 
     const gitignore = result.read('/.gitignore')!.toString('utf-8');
     expect(gitignore).toContain('node_modules');
-    expect(gitignore).toContain('.ng-prism/');
+    expect(gitignore).toContain('ng-prism-cache/');
   });
 
-  it('should not duplicate .ng-prism/ entry in .gitignore', async () => {
+  it('should not duplicate ng-prism-cache/ entry in .gitignore', async () => {
     const tree = createTree(defaultLibProject());
-    tree.create('.gitignore', '.ng-prism/\n');
+    tree.create('.gitignore', 'ng-prism-cache/\n');
 
     const result = await runSchematic({ project: 'my-lib' }, tree);
 
     const gitignore = result.read('/.gitignore')!.toString('utf-8');
-    const matches = gitignore.match(/\.ng-prism\//g);
+    const matches = gitignore.match(/ng-prism-cache\//g);
     expect(matches).toHaveLength(1);
   });
 
@@ -328,7 +328,7 @@ describe('ng-add schematic', () => {
     expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
     expect(tsconfigApp.include).toContain('src/**/*.d.ts');
     expect(tsconfigApp.include).toContain(
-      '../../.ng-prism/my-lib-prism/**/*.ts'
+      '../../ng-prism-cache/my-lib-prism/**/*.ts'
     );
   });
 

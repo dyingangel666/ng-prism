@@ -54,7 +54,7 @@ All hooks are awaited — async plugins are fully supported.
 `generateRuntimeManifest()` converts the `PrismManifest` (plain JSON-safe data) into a TypeScript source string that the showcase app can import. The generated file contains real `import` statements:
 
 ```typescript
-// .ng-prism/<prism-project>/prism-manifest.ts (generated)
+// ng-prism-cache/<prism-project>/prism-manifest.ts (generated)
 import { ButtonComponent } from 'my-lib';
 import { CardComponent } from 'my-lib/molecules';
 
@@ -76,7 +76,7 @@ When the file must be written, it is first written to `prism-manifest.ts.tmp` th
 
 ### Manifest Output Location
 
-Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/.ng-prism/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": [".ng-prism/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `.ng-prism/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst). Hintergrund siehe [ADR 006](../adr/006-manifest-cache-dir.md).
+Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/ng-prism-cache/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `ng-prism-cache/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst). Hintergrund siehe [ADR 006](../adr/006-manifest-cache-dir.md).
 
 ## PrismPipelineState — Scanner Reuse Across Rebuilds
 

@@ -132,7 +132,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     expect(
-      existsSync(join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'))
+      existsSync(join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'))
     ).toBe(true);
   });
 
@@ -143,7 +143,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'test-lib'");
@@ -157,7 +157,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: ButtonComponent,');
@@ -170,7 +170,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).not.toContain('InternalComponent');
@@ -183,7 +183,7 @@ describe('test-workspace integration', () => {
     await runPrismPipeline(pipelineOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'test-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'test-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('title: "Button"');

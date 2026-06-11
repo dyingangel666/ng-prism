@@ -29,14 +29,14 @@ describe('startWatcher', () => {
     const logger = createLogger();
     const handle = startWatcher({
       entryPoint: '/some/lib',
-      ignorePaths: ['/some/lib/.ng-prism'],
+      ignorePaths: ['/some/lib/ng-prism-cache'],
       onRebuild: jest.fn().mockResolvedValue(undefined),
       logger,
     });
 
     const [, watchOptions] = mockChokidarWatch.mock.calls[0];
     expect(Array.isArray(watchOptions.ignored)).toBe(true);
-    expect(watchOptions.ignored).toContain('/some/lib/.ng-prism');
+    expect(watchOptions.ignored).toContain('/some/lib/ng-prism-cache');
 
     handle.close();
   });

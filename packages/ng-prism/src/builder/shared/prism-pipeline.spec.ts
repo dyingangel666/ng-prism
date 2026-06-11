@@ -82,7 +82,7 @@ describe('runPrismPipeline integration', () => {
 
     expect(existsSync(result.manifestPath)).toBe(true);
     expect(result.manifestPath).toBe(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts')
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts')
     );
   });
 
@@ -93,7 +93,7 @@ describe('runPrismPipeline integration', () => {
     await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain(
@@ -108,7 +108,7 @@ describe('runPrismPipeline integration', () => {
     await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: ButtonComponent,');
@@ -127,7 +127,7 @@ describe('runPrismPipeline integration', () => {
     );
 
     expect(result.manifestPath).toBe(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts')
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts')
     );
     expect(existsSync(result.manifestPath)).toBe(true);
   });
@@ -143,7 +143,9 @@ describe('runPrismPipeline integration', () => {
       createPipelineState()
     );
 
-    expect(result.manifestPath).toBe(join(customCacheDir, 'prism-manifest.ts'));
+    expect(result.manifestPath).toBe(
+      join(customCacheDir, 'my-lib-prism', 'prism-manifest.ts')
+    );
     expect(existsSync(result.manifestPath)).toBe(true);
   });
 
@@ -202,7 +204,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
     await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
@@ -217,7 +219,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
     await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain('type: PillComponent,');
@@ -237,7 +239,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
     expect(result.componentCount).toBe(2);
 
     const content = readFileSync(
-      join(tmp, '.ng-prism', 'my-lib-prism', 'prism-manifest.ts'),
+      join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
       'utf-8'
     );
     expect(content).toContain("from 'multi-entry-lib/atoms/icon'");

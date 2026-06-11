@@ -203,7 +203,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
-      './.ng-prism/*/prism-manifest.ts',
+      './ng-prism-cache/*/prism-manifest.ts',
     ]);
   });
 
@@ -274,14 +274,14 @@ describe('migration v21-13-manifest-cache', () => {
     expect(gitignore).toContain('dist');
   });
 
-  it('creates .gitignore with .ng-prism/ when it does not exist', async () => {
+  it('creates .gitignore with ng-prism-cache/ when it does not exist', async () => {
     const tree = createWorkspaceTree(defaultProjects());
 
     const result = await run(tree);
 
     expect(result.exists('.gitignore')).toBe(true);
     expect(result.read('.gitignore')!.toString('utf-8')).toContain(
-      '.ng-prism/'
+      'ng-prism-cache/'
     );
   });
 
@@ -293,35 +293,35 @@ describe('migration v21-13-manifest-cache', () => {
     const result = await run(tree);
 
     // NOTE: removeGitignoreEntry leaves the file untouched, but ensureNgPrismGitignoreEntry
-    // still appends .ng-prism/. The original entries are preserved.
+    // still appends ng-prism-cache/. The original entries are preserved.
     const gitignore = result.read('.gitignore')!.toString('utf-8');
     expect(gitignore).toContain('node_modules');
     expect(gitignore).toContain('dist');
-    expect(gitignore).toContain('.ng-prism/');
+    expect(gitignore).toContain('ng-prism-cache/');
   });
 
-  it('ensures .ng-prism/ is in .gitignore', async () => {
+  it('ensures ng-prism-cache/ is in .gitignore', async () => {
     const tree = createWorkspaceTree(defaultProjects());
 
     const result = await run(tree);
 
     const gitignore = result.read('.gitignore');
     expect(gitignore).not.toBeNull();
-    expect(gitignore!.toString('utf-8')).toContain('.ng-prism/');
+    expect(gitignore!.toString('utf-8')).toContain('ng-prism-cache/');
   });
 
-  it('does not duplicate .ng-prism/ when already in .gitignore', async () => {
+  it('does not duplicate ng-prism-cache/ when already in .gitignore', async () => {
     const tree = createWorkspaceTree(defaultProjects());
-    tree.create('.gitignore', 'node_modules\n.ng-prism/\n');
+    tree.create('.gitignore', 'node_modules\nng-prism-cache/\n');
 
     const result = await run(tree);
 
     const gitignore = result.read('.gitignore')!.toString('utf-8');
-    const matches = gitignore.match(/\.ng-prism\//g);
+    const matches = gitignore.match(/ng-prism-cache\//g);
     expect(matches).toHaveLength(1);
   });
 
-  it('preserves existing entries when adding .ng-prism/', async () => {
+  it('preserves existing entries when adding ng-prism-cache/', async () => {
     const tree = createWorkspaceTree(defaultProjects());
     tree.create('.gitignore', 'node_modules\ndist\n');
 
@@ -330,7 +330,7 @@ describe('migration v21-13-manifest-cache', () => {
     const gitignore = result.read('.gitignore')!.toString('utf-8');
     expect(gitignore).toContain('node_modules');
     expect(gitignore).toContain('dist');
-    expect(gitignore).toContain('.ng-prism/');
+    expect(gitignore).toContain('ng-prism-cache/');
   });
 
   it('adds the cache include and sets rootDir on the prism tsconfig.app.json', async () => {
@@ -360,7 +360,7 @@ describe('migration v21-13-manifest-cache', () => {
     expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
     expect(tsconfigApp.include).toContain('src/**/*.d.ts');
     expect(tsconfigApp.include).toContain(
-      '../../.ng-prism/my-lib-prism/**/*.ts'
+      '../../ng-prism-cache/my-lib-prism/**/*.ts'
     );
   });
 
@@ -396,7 +396,7 @@ describe('migration v21-13-manifest-cache', () => {
         {
           extends: '../../tsconfig.json',
           files: ['src/main.ts'],
-          include: ['src/**/*.d.ts', '../../.ng-prism/my-lib-prism/**/*.ts'],
+          include: ['src/**/*.d.ts', '../../ng-prism-cache/my-lib-prism/**/*.ts'],
         },
         null,
         2
@@ -409,7 +409,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')
     ) as { include: string[] };
     const occurrences = tsconfigApp.include.filter(
-      (entry) => entry === '../../.ng-prism/my-lib-prism/**/*.ts'
+      (entry) => entry === '../../ng-prism-cache/my-lib-prism/**/*.ts'
     );
     expect(occurrences).toHaveLength(1);
   });
@@ -472,7 +472,7 @@ describe('migration v21-13-manifest-cache', () => {
       result.read('tsconfig.json')!.toString('utf-8')
     ) as { compilerOptions: { paths: Record<string, string[]> } };
     expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual([
-      './.ng-prism/*/prism-manifest.ts',
+      './ng-prism-cache/*/prism-manifest.ts',
     ]);
 
     expect(

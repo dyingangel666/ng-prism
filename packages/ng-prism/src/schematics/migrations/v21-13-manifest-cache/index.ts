@@ -103,13 +103,13 @@ function rewriteMainTs(
 
 function addTsConfigMapping(tree: Tree): void {
   addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest/*', [
-    './.ng-prism/*/prism-manifest.ts',
+    './ng-prism-cache/*/prism-manifest.ts',
   ]);
 }
 
 function ensureNgPrismGitignoreEntry(tree: Tree): void {
   const path = '.gitignore';
-  const entry = '.ng-prism/';
+  const entry = 'ng-prism-cache/';
   const buffer = tree.read(path);
   if (!buffer) {
     tree.create(path, entry + '\n');
@@ -158,7 +158,7 @@ function addCacheIncludeToTsconfigApp(
   const include = Array.isArray(parsed.include)
     ? (parsed.include as string[])
     : [];
-  const includeEntry = `../../.ng-prism/${prismProject}/**/*.ts`;
+  const includeEntry = `../../ng-prism-cache/${prismProject}/**/*.ts`;
   const includeChanged = !include.includes(includeEntry);
   const nextInclude = includeChanged ? [...include, includeEntry] : include;
 
