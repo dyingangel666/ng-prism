@@ -50,6 +50,18 @@ export interface ShowcaseConfig<T = unknown> {
   categoryOrder?: number;
   /** Controls the order of this component within its category (lower = higher). Components without this sort alphabetically after ordered ones. */
   componentOrder?: number;
+  /**
+   * Top-level section in the sidebar. Auto-detected if omitted:
+   * `@Directive` → 'Directives', otherwise 'Components'. Free-form string —
+   * any value creates a new top-level section (e.g. 'Pipes', 'Utilities').
+   */
+  section?: string;
+  /**
+   * Sort order of this section in the sidebar (lower = higher in list).
+   * The section's effective order is the minimum `sectionOrder` of all its items.
+   * Defaults: 'Components' → 0, 'Directives' → 10, all others → 100.
+   */
+  sectionOrder?: number;
   /** Predefined variants shown as tabs */
   variants?: Variant<T>[];
   /** Tags for search and filtering */
