@@ -9,7 +9,11 @@ function escapeAttrValue(value: unknown): string {
   return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-function pushAttribute(attributes: string[], name: string, value: unknown): void {
+function pushAttribute(
+  attributes: string[],
+  name: string,
+  value: unknown
+): void {
   if (typeof value === 'string') {
     attributes.push(`${name}="${escapeAttrValue(value)}"`);
   } else if (typeof value === 'boolean') {
@@ -29,10 +33,17 @@ export function generateSnippet(
   values: Record<string, unknown>,
   explicitKeys?: ReadonlySet<string>,
   content?: string | Record<string, string>,
-  directiveOptions?: SnippetDirectiveOptions,
+  directiveOptions?: SnippetDirectiveOptions
 ): string {
   if (directiveOptions?.host) {
-    return generateDirectiveSnippet(selector, inputs, values, explicitKeys, content, directiveOptions.host);
+    return generateDirectiveSnippet(
+      selector,
+      inputs,
+      values,
+      explicitKeys,
+      content,
+      directiveOptions.host
+    );
   }
 
   const attributes: string[] = [];
@@ -48,7 +59,8 @@ export function generateSnippet(
       input.defaultValue !== undefined &&
       value === input.defaultValue &&
       !explicitKeys?.has(input.name)
-    ) continue;
+    )
+      continue;
 
     pushAttribute(attributes, input.name, value);
   }
@@ -97,7 +109,9 @@ function directiveSelectorToAttr(selector: string): string {
 }
 
 function parseHostStringSimple(host: string): { tag: string; attrs: string } {
-  const match = host.trim().match(/^<\s*([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)\s*\/?\s*>$/);
+  const match = host
+    .trim()
+    .match(/^<\s*([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)\s*\/?\s*>$/);
   if (!match) return { tag: 'div', attrs: '' };
   return { tag: match[1], attrs: match[2].trim() };
 }
@@ -108,7 +122,7 @@ function generateDirectiveSnippet(
   values: Record<string, unknown>,
   explicitKeys: ReadonlySet<string> | undefined,
   content: string | Record<string, string> | undefined,
-  host: string | DirectiveHost,
+  host: string | DirectiveHost
 ): string {
   const directiveAttr = directiveSelectorToAttr(selector);
 
@@ -129,7 +143,7 @@ function generateDirectiveSnippet(
   }
 
   const attributes: string[] = [];
-  const processed = new Set<string>();
+  const processed = new Set<string>(['__prismContent__']);
 
   for (const input of inputs) {
     processed.add(input.name);
@@ -141,7 +155,8 @@ function generateDirectiveSnippet(
       input.defaultValue !== undefined &&
       value === input.defaultValue &&
       !explicitKeys?.has(input.name)
-    ) continue;
+    )
+      continue;
 
     pushAttribute(attributes, input.name, value);
   }
@@ -153,14 +168,21 @@ function generateDirectiveSnippet(
     pushAttribute(attributes, name, value);
   }
 
+  const projectedContent =
+    content ??
+    (typeof values['__prismContent__'] === 'string'
+      ? (values['__prismContent__'] as string)
+      : undefined);
   const allAttrs = [...hostAttrs, directiveAttr, ...attributes].join(' ');
-  const contentHtml = resolveContentHtml(content);
+  const contentHtml = resolveContentHtml(projectedContent);
 
   if (!contentHtml) {
     if (!allAttrs) return `<${tag} />`;
     const singleLine = `<${tag} ${allAttrs} />`;
     if (singleLine.length <= 80) return singleLine;
-    const indented = [...hostAttrs, directiveAttr, ...attributes].map((a) => `  ${a}`).join('\n');
+    const indented = [...hostAttrs, directiveAttr, ...attributes]
+      .map((a) => `  ${a}`)
+      .join('\n');
     return `<${tag}\n${indented} />`;
   }
 
@@ -179,7 +201,9 @@ function generateDirectiveSnippet(
   return `<${tag}\n${indented}>\n  ${contentHtml}\n${closeTag}`;
 }
 
-function resolveContentHtml(content?: string | Record<string, string>): string | undefined {
+function resolveContentHtml(
+  content?: string | Record<string, string>
+): string | undefined {
   if (!content) return undefined;
   if (typeof content === 'string') return content;
 

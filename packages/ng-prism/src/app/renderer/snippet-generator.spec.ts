@@ -1,7 +1,9 @@
 import type { InputMeta } from '../../plugin/plugin.types.js';
 import { generateSnippet } from './snippet-generator.js';
 
-function meta(overrides: Partial<InputMeta> & Pick<InputMeta, 'name'>): InputMeta {
+function meta(
+  overrides: Partial<InputMeta> & Pick<InputMeta, 'name'>
+): InputMeta {
   return { type: 'string', required: false, ...overrides };
 }
 
@@ -70,7 +72,7 @@ describe('generateSnippet', () => {
       disabled: true,
     });
     expect(result).toBe(
-      '<lib-button variant="filled" label="Save" [disabled]="true" />',
+      '<lib-button variant="filled" label="Save" [disabled]="true" />'
     );
   });
 
@@ -88,7 +90,7 @@ describe('generateSnippet', () => {
       disabled: true,
     });
     expect(result).toBe(
-      `<my-long-component-selector\n  variant="filled"\n  label="Save Changes"\n  placeholder="Enter something here"\n  [disabled]="true" />`,
+      `<my-long-component-selector\n  variant="filled"\n  label="Save Changes"\n  placeholder="Enter something here"\n  [disabled]="true" />`
     );
   });
 
@@ -114,22 +116,20 @@ describe('generateSnippet', () => {
       'lib-button',
       inputs,
       { variant: 'icon-only', icon: '★' },
-      explicitKeys,
+      explicitKeys
     );
-    expect(result).toBe(
-      '<lib-button variant="icon-only" icon="★" />',
-    );
+    expect(result).toBe('<lib-button variant="icon-only" icon="★" />');
   });
 
   it('should include values not present in inputs metadata', () => {
     const inputs = [meta({ name: 'disabled', type: 'boolean' })];
-    const result = generateSnippet(
-      'sg-color-picker',
-      inputs,
-      { value: '#6366f1', alphaChannel: true, disabled: false },
-    );
+    const result = generateSnippet('sg-color-picker', inputs, {
+      value: '#6366f1',
+      alphaChannel: true,
+      disabled: false,
+    });
     expect(result).toBe(
-      '<sg-color-picker value="#6366f1" [alphaChannel]="true" />',
+      '<sg-color-picker value="#6366f1" [alphaChannel]="true" />'
     );
   });
 
@@ -143,7 +143,7 @@ describe('generateSnippet', () => {
       'lib-button',
       inputs,
       { variant: 'outlined', label: 'Button' },
-      explicitKeys,
+      explicitKeys
     );
     expect(result).toBe('<lib-button variant="outlined" />');
   });
@@ -152,19 +152,27 @@ describe('generateSnippet', () => {
     it('should render directive on host element', () => {
       const inputs = [meta({ name: 'highlightColor' })];
       const result = generateSnippet(
-        '[appHighlight]', inputs, { highlightColor: 'yellow' },
-        undefined, 'Hover me',
-        { host: '<span class="demo-text">' },
+        '[appHighlight]',
+        inputs,
+        { highlightColor: 'yellow' },
+        undefined,
+        'Hover me',
+        { host: '<span class="demo-text">' }
       );
-      expect(result).toBe('<span class="demo-text" appHighlight highlightColor="yellow">Hover me</span>');
+      expect(result).toBe(
+        '<span class="demo-text" appHighlight highlightColor="yellow">Hover me</span>'
+      );
     });
 
     it('should render directive on plain host element without attributes', () => {
       const inputs = [meta({ name: 'color' })];
       const result = generateSnippet(
-        '[appHighlight]', inputs, { color: 'red' },
-        undefined, undefined,
-        { host: '<div>' },
+        '[appHighlight]',
+        inputs,
+        { color: 'red' },
+        undefined,
+        undefined,
+        { host: '<div>' }
       );
       expect(result).toBe('<div appHighlight color="red" />');
     });
@@ -172,9 +180,18 @@ describe('generateSnippet', () => {
     it('should render directive with object host', () => {
       const inputs = [meta({ name: 'tooltipText' })];
       const result = generateSnippet(
-        '[appTooltip]', inputs, { tooltipText: 'Hello' },
-        undefined, 'Click me',
-        { host: { selector: 'my-button', import: { name: 'ButtonComponent', from: 'my-lib' }, inputs: { variant: 'primary' } } },
+        '[appTooltip]',
+        inputs,
+        { tooltipText: 'Hello' },
+        undefined,
+        'Click me',
+        {
+          host: {
+            selector: 'my-button',
+            import: { name: 'ButtonComponent', from: 'my-lib' },
+            inputs: { variant: 'primary' },
+          },
+        }
       );
       expect(result).toContain('<my-button');
       expect(result).toContain('appTooltip');
@@ -188,17 +205,87 @@ describe('generateSnippet', () => {
       const result = generateSnippet('lib-button', [], {}, undefined, 'Click');
       expect(result).toBe('<lib-button>Click</lib-button>');
     });
+
+    it('should use __prismContent__ from values as projected content when content is undefined', () => {
+      const inputs = [meta({ name: 'tooltipText' })];
+      const result = generateSnippet(
+        '[appTooltip]',
+        inputs,
+        { tooltipText: 'Info', __prismContent__: 'Hover me' },
+        undefined,
+        undefined,
+        { host: '<button>' }
+      );
+      expect(result).toBe(
+        '<button appTooltip tooltipText="Info">Hover me</button>'
+      );
+    });
+
+    it('should never emit __prismContent__ as an attribute', () => {
+      const inputs = [meta({ name: 'tooltipText' })];
+      const result = generateSnippet(
+        '[appTooltip]',
+        inputs,
+        { tooltipText: 'Info', __prismContent__: 'Hover me' },
+        undefined,
+        undefined,
+        { host: '<button>' }
+      );
+      expect(result).not.toContain('__prismContent__');
+      expect(result).not.toContain('[__prismContent__]');
+    });
+
+    it('should prefer explicit content over __prismContent__ in values', () => {
+      const result = generateSnippet(
+        '[appTooltip]',
+        [],
+        { __prismContent__: 'from values' },
+        undefined,
+        'from content',
+        { host: '<button>' }
+      );
+      expect(result).toBe('<button appTooltip>from content</button>');
+    });
+
+    it('should use __prismContent__ with object host (content projection into component)', () => {
+      const result = generateSnippet(
+        '[sguiTooltip]',
+        [],
+        { __prismContent__: 'Hover me' },
+        undefined,
+        undefined,
+        {
+          host: {
+            selector: 'sgui-label',
+            import: { name: 'SguiLabelComponent', from: 'sgui-lib' },
+          },
+        }
+      );
+      expect(result).toBe('<sgui-label sguiTooltip>Hover me</sgui-label>');
+    });
   });
 
   describe('content projection', () => {
     it('should render opening/closing tags with string content', () => {
-      const result = generateSnippet('lib-button', [], {}, undefined, 'Click me');
+      const result = generateSnippet(
+        'lib-button',
+        [],
+        {},
+        undefined,
+        'Click me'
+      );
       expect(result).toBe('<lib-button>Click me</lib-button>');
     });
 
     it('should render content with attributes', () => {
       const inputs = [meta({ name: 'variant' })];
-      const result = generateSnippet('lib-button', inputs, { variant: 'primary' }, undefined, 'Save');
+      const result = generateSnippet(
+        'lib-button',
+        inputs,
+        { variant: 'primary' },
+        undefined,
+        'Save'
+      );
       expect(result).toBe('<lib-button variant="primary">Save</lib-button>');
     });
 
@@ -209,19 +296,27 @@ describe('generateSnippet', () => {
         inputs,
         { variant: 'primary', size: 'large' },
         undefined,
-        'Some longer content that makes it wider',
+        'Some longer content that makes it wider'
       );
       expect(result).toContain('>\n  Some longer content');
       expect(result).toContain('</my-long-component-selector>');
     });
 
     it('should render self-closing tag when content is undefined', () => {
-      const result = generateSnippet('lib-button', [], {}, undefined, undefined);
+      const result = generateSnippet(
+        'lib-button',
+        [],
+        {},
+        undefined,
+        undefined
+      );
       expect(result).toBe('<lib-button />');
     });
 
     it('should render Record content with default slot', () => {
-      const result = generateSnippet('lib-card', [], {}, undefined, { default: 'Body text' });
+      const result = generateSnippet('lib-card', [], {}, undefined, {
+        default: 'Body text',
+      });
       expect(result).toBe('<lib-card>Body text</lib-card>');
     });
 
@@ -231,14 +326,18 @@ describe('generateSnippet', () => {
         '[card-header]': 'Title',
       });
       expect(result).toContain('Body text');
-      expect(result).toContain('<ng-container card-header>Title</ng-container>');
+      expect(result).toContain(
+        '<ng-container card-header>Title</ng-container>'
+      );
     });
   });
 
   describe('attribute escaping', () => {
     it('should escape double quotes in string attribute values', () => {
       const inputs = [meta({ name: 'label' })];
-      const result = generateSnippet('lib-button', inputs, { label: 'He said "hi"' });
+      const result = generateSnippet('lib-button', inputs, {
+        label: 'He said "hi"',
+      });
       expect(result).toBe('<lib-button label="He said &quot;hi&quot;" />');
     });
 

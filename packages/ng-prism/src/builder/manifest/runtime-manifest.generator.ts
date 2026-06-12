@@ -67,11 +67,13 @@ function generateWrapperClass(comp: ScannedComponent): string {
   let tag: string;
   let attrs: string;
   let importsArray: string;
+  let hostContentDefault = '';
 
   if (typeof host === 'string') {
     const parsed = parseHostString(host);
     tag = parsed?.tag ?? 'div';
     attrs = parsed?.attrs ? ` ${parsed.attrs}` : '';
+    hostContentDefault = parsed?.content ?? '';
     importsArray = `[${comp.className}]`;
   } else if (host && typeof host === 'object') {
     const hostObj = host as DirectiveHost;
@@ -104,7 +106,9 @@ function generateWrapperClass(comp: ScannedComponent): string {
   for (const o of comp.outputs) {
     members.push(`  ${o.name} = output();`);
   }
-  members.push(`  __prismContent__ = input('');`);
+  members.push(
+    `  __prismContent__ = input(${JSON.stringify(hostContentDefault)});`
+  );
 
   const lines = [
     `@Component({`,

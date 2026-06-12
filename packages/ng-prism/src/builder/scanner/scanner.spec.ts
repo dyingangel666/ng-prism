@@ -19,7 +19,7 @@ describe('createScanner', () => {
     const scanner = createScanner({ entryPoints });
     const result = scanner.scan();
 
-    expect(result.components).toHaveLength(7);
+    expect(result.components).toHaveLength(8);
   });
 
   it('should produce correct ButtonComponent data', () => {
@@ -81,7 +81,7 @@ describe('createScanner', () => {
     });
     const result = scanner.scan();
 
-    expect(result.components).toHaveLength(7);
+    expect(result.components).toHaveLength(8);
   });
 
   it('should produce correct HighlightDirective data', () => {
@@ -180,8 +180,8 @@ describe('createScanner', () => {
       });
       const result = scanner.scan();
 
-      // 7 components from the valid entry; the broken entry contributes nothing
-      expect(result.components).toHaveLength(7);
+      // 8 components from the valid entry; the broken entry contributes nothing
+      expect(result.components).toHaveLength(8);
       for (const c of result.components) {
         expect(c.importPath).toBe('good');
       }

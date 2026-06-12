@@ -8,6 +8,8 @@ import type { Provider } from '@angular/core';
 interface ShowcaseConfig<T = unknown> {
   title: string;
   description?: string;
+  section?: string;
+  sectionOrder?: number;
   category?: string;
   categoryOrder?: number;
   componentOrder?: number;
@@ -80,6 +82,28 @@ Optional number controlling the sort order of _this component_ within its catego
 
 ```typescript
 @Showcase({ title: 'Icon Button', category: 'Atoms', componentOrder: 2 })
+```
+
+---
+
+### `section`
+
+Optional string that places the component into a top-level sidebar section. Auto-detected when omitted: `@Directive` → `'Directives'`, `@Component` → `'Components'`. Any free-form string creates a new section (e.g. `'Pipes'`, `'Utilities'`).
+
+```typescript
+@Showcase({ title: 'Autofocus', section: 'Behavior' })
+@Directive({ selector: '[appAutofocus]', standalone: true })
+export class AutofocusDirective {}
+```
+
+---
+
+### `sectionOrder`
+
+Optional number controlling the sort order of this _section_ in the sidebar. Lower numbers appear first. The section's effective order is the minimum `sectionOrder` among its items. Defaults: `Components` → 0, `Directives` → 10, custom → 100.
+
+```typescript
+@Showcase({ title: 'AutofocusDirective', section: 'Behavior', sectionOrder: 5 })
 ```
 
 ---

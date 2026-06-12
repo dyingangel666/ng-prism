@@ -126,6 +126,10 @@ function extractShowcaseConfig(
 
   if (obj['description']) config.description = obj['description'] as string;
   if (obj['category']) config.category = obj['category'] as string;
+  if (obj['section']) config.section = obj['section'] as string;
+  if (typeof obj['sectionOrder'] === 'number') {
+    config.sectionOrder = obj['sectionOrder'];
+  }
   if (obj['tags']) config.tags = obj['tags'] as string[];
   if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
   if (obj['host'] !== undefined)

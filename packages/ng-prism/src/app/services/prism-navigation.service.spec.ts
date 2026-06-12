@@ -13,6 +13,9 @@ function createComponent(
     title: string;
     category: string;
     className: string;
+    section: string;
+    sectionOrder: number;
+    isDirective: boolean;
   }> = {}
 ): RuntimeComponent {
   return {
@@ -23,10 +26,16 @@ function createComponent(
       showcaseConfig: {
         title: overrides.title ?? 'Default',
         category: overrides.category,
+        section: overrides.section,
+        sectionOrder: overrides.sectionOrder,
       },
       inputs: [],
       outputs: [],
-      componentMeta: { selector: 'test', standalone: true, isDirective: false },
+      componentMeta: {
+        selector: 'test',
+        standalone: true,
+        isDirective: overrides.isDirective ?? false,
+      },
     },
   };
 }
@@ -103,20 +112,6 @@ describe('PrismNavigationService', () => {
     expect(service.activeComponent()).toBeNull();
   });
 
-  it('should build categoryTree from filtered components', () => {
-    const a = createComponent({ category: 'Forms', className: 'A' });
-    const b = createComponent({ category: 'Forms', className: 'B' });
-    const c = createComponent({ category: 'Layout', className: 'C' });
-    const { service } = setup({ components: [a, b, c] });
-
-    const tree = service.categoryTree();
-    expect(tree.get('Forms')).toEqual([
-      { kind: 'component', data: a },
-      { kind: 'component', data: b },
-    ]);
-    expect(tree.get('Layout')).toEqual([{ kind: 'component', data: c }]);
-  });
-
   it('should re-link activeComponent to new reference when manifest updates with same className', () => {
     const original = createComponent({ title: 'Button', className: 'Btn' });
     const { service, manifestService } = setup({ components: [original] });
@@ -175,5 +170,127 @@ describe('PrismNavigationService', () => {
 
     expect(service.activePage()).toBe(updatedPage);
     expect(service.activePage()).not.toBe(page);
+  });
+
+  describe('sectionTree', () => {
+    it('puts @Component into "Components" section by default', () => {
+      const comp = createComponent({ className: 'Foo' });
+      const { service } = setup({ components: [comp] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Components']);
+      expect(tree[0].categories[0].items[0].kind).toBe('component');
+    });
+
+    it('puts @Directive into "Directives" section by default', () => {
+      const dir = createComponent({ className: 'HiDir', isDirective: true });
+      const { service } = setup({ components: [dir] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Directives']);
+    });
+
+    it('puts components into both sections when mixed', () => {
+      const comp = createComponent({ className: 'Btn' });
+      const dir = createComponent({ className: 'HiDir', isDirective: true });
+      const { service } = setup({ components: [comp, dir] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Components', 'Directives']);
+    });
+
+    it('respects explicit section override on @Directive', () => {
+      const dir = createComponent({
+        className: 'HiDir',
+        isDirective: true,
+        section: 'Behavior',
+      });
+      const { service } = setup({ components: [dir] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Behavior']);
+    });
+
+    it('orders sections: Components before Directives by default', () => {
+      const dir = createComponent({ className: 'HiDir', isDirective: true });
+      const comp = createComponent({ className: 'Btn' });
+      const { service } = setup({ components: [dir, comp] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Components', 'Directives']);
+    });
+
+    it('orders sections by lowest sectionOrder among items', () => {
+      const a = createComponent({
+        className: 'A',
+        section: 'Custom',
+        sectionOrder: -5,
+      });
+      const b = createComponent({ className: 'B' });
+      const { service } = setup({ components: [a, b] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Custom', 'Components']);
+    });
+
+    it('sorts custom sections alphabetically after Components/Directives when no sectionOrder', () => {
+      const a = createComponent({ className: 'A', section: 'Zeta' });
+      const b = createComponent({ className: 'B', section: 'Alpha' });
+      const c = createComponent({ className: 'C' });
+      const { service } = setup({ components: [a, b, c] });
+
+      const tree = service.sectionTree();
+      expect(tree.map((s) => s.name)).toEqual(['Components', 'Alpha', 'Zeta']);
+    });
+
+    it('groups items inside a section by category', () => {
+      const a = createComponent({
+        className: 'A',
+        category: 'Forms',
+      });
+      const b = createComponent({
+        className: 'B',
+        category: 'Forms',
+      });
+      const c = createComponent({
+        className: 'C',
+        category: 'Layout',
+      });
+      const { service } = setup({ components: [a, b, c] });
+
+      const tree = service.sectionTree();
+      expect(tree).toHaveLength(1);
+      expect(tree[0].name).toBe('Components');
+      expect(tree[0].categories.map((c) => c.name)).toEqual([
+        'Forms',
+        'Layout',
+      ]);
+      expect(tree[0].categories[0].items).toHaveLength(2);
+      expect(tree[0].categories[1].items).toHaveLength(1);
+    });
+
+    it('uses "Uncategorized" when category is missing', () => {
+      const comp = createComponent({ className: 'Foo' });
+      const { service } = setup({ components: [comp] });
+
+      const tree = service.sectionTree();
+      expect(tree[0].categories[0].name).toBe('Uncategorized');
+    });
+
+    it('exposes totalCount per section', () => {
+      const a = createComponent({ className: 'A' });
+      const b = createComponent({ className: 'B' });
+      const c = createComponent({
+        className: 'C',
+        isDirective: true,
+      });
+      const { service } = setup({ components: [a, b, c] });
+
+      const tree = service.sectionTree();
+      const comps = tree.find((s) => s.name === 'Components');
+      const dirs = tree.find((s) => s.name === 'Directives');
+      expect(comps?.totalCount).toBe(2);
+      expect(dirs?.totalCount).toBe(1);
+    });
   });
 });

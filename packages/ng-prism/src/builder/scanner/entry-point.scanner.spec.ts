@@ -31,6 +31,7 @@ describe('resolveEntryPointExports', () => {
       'MissingTitleComponent',
       'ModelInputComponent',
       'NoShowcaseComponent',
+      'SectionedComponent',
       'SignalButtonComponent',
     ]);
   });
