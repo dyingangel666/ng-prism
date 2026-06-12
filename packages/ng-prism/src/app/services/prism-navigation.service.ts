@@ -45,11 +45,6 @@ function sectionTiebreak(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-// Reserved for sectionTree computation (Task 4). Reference here prevents
-// `noUnusedLocals` from failing the build until they are wired up.
-void defaultSectionOrder;
-void sectionTiebreak;
-
 @Injectable({ providedIn: 'root' })
 export class PrismNavigationService {
   private readonly searchService = inject(PrismSearchService);
@@ -135,6 +130,89 @@ export class PrismNavigationService {
     });
 
     return new Map(sorted);
+  });
+
+  readonly sectionTree = computed<SectionNode[]>(() => {
+    const comps = this.searchService.filteredComponents();
+
+    const sections = new Map<string, Map<string, NavigationItem[]>>();
+    const sectionOrders = new Map<string, number>();
+
+    for (const comp of comps) {
+      const section = resolveSection(comp.meta);
+      const category = comp.meta.showcaseConfig.category ?? 'Uncategorized';
+
+      const catMap =
+        sections.get(section) ?? new Map<string, NavigationItem[]>();
+      const items = catMap.get(category) ?? [];
+      items.push({ kind: 'component', data: comp });
+      catMap.set(category, items);
+      sections.set(section, catMap);
+
+      const explicit = comp.meta.showcaseConfig.sectionOrder;
+      const current = sectionOrders.get(section);
+      if (explicit !== undefined) {
+        sectionOrders.set(
+          section,
+          current === undefined ? explicit : Math.min(current, explicit)
+        );
+      }
+    }
+
+    const result: SectionNode[] = [];
+    for (const [name, catMap] of sections.entries()) {
+      const order = sectionOrders.get(name) ?? defaultSectionOrder(name);
+
+      const categories: CategoryNode[] = [];
+      for (const [catName, items] of catMap.entries()) {
+        items.sort((a, b) => {
+          const oa =
+            a.kind === 'component'
+              ? a.data.meta.showcaseConfig.componentOrder ?? Infinity
+              : Infinity;
+          const ob =
+            b.kind === 'component'
+              ? b.data.meta.showcaseConfig.componentOrder ?? Infinity
+              : Infinity;
+          if (oa !== ob) return oa - ob;
+          const la =
+            a.kind === 'component' ? a.data.meta.showcaseConfig.title : '';
+          const lb =
+            b.kind === 'component' ? b.data.meta.showcaseConfig.title : '';
+          return la.localeCompare(lb);
+        });
+        categories.push({ name: catName, items });
+      }
+
+      categories.sort((a, b) => {
+        const oa = Math.min(
+          ...a.items.map((i) =>
+            i.kind === 'component'
+              ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
+              : Infinity
+          )
+        );
+        const ob = Math.min(
+          ...b.items.map((i) =>
+            i.kind === 'component'
+              ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
+              : Infinity
+          )
+        );
+        if (oa !== ob) return oa - ob;
+        return a.name.localeCompare(b.name);
+      });
+
+      const totalCount = categories.reduce((sum, c) => sum + c.items.length, 0);
+      result.push({ name, order, totalCount, categories });
+    }
+
+    result.sort((a, b) => {
+      if (a.order !== b.order) return a.order - b.order;
+      return sectionTiebreak(a.name, b.name);
+    });
+
+    return result;
   });
 
   select(comp: RuntimeComponent): void {
