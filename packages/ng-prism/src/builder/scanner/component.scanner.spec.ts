@@ -39,8 +39,9 @@ describe('scanComponents', () => {
     expect(names).toContain('HighlightDirective');
     expect(names).toContain('InvalidBgComponent');
     expect(names).toContain('InvalidStatusComponent');
+    expect(names).toContain('SectionedComponent');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(7);
+    expect(components).toHaveLength(8);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
@@ -270,5 +271,23 @@ describe('scanComponents', () => {
     );
 
     warnSpy.mockRestore();
+  });
+
+  it('extracts section and sectionOrder from showcaseConfig', () => {
+    const components = scanComponents(exports, checker);
+    const sectioned = components.find(
+      (c) => c.className === 'SectionedComponent'
+    )!;
+
+    expect(sectioned.showcaseConfig.section).toBe('Pipes');
+    expect(sectioned.showcaseConfig.sectionOrder).toBe(5);
+  });
+
+  it('omits section and sectionOrder when not declared', () => {
+    const components = scanComponents(exports, checker);
+    const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+    expect(button.showcaseConfig.section).toBeUndefined();
+    expect(button.showcaseConfig.sectionOrder).toBeUndefined();
   });
 });

@@ -7,3 +7,4 @@ export { HighlightDirective } from './highlight.directive.js';
 export { MissingTitleComponent } from './missing-title.component.js';
 export { InvalidBgComponent } from './invalid-bg.component.js';
 export { InvalidStatusComponent } from './invalid-status.component.js';
+export { SectionedComponent } from './sectioned.component.js';
