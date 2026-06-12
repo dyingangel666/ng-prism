@@ -12,7 +12,6 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
-import { PrismManifestService } from '../services/prism-manifest.service.js';
 import type { ComponentStatus } from '../../decorator/showcase.types.js';
 
 const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
@@ -26,6 +25,16 @@ const CATEGORY_COLORS: Record<string, string> = {
   Overlay: '#c084fc',
   Directives: '#ec4899',
 };
+
+const SECTION_ICONS: Record<string, string> = {
+  Components: 'box',
+  Directives: 'zap',
+};
+const DEFAULT_SECTION_ICON = 'cube';
+
+function sectionIcon(name: string): string {
+  return SECTION_ICONS[name] ?? DEFAULT_SECTION_ICON;
+}
 
 function categoryColor(name: string): string {
   if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
@@ -100,30 +109,38 @@ interface SidebarCategory {
           </div>
           }
         </div>
-        } @if (componentCategories().length > 0) {
+        } @for (section of componentSections(); track section.name) {
         <div class="sb-section-head">
           <span class="sb-section-head-l">
-            <prism-icon name="box" [size]="10" class="sb-section-icon" />
-            Components
+            <prism-icon
+              [name]="section.icon"
+              [size]="10"
+              class="sb-section-icon"
+            />
+            {{ section.name }}
           </span>
-          <span>{{ totalComponents() }}</span>
+          <span>{{ section.totalCount }}</span>
         </div>
-        } @for (cat of componentCategories(); track cat.name) {
+        @for (cat of section.categories; track cat.name) {
         <div
           class="sb-group"
-          [class.sb-group--collapsed]="isCollapsed('comp:' + cat.name)"
+          [class.sb-group--collapsed]="
+            isCollapsed('sec:' + section.name + ':' + cat.name)
+          "
         >
           <button
             class="sb-group-head"
-            (click)="toggleCollapse('comp:' + cat.name)"
-            [attr.aria-expanded]="!isCollapsed('comp:' + cat.name)"
+            (click)="toggleCollapse('sec:' + section.name + ':' + cat.name)"
+            [attr.aria-expanded]="
+              !isCollapsed('sec:' + section.name + ':' + cat.name)
+            "
           >
             <prism-icon name="chevron-down" [size]="10" />
             <span class="sb-group-chip" [style.--chip]="cat.color"></span>
             {{ cat.name }}
             <span class="sb-group-count">{{ cat.items.length }}</span>
           </button>
-          @if (!isCollapsed('comp:' + cat.name)) {
+          @if (!isCollapsed('sec:' + section.name + ':' + cat.name)) {
           <div class="sb-group-body">
             @for (item of cat.items; track itemKey(item)) {
             <button
@@ -145,7 +162,7 @@ interface SidebarCategory {
           </div>
           }
         </div>
-        }
+        } }
       </div>
     </nav>
   `,
@@ -351,14 +368,19 @@ interface SidebarCategory {
 export class PrismSidebarComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly searchService = inject(PrismSearchService);
-  private readonly manifestService = inject(PrismManifestService);
-  private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
+  private readonly filterInput =
+    viewChild<ElementRef<HTMLInputElement>>('filterInput');
 
   @HostListener('document:keydown', ['$event'])
   protected onGlobalKey(e: KeyboardEvent): void {
     if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
     const tag = (e.target as HTMLElement).tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
+    if (
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      (e.target as HTMLElement).isContentEditable
+    )
+      return;
     e.preventDefault();
     this.filterInput()?.nativeElement.focus();
   }
@@ -385,24 +407,19 @@ export class PrismSidebarComponent {
     }));
   });
 
-  protected readonly componentCategories = computed<SidebarCategory[]>(() => {
-    const tree = this.navigationService.categoryTree();
-    const result: SidebarCategory[] = [];
-    for (const [catName, items] of tree.entries()) {
-      const compItems = items.filter((i) => i.kind === 'component');
-      if (compItems.length === 0) continue;
-      result.push({
-        name: catName,
-        color: categoryColor(catName),
-        items: compItems,
-      });
-    }
-    return result;
+  protected readonly componentSections = computed(() => {
+    return this.navigationService.sectionTree().map((section) => ({
+      name: section.name,
+      icon: sectionIcon(section.name),
+      color: categoryColor(section.name),
+      totalCount: section.totalCount,
+      categories: section.categories.map((cat) => ({
+        name: cat.name,
+        color: categoryColor(cat.name),
+        items: cat.items,
+      })),
+    }));
   });
-
-  protected readonly totalComponents = computed(
-    () => this.manifestService.manifest().components.length,
-  );
 
   protected isCollapsed(key: string): boolean {
     return this.collapsedSet().has(key);
