@@ -30,7 +30,7 @@ const SECTION_ICONS: Record<string, string> = {
   Components: 'box',
   Directives: 'zap',
 };
-const DEFAULT_SECTION_ICON = 'cube';
+const DEFAULT_SECTION_ICON = 'box-select';
 
 function sectionIcon(name: string): string {
   return SECTION_ICONS[name] ?? DEFAULT_SECTION_ICON;
