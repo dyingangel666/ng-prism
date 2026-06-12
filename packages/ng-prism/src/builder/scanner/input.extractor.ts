@@ -1,38 +1,74 @@
 import ts from 'typescript';
 import type { InputMeta, OutputMeta } from '../../plugin/plugin.types.js';
-import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
+import {
+  evaluateExpression,
+  findDecorator,
+  getDecoratorArgument,
+  getJsDocComment,
+} from './ast-utils.js';
 
 /**
  * Extract all @Input(), input() and model() signal metadata from a class declaration.
  */
-export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): InputMeta[] {
+export function extractInputs(
+  classDecl: ts.ClassDeclaration,
+  checker: ts.TypeChecker
+): InputMeta[] {
   const inputs: InputMeta[] = [];
 
   for (const member of classDecl.members) {
     if (!ts.isPropertyDeclaration(member)) continue;
 
-    const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+    const name =
+      member.name && ts.isIdentifier(member.name)
+        ? member.name.text
+        : undefined;
     if (!name) continue;
 
     const inputDecorator = findDecorator(member, 'Input');
     if (inputDecorator) {
       const required = isDecoratorInputRequired(inputDecorator);
-      const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
+      const defaultValue = member.initializer
+        ? evaluateExpression(member.initializer)
+        : undefined;
       const doc = getJsDocComment(member, checker);
-      const { type, values, rawType } = resolveDecoratorInputType(member, checker);
-      inputs.push({ name, type, rawType, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+      const { type, values, rawType } = resolveDecoratorInputType(
+        member,
+        checker
+      );
+      inputs.push({
+        name,
+        type,
+        rawType,
+        required,
+        ...(values && { values }),
+        ...(defaultValue !== undefined && { defaultValue }),
+        ...(doc && { doc }),
+      });
       continue;
     }
 
     const signalCall = getInputSignalCall(member);
     if (signalCall) {
       const required = isSignalInputRequired(signalCall);
-      const defaultValue = !required && signalCall.arguments.length > 0
-        ? evaluateExpression(signalCall.arguments[0])
-        : undefined;
+      const defaultValue =
+        !required && signalCall.arguments.length > 0
+          ? evaluateExpression(signalCall.arguments[0])
+          : undefined;
       const doc = getJsDocComment(member, checker);
-      const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
-      inputs.push({ name, type, rawType, required, ...(values && { values }), ...(defaultValue !== undefined && { defaultValue }), ...(doc && { doc }) });
+      const { type, values, rawType } = resolveSignalInputType(
+        signalCall,
+        checker
+      );
+      inputs.push({
+        name,
+        type,
+        rawType,
+        required,
+        ...(values && { values }),
+        ...(defaultValue !== undefined && { defaultValue }),
+        ...(doc && { doc }),
+      });
     }
   }
 
@@ -42,13 +78,19 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 /**
  * Extract all @Output() and output() signal metadata from a class declaration.
  */
-export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): OutputMeta[] {
+export function extractOutputs(
+  classDecl: ts.ClassDeclaration,
+  checker: ts.TypeChecker
+): OutputMeta[] {
   const outputs: OutputMeta[] = [];
 
   for (const member of classDecl.members) {
     if (!ts.isPropertyDeclaration(member)) continue;
 
-    const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+    const name =
+      member.name && ts.isIdentifier(member.name)
+        ? member.name.text
+        : undefined;
     if (!name) continue;
 
     const outputDecorator = findDecorator(member, 'Output');
@@ -67,18 +109,23 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
   return outputs;
 }
 
-function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression | null {
+function getInputSignalCall(
+  member: ts.PropertyDeclaration
+): ts.CallExpression | null {
   const init = member.initializer;
   if (!init || !ts.isCallExpression(init)) return null;
 
   const expr = init.expression;
 
-  if (ts.isIdentifier(expr) && (expr.text === 'input' || expr.text === 'model')) return init;
+  if (ts.isIdentifier(expr) && (expr.text === 'input' || expr.text === 'model'))
+    return init;
 
   if (
     ts.isPropertyAccessExpression(expr) &&
-    ts.isIdentifier(expr.expression) && (expr.expression.text === 'input' || expr.expression.text === 'model') &&
-    ts.isIdentifier(expr.name) && expr.name.text === 'required'
+    ts.isIdentifier(expr.expression) &&
+    (expr.expression.text === 'input' || expr.expression.text === 'model') &&
+    ts.isIdentifier(expr.name) &&
+    expr.name.text === 'required'
   ) {
     return init;
   }
@@ -104,7 +151,7 @@ function isOutputSignal(member: ts.PropertyDeclaration): boolean {
 
 function resolveSignalInputType(
   callExpr: ts.CallExpression,
-  checker: ts.TypeChecker,
+  checker: ts.TypeChecker
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
   if (callExpr.typeArguments && callExpr.typeArguments.length > 0) {
     const typeNode = callExpr.typeArguments[0];
@@ -138,10 +185,12 @@ function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
 
 function resolveDecoratorInputType(
   member: ts.PropertyDeclaration,
-  checker: ts.TypeChecker,
+  checker: ts.TypeChecker
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
   const tsType = checker.getTypeAtLocation(member);
-  const declaredText = member.type ? normalizeTypeText(member.type.getText()) : undefined;
+  const declaredText = member.type
+    ? normalizeTypeText(member.type.getText())
+    : undefined;
   return mapType(tsType, checker, declaredText);
 }
 
@@ -150,16 +199,23 @@ function normalizeTypeText(text: string): string {
 }
 
 function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
-  if (tsType.flags & (ts.TypeFlags.Boolean | ts.TypeFlags.BooleanLike | ts.TypeFlags.BooleanLiteral)) {
+  if (
+    tsType.flags &
+    (ts.TypeFlags.Boolean |
+      ts.TypeFlags.BooleanLike |
+      ts.TypeFlags.BooleanLiteral)
+  ) {
     return 'boolean';
   }
 
   if (tsType.isUnion()) {
     const meaningful = tsType.types.filter(
-      (t) => !(t.flags & ts.TypeFlags.Undefined) && !(t.flags & ts.TypeFlags.Null),
+      (t) =>
+        !(t.flags & ts.TypeFlags.Undefined) && !(t.flags & ts.TypeFlags.Null)
     );
     if (meaningful.length === 0) return checker.typeToString(tsType);
-    if (meaningful.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) return 'boolean';
+    if (meaningful.every((t) => t.flags & ts.TypeFlags.BooleanLiteral))
+      return 'boolean';
     if (meaningful.length === 1) return checker.typeToString(meaningful[0]);
     if (tsType.aliasSymbol) return tsType.aliasSymbol.getName();
     return meaningful.map((t) => checker.typeToString(t)).join(' | ');
@@ -170,7 +226,7 @@ function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
 function mapType(
   tsType: ts.Type,
   checker: ts.TypeChecker,
-  rawTypeOverride?: string,
+  rawTypeOverride?: string
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
   const rawType = rawTypeOverride ?? getRawTypeLabel(tsType, checker);
 
@@ -184,8 +240,7 @@ function mapType(
   if (tsType.isUnion()) {
     const filtered = tsType.types.filter(
       (t) =>
-        !(t.flags & ts.TypeFlags.Undefined) &&
-        !(t.flags & ts.TypeFlags.Null),
+        !(t.flags & ts.TypeFlags.Undefined) && !(t.flags & ts.TypeFlags.Null)
     );
 
     if (filtered.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) {
