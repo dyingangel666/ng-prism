@@ -1,9 +1,54 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import type { RuntimeComponent } from '../../plugin/plugin.types.js';
+import type {
+  RuntimeComponent,
+  ScannedComponent,
+} from '../../plugin/plugin.types.js';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { NavigationItem } from './navigation-item.types.js';
 import { PrismManifestService } from './prism-manifest.service.js';
 import { PrismSearchService } from './prism-search.service.js';
+
+const DEFAULT_SECTION_ORDER: Record<string, number> = {
+  Components: 0,
+  Directives: 10,
+};
+
+const SECTION_TIEBREAK: readonly string[] = ['Components', 'Directives'];
+
+export interface CategoryNode {
+  name: string;
+  items: NavigationItem[];
+}
+
+export interface SectionNode {
+  name: string;
+  order: number;
+  totalCount: number;
+  categories: CategoryNode[];
+}
+
+export function resolveSection(c: ScannedComponent): string {
+  if (c.showcaseConfig.section) return c.showcaseConfig.section;
+  return c.componentMeta.isDirective ? 'Directives' : 'Components';
+}
+
+function defaultSectionOrder(name: string): number {
+  return DEFAULT_SECTION_ORDER[name] ?? 100;
+}
+
+function sectionTiebreak(a: string, b: string): number {
+  const ia = SECTION_TIEBREAK.indexOf(a);
+  const ib = SECTION_TIEBREAK.indexOf(b);
+  if (ia !== -1 && ib !== -1) return ia - ib;
+  if (ia !== -1) return -1;
+  if (ib !== -1) return 1;
+  return a.localeCompare(b);
+}
+
+// Reserved for sectionTree computation (Task 4). Reference here prevents
+// `noUnusedLocals` from failing the build until they are wired up.
+void defaultSectionOrder;
+void sectionTiebreak;
 
 @Injectable({ providedIn: 'root' })
 export class PrismNavigationService {
