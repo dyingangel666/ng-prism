@@ -348,7 +348,7 @@ describe('directive wrapper generation', () => {
       components: [HIGHLIGHT],
       libraryImportPath: 'my-lib',
     });
-    expect(source).toContain("__prismContent__ = input('')");
+    expect(source).toContain('__prismContent__ = input("")');
   });
 
   it('should reference the wrapper class as type in the manifest entry', () => {
@@ -509,6 +509,24 @@ describe('directive wrapper generation', () => {
     expect(source).not.toContain('[contentTemplate]');
     expect(source).not.toContain('config = input');
     expect(source).not.toContain('[config]');
+  });
+
+  it('should default __prismContent__ from host-string text content', () => {
+    const directive: ScannedComponent = {
+      ...HIGHLIGHT,
+      showcaseConfig: {
+        ...HIGHLIGHT.showcaseConfig,
+        host: '<button class="demo">Hover me</button>',
+      },
+    };
+    const source = generateRuntimeManifest({
+      components: [directive],
+      libraryImportPath: 'my-lib',
+    });
+
+    expect(source).toContain('<button');
+    expect(source).toContain('class="demo"');
+    expect(source).toContain('__prismContent__ = input("Hover me")');
   });
 
   it('should include object inputs that have a default value', () => {

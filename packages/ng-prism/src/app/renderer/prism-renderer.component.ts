@@ -33,6 +33,7 @@ import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
+import { buildKnownInputs } from './known-inputs.js';
 
 @Component({
   selector: 'prism-renderer',
@@ -264,7 +265,7 @@ export class PrismRendererComponent {
       }
 
       performance.mark('prism:rerender:start');
-      const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
+      const knownInputs = buildKnownInputs(comp);
       for (const [key, value] of Object.entries(inputs)) {
         if (!knownInputs.has(key)) {
           console.warn(
@@ -387,7 +388,7 @@ export class PrismRendererComponent {
       }
     }
 
-    const knownInputs = new Set(comp.meta.inputs.map((i) => i.name));
+    const knownInputs = buildKnownInputs(comp);
     for (const [key, value] of Object.entries(
       this.rendererService.inputValues()
     )) {
