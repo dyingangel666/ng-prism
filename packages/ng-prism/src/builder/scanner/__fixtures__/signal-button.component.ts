@@ -4,6 +4,8 @@ function Showcase(config: unknown): ClassDecorator {
   return () => {};
 }
 
+export type ButtonSize = 'small' | 'medium' | 'large';
+
 @Showcase({
   title: 'SignalButton',
   category: 'Inputs',
@@ -31,6 +33,9 @@ export class SignalButtonComponent {
 
   /** Tab index for keyboard navigation */
   readonly tabIndex = input<number | null>(null);
+
+  /** Optional size with explicit undefined */
+  readonly size = input<ButtonSize | undefined>(undefined);
 
   /** Click event */
   readonly clicked = output<void>();
