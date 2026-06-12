@@ -102,6 +102,32 @@ Controls the order of _this component_ within its category. Same sorting rules a
 @Showcase({ title: 'Button',      category: 'Atoms', componentOrder: 1 })
 ```
 
+### `section`
+
+Top-level sidebar grouping. ng-prism auto-detects this from the decorator type: `@Directive` classes go to **Directives**, `@Component` classes go to **Components**. Set `section` to a different string to create your own top-level group:
+
+```typescript
+@Showcase({ title: 'AutofocusDirective', section: 'Behavior' })
+@Directive({ selector: '[appAutofocus]', standalone: true })
+export class AutofocusDirective {}
+
+@Showcase({ title: 'CurrencyPipe', section: 'Pipes' })
+@Pipe({ name: 'libCurrency', standalone: true })
+export class CurrencyPipe {
+  /* ... */
+}
+```
+
+Inside each section, the existing `category` field still groups items into sub-categories.
+
+### `sectionOrder`
+
+Controls the order of this _section_ in the sidebar. Lower numbers appear first. Default order: `Components` (0) → `Directives` (10) → everything else (100, alphabetically). The section's effective order is the minimum `sectionOrder` of any item it contains — so a single `@Showcase({ section: 'Behavior', sectionOrder: 5 })` pulls the whole "Behavior" section above "Components".
+
+```typescript
+@Showcase({ title: 'AutofocusDirective', section: 'Behavior', sectionOrder: 5 })
+```
+
 ### `variants`
 
 Predefined tabs shown above the canvas. Each variant can set different `inputs`, `content`, a `description`, and plugin `meta`.
