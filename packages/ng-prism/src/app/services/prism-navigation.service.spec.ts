@@ -112,20 +112,6 @@ describe('PrismNavigationService', () => {
     expect(service.activeComponent()).toBeNull();
   });
 
-  it('should build categoryTree from filtered components', () => {
-    const a = createComponent({ category: 'Forms', className: 'A' });
-    const b = createComponent({ category: 'Forms', className: 'B' });
-    const c = createComponent({ category: 'Layout', className: 'C' });
-    const { service } = setup({ components: [a, b, c] });
-
-    const tree = service.categoryTree();
-    expect(tree.get('Forms')).toEqual([
-      { kind: 'component', data: a },
-      { kind: 'component', data: b },
-    ]);
-    expect(tree.get('Layout')).toEqual([{ kind: 'component', data: c }]);
-  });
-
   it('should re-link activeComponent to new reference when manifest updates with same className', () => {
     const original = createComponent({ title: 'Button', className: 'Btn' });
     const { service, manifestService } = setup({ components: [original] });

@@ -72,66 +72,6 @@ export class PrismNavigationService {
     return relinked ?? null;
   });
 
-  readonly categoryTree = computed<Map<string, NavigationItem[]>>(() => {
-    const map = new Map<string, NavigationItem[]>();
-
-    for (const comp of this.searchService.filteredComponents()) {
-      const cat = comp.meta.showcaseConfig.category ?? 'Uncategorized';
-      const list = map.get(cat) ?? [];
-      list.push({ kind: 'component', data: comp });
-      map.set(cat, list);
-    }
-
-    for (const page of this.searchService.filteredPages()) {
-      const cat = page.category ?? 'Uncategorized';
-      const list = map.get(cat) ?? [];
-      list.push({ kind: 'page', data: page });
-      map.set(cat, list);
-    }
-
-    for (const items of map.values()) {
-      items.sort((a, b) => {
-        const orderA =
-          a.kind === 'component'
-            ? a.data.meta.showcaseConfig.componentOrder ?? Infinity
-            : a.data.order ?? Infinity;
-        const orderB =
-          b.kind === 'component'
-            ? b.data.meta.showcaseConfig.componentOrder ?? Infinity
-            : b.data.order ?? Infinity;
-        if (orderA !== orderB) return orderA - orderB;
-        const labelA =
-          a.kind === 'component'
-            ? a.data.meta.showcaseConfig.title
-            : a.data.title;
-        const labelB =
-          b.kind === 'component'
-            ? b.data.meta.showcaseConfig.title
-            : b.data.title;
-        return labelA.localeCompare(labelB);
-      });
-    }
-
-    const sorted = [...map.entries()].sort(([catA, itemsA], [catB, itemsB]) => {
-      const catOrders = itemsA.map((i) =>
-        i.kind === 'component'
-          ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
-          : i.data.categoryOrder ?? Infinity
-      );
-      const orderA = Math.min(...catOrders);
-      const catOrdersB = itemsB.map((i) =>
-        i.kind === 'component'
-          ? i.data.meta.showcaseConfig.categoryOrder ?? Infinity
-          : i.data.categoryOrder ?? Infinity
-      );
-      const orderB = Math.min(...catOrdersB);
-      if (orderA !== orderB) return orderA - orderB;
-      return catA.localeCompare(catB);
-    });
-
-    return new Map(sorted);
-  });
-
   readonly sectionTree = computed<SectionNode[]>(() => {
     const comps = this.searchService.filteredComponents();
 
