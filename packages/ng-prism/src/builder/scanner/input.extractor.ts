@@ -107,8 +107,9 @@ function resolveSignalInputType(
   checker: ts.TypeChecker,
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
   if (callExpr.typeArguments && callExpr.typeArguments.length > 0) {
-    const resolved = checker.getTypeFromTypeNode(callExpr.typeArguments[0]);
-    return mapType(resolved, checker);
+    const typeNode = callExpr.typeArguments[0];
+    const resolved = checker.getTypeFromTypeNode(typeNode);
+    return mapType(resolved, checker, normalizeTypeText(typeNode.getText()));
   }
 
   if (callExpr.arguments.length > 0) {
@@ -140,7 +141,12 @@ function resolveDecoratorInputType(
   checker: ts.TypeChecker,
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
   const tsType = checker.getTypeAtLocation(member);
-  return mapType(tsType, checker);
+  const declaredText = member.type ? normalizeTypeText(member.type.getText()) : undefined;
+  return mapType(tsType, checker, declaredText);
+}
+
+function normalizeTypeText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
 }
 
 function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
@@ -164,8 +170,9 @@ function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
 function mapType(
   tsType: ts.Type,
   checker: ts.TypeChecker,
+  rawTypeOverride?: string,
 ): { type: InputMeta['type']; values?: string[]; rawType: string } {
-  const rawType = getRawTypeLabel(tsType, checker);
+  const rawType = rawTypeOverride ?? getRawTypeLabel(tsType, checker);
 
   if (tsType.flags & ts.TypeFlags.BooleanLike) {
     return { type: 'boolean', rawType };

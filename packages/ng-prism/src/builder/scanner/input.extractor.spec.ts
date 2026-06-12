@@ -148,7 +148,7 @@ describe('extractInputs (signal-based)', () => {
     );
     const inputs = extractInputs(classDecl, checker);
 
-    expect(inputs).toHaveLength(5);
+    expect(inputs).toHaveLength(6);
     const names = inputs.map((i) => i.name);
     expect(names).toEqual([
       'variant',
@@ -156,6 +156,7 @@ describe('extractInputs (signal-based)', () => {
       'disabled',
       'title',
       'tabIndex',
+      'size',
     ]);
   });
 
@@ -172,6 +173,21 @@ describe('extractInputs (signal-based)', () => {
     expect(variant.values).toEqual(['primary', 'secondary', 'danger']);
     expect(variant.defaultValue).toBe('primary');
     expect(variant.required).toBe(false);
+    expect(variant.rawType).toBe("'primary' | 'secondary' | 'danger'");
+  });
+
+  it('should preserve type alias and undefined in rawType for `Alias | undefined`', () => {
+    const classDecl = getClassDeclaration(
+      exports,
+      'SignalButtonComponent',
+      checker
+    );
+    const inputs = extractInputs(classDecl, checker);
+    const size = inputs.find((i) => i.name === 'size')!;
+
+    expect(size.type).toBe('union');
+    expect(size.values).toEqual(['small', 'medium', 'large']);
+    expect(size.rawType).toBe('ButtonSize | undefined');
   });
 
   it('should infer string type from signal default value', () => {
