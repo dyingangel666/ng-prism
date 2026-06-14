@@ -9,7 +9,8 @@ import {
   viewChild,
 } from '@angular/core';
 
-function highlightJson(json: string): string {
+export function highlightJson(json: unknown): string {
+  if (typeof json !== 'string') return '';
   return json.replace(
     /("(?:\\.|[^"\\])*")\s*(:)|("(?:\\.|[^"\\])*")|(true|false)|(null)|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
     (match, key, colon, str, bool, nil, num) => {
@@ -21,6 +22,18 @@ function highlightJson(json: string): string {
       return match;
     }
   );
+}
+
+export function stringifyForJsonControl(val: unknown): string {
+  try {
+    const serialized = JSON.stringify(val, null, 2);
+    // JSON.stringify returns `undefined` (the value, not a string) for
+    // `undefined`, functions, and symbols. Surface that as visible text so the
+    // textarea + highlighter never see a non-string.
+    return serialized ?? 'undefined';
+  } catch {
+    return String(val);
+  }
 }
 
 @Component({
@@ -126,18 +139,10 @@ export class JsonControlComponent {
   readonly displayText = computed(() => {
     const local = this.localText();
     if (local !== null) return local;
-    return this.stringify(this.value());
+    return stringifyForJsonControl(this.value());
   });
 
   readonly highlightedHtml = computed(() => highlightJson(this.displayText()));
-
-  stringify(val: unknown): string {
-    try {
-      return JSON.stringify(val, null, 2);
-    } catch {
-      return String(val);
-    }
-  }
 
   onInput(raw: string): void {
     this.localText.set(raw);

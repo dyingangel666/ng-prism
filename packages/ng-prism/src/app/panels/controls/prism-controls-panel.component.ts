@@ -1,5 +1,10 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { BooleanControlComponent } from '../../controls/boolean-control.component.js';
 import { JsonControlComponent } from '../../controls/json-control.component.js';
 import { NumberControlComponent } from '../../controls/number-control.component.js';
@@ -13,6 +18,7 @@ import type {
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
+import { isNonEditableInputType } from './non-editable-input-types.js';
 
 @Component({
   selector: 'prism-controls-panel',
@@ -44,8 +50,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
           <span aria-hidden="true">&#x21BB;</span> Reset
         </button>
       </div>
-      }
-      @for (input of comp.meta.inputs; track input.name) {
+      } @for (input of comp.meta.inputs; track input.name) {
       <div class="ctl-row">
         @if (getCustomControl(input); as customCtrl) {
         <ng-container
@@ -63,7 +68,13 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
           >
         </div>
         <div class="ctl-input">
-          @switch (input.type) { @case ('boolean') {
+          @if (isNonEditable(input)) {
+          <span
+            class="ctl-not-editable"
+            title="This input type can't be edited from the controls panel"
+            >Not editable</span
+          >
+          } @else { @switch (input.type) { @case ('boolean') {
           <prism-boolean-control
             [value]="asBoolean(rendererService.inputValues()[input.name])"
             (valueChange)="rendererService.updateInput(input.name, $event)"
@@ -89,7 +100,7 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
             [value]="rendererService.inputValues()[input.name]"
             (valueChange)="rendererService.updateInput(input.name, $event)"
           />
-          } }
+          } } }
         </div>
         }
       </div>
@@ -197,6 +208,13 @@ import { PrismRendererService } from '../../services/prism-renderer.service.js';
       min-width: 0;
     }
 
+    .ctl-not-editable {
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      color: var(--prism-text-ghost);
+      font-style: italic;
+    }
+
     .ctl-empty {
       color: var(--prism-text-ghost);
       font-size: 13px;
@@ -217,6 +235,10 @@ export class PrismControlsPanelComponent {
       this.pluginService.controls().find((ctrl) => ctrl.matchType(input)) ??
       null
     );
+  }
+
+  protected isNonEditable(input: InputMeta): boolean {
+    return isNonEditableInputType(input);
   }
 
   protected asBoolean(val: unknown): boolean {
