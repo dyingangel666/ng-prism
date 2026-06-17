@@ -431,6 +431,10 @@ export class PrismRendererComponent {
   }
 }
 
+// SAFETY: `content` originates from `@Showcase({ variants: [{ content }] })`
+// in developer-authored source code. It is trusted by ng-prism's threat model
+// (see SECURITY.md). Sanitization would strip the Angular component/directive
+// selectors that variant content is meant to project.
 function parseContentToNodes(
   content: string | Record<string, string>
 ): Node[][] {
@@ -446,10 +450,12 @@ function parseContentToNodes(
   for (const [selector, html] of Object.entries(content)) {
     if (selector === 'default') continue;
     const wrapper = document.createElement('div');
+    // SAFETY: trusted developer-authored HTML — see SECURITY.md.
     wrapper.innerHTML = html;
     const nodes: Node[] = [];
     for (const child of Array.from(wrapper.childNodes)) {
       const el = document.createElement('div');
+      // SAFETY: trusted developer-authored HTML — see SECURITY.md.
       el.innerHTML = (child as Element).outerHTML ?? child.textContent ?? '';
       const projected = el.firstChild;
       if (projected && projected instanceof Element) {
@@ -468,6 +474,8 @@ function parseContentToNodes(
   return result;
 }
 
+// SAFETY: see `parseContentToNodes` above and SECURITY.md — `html` is trusted
+// developer-authored variant content from the `@Showcase` decorator.
 function htmlToNodes(html: string): Node[] {
   const wrapper = document.createElement('div');
   wrapper.innerHTML = html;
