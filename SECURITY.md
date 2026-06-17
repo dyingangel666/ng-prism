@@ -75,3 +75,59 @@ wrote — not content received from end users at runtime.
 If you have a use case that requires rendering untrusted HTML through
 ng-prism, please open an issue first so we can discuss a sanitized rendering
 path.
+
+## Notes on supply-chain scanner findings
+
+Some supply-chain scanners (e.g. Socket.dev) flag patterns in `@ng-prism/core`
+that are intentional and part of the documented design. The notes below explain
+what they refer to and why they are not considered vulnerabilities in the
+threat model described above.
+
+### Config loader uses `ts.transpileModule` + dynamic `import()`
+
+`packages/ng-prism/src/builder/config-loader/config-loader.ts` reads the
+consumer's `ng-prism.config.ts`, transpiles it to ESM via TypeScript's
+`ts.transpileModule`, writes it to a uniquely named temp file inside the
+workspace and loads it through native `import(pathToFileURL(...))`. Scanners
+that flag this as "uses eval / dynamic code execution" are matching on the
+dynamic-load shape, not on `eval()` or `new Function()` — neither is used.
+
+This pattern is required to load a TypeScript config file at build time and
+mirrors how Vite, Angular DevKit and other Node build tools load their own
+config files. The transpiled source is **developer-authored**
+(`ng-prism.config.ts` in the consumer's repo) and therefore part of the trusted
+build-time input surface described above.
+
+The loader rejects config paths that resolve outside the workspace root and
+deletes the temp file in a `finally` block.
+
+### Audit CLI starts a localhost HTTP server
+
+`packages/ng-prism/dist/cli/audit-a11y/static-server.js` (shipped as the
+`ng-prism-audit-a11y` bin) starts an `http.createServer` bound to `127.0.0.1`
+on an ephemeral port to serve the built styleguide to a headless Chromium
+instance during accessibility auditing. Scanners flag this as "network access".
+
+The server:
+
+- only listens on `127.0.0.1` — no external interface is bound,
+- only runs when a developer explicitly invokes the `ng-prism-audit-a11y` CLI,
+- is shut down at the end of the audit run,
+- does not perform any outbound HTTP requests.
+
+It is not active during normal `ng-prism:serve` / `ng-prism:build` use.
+
+### Filesystem access via `chokidar`
+
+`chokidar` (runtime dependency) and the builder itself read source files from
+the workspace and write the generated manifest. This is the core function of
+the watch / build pipeline. No files outside the configured workspace root are
+read or written.
+
+### `axe-core` is MPL-2.0 (non-permissive license)
+
+`axe-core` is an **optional peerDependency** of `@ng-prism/core`, used only by
+the `ng-prism-audit-a11y` CLI. MPL-2.0 is a file-level weak copyleft license:
+using `axe-core` as a library does not impose copyleft obligations on consumer
+code. Consumers who do not run the audit CLI never install `axe-core`. See
+`packages/ng-prism/package.json` for the optional peerDependency declaration.
