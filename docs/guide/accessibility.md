@@ -94,7 +94,44 @@ ng-prism does **not** generate the score itself. Producing an aggregate audit is
 
 ### 1. Produce `a11y-report.json` in your library project
 
-Write the report at build time using any tool you like — headless browsers + axe-core (Playwright/Puppeteer), an Nx target wrapping `@axe-core/cli`, or your own script. The Prism app exposes a global `window.__PRISM_MANIFEST__` with `{ components: [{ className, variants: [{ name, index }] }], pages: [{ title }] }` so audit scripts can discover what to audit.
+Write the report at build time using any tool you like — headless browsers + axe-core (Playwright/Puppeteer), an Nx target wrapping `@axe-core/cli`, or your own script.
+
+#### External Audit API
+
+The Prism app exposes a small contract for external audit scripts:
+
+| Anchor                                                               | Where                           | Purpose                                                                                                                       |
+| -------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `window.__PRISM_MANIFEST__`                                          | global, set by `providePrism()` | Shape: `{ components: [{ className, variants: [{ name, index }] }], pages: [{ title }] }`. Use it to enumerate what to audit. |
+| URL params `?component=<className>&variant=<index>`                  | navigation state                | Drive the app to a specific component+variant from the outside. `variant` is the array index; omit it for index `0`.          |
+| `[data-prism-rendered="<className>:<variantIndex>"]` on `.demo-wrap` | renderer host element           | Render-completion marker — wait for this attribute to match the expected key before running axe-core against the variant.     |
+
+Typical Playwright flow:
+
+```js
+await page.goto(baseUrl, { waitUntil: 'networkidle' });
+await page.waitForFunction(() => globalThis.__PRISM_MANIFEST__ !== undefined);
+const manifest = await page.evaluate(() => globalThis.__PRISM_MANIFEST__);
+
+for (const comp of manifest.components) {
+  for (const variant of comp.variants) {
+    const url = new URL(baseUrl);
+    url.searchParams.set('component', comp.className);
+    if (variant.index > 0)
+      url.searchParams.set('variant', String(variant.index));
+    await page.goto(url.toString(), { waitUntil: 'load' });
+    await page.waitForFunction(
+      ([expected]) =>
+        document
+          .querySelector('.demo-wrap')
+          ?.getAttribute('data-prism-rendered')
+          ?.startsWith(expected),
+      [`${comp.className}:`]
+    );
+    // inject axe-core, run against .demo-wrap, collect violations…
+  }
+}
+```
 
 The file must match this JSON shape:
 
