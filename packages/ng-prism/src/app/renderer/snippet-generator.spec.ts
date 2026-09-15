@@ -94,6 +94,47 @@ describe('generateSnippet', () => {
     );
   });
 
+  it('should render boolean false when the input defaults to true', () => {
+    const inputs = [
+      meta({ name: 'truncateLabel', type: 'boolean', defaultValue: true }),
+    ];
+    const result = generateSnippet('lib-toggle', inputs, {
+      truncateLabel: false,
+    });
+    expect(result).toBe('<lib-toggle [truncateLabel]="false" />');
+  });
+
+  it('should omit a boolean matching its true default', () => {
+    const inputs = [
+      meta({ name: 'truncateLabel', type: 'boolean', defaultValue: true }),
+    ];
+    const result = generateSnippet('lib-toggle', inputs, {
+      truncateLabel: true,
+    });
+    expect(result).toBe('<lib-toggle />');
+  });
+
+  it('should omit a boolean matching its false default', () => {
+    const inputs = [
+      meta({ name: 'disabled', type: 'boolean', defaultValue: false }),
+    ];
+    const result = generateSnippet('lib-button', inputs, { disabled: false });
+    expect(result).toBe('<lib-button />');
+  });
+
+  it('should render boolean false for an explicitly keyed input with a false default', () => {
+    const inputs = [
+      meta({ name: 'disabled', type: 'boolean', defaultValue: false }),
+    ];
+    const result = generateSnippet(
+      'lib-button',
+      inputs,
+      { disabled: false },
+      new Set(['disabled'])
+    );
+    expect(result).toBe('<lib-button [disabled]="false" />');
+  });
+
   it('should include non-default values even when defaults exist', () => {
     const inputs = [meta({ name: 'variant', defaultValue: 'primary' })];
     const result = generateSnippet('lib-button', inputs, { variant: 'danger' });
@@ -199,6 +240,21 @@ describe('generateSnippet', () => {
       expect(result).toContain('tooltipText="Hello"');
       expect(result).toContain('Click me');
       expect(result).toContain('</my-button>');
+    });
+
+    it('should render boolean false on a directive when the input defaults to true', () => {
+      const inputs = [
+        meta({ name: 'truncate', type: 'boolean', defaultValue: true }),
+      ];
+      const result = generateSnippet(
+        'libTooltip',
+        inputs,
+        { truncate: false },
+        undefined,
+        undefined,
+        { host: 'div' }
+      );
+      expect(result).toBe('<div libTooltip [truncate]="false" />');
     });
 
     it('should fall back to normal snippet when no host is provided', () => {

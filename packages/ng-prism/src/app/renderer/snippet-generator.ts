@@ -17,7 +17,7 @@ function pushAttribute(
   if (typeof value === 'string') {
     attributes.push(`${name}="${escapeAttrValue(value)}"`);
   } else if (typeof value === 'boolean') {
-    attributes.push(`[${name}]="true"`);
+    attributes.push(`[${name}]="${value}"`);
   } else if (typeof value === 'number') {
     attributes.push(`[${name}]="${value}"`);
   } else if (typeof value === 'object' || Array.isArray(value)) {
@@ -54,11 +54,18 @@ export function generateSnippet(
     const value = values[input.name];
 
     if (value === undefined) continue;
-    if (typeof value === 'boolean' && !value) continue;
     if (
       input.defaultValue !== undefined &&
       value === input.defaultValue &&
       !explicitKeys?.has(input.name)
+    )
+      continue;
+    // Only a guess, and only sound when no default is known: a boolean input
+    // that defaults to `true` has to show its explicit `false`.
+    if (
+      input.defaultValue === undefined &&
+      typeof value === 'boolean' &&
+      !value
     )
       continue;
 
@@ -150,11 +157,18 @@ function generateDirectiveSnippet(
     const value = values[input.name];
 
     if (value === undefined) continue;
-    if (typeof value === 'boolean' && !value) continue;
     if (
       input.defaultValue !== undefined &&
       value === input.defaultValue &&
       !explicitKeys?.has(input.name)
+    )
+      continue;
+    // Only a guess, and only sound when no default is known: a boolean input
+    // that defaults to `true` has to show its explicit `false`.
+    if (
+      input.defaultValue === undefined &&
+      typeof value === 'boolean' &&
+      !value
     )
       continue;
 
