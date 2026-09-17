@@ -54,7 +54,14 @@
             ],
             "polyfills": ["zone.js"],
             "allowedCommonJsDependencies": ["highlight.js"],
-            "preserveSymlinks": true
+            "preserveSymlinks": true,
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "vrt",
+                "output": "assets/vrt"
+              }
+            ]
           },
           "configurations": {
             "production": {
@@ -133,7 +140,9 @@
             "preserveSymlinks": true
           },
           "configurations": {
-            "production": { "outputHashing": "all" },
+            "production": {
+              "outputHashing": "all"
+            },
             "development": {
               "outputHashing": "none",
               "optimization": false,
