@@ -139,6 +139,42 @@ export interface RuntimeComponent {
   type: Type<unknown>;
 }
 
+// --- Discovery manifest (the `__PRISM_MANIFEST__` global) ---
+
+/**
+ * The shape external tooling reads from `globalThis.__PRISM_MANIFEST__`.
+ *
+ * A thin, JSON-safe projection of the runtime manifest: enough to enumerate and
+ * address every variant, plus the `@Showcase` metadata a tool needs to decide how
+ * to treat one. It carries no Angular class references, and `meta` values that
+ * cannot survive a structured clone are dropped rather than half-serialised.
+ */
+export interface DiscoveryManifest {
+  components: DiscoveryComponent[];
+  pages: DiscoveryPage[];
+}
+
+export interface DiscoveryComponent {
+  className: string;
+  /** `ShowcaseConfig.title` — the display name, not the class name. */
+  title: string;
+  variants: DiscoveryVariant[];
+  /** Sanitised `ShowcaseConfig.meta`. Omitted when empty. */
+  meta?: Record<string, unknown>;
+}
+
+export interface DiscoveryVariant {
+  name: string;
+  /** 0-based index into the `variants` array — the `?variant=` URL value. */
+  index: number;
+  /** Sanitised `Variant.meta`. Omitted when empty. */
+  meta?: Record<string, unknown>;
+}
+
+export interface DiscoveryPage {
+  title: string;
+}
+
 // --- defineConfig types ---
 
 export interface NgPrismConfig {

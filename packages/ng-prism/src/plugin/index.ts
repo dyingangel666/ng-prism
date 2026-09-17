@@ -11,6 +11,10 @@ export type {
   OutputMeta,
   RuntimeManifest,
   RuntimeComponent,
+  DiscoveryManifest,
+  DiscoveryComponent,
+  DiscoveryVariant,
+  DiscoveryPage,
 } from './plugin.types.js';
 export type {
   StyleguidePage,
