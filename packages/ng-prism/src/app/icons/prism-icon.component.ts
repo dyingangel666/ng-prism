@@ -35,6 +35,8 @@ const ICONS: Record<string, string> = {
     '<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
   'shield-check':
     '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  camera:
+    '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>',
   move: '<path d="M12 2v20M2 12h20m-16-4-4 4 4 4m12-8 4 4-4 4M8 8l-4 4 4 4"/>',
   crosshair:
     '<circle cx="12" cy="12" r="10"/><path d="M22 12h-4M6 12H2m10-6V2m0 20v-4"/>',
@@ -48,6 +50,36 @@ const ICONS: Record<string, string> = {
 };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Every name the registry can draw — what a panel's `icon` has to pick from. */
+export const ICON_NAMES: readonly string[] = Object.keys(ICONS);
+
+const warnedIcons = new Set<string>();
+
+/**
+ * The glyph markup for `name`, or `undefined` when the registry has no entry.
+ *
+ * A miss is warned about rather than passed over, because the symptom is
+ * invisible: the `<svg>` is still built at the right size, so a missing entry
+ * renders as a correctly-spaced blank and reads like a CSS bug. Plugins declare
+ * `icon` as a free-form string and are compiled separately from this registry,
+ * so nothing else catches the typo — the visual regression panel shipped with a
+ * blank tab icon exactly this way.
+ *
+ * Warned once per name: an icon on a panel tab re-renders constantly.
+ */
+export function resolveIcon(name: string): string | undefined {
+  const content = ICONS[name];
+  if (content === undefined && !warnedIcons.has(name)) {
+    warnedIcons.add(name);
+    console.warn(
+      `[ng-prism] Unknown icon "${name}" — rendering an empty glyph. Available: ${ICON_NAMES.join(
+        ', '
+      )}.`
+    );
+  }
+  return content;
+}
 
 @Component({
   selector: 'prism-icon',
@@ -66,7 +98,7 @@ export class PrismIconComponent {
     effect(() => {
       const iconName = this.name();
       const iconSize = this.size();
-      const content = ICONS[iconName] ?? '';
+      const content = resolveIcon(iconName) ?? '';
       const host = this.el.nativeElement;
 
       host.innerHTML = '';

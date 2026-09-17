@@ -16,6 +16,15 @@ const STYLE_ELEMENT_ID = 'ng-prism-capture-styles';
  * component's own content attribute, so a rule written inside the renderer
  * could never reach into the dynamically created showcase component to stop
  * *its* transitions and animations.
+ *
+ * Stripping `background-image` is what makes the canvas capture-safe without
+ * flattening it to one colour. Every `data-bg` value is a background *colour*
+ * plus, for all but `plain`, a repeating *pattern* — dots or a checkerboard.
+ * The colour is what `@Showcase({ bg })` declares and is deterministic; the
+ * pattern is not, because the component is centred, so the pattern's phase
+ * beneath it shifts whenever the component changes size and every pixel behind
+ * it differs after an unrelated resize. `!important` is required: the stage's
+ * own rules are component-scoped and therefore more specific than this one.
  */
 const CAPTURE_STYLES = `
 [${CAPTURE_ATTRIBUTE}] *,
@@ -26,6 +35,10 @@ const CAPTURE_STYLES = `
   caret-color: transparent !important;
   scroll-behavior: auto !important;
 }
+
+[${CAPTURE_ATTRIBUTE}] .prism-canvas-stage {
+  background-image: none !important;
+}
 `;
 
 /**
@@ -33,9 +46,10 @@ const CAPTURE_STYLES = `
  *
  * Screenshot tools clip the composited page to the capture target's box, so
  * anything painted behind or inside `.demo-wrap` ends up in the image. Capture
- * mode flattens the canvas to an opaque, patternless background, suppresses
- * every piece of canvas chrome, locks zoom to 1 and freezes animation, so a
- * variant renders identically on every run.
+ * mode strips the canvas background down to its opaque, patternless colour —
+ * keeping whatever `@Showcase({ bg })` declared — suppresses every piece of
+ * canvas chrome, locks zoom to 1 and freezes animation, so a variant renders
+ * identically on every run.
  *
  * The flag is read once from the URL at construction time and never written
  * back — {@link PrismUrlStateService} rebuilds the query string from scratch,

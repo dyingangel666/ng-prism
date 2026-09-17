@@ -2,24 +2,10 @@ import type { NgPrismPlugin, RuntimeComponent } from '@ng-prism/core/plugin';
 import type {
   VisualRegressionPluginOptions,
   VrtComponentMeta,
-  VrtThresholds,
 } from './visual-regression.types.js';
+import { resolveVrtThresholds } from './thresholds.js';
 
 const DEFAULT_REPORT_PATH = 'vrt-report.json';
-
-/**
- * Any regression is worth seeing, so the badge only stays green at a perfect
- * score. It degrades to warn, then danger, as the score falls.
- */
-export const DEFAULT_VRT_THRESHOLDS: VrtThresholds = { score: 100 };
-
-export function resolveVrtThresholds(
-  input?: number | Partial<VrtThresholds>
-): VrtThresholds {
-  if (input === undefined) return { ...DEFAULT_VRT_THRESHOLDS };
-  if (typeof input === 'number') return { score: input };
-  return { ...DEFAULT_VRT_THRESHOLDS, ...input };
-}
 
 /** True when the plugin recorded at least one result for this component. */
 function hasResults(component: RuntimeComponent): boolean {

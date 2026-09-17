@@ -4,6 +4,7 @@ import type {
   DiscoveryVariant,
   RuntimeManifest,
 } from '../plugin/plugin.types.js';
+import { resolveVariantBg } from '../shared/variant-bg.js';
 
 /**
  * External tooling reads `__PRISM_MANIFEST__` through a structured-clone bridge
@@ -80,14 +81,28 @@ export function buildDiscoveryManifest(
   return {
     components: manifest.components.map((component): DiscoveryComponent => {
       const { className, showcaseConfig } = component.meta;
-      const variants: DiscoveryVariant[] = showcaseConfig.variants?.map(
-        (variant, index) => {
-          const meta = serializableMeta(variant.meta);
-          return meta
-            ? { name: variant.name, index, meta }
-            : { name: variant.name, index };
-        }
-      ) ?? [{ name: 'Default', index: 0 }];
+
+      // An empty `variants` array is not "no variants": the renderer still
+      // instantiates the component with its declared defaults at index 0 and
+      // marks it `data-prism-rendered="<class>:0"`. Reporting zero variants
+      // here would let a runner walk past a component the app happily renders
+      // — the quiet coverage loss the `excluded` status exists to prevent.
+      const declared = showcaseConfig.variants ?? [];
+      const variants: DiscoveryVariant[] = declared.length
+        ? declared.map((variant, index) => {
+            const meta = serializableMeta(variant.meta);
+            const bg = resolveVariantBg(showcaseConfig, index);
+            return meta
+              ? { name: variant.name, index, bg, meta }
+              : { name: variant.name, index, bg };
+          })
+        : [
+            {
+              name: 'Default',
+              index: 0,
+              bg: resolveVariantBg(showcaseConfig, 0),
+            },
+          ];
 
       const meta = serializableMeta(showcaseConfig.meta);
       const discovered: DiscoveryComponent = {

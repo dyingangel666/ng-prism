@@ -8,8 +8,12 @@
 
 - Adds a **Visual Regression** panel to the addon tab bar, shown only for components that actually have results
 - Shows a **library-wide VRT pill** in the header, color-coded against your thresholds
+- Opens with a **per-component summary** — changed, resized, unchanged, new, excluded, and the worst diff in the component
 - Per variant: status, diff percentage, and a baseline / current / diff comparison
+- Three comparison modes: **Wipe**, **Side by side**, and **Diff** (the last only when the report records a distinct diff mask alongside a current capture)
+- **Zoom** at `Fit`, `1×`, `2×`, `4×`, with pixels kept as pixels — a diff is never drawn below 1:1, because a downscaled diff is one you cannot trust
 - Treats a variant with no baseline yet (`new`) as a neutral state, never as a failure
+- A `size-mismatch` variant opens in side-by-side, since wiping between two differently sized images overlays pixels that do not correspond
 
 The plugin **only renders a report someone else produced**. It does no image comparison of its own — that belongs to the runner, which has the baselines and the pinned container. See [Visual Regression Testing](guide/visual-regression.md) for how to capture and compare.
 
@@ -32,7 +36,7 @@ export default defineConfig({
   plugins: [
     visualRegressionPlugin({
       reportPath: 'coverage/my-lib/vrt-report.json',
-      assetBaseUrl: 'vrt/',
+      assetBaseUrl: 'assets/',
     }),
   ],
 });
@@ -53,12 +57,20 @@ The report references images by path. Those files must be reachable from the bui
 ```jsonc
 // angular.json — my-lib-prism build target
 "assets": [
-  { "glob": "**/*", "input": "coverage/my-lib/vrt-diff", "output": "vrt/diff" },
-  { "glob": "**/*", "input": "vrt/baseline", "output": "vrt/baseline" }
+  { "glob": "**/*", "input": "vrt", "output": "assets/vrt" }
 ]
 ```
 
 `assetBaseUrl` then bridges the gap between the paths recorded in the report and where the files actually land in the build output. Nothing about the layout is assumed.
+
+It is **prepended to** the recorded path, not substituted for it, so the three values have to line up:
+
+| Recorded in the report | `assetBaseUrl` | Requested URL                  |
+| ---------------------- | -------------- | ------------------------------ |
+| `vrt/baseline/x.png`   | `assets/`      | `assets/vrt/baseline/x.png` ✅ |
+| `vrt/baseline/x.png`   | `vrt/`         | `vrt/vrt/baseline/x.png` ❌    |
+
+The pairing above is the one this repository's own test workspace uses, and it is the reason the report records workspace-relative paths rather than URLs: the runner does not have to know where the styleguide will serve them from.
 
 ## Report Format
 
@@ -90,7 +102,9 @@ Your runner writes this file; the plugin reads it.
       "diffRatio": 0.5,
       "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png",
       "currentPath": "vrt/current/ButtonComponent/00-primary.png",
-      "diffPath": "vrt/diff/ButtonComponent/00-primary.png"
+      "diffPath": "vrt/diff/ButtonComponent/00-primary.png",
+      "bg": "light", // the surface this run captured on
+      "baselineBg": "light" // the surface the stored baseline was captured on
     }
   ]
 }
@@ -123,6 +137,22 @@ All three are optional and the panel degrades gracefully:
 - **`baselinePath` + `diffPath` only** — comparison falls back to baseline against the diff mask.
 - **`new` status** — shows `currentPath` alone, or a "no baseline yet" note.
 - **`excluded` status** — for variants a runner deliberately skipped, because they cannot be captured meaningfully (a tooltip that only renders on hover would be screenshotted as its trigger). Shown as a neutral row with the runner's `reason`, and no comparison modes, since nothing was captured. Reported rather than dropped so the skipped set stays visible instead of quietly shrinking coverage. Neither `new` nor `excluded` is framed as a fault.
+
+### Backgrounds
+
+| Field        | Required | Purpose                                            |
+| ------------ | -------- | -------------------------------------------------- |
+| `bg`         | no       | The canvas background this run captured on         |
+| `baselineBg` | no       | The background the stored baseline was captured on |
+
+Both take a `CanvasBg` value (`light`, `dark`, `dots`, `plain`, `checker`). A runner gets `bg` for free: it is the resolved [`bg` on the variant](guide/external-tooling.md#reading-the-background) it already read from `__PRISM_MANIFEST__` to drive the app. `baselineBg` requires the runner to store the background next to the baseline image.
+
+They buy two things in the panel:
+
+- **The frame under a capture** is painted in the recorded colour instead of the transparency checkerboard. This matters for the diff mask, whose unchanged pixels a comparator typically leaves transparent — on a checkerboard a dark variant's diff is unreadable. Only `light` and `dark` produce a colour; `dots`, `plain` and `checker` resolve to the themed surface, which the panel cannot know the runner's value for, so those keep the checkerboard. For `checker` — which is also what a variant with no declared background resolves to — that is simply the honest rendering.
+- **A named cause for a 100% diff.** With both fields present and different, the panel says the background moved from one surface to the other instead of leaving a reviewer to hunt a regression in an untouched component.
+
+Both are optional throughout. A report without them renders exactly as before.
 
 ## Related
 

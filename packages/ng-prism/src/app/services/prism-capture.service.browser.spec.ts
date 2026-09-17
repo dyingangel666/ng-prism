@@ -87,6 +87,19 @@ describe('PrismCaptureService', () => {
     expect(style?.textContent).toContain('animation: none');
   });
 
+  it('should strip the canvas background pattern but not its colour', () => {
+    setSearch('?capture=1');
+    createService();
+    const style = document.getElementById('ng-prism-capture-styles');
+    expect(style?.textContent).toContain(
+      '[data-prism-capture] .prism-canvas-stage'
+    );
+    expect(style?.textContent).toContain('background-image: none !important');
+    // A declared `@Showcase({ bg })` survives capture mode; only the
+    // non-deterministic pattern is removed.
+    expect(style?.textContent).not.toContain('background-color');
+  });
+
   it('should not inject a stylesheet when inactive', () => {
     setSearch('');
     createService();

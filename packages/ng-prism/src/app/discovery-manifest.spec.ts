@@ -1,6 +1,7 @@
 import type { Type } from '@angular/core';
 import type { RuntimeManifest } from '../plugin/plugin.types.js';
 import type { ShowcaseConfig } from '../decorator/showcase.types.js';
+import { DEFAULT_VARIANT_BG } from '../shared/variant-bg.js';
 import {
   buildDiscoveryManifest,
   serializableMeta,
@@ -125,8 +126,8 @@ describe('buildDiscoveryManifest', () => {
       className: 'ButtonComponent',
       title: 'Button',
       variants: [
-        { name: 'Primary', index: 0 },
-        { name: 'Secondary', index: 1 },
+        { name: 'Primary', index: 0, bg: 'checker' },
+        { name: 'Secondary', index: 1, bg: 'checker' },
       ],
     });
   });
@@ -139,8 +140,77 @@ describe('buildDiscoveryManifest', () => {
       })
     );
     expect(result.components[0].variants).toEqual([
-      { name: 'Default', index: 0 },
+      { name: 'Default', index: 0, bg: 'checker' },
     ]);
+  });
+
+  it('reports the Default variant for an empty variants array too', () => {
+    // The renderer treats `[]` exactly like `undefined` — it still instantiates
+    // the component at index 0 — so a runner must not be told there is nothing
+    // to capture.
+    const result = buildDiscoveryManifest(
+      manifestOf({
+        className: 'IconComponent',
+        showcaseConfig: { title: 'Icon', variants: [] },
+      })
+    );
+    expect(result.components[0].variants).toEqual([
+      { name: 'Default', index: 0, bg: 'checker' },
+    ]);
+  });
+
+  it('reports the background every variant renders on', () => {
+    const result = buildDiscoveryManifest(
+      manifestOf({
+        className: 'ButtonComponent',
+        showcaseConfig: {
+          title: 'Button',
+          bg: 'dark',
+          variants: [{ name: 'Filled' }, { name: 'Outlined', bg: 'light' }],
+        },
+      })
+    );
+
+    // Inherited from the component, then overridden by the variant — a runner
+    // reads one field instead of reimplementing the fallback chain.
+    expect(result.components[0].variants).toEqual([
+      { name: 'Filled', index: 0, bg: 'dark' },
+      { name: 'Outlined', index: 1, bg: 'light' },
+    ]);
+  });
+
+  it('reports the default background when nothing declares one', () => {
+    const result = buildDiscoveryManifest(
+      manifestOf({
+        className: 'ButtonComponent',
+        showcaseConfig: { title: 'Button', variants: [{ name: 'Filled' }] },
+      })
+    );
+    expect(result.components[0].variants[0].bg).toBe(DEFAULT_VARIANT_BG);
+  });
+
+  it('gives the synthetic Default variant the component background', () => {
+    const result = buildDiscoveryManifest(
+      manifestOf({
+        className: 'IconComponent',
+        showcaseConfig: { title: 'Icon', bg: 'dark' },
+      })
+    );
+    expect(result.components[0].variants).toEqual([
+      { name: 'Default', index: 0, bg: 'dark' },
+    ]);
+  });
+
+  it('does not put bg on the component level', () => {
+    // One resolved value per variant is the whole contract. A second,
+    // component-level field would only invite a consumer to read the wrong one.
+    const result = buildDiscoveryManifest(
+      manifestOf({
+        className: 'ButtonComponent',
+        showcaseConfig: { title: 'Button', bg: 'dark' },
+      })
+    );
+    expect('bg' in result.components[0]).toBe(false);
   });
 
   it('exposes variant meta, so a tool can opt a variant out', () => {

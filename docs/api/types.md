@@ -282,13 +282,17 @@ Canvas background mode used by `ShowcaseConfig.bg` and `Variant.bg`.
 type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker';
 ```
 
-| Value     | Visual                                                        |
-| --------- | ------------------------------------------------------------- |
-| `dots`    | Default — light dot grid on neutral surface                   |
-| `plain`   | Solid neutral surface, no pattern                             |
-| `light`   | Light surface tuned for components designed for light themes  |
-| `dark`    | Dark surface tuned for components designed for dark themes    |
-| `checker` | Checkerboard pattern, useful for components with transparency |
+| Value     | Visual                                                                         |
+| --------- | ------------------------------------------------------------------------------ |
+| `dots`    | Dot grid over the themed surface — the canvas's own starting background        |
+| `plain`   | The themed surface, no pattern                                                 |
+| `light`   | Flat light surface, for components designed for light themes                   |
+| `dark`    | Flat dark surface, for components designed for dark themes                     |
+| `checker` | Checkerboard — components with transparency, and the "nothing declared" answer |
+
+Two different defaults are in play. The **canvas** starts on `dots` and remembers whatever the user picks from the toolbar. A **variant's** background resolves to `checker` when neither the variant nor its component declares one — that is `DEFAULT_VARIANT_BG`, what [`DiscoveryVariant.bg`](guide/external-tooling.md#reading-the-background) reports and what capture mode paints.
+
+`light` and `dark` are flat by design, and their colours (`--prism-void-light`, `--prism-void-dark`) are absolute rather than theme tokens — which is what makes them the values to declare for a variant under [visual regression](guide/visual-regression.md#the-background-is-part-of-the-baseline). The other three follow `--prism-bg-surface` and therefore the active theme.
 
 ---
 

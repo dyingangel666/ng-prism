@@ -1,5 +1,6 @@
 import type { Provider, Type } from '@angular/core';
 import type { StyleguidePage } from './page.types.js';
+import type { CanvasBg } from '../shared/canvas-bg.type.js';
 
 export interface NgPrismPlugin {
   /** Unique plugin name — used for debugging and conflict detection */
@@ -167,6 +168,15 @@ export interface DiscoveryVariant {
   name: string;
   /** 0-based index into the `variants` array — the `?variant=` URL value. */
   index: number;
+  /**
+   * The canvas background this variant renders on, already resolved:
+   * `Variant.bg`, else `ShowcaseConfig.bg`, else `DEFAULT_VARIANT_BG`.
+   *
+   * Always present, because a screenshot runner cannot act on "nothing
+   * declared" — and it is the background capture mode paints, so the value
+   * here and the pixels in the capture agree.
+   */
+  bg: CanvasBg;
   /** Sanitised `Variant.meta`. Omitted when empty. */
   meta?: Record<string, unknown>;
 }

@@ -43,7 +43,18 @@ Transitions inside your own component, a zoom level left over in `localStorage` 
 
 ## Capture isolation mode
 
-`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it flattens the canvas to an opaque plain background, locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
+`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it strips the canvas down to an opaque, patternless background — keeping the colour a `@Showcase({ bg })` or per-variant `bg` declared — locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
+
+### The background is part of the baseline
+
+A variant declares `bg` because that is the surface it has to work on — an outlined button on `dark` proves nothing screenshotted on a light default. Capture mode therefore keeps the declared colour, and the manifest tells you which one it is: every variant carries a resolved [`bg`](guide/external-tooling.md#reading-the-background), so the value you read and the pixels you get agree.
+
+Two consequences for a runner:
+
+- **Record it next to the baseline.** A variant whose `bg` changes compares a capture on one surface against a baseline on another: every pixel differs while the component is untouched. Storing the background alongside the baseline image is what lets you tell that apart from a regression — and the report has fields for both (`bg`, `baselineBg`).
+- **Declare `light` or `dark` on anything you baseline.** They are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat. `dots`, `plain` and `checker` resolve to `--prism-bg-surface`, a theme token, so a capture on one of them is only as stable as the browser profile's theme.
+
+With nothing declared a variant resolves to `checker` (`DEFAULT_VARIANT_BG`) — an honest "no surface declared", but not a stable one for a baseline: capture mode strips the pattern and leaves the themed colour behind it. Treat an undeclared `bg` on a variant you are baselining as a gap to fill, not as a default to rely on.
 
 ```
 http://localhost:4200/?component=ButtonComponent&variant=2&capture=1
@@ -91,9 +102,15 @@ for (const comp of manifest.components) {
     // 4. …and then for the page to settle.
     await page.evaluate(() => document.fonts.ready);
 
-    // 5. Capture.
+    // 5. Capture. `variant.bg` is the surface it was captured on — record it
+    //    with the baseline so a background change is not read as a regression.
     const png = await page.locator('.demo-wrap').screenshot();
-    await compareAgainstBaseline(comp.className, variant.index, png);
+    await compareAgainstBaseline(
+      comp.className,
+      variant.index,
+      png,
+      variant.bg
+    );
   }
 }
 

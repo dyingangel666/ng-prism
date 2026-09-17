@@ -112,13 +112,18 @@ import { resolveOverlay } from './overlay-resolver.js';
     .prism-canvas-stage[data-bg="plain"] {
       background-image: none;
     }
+    /* Flat, not dotted. "light" and "dark" name a surface a component was
+       designed against — and they are the two backgrounds whose colour is
+       absolute rather than a theme token, which is what makes them the values
+       to declare for a screenshot baseline. "dots" already exists for anyone
+       who wants the grid. */
     .prism-canvas-stage[data-bg="light"] {
       background-color: var(--prism-void-light, #f7f5fc);
-      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary-from) 15%, transparent) 1px, transparent 1px);
+      background-image: none;
     }
     .prism-canvas-stage[data-bg="dark"] {
       background-color: var(--prism-void-dark, #07050f);
-      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary) 18%, transparent) 1px, transparent 1px);
+      background-image: none;
     }
     .prism-canvas-stage[data-bg="checker"] {
       background-image:

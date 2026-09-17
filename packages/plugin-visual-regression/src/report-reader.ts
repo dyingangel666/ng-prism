@@ -31,23 +31,42 @@ function loadReport(reportPath: string): VrtReport | null {
  * Components are matched on `className` — the report and the scanner agree on
  * it exactly, so there is no need for the path-matching heuristics the coverage
  * plugin uses.
+ *
+ * The report's shape is checked rather than trusted. It is written by someone
+ * else's runner, and this runs inside `onComponentScanned`, where a throw is
+ * rethrown by the plugin runner and fails the whole styleguide build. A report
+ * that is merely *missing* already degrades to "no results"; a truncated or
+ * malformed one must not be punished harder than a missing one.
  */
 export function readVariantsForComponent(
   reportPath: string,
   className: string
 ): VrtVariantResult[] {
-  const report = loadReport(reportPath);
-  if (!report?.byVariant) return [];
+  const entries: unknown = loadReport(reportPath)?.byVariant;
+  if (!Array.isArray(entries)) return [];
 
-  return report.byVariant
-    .filter((v) => v.className === className)
-    .sort((a, b) => a.variantIndex - b.variantIndex);
+  return entries
+    .filter(
+      (entry): entry is VrtVariantResult =>
+        isRecord(entry) && entry['className'] === className
+    )
+    .sort((a, b) => variantIndexOf(a) - variantIndexOf(b));
 }
 
 export function readTotals(reportPath: string): VrtTotals | null {
-  return loadReport(reportPath)?.total ?? null;
+  const total: unknown = loadReport(reportPath)?.total;
+  return isRecord(total) ? (total as unknown as VrtTotals) : null;
 }
 
 export function clearReportCache(): void {
   cache.clear();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Missing or non-numeric indices sort first rather than poisoning the sort. */
+function variantIndexOf(variant: VrtVariantResult): number {
+  return typeof variant.variantIndex === 'number' ? variant.variantIndex : 0;
 }

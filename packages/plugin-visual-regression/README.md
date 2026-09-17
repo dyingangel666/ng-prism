@@ -32,7 +32,7 @@ export default defineConfig({
   plugins: [
     visualRegressionPlugin({
       reportPath: 'coverage/my-lib/vrt-report.json',
-      assetBaseUrl: 'vrt/',
+      assetBaseUrl: 'assets/',
     }),
   ],
 });
@@ -69,7 +69,9 @@ export default defineConfig({
       "diffRatio": 0.5,
       "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png",
       "currentPath": "vrt/current/ButtonComponent/00-primary.png",
-      "diffPath": "vrt/diff/ButtonComponent/00-primary.png"
+      "diffPath": "vrt/diff/ButtonComponent/00-primary.png",
+      "bg": "light",
+      "baselineBg": "light"
     }
   ]
 }
@@ -79,17 +81,25 @@ Results are matched to components by `className`. All three image paths are opti
 
 `status: "new"` — a variant with no baseline yet — renders as a **neutral** state, never as a failure.
 
+`bg` and `baselineBg` are optional and record the canvas background a capture was taken on — `bg` for this run, `baselineBg` for the stored baseline. A runner gets `bg` for free: it is the resolved `bg` on the variant it already read from `__PRISM_MANIFEST__`. Given them, the panel frames the images in that surface instead of the transparency checkerboard (which is what makes a dark variant's diff mask readable), and when the two differ it names the background change rather than leaving a 100% diff unexplained.
+
 ## Serving the Images
 
 The report references images by path; those files must be reachable from the built styleguide. Copy them in via the `assets` array of your Prism app's build target, then point `assetBaseUrl` at where they land.
 
+`assetBaseUrl` is **prepended to the path in the report** — it is not a replacement for it. The three values have to line up:
+
 ```jsonc
 // angular.json — my-lib-prism build target
 "assets": [
-  { "glob": "**/*", "input": "coverage/my-lib/vrt-diff", "output": "vrt/diff" },
-  { "glob": "**/*", "input": "vrt/baseline", "output": "vrt/baseline" }
+  { "glob": "**/*", "input": "vrt", "output": "assets/vrt" }
 ]
 ```
+
+| Recorded in the report | `assetBaseUrl` | Requested URL                  |
+| ---------------------- | -------------- | ------------------------------ |
+| `vrt/baseline/x.png`   | `assets/`      | `assets/vrt/baseline/x.png` ✅ |
+| `vrt/baseline/x.png`   | `vrt/`         | `vrt/vrt/baseline/x.png` ❌    |
 
 ## License
 

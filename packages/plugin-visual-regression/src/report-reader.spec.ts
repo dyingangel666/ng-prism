@@ -1,3 +1,5 @@
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   clearReportCache,
@@ -7,6 +9,21 @@ import {
 
 const FIXTURE = join(__dirname, '__fixtures__', 'vrt-report.json');
 const MISSING = join(__dirname, '__fixtures__', 'does-not-exist.json');
+
+/** Writes `content` verbatim to a throwaway report file and returns its path. */
+function writeReport(content: string): string {
+  const dir = mkdtempSync(join(tmpdir(), 'vrt-report-'));
+  scratchDirs.push(dir);
+  const file = join(dir, 'vrt-report.json');
+  writeFileSync(file, content, 'utf-8');
+  return file;
+}
+
+const scratchDirs: string[] = [];
+
+afterAll(() => {
+  for (const dir of scratchDirs) rmSync(dir, { recursive: true, force: true });
+});
 
 describe('readVariantsForComponent', () => {
   beforeEach(() => clearReportCache());
@@ -75,5 +92,48 @@ describe('readTotals', () => {
   });
   it('reports the excluded count when the runner provides one', () => {
     expect(readTotals(FIXTURE)?.excluded).toBe(1);
+  });
+});
+
+/**
+ * A malformed report must degrade exactly like a missing one. These run inside
+ * `onComponentScanned`, where the plugin runner rethrows and fails the whole
+ * styleguide build — the one moment you most want the report to be readable.
+ */
+describe('a malformed report', () => {
+  beforeEach(() => clearReportCache());
+
+  it('degrades when byVariant is not an array', () => {
+    const file = writeReport('{ "byVariant": { "ButtonComponent": [] } }');
+    expect(() =>
+      readVariantsForComponent(file, 'ButtonComponent')
+    ).not.toThrow();
+    expect(readVariantsForComponent(file, 'ButtonComponent')).toEqual([]);
+  });
+
+  it('degrades when the file is truncated mid-write', () => {
+    const file = writeReport('{ "total": { "score": 9');
+    expect(readVariantsForComponent(file, 'ButtonComponent')).toEqual([]);
+    expect(readTotals(file)).toBeNull();
+  });
+
+  it('degrades when the JSON root is not an object', () => {
+    const file = writeReport('[]');
+    expect(readVariantsForComponent(file, 'ButtonComponent')).toEqual([]);
+    expect(readTotals(file)).toBeNull();
+  });
+
+  it('skips null entries instead of dereferencing them', () => {
+    const file = writeReport(
+      '{ "byVariant": [null, { "className": "ButtonComponent", "variantIndex": 0, "status": "unchanged" }] }'
+    );
+    const variants = readVariantsForComponent(file, 'ButtonComponent');
+    expect(variants).toHaveLength(1);
+    expect(variants[0].status).toBe('unchanged');
+  });
+
+  it('returns null totals when total is not an object', () => {
+    const file = writeReport('{ "total": 99, "byVariant": [] }');
+    expect(readTotals(file)).toBeNull();
   });
 });

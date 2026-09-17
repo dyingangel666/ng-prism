@@ -1,10 +1,7 @@
 import { join } from 'node:path';
 import type { ScannedComponent, PrismManifest } from '@ng-prism/core/plugin';
-import {
-  DEFAULT_VRT_THRESHOLDS,
-  resolveVrtThresholds,
-  visualRegressionPlugin,
-} from './visual-regression-plugin.js';
+import { visualRegressionPlugin } from './visual-regression-plugin.js';
+import { DEFAULT_VRT_THRESHOLDS, resolveVrtThresholds } from './thresholds.js';
 import { clearReportCache } from './report-reader.js';
 import type {
   VrtComponentMeta,

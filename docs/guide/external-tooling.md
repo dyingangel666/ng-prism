@@ -8,12 +8,12 @@ ng-prism exposes a small, deliberately stable contract for those tools. This pag
 
 ## The Anchors
 
-| Anchor                                                               | Where                           | Purpose                                                                                                                                            |
-| -------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `window.__PRISM_MANIFEST__`                                          | global, set by `providePrism()` | Shape: `{ components: [{ className, title, meta?, variants: [{ name, index, meta? }] }], pages: [{ title }] }`. Use it to enumerate what to visit. |
-| URL params `?component=<className>&variant=<index>`                  | navigation state                | Drive the app to a specific component+variant from the outside. `variant` is the array index; omit it for index `0`.                               |
-| `[data-prism-rendered="<className>:<variantIndex>"]` on `.demo-wrap` | renderer host element           | Render marker — wait for this attribute to match the expected key before inspecting the variant.                                                   |
-| `?capture=1`                                                         | URL param                       | [Capture isolation mode](#capture-isolation-mode) — strips canvas chrome and freezes the render for deterministic screenshots.                     |
+| Anchor                                                               | Where                           | Purpose                                                                                                                                                |
+| -------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `window.__PRISM_MANIFEST__`                                          | global, set by `providePrism()` | Shape: `{ components: [{ className, title, meta?, variants: [{ name, index, bg, meta? }] }], pages: [{ title }] }`. Use it to enumerate what to visit. |
+| URL params `?component=<className>&variant=<index>`                  | navigation state                | Drive the app to a specific component+variant from the outside. `variant` is the array index; omit it for index `0`.                                   |
+| `[data-prism-rendered="<className>:<variantIndex>"]` on `.demo-wrap` | renderer host element           | Render marker — wait for this attribute to match the expected key before inspecting the variant.                                                       |
+| `?capture=1`                                                         | URL param                       | [Capture isolation mode](#capture-isolation-mode) — strips canvas chrome and freezes the render for deterministic screenshots.                         |
 
 ### Enumerating what exists
 
@@ -25,13 +25,41 @@ await page.waitForFunction(() => globalThis.__PRISM_MANIFEST__ !== undefined);
 const manifest = await page.evaluate(() => globalThis.__PRISM_MANIFEST__);
 
 // manifest.components -> [{ className: 'ButtonComponent', title: 'Button',
-//                          variants: [{ name: 'Primary', index: 0 }, …] }]
+//                          variants: [{ name: 'Primary', index: 0, bg: 'light' }, …] }]
 // manifest.pages      -> [{ title: 'Button Patterns' }]
 ```
 
-`title` is the `@Showcase` display name; `className` is the class. A component with no declared variants still reports one entry: `[{ name: 'Default', index: 0 }]`.
+`title` is the `@Showcase` display name; `className` is the class. A component with no declared variants still reports one entry: `[{ name: 'Default', index: 0, bg: … }]`.
 
 The type is exported as `DiscoveryManifest` from `@ng-prism/core/plugin`.
+
+### Reading the background
+
+Every variant reports the canvas background it renders on. A component may declare one for all its variants, and a variant may declare its own:
+
+```ts
+@Showcase({
+  title: 'Button',
+  bg: 'light', // applies to every variant below
+  variants: [
+    { name: 'Filled' },
+    { name: 'On dark', bg: 'dark' }, // wins for this variant
+  ],
+})
+```
+
+`bg` is **already resolved** and always present, so a tool reads one field instead of reimplementing the fallback:
+
+```js
+// variants -> [{ name: 'Filled', index: 0, bg: 'light' },
+//              { name: 'On dark', index: 1, bg: 'dark' }]
+```
+
+The resolution order is variant, then component, then `checker` — exported as `DEFAULT_VARIANT_BG` from `@ng-prism/core/plugin`, alongside the `CanvasBg` type and `resolveVariantBg()`. `checker` is the "nothing declared" answer: the checkerboard reads as an undefined backdrop rather than as a decision somebody made.
+
+> **The value matches the pixels.** [Capture mode](#capture-isolation-mode) paints exactly this background, so what the manifest reports and what a screenshot contains cannot drift apart.
+
+What the default does **not** give you is a stable colour. `checker` has none of its own — it patterns over `--prism-bg-surface`, a _theme_ token — and capture mode strips patterns and keeps colours, so the surface behind an undeclared component follows whichever theme the runner's browser started in. A variant under visual regression should declare `light` or `dark`: those two are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat by design. `dots`, `plain` and `checker` all land on the themed surface, so a capture on one of them is only as stable as the theme.
 
 ### Reading `@Showcase` metadata
 
@@ -91,6 +119,8 @@ await page.waitForFunction(
 
 Element-scoped screenshots composite whatever is painted **behind** and **inside** the target element. For `.demo-wrap` that means the canvas dot grid, rulers, the zoom badge, the centre crosshair and any active panel overlay all end up in the image — and because the component is centred, the grid phase beneath it shifts whenever the component changes size, so an unrelated size change makes every pixel under the component differ.
 
+The background _colour_ is not part of that problem, and dropping it would create a different one: a variant that declares `bg: 'dark'` does so because that is the surface it has to work on, and a baseline captured on the light default would prove the wrong thing. Capture mode therefore removes the pattern and keeps the colour.
+
 Add `capture=1` to the URL to render in an isolated mode built for screenshotting:
 
 ```
@@ -101,14 +131,14 @@ Accepted as "on": `?capture`, `?capture=1`, `?capture=true`. Anything else — i
 
 When active, ng-prism:
 
-| Effect                             | Detail                                                                                                                                     |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Flattens the canvas**            | Forces the `plain` background: no dot grid, checker, rulers, crosshair, zoom badge or background pill. The background colour stays opaque. |
-| **Overrides declared backgrounds** | Beats `@Showcase({ bg })`, a per-variant `bg` and any manual user override — all resolve to `plain`.                                       |
-| **Locks zoom to 1**                | Persisted canvas state in `localStorage` (zoom, guides, rulers, background) is neither read nor written.                                   |
-| **Suppresses overlays**            | Panel overlays render _inside_ `.demo-wrap`; in capture mode they are not rendered and lazy overlay components are never even fetched.     |
-| **Freezes motion**                 | Transitions and animations are disabled document-wide — including inside your own component, via a document-level stylesheet.              |
-| **Skips state restore**            | `sessionStorage` state (control-panel input overrides, a11y sub-tab) is not restored, so a previous session cannot alter what you capture. |
+| Effect                         | Detail                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Strips canvas patterns**     | Removes the dot grid and the checkerboard, plus rulers, crosshair, zoom badge and background pill. The background _colour_ stays, opaque.                                                                                                                                                                                                                                                                  |
+| **Keeps declared backgrounds** | `@Showcase({ bg })` and a per-variant `bg` survive, so a variant is captured on the surface it was designed for; with neither declared it lands on `DEFAULT_VARIANT_BG` rather than on the session's canvas background. Either way the surface is the `bg` [reported for the variant](#reading-the-background). A manual user override does not survive — it is session UI state, not part of the variant. |
+| **Locks zoom to 1**            | Persisted canvas state in `localStorage` (zoom, guides, rulers, background) is neither read nor written.                                                                                                                                                                                                                                                                                                   |
+| **Suppresses overlays**        | Panel overlays render _inside_ `.demo-wrap`; in capture mode they are not rendered and lazy overlay components are never even fetched.                                                                                                                                                                                                                                                                     |
+| **Freezes motion**             | Transitions and animations are disabled document-wide — including inside your own component, via a document-level stylesheet.                                                                                                                                                                                                                                                                              |
+| **Skips state restore**        | `sessionStorage` state (control-panel input overrides, a11y sub-tab) is not restored, so a previous session cannot alter what you capture.                                                                                                                                                                                                                                                                 |
 
 The mode is a single switch: there is nothing else to configure, and no config change is required — which matters when a CI job drives a prebuilt styleguide it cannot reconfigure per run.
 

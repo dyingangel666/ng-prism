@@ -1,3 +1,5 @@
+import type { CanvasBg } from '@ng-prism/core/plugin';
+
 /**
  * Outcome of comparing one rendered variant against its baseline.
  *
@@ -34,6 +36,24 @@ export interface VrtVariantResult {
   /** The image captured on this run. Optional — the panel degrades without it. */
   currentPath?: string;
   diffPath?: string;
+  /**
+   * The canvas background this run captured on — `DiscoveryVariant.bg` from
+   * `__PRISM_MANIFEST__`, which the runner already read to drive the app.
+   *
+   * Recording it makes the report self-describing: a stored baseline no longer
+   * silently forgets which surface it was judged against.
+   */
+  bg?: CanvasBg;
+  /**
+   * The background the *stored baseline* was captured on, when the runner
+   * tracks it alongside the baseline image.
+   *
+   * The one thing that turns an unexplained 100% diff into a named cause: a
+   * variant whose `bg` moved is compared against a baseline on the old
+   * surface, so every pixel differs while the component is untouched. `bg`
+   * alone cannot show that — it only describes the current run.
+   */
+  baselineBg?: CanvasBg;
   /** Why a variant was excluded. Runners are expected to justify each one. */
   reason?: string;
 }
