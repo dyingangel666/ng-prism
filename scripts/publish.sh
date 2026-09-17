@@ -263,7 +263,13 @@ run_tests() {
   # Unpiped on purpose: `set -o pipefail` already aborts the release on a
   # failure, but the previous `| tail -3` reduced that failure to a summary
   # line and hid which test broke.
-  npx nx run-many -t test --projects="$(project_names)"
+  #
+  # `static` is what the pipe used to imply. Nx picks its Terminal UI when it
+  # detects an interactive stdout, and that UI waits for a keypress after the
+  # run — a release script would sit there until someone pressed q. `static`
+  # is Nx's own recommendation for non-interactive environments: every task's
+  # output, printed once, in order, and the process exits on its own.
+  npx nx run-many -t test --projects="$(project_names)" --outputStyle=static
 
   ok "Tests passed"
 }
