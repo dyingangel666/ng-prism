@@ -153,11 +153,11 @@ See [Custom UI Sections](guide/custom-ui.md) for examples.
 
 ### `headless`
 
-When `true`, strips all built-in chrome — header, sidebar, toolbar, panels — and renders only the component canvas. Default: `false`.
+> **Not yet implemented — setting this has no effect.** The property exists on `NgPrismConfig` and is kept for forward compatibility.
 
-```typescript
-export default defineConfig({ headless: true });
-```
+When implemented, `true` will strip all built-in chrome — header, sidebar, toolbar, panels — and render only the component canvas. Default: `false`. For a custom shell today, use [`appComponent`](#appcomponent).
+
+For screenshot isolation (a separate, working feature), see [capture isolation mode](guide/external-tooling.md#capture-isolation-mode).
 
 ---
 

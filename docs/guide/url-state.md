@@ -9,13 +9,14 @@ After editing a SCSS file in your library and waiting for the dev-server reload,
 
 ## URL Parameters
 
-| Parameter | Example | Description |
-|-----------|---------|-------------|
-| `component` | `?component=ButtonComponent` | Active component class name |
-| `page` | `?page=Button%20Patterns` | Active page title (URL-encoded) |
-| `variant` | `?variant=1` | Active variant index (0-based) |
-| `view` | `?view=docs` | Active view tab (e.g. `docs`, `a11y`) |
-| `panel` | `?panel=a11y` | Active addon panel tab (default: `controls`, omitted when default) |
+| Parameter   | Example                      | Description                                                                                                                                                      |
+| ----------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `component` | `?component=ButtonComponent` | Active component class name                                                                                                                                      |
+| `page`      | `?page=Button%20Patterns`    | Active page title (URL-encoded)                                                                                                                                  |
+| `variant`   | `?variant=1`                 | Active variant index (0-based)                                                                                                                                   |
+| `view`      | `?view=docs`                 | Active view tab (e.g. `docs`, `a11y`)                                                                                                                            |
+| `panel`     | `?panel=a11y`                | Active addon panel tab (default: `controls`, omitted when default)                                                                                               |
+| `capture`   | `?capture=1`                 | Read-only input flag — enables [capture isolation mode](guide/external-tooling.md#capture-isolation-mode) for screenshot tooling. Never written back to the URL. |
 
 Example URL:
 
@@ -52,8 +53,8 @@ Disable each layer independently:
 
 ```typescript
 export default defineConfig({
-  urlState: false,      // disables URL sync
-  persistState: false,  // disables sessionStorage for controls + a11y
+  urlState: false, // disables URL sync
+  persistState: false, // disables sessionStorage for controls + a11y
 });
 ```
 

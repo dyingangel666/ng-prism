@@ -19,15 +19,15 @@ export default defineConfig({
 
 All slots accept Angular standalone components. The slot component receives no inputs from ng-prism — use injected services for any data you need.
 
-| Slot | Key | Description |
-|------|-----|-------------|
-| Top header bar | `ui.header` | Replace the logo, title, and toolbar |
-| Left sidebar | `ui.sidebar` | Replace the navigation tree entirely |
-| Component title area | `ui.componentHeader` | Replace the header above the canvas |
-| Canvas + renderer area | `ui.renderer` | Replace the entire renderer region |
-| Controls panel | `ui.controlsPanel` | Replace the built-in controls panel |
-| Events panel | `ui.eventsPanel` | Replace the built-in events panel |
-| Footer | `ui.footer` | Add a footer below the addon panels |
+| Slot                   | Key                  | Description                          |
+| ---------------------- | -------------------- | ------------------------------------ |
+| Top header bar         | `ui.header`          | Replace the logo, title, and toolbar |
+| Left sidebar           | `ui.sidebar`         | Replace the navigation tree entirely |
+| Component title area   | `ui.componentHeader` | Replace the header above the canvas  |
+| Canvas + renderer area | `ui.renderer`        | Replace the entire renderer region   |
+| Controls panel         | `ui.controlsPanel`   | Replace the built-in controls panel  |
+| Events panel           | `ui.eventsPanel`     | Replace the built-in events panel    |
+| Footer                 | `ui.footer`          | Add a footer below the addon panels  |
 
 ## Example: Custom Header
 
@@ -49,17 +49,19 @@ import { PrismSearchService } from '@ng-prism/core';
       />
     </header>
   `,
-  styles: [`
-    .my-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 0 1.5rem;
-      height: var(--prism-header-height);
-      background: var(--prism-bg-surface);
-      border-bottom: 1px solid var(--prism-border);
-    }
-  `],
+  styles: [
+    `
+      .my-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0 1.5rem;
+        height: var(--prism-header-height);
+        background: var(--prism-bg-surface);
+        border-bottom: 1px solid var(--prism-border);
+      }
+    `,
+  ],
 })
 export class MyHeaderComponent {
   readonly search = inject(PrismSearchService);
@@ -87,13 +89,12 @@ import { PrismNavigationService, PrismManifestService } from '@ng-prism/core';
   standalone: true,
   template: `
     @for (entry of nav.categoryTree() | keyvalue; track entry.key) {
-      <h4>{{ entry.key }}</h4>
-      @for (item of entry.value; track item.data) {
-        <button (click)="selectItem(item)">
-          {{ itemLabel(item) }}
-        </button>
-      }
-    }
+    <h4>{{ entry.key }}</h4>
+    @for (item of entry.value; track item.data) {
+    <button (click)="selectItem(item)">
+      {{ itemLabel(item) }}
+    </button>
+    } }
   `,
 })
 export class MySidebarComponent {
@@ -114,13 +115,11 @@ export class MySidebarComponent {
 
 ## Headless Mode
 
-Set `headless: true` to strip all built-in chrome (header, sidebar, toolbar, panels). Only the component canvas is rendered. Useful for embedding the renderer in a larger custom app.
+> **Not yet implemented.** `headless` is declared on `NgPrismConfig` but has no effect today. Setting it does nothing. It is documented here because the option is already part of the published type surface; the section below describes the intended behaviour, not current behaviour.
 
-```typescript
-export default defineConfig({
-  headless: true,
-});
-```
+The intent is that `headless: true` strips all built-in chrome (header, sidebar, toolbar, panels) so only the component canvas is rendered — useful for embedding the renderer in a larger custom app. Until it lands, use `appComponent` (see **Full Shell Replacement** below) to supply your own shell.
+
+> Looking for a stripped-down canvas for **screenshot tooling**? That is a different feature and it does work today: see [capture isolation mode](guide/external-tooling.md#capture-isolation-mode).
 
 ## Full Shell Replacement — `appComponent`
 
