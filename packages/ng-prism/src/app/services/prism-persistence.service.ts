@@ -1,8 +1,15 @@
 import { effect, inject, Injectable, Injector } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
-import { A11yPanelStateService, type A11ySubTab } from '../panels/a11y/a11y-panel-state.service.js';
-import { A11yPerspectiveService, type A11yPerspectiveMode } from '../panels/a11y/a11y-perspective.service.js';
+import {
+  A11yPanelStateService,
+  type A11ySubTab,
+} from '../panels/a11y/a11y-panel-state.service.js';
+import {
+  A11yPerspectiveService,
+  type A11yPerspectiveMode,
+} from '../panels/a11y/a11y-perspective.service.js';
+import { PrismCaptureService } from './prism-capture.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 
@@ -12,7 +19,10 @@ const DEBOUNCE_MS = 200;
 
 interface PrismPersistedState {
   version: 1;
-  inputs: Record<string, { variantIndex: number; values: Record<string, unknown> }>;
+  inputs: Record<
+    string,
+    { variantIndex: number; values: Record<string, unknown> }
+  >;
   a11y?: {
     activeTab?: A11ySubTab;
     perspective?: A11yPerspectiveMode;
@@ -21,7 +31,9 @@ interface PrismPersistedState {
 
 @Injectable({ providedIn: 'root' })
 export class PrismPersistenceService {
-  private readonly config = inject<NgPrismConfig>(PRISM_CONFIG, { optional: true }) ?? {};
+  private readonly config =
+    inject<NgPrismConfig>(PRISM_CONFIG, { optional: true }) ?? {};
+  private readonly capture = inject(PrismCaptureService);
   private readonly navigationService = inject(PrismNavigationService);
   private readonly rendererService = inject(PrismRendererService);
   private readonly a11yPanelState = inject(A11yPanelStateService);
@@ -34,6 +46,10 @@ export class PrismPersistenceService {
 
   init(): void {
     if (this.config.persistState === false) return;
+    // Capture mode must render a variant exactly as the manifest declares it;
+    // restoring a previous session's control values would silently change what
+    // an external screenshot tool captures.
+    if (this.capture.active()) return;
     const { raw } = this.restoreFromStorage();
     if (raw !== null) this.lastSerialized = raw;
     this.setupSyncEffect();
@@ -57,14 +73,20 @@ export class PrismPersistenceService {
       if (parsed.a11y?.activeTab && a11yTabs.includes(parsed.a11y.activeTab)) {
         this.a11yPanelState.activeTab.set(parsed.a11y.activeTab);
       }
-      if (parsed.a11y?.perspective === 'visual' || parsed.a11y?.perspective === 'screen-reader') {
+      if (
+        parsed.a11y?.perspective === 'visual' ||
+        parsed.a11y?.perspective === 'screen-reader'
+      ) {
         this.a11yPerspective.mode.set(parsed.a11y.perspective);
       }
 
       const activeComp = this.navigationService.activeComponent();
       if (activeComp && parsed.inputs) {
         const bucket = parsed.inputs[activeComp.meta.className];
-        if (bucket && bucket.variantIndex === this.rendererService.activeVariantIndex()) {
+        if (
+          bucket &&
+          bucket.variantIndex === this.rendererService.activeVariantIndex()
+        ) {
           const validKeys = new Set(activeComp.meta.inputs.map((i) => i.name));
           const filtered: Record<string, unknown> = {};
           for (const [k, v] of Object.entries(bucket.values)) {
@@ -85,16 +107,19 @@ export class PrismPersistenceService {
   }
 
   private setupSyncEffect(): void {
-    effect(() => {
-      this.navigationService.activeComponent();
-      this.rendererService.activeVariantIndex();
-      this.rendererService.inputValues();
-      this.a11yPanelState.activeTab();
-      this.a11yPerspective.mode();
+    effect(
+      () => {
+        this.navigationService.activeComponent();
+        this.rendererService.activeVariantIndex();
+        this.rendererService.inputValues();
+        this.a11yPanelState.activeTab();
+        this.a11yPerspective.mode();
 
-      if (this.suppressSync) return;
-      this.writeDebounced();
-    }, { injector: this.injector });
+        if (this.suppressSync) return;
+        this.writeDebounced();
+      },
+      { injector: this.injector }
+    );
   }
 
   private writeDebounced(): void {
@@ -128,7 +153,10 @@ export class PrismPersistenceService {
       }
     }
     if (activeComp) {
-      inputs[activeComp.meta.className] = { variantIndex, values: { ...values } };
+      inputs[activeComp.meta.className] = {
+        variantIndex,
+        values: { ...values },
+      };
     }
 
     return {

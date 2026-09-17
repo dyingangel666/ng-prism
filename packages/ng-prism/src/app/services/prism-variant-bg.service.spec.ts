@@ -140,3 +140,65 @@ describe('PrismVariantBgService', () => {
     expect(service.isDeviating()).toBe(false);
   });
 });
+
+describe('PrismVariantBgService in capture mode', () => {
+  let nav: PrismNavigationService;
+  let manifestService: PrismManifestService;
+  let service: PrismVariantBgService;
+
+  beforeEach(() => {
+    // The URL has to be set before the injector builds PrismCaptureService,
+    // which reads the flag once at construction time.
+    window.history.replaceState({}, '', '/?capture=1');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } },
+      ],
+    });
+    nav = TestBed.inject(PrismNavigationService);
+    manifestService = TestBed.inject(PrismManifestService);
+    service = TestBed.inject(PrismVariantBgService);
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, '', '/');
+    document.documentElement.removeAttribute('data-prism-capture');
+    document.getElementById('ng-prism-capture-styles')?.remove();
+  });
+
+  it('forces a plain background when no bg is declared', () => {
+    activate(manifestService, nav, makeComponent());
+    TestBed.flushEffects();
+    expect(service.effective()).toBe('plain');
+  });
+
+  it('overrides a component-level bg', () => {
+    activate(manifestService, nav, makeComponent('checker'));
+    TestBed.flushEffects();
+    expect(service.effective()).toBe('plain');
+  });
+
+  it('overrides a variant-level bg', () => {
+    activate(
+      manifestService,
+      nav,
+      makeComponent('dots', [{ name: 'Dark', bg: 'dark' }])
+    );
+    TestBed.flushEffects();
+    expect(service.effective()).toBe('plain');
+  });
+
+  it('overrides a manual user override', () => {
+    activate(manifestService, nav, makeComponent());
+    TestBed.flushEffects();
+    service.setOverride('dark');
+    expect(service.effective()).toBe('plain');
+  });
+
+  it('still reports the declared recommendation', () => {
+    activate(manifestService, nav, makeComponent('dark'));
+    TestBed.flushEffects();
+    expect(service.recommended()).toBe('dark');
+  });
+});

@@ -30,10 +30,12 @@ import { PrismPanelService } from '../services/prism-panel.service.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismCaptureService } from '../services/prism-capture.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
 import { buildKnownInputs } from './known-inputs.js';
+import { resolveOverlay } from './overlay-resolver.js';
 
 @Component({
   selector: 'prism-renderer',
@@ -50,6 +52,7 @@ import { buildKnownInputs } from './known-inputs.js';
       [attr.data-bg]="variantBg.effective()"
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
     >
+      @if (!capture.active()) {
       <div class="canvas-badges">
         <span class="c-badge"
           >{{ Math.round(canvasService.zoom() * 100) }}%</span
@@ -61,6 +64,7 @@ import { buildKnownInputs } from './known-inputs.js';
       ></div>
       <prism-canvas-rulers />
       <prism-canvas-bg-pill />
+      }
 
       <div
         class="demo-wrap"
@@ -182,6 +186,7 @@ export class PrismRendererComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly canvasService = inject(PrismCanvasService);
+  protected readonly capture = inject(PrismCaptureService);
   protected readonly variantBg = inject(PrismVariantBgService);
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
@@ -290,33 +295,26 @@ export class PrismRendererComponent {
         ...BUILTIN_PANELS,
         ...this.pluginService.panels(),
       ];
-      const panel = allPanels.find((p) => p.id === panelId) ?? null;
+      const resolution = resolveOverlay(allPanels, panelId, {
+        captureActive: this.capture.active(),
+        cache: this.overlayCache,
+      });
 
-      if (!panel) {
-        this.activeOverlay.set(null);
+      if (resolution.kind === 'eager') {
+        this.activeOverlay.set(resolution.component);
         return;
       }
-      if (panel.overlayComponent) {
-        this.activeOverlay.set(panel.overlayComponent);
-        return;
-      }
-      if (panel.loadOverlayComponent) {
-        const cached = this.overlayCache.get(panel.id);
-        if (cached) {
-          this.activeOverlay.set(cached);
-          return;
-        }
-        this.activeOverlay.set(null);
-        const requestedPanelId = panel.id;
-        panel.loadOverlayComponent().then((c) => {
-          this.overlayCache.set(requestedPanelId, c);
-          if (this.panelService.activePanelId() === requestedPanelId) {
-            this.activeOverlay.set(c);
-          }
-        });
-        return;
-      }
+
       this.activeOverlay.set(null);
+      if (resolution.kind !== 'lazy') return;
+
+      const { panelId: requestedPanelId, load } = resolution;
+      load().then((c) => {
+        this.overlayCache.set(requestedPanelId, c);
+        if (this.panelService.activePanelId() === requestedPanelId) {
+          this.activeOverlay.set(c);
+        }
+      });
     });
 
     this.destroyRef.onDestroy(() => this.cleanup());

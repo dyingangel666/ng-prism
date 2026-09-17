@@ -1,0 +1,86 @@
+import { Injectable, signal } from '@angular/core';
+
+/** URL query parameter that switches the Prism canvas into capture-isolation mode. */
+export const CAPTURE_PARAM = 'capture';
+
+/** Attribute set on `<html>` while capture mode is active. */
+export const CAPTURE_ATTRIBUTE = 'data-prism-capture';
+
+const STYLE_ELEMENT_ID = 'ng-prism-capture-styles';
+
+/**
+ * Global stylesheet applied in capture mode.
+ *
+ * This has to be a document-level stylesheet rather than a component `styles`
+ * block: Angular's emulated view encapsulation scopes component styles to that
+ * component's own content attribute, so a rule written inside the renderer
+ * could never reach into the dynamically created showcase component to stop
+ * *its* transitions and animations.
+ */
+const CAPTURE_STYLES = `
+[${CAPTURE_ATTRIBUTE}] *,
+[${CAPTURE_ATTRIBUTE}] *::before,
+[${CAPTURE_ATTRIBUTE}] *::after {
+  transition: none !important;
+  animation: none !important;
+  caret-color: transparent !important;
+  scroll-behavior: auto !important;
+}
+`;
+
+/**
+ * Capture-isolation mode.
+ *
+ * Screenshot tools clip the composited page to the capture target's box, so
+ * anything painted behind or inside `.demo-wrap` ends up in the image. Capture
+ * mode flattens the canvas to an opaque, patternless background, suppresses
+ * every piece of canvas chrome, locks zoom to 1 and freezes animation, so a
+ * variant renders identically on every run.
+ *
+ * The flag is read once from the URL at construction time and never written
+ * back — {@link PrismUrlStateService} rebuilds the query string from scratch,
+ * so navigating inside the app drops `?capture=1` from the address bar while
+ * the mode itself stays on for the lifetime of the document.
+ *
+ * Reading in the constructor (rather than during `PrismUrlStateService.init()`)
+ * is deliberate: `PrismCanvasService` restores persisted zoom in *its* own
+ * constructor, which can run first, so anything init-order dependent would
+ * make zoom-locking racy.
+ */
+@Injectable({ providedIn: 'root' })
+export class PrismCaptureService {
+  private readonly _active = signal(
+    typeof window !== 'undefined'
+      ? parseCaptureParam(window.location.search)
+      : false
+  );
+
+  /** True while the app renders for an external screenshot tool. */
+  readonly active = this._active.asReadonly();
+
+  constructor() {
+    if (this._active()) this.applyToDocument();
+  }
+
+  private applyToDocument(): void {
+    if (typeof document === 'undefined') return;
+    document.documentElement.setAttribute(CAPTURE_ATTRIBUTE, '');
+    if (document.getElementById(STYLE_ELEMENT_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ELEMENT_ID;
+    style.textContent = CAPTURE_STYLES;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * Parses the capture flag out of a `window.location.search` string.
+ *
+ * Accepts `?capture`, `?capture=1` and `?capture=true` as "on"; anything else
+ * (including `?capture=0` and `?capture=false`) is "off".
+ */
+export function parseCaptureParam(search: string): boolean {
+  const value = new URLSearchParams(search).get(CAPTURE_PARAM);
+  if (value === null) return false;
+  return value === '' || value === '1' || value === 'true';
+}

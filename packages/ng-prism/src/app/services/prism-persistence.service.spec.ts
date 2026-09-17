@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import type { RuntimeManifest, NgPrismConfig, RuntimeComponent } from '../../plugin/plugin.types.js';
+import type {
+  RuntimeManifest,
+  NgPrismConfig,
+  RuntimeComponent,
+} from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismPersistenceService } from './prism-persistence.service.js';
 import { A11yPanelStateService } from '../panels/a11y/a11y-panel-state.service.js';
@@ -21,11 +25,13 @@ function setup(manifest: RuntimeManifest, config: NgPrismConfig = {}) {
   return TestBed.inject(PrismPersistenceService);
 }
 
-function createComponent(overrides: Partial<{
-  className: string;
-  inputs: RuntimeComponent['meta']['inputs'];
-  variants: { name: string }[];
-}> = {}): RuntimeComponent {
+function createComponent(
+  overrides: Partial<{
+    className: string;
+    inputs: RuntimeComponent['meta']['inputs'];
+    variants: { name: string }[];
+  }> = {}
+): RuntimeComponent {
   return {
     type: class {} as any,
     meta: {
@@ -67,15 +73,32 @@ describe('PrismPersistenceService', () => {
 
       expect(spy).toHaveBeenCalledWith(STORAGE_KEY);
     });
+
+    it('should not read sessionStorage in capture mode', () => {
+      window.history.replaceState({}, '', '/?capture=1');
+      const spy = jest.spyOn(Storage.prototype, 'getItem');
+      const service = setup({ components: [] });
+
+      service.init();
+
+      expect(spy).not.toHaveBeenCalledWith(STORAGE_KEY);
+
+      window.history.replaceState({}, '', '/');
+      document.documentElement.removeAttribute('data-prism-capture');
+      document.getElementById('ng-prism-capture-styles')?.remove();
+    });
   });
 
   describe('restoreFromStorage', () => {
     it('should restore a11y activeTab and perspective from valid state', () => {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: {},
-        a11y: { activeTab: 'keyboard', perspective: 'screen-reader' },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: {},
+          a11y: { activeTab: 'keyboard', perspective: 'screen-reader' },
+        })
+      );
       const service = setup({ components: [] });
 
       service.init();
@@ -89,13 +112,18 @@ describe('PrismPersistenceService', () => {
     it('should restore input overrides when className and variantIndex match the active component', () => {
       const comp = createComponent({
         className: 'Btn',
-        inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
+        inputs: [
+          { name: 'size', type: 'string', required: false, defaultValue: 'md' },
+        ],
         variants: [{ name: 'A' }, { name: 'B' }, { name: 'C' }],
       });
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: { Btn: { variantIndex: 2, values: { size: 'large' } } },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: { Btn: { variantIndex: 2, values: { size: 'large' } } },
+        })
+      );
 
       const service = setup({ components: [comp] });
       const nav = TestBed.inject(PrismNavigationService);
@@ -105,7 +133,9 @@ describe('PrismPersistenceService', () => {
 
       service.init();
 
-      expect(rendererService.inputValues()).toEqual(expect.objectContaining({ size: 'large' }));
+      expect(rendererService.inputValues()).toEqual(
+        expect.objectContaining({ size: 'large' })
+      );
     });
 
     it('should not crash on malformed JSON', () => {
@@ -116,11 +146,14 @@ describe('PrismPersistenceService', () => {
     });
 
     it('should ignore state with non-matching schema version', () => {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 99,
-        inputs: {},
-        a11y: { activeTab: 'keyboard' },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 99,
+          inputs: {},
+          a11y: { activeTab: 'keyboard' },
+        })
+      );
       const service = setup({ components: [] });
 
       service.init();
@@ -132,13 +165,18 @@ describe('PrismPersistenceService', () => {
     it('should not apply input overrides when persisted variantIndex differs from current', () => {
       const comp = createComponent({
         className: 'Btn',
-        inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
+        inputs: [
+          { name: 'size', type: 'string', required: false, defaultValue: 'md' },
+        ],
         variants: [{ name: 'A' }, { name: 'B' }],
       });
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: { Btn: { variantIndex: 1, values: { size: 'large' } } },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: { Btn: { variantIndex: 1, values: { size: 'large' } } },
+        })
+      );
       const service = setup({ components: [comp] });
       const nav = TestBed.inject(PrismNavigationService);
       const renderer = TestBed.inject(PrismRendererService);
@@ -147,21 +185,31 @@ describe('PrismPersistenceService', () => {
 
       service.init();
 
-      expect(renderer.inputValues()).not.toEqual(expect.objectContaining({ size: 'large' }));
+      expect(renderer.inputValues()).not.toEqual(
+        expect.objectContaining({ size: 'large' })
+      );
     });
 
     it('should filter out unknown input names that are not in the component meta', () => {
       const comp = createComponent({
         className: 'Btn',
-        inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
+        inputs: [
+          { name: 'size', type: 'string', required: false, defaultValue: 'md' },
+        ],
         variants: [{ name: 'A' }],
       });
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: {
-          Btn: { variantIndex: 0, values: { size: 'large', removedProp: 'stale' } },
-        },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: {
+            Btn: {
+              variantIndex: 0,
+              values: { size: 'large', removedProp: 'stale' },
+            },
+          },
+        })
+      );
       const service = setup({ components: [comp] });
       const nav = TestBed.inject(PrismNavigationService);
       const renderer = TestBed.inject(PrismRendererService);
@@ -186,7 +234,9 @@ describe('PrismPersistenceService', () => {
     it('should write serialized state to sessionStorage after debounce window', () => {
       const comp = createComponent({
         className: 'Btn',
-        inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
+        inputs: [
+          { name: 'size', type: 'string', required: false, defaultValue: 'md' },
+        ],
         variants: [{ name: 'A' }],
       });
       const service = setup({ components: [comp] });
@@ -202,15 +252,21 @@ describe('PrismPersistenceService', () => {
 
       const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
       expect(stored.version).toBe(1);
-      expect(stored.inputs.Btn).toEqual({ variantIndex: 0, values: { size: 'large' } });
+      expect(stored.inputs.Btn).toEqual({
+        variantIndex: 0,
+        values: { size: 'large' },
+      });
     });
 
     it('should not write while suppressSync is set during restore', () => {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: {},
-        a11y: { activeTab: 'keyboard', perspective: 'visual' },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: {},
+          a11y: { activeTab: 'keyboard', perspective: 'visual' },
+        })
+      );
       const setSpy = jest.spyOn(Storage.prototype, 'setItem');
       const service = setup({ components: [] });
 
@@ -223,16 +279,21 @@ describe('PrismPersistenceService', () => {
     it('should preserve persisted buckets for components other than the active one', () => {
       const btn = createComponent({
         className: 'Btn',
-        inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
+        inputs: [
+          { name: 'size', type: 'string', required: false, defaultValue: 'md' },
+        ],
         variants: [{ name: 'A' }],
       });
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        version: 1,
-        inputs: {
-          Btn: { variantIndex: 0, values: { size: 'large' } },
-          Card: { variantIndex: 0, values: { color: 'red' } },
-        },
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          version: 1,
+          inputs: {
+            Btn: { variantIndex: 0, values: { size: 'large' } },
+            Card: { variantIndex: 0, values: { color: 'red' } },
+          },
+        })
+      );
       const service = setup({ components: [btn] });
       const nav = TestBed.inject(PrismNavigationService);
       const renderer = TestBed.inject(PrismRendererService);
@@ -246,20 +307,34 @@ describe('PrismPersistenceService', () => {
       jest.advanceTimersByTime(250);
 
       const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
-      expect(stored.inputs.Card).toEqual({ variantIndex: 0, values: { color: 'red' } });
-      expect(stored.inputs.Btn).toEqual({ variantIndex: 0, values: { size: 'xl' } });
+      expect(stored.inputs.Card).toEqual({
+        variantIndex: 0,
+        values: { color: 'red' },
+      });
+      expect(stored.inputs.Btn).toEqual({
+        variantIndex: 0,
+        values: { size: 'xl' },
+      });
     });
   });
 
   describe('storage failure handling', () => {
-    beforeEach(() => { jest.useFakeTimers(); });
-    afterEach(() => { jest.useRealTimers(); });
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+    afterEach(() => {
+      jest.useRealTimers();
+    });
 
     it('should warn and continue when sessionStorage.setItem throws (quota)', () => {
-      const setSpy = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-        throw new Error('QuotaExceededError');
-      });
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const setSpy = jest
+        .spyOn(Storage.prototype, 'setItem')
+        .mockImplementation(() => {
+          throw new Error('QuotaExceededError');
+        });
+      const warnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
       const comp = createComponent({ className: 'Btn' });
       const service = setup({ components: [comp] });
       const nav = TestBed.inject(PrismNavigationService);
@@ -270,7 +345,10 @@ describe('PrismPersistenceService', () => {
       jest.advanceTimersByTime(250);
 
       expect(setSpy).toHaveBeenCalled();
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('[ng-prism]'), expect.any(Error));
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('[ng-prism]'),
+        expect.any(Error)
+      );
     });
 
     it('should silently fall back when sessionStorage.getItem throws', () => {
