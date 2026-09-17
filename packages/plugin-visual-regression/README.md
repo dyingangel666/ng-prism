@@ -1,0 +1,96 @@
+# @ng-prism/plugin-visual-regression
+
+Visual regression plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Reads a per-variant screenshot comparison report at build time and renders it inside the styleguide — so diffs live next to the component they belong to instead of in a CI log.
+
+> **Full documentation:** [ng-prism Docs — Visual Regression Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/visual-regression)
+
+The plugin **only renders a report someone else produced.** It performs no image comparison of its own — that belongs to your runner, which owns the baselines and the pinned container. See [Visual Regression Testing](https://dyingangel666.github.io/ng-prism/#/guide/visual-regression) for how to capture screenshots that do not flake, including the `?capture=1` isolation mode.
+
+## Installation
+
+```bash
+ng add @ng-prism/plugin-visual-regression
+```
+
+Or manually: `npm install @ng-prism/plugin-visual-regression`
+
+### Peer Dependencies
+
+| Package          | Version     |
+| ---------------- | ----------- |
+| `@ng-prism/core` | `^22.1.4-0` |
+| `@angular/core`  | `>=20.0.0`  |
+
+## Setup
+
+```typescript
+// ng-prism.config.ts
+import { defineConfig } from '@ng-prism/core/config';
+import { visualRegressionPlugin } from '@ng-prism/plugin-visual-regression';
+
+export default defineConfig({
+  plugins: [
+    visualRegressionPlugin({
+      reportPath: 'coverage/my-lib/vrt-report.json',
+      assetBaseUrl: 'vrt/',
+    }),
+  ],
+});
+```
+
+## Options
+
+| Option         | Default             | Description                                                                        |
+| -------------- | ------------------- | ---------------------------------------------------------------------------------- |
+| `reportPath`   | `'vrt-report.json'` | Path to the report JSON, relative to the workspace root.                           |
+| `assetBaseUrl` | `''`                | Prefix applied to the image paths in the report so they resolve against the build. |
+| `thresholds`   | `{ score: 100 }`    | Minimum score before the header badge stops being green.                           |
+
+## Report Format
+
+```jsonc
+{
+  "total": {
+    "auditedVariants": 85,
+    "auditedComponents": 10,
+    "unchanged": 84,
+    "changed": 1,
+    "sizeMismatch": 0,
+    "new": 0,
+    "maxDiffRatio": 0.5,
+    "score": 99
+  },
+  "byVariant": [
+    {
+      "className": "ButtonComponent",
+      "variantName": "Primary",
+      "variantIndex": 0,
+      "status": "changed",
+      "diffRatio": 0.5,
+      "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png",
+      "currentPath": "vrt/current/ButtonComponent/00-primary.png",
+      "diffPath": "vrt/diff/ButtonComponent/00-primary.png"
+    }
+  ]
+}
+```
+
+Results are matched to components by `className`. All three image paths are optional and the panel degrades gracefully: baseline + current gives a wipe comparison, baseline + diff falls back to comparing against the diff mask, and a single image is shown on its own.
+
+`status: "new"` — a variant with no baseline yet — renders as a **neutral** state, never as a failure.
+
+## Serving the Images
+
+The report references images by path; those files must be reachable from the built styleguide. Copy them in via the `assets` array of your Prism app's build target, then point `assetBaseUrl` at where they land.
+
+```jsonc
+// angular.json — my-lib-prism build target
+"assets": [
+  { "glob": "**/*", "input": "coverage/my-lib/vrt-diff", "output": "vrt/diff" },
+  { "glob": "**/*", "input": "vrt/baseline", "output": "vrt/baseline" }
+]
+```
+
+## License
+
+MIT
