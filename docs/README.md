@@ -64,6 +64,7 @@ ng add @ng-prism/plugin-figma       # Figma embed + pixel-perfect design diff
 ng add @ng-prism/plugin-box-model   # CSS box model overlay
 ng add @ng-prism/plugin-coverage    # Per-component test coverage from Istanbul/v8
 ng add @ng-prism/plugin-perf        # Render and re-render timing via Performance API
+ng add @ng-prism/plugin-visual-regression  # Per-variant visual regression report
 ```
 
 Re-running a command is safe — already-registered plugins are skipped. See [Plugin Overview](plugins/overview.md) for full documentation.

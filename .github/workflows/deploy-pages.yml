@@ -28,7 +28,7 @@ jobs:
       - run: npm ci
 
       - name: Build ng-prism core + plugins
-        run: npx nx run-many -t build --projects=ng-prism,plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf
+        run: npx nx run-many -t build --projects=ng-prism,plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf,plugin-visual-regression
 
       - name: Install test-workspace deps
         working-directory: test-workspace
