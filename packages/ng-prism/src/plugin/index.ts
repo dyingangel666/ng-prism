@@ -5,6 +5,8 @@ export type {
   PanelDefinition,
   ControlDefinition,
   HeaderWidgetDefinition,
+  NavigationDecoration,
+  NavigationDecorationDefinition,
   NgPrismConfig,
   PrismManifest,
   ScannedComponent,
