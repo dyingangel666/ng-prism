@@ -55,11 +55,13 @@ Every variant reports the canvas background it renders on. A component may decla
 //              { name: 'On dark', index: 1, bg: 'dark' }]
 ```
 
-The resolution order is variant, then component, then `checker` — exported as `DEFAULT_VARIANT_BG` from `@ng-prism/core/plugin`, alongside the `CanvasBg` type and `resolveVariantBg()`. `checker` is the "nothing declared" answer: the checkerboard reads as an undefined backdrop rather than as a decision somebody made.
+The resolution order is variant, then component, then `transparent` — exported as `DEFAULT_VARIANT_BG` from `@ng-prism/core/plugin`, alongside the `CanvasBg` type and `resolveVariantBg()`. `transparent` is the "nothing declared" answer: it reads as an undefined backdrop rather than as a decision somebody made, and it captures as one. It was `checker` in `22.2.0-beta.0` and `-beta.1` — see [the note on the change](guide/visual-regression.md#breaking-the-default-background-changed).
 
 > **The value matches the pixels.** [Capture mode](#capture-isolation-mode) paints exactly this background, so what the manifest reports and what a screenshot contains cannot drift apart.
 
-What the default does **not** give you is a stable colour. `checker` has none of its own — it patterns over `--prism-bg-surface`, a _theme_ token — and capture mode strips patterns and keeps colours, so the surface behind an undeclared component follows whichever theme the runner's browser started in. A variant under visual regression should declare `light` or `dark`: those two are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat by design. `dots`, `plain` and `checker` all land on the themed surface, so a capture on one of them is only as stable as the theme.
+What the default does **not** give you is a colour, and that is deliberate — it has none, rather than one borrowed from the active theme. A runner that screenshots an undeclared variant must pass `omitBackground: true`, or the browser's own page backdrop ends up in the image; see [Capturing transparency](guide/visual-regression.md#capturing-transparency).
+
+When a variant _does_ have an opinion, declare it. `light` and `dark` are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat by design, so use one when the component was built for that surface. `dots`, `plain` and `checker` all land on the themed surface, so a capture on one of them is only as stable as the theme.
 
 ### Reading `@Showcase` metadata
 

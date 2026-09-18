@@ -3,20 +3,39 @@ import type { CanvasBg } from './canvas-bg.type.js';
 /**
  * The surface a variant is reported to render on when nothing declares one.
  *
- * `checker` is the "no opinion declared" answer: the checkerboard is the
- * universal signal for an undefined or transparent backdrop, it makes an
- * undeclared component visible as such while browsing, and it is exactly how
- * the visual-regression panel already frames a capture whose background it
- * cannot account for.
+ * An undeclared variant is the "no opinion" case, and `transparent` is the
+ * honest capture of no opinion. The alternative, `checker`, patterns over
+ * `--prism-bg-surface` — a *theme* token — and capture mode strips the pattern
+ * and keeps the colour, so an undeclared variant used to be photographed on
+ * whichever theme the runner's browser happened to start in. That is not a
+ * neutral default; it is the runner's theme leaking into a baseline. Alpha
+ * carries no such dependency, and it is not the thing capture mode's
+ * determinism argument rules out: a pattern has a phase that shifts when a
+ * centred component resizes, an alpha channel is a per-pixel value that does
+ * not move.
  *
- * Note what it does *not* buy. `checker` carries no colour of its own — it
- * patterns over `--prism-bg-surface`, a *theme* token — and capture mode
- * strips the pattern and keeps the colour. So the surface behind an undeclared
- * component in a screenshot still follows whichever theme the runner's browser
- * started in. A variant that is under visual regression should declare `light`
- * or `dark`, the two backgrounds whose colour is absolute.
+ * In the app both values look identical — `transparent` renders as the same
+ * checkerboard, which is the UI's way of saying "no surface here". The change
+ * is only visible in a capture.
+ *
+ * The cost is real and worth stating plainly: a runner that does not pass
+ * `omitBackground: true` gets an opaque capture over whatever the browser
+ * painted, because the page's own backdrop is below every stylesheet. See
+ * `docs/guide/visual-regression.md#capturing-transparency`.
+ *
+ * What to declare, now that the default no longer decides it for you:
+ *
+ * - `light` or `dark` when the component was designed against a surface.
+ *   Their colours are absolute rather than theme tokens, which is what makes
+ *   them stable across runners.
+ * - `transparent` when the component's own transparency is the thing under
+ *   test — an outlined button, an icon, a divider. Flattening one onto an
+ *   opaque colour makes a transparent fill and a painted fill produce the
+ *   same pixels.
+ * - `dots`, `plain` or `checker` for browsing. All three follow the active
+ *   theme, so a baseline recorded on one is only as stable as the theme.
  */
-export const DEFAULT_VARIANT_BG: CanvasBg = 'checker';
+export const DEFAULT_VARIANT_BG: CanvasBg = 'transparent';
 
 /**
  * The parts of a `ShowcaseConfig` that decide a variant's background.

@@ -282,16 +282,16 @@ Canvas background mode used by `ShowcaseConfig.bg` and `Variant.bg`.
 type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
 ```
 
-| Value         | Visual                                                                         |
-| ------------- | ------------------------------------------------------------------------------ |
-| `dots`        | Dot grid over the themed surface — the canvas's own starting background        |
-| `plain`       | The themed surface, no pattern                                                 |
-| `light`       | Flat light surface, for components designed for light themes                   |
-| `dark`        | Flat dark surface, for components designed for dark themes                     |
-| `checker`     | Checkerboard — components with transparency, and the "nothing declared" answer |
-| `transparent` | Checkerboard while browsing; in capture mode, a genuinely transparent canvas   |
+| Value         | Visual                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------- |
+| `dots`        | Dot grid over the themed surface — the canvas's own starting background                         |
+| `plain`       | The themed surface, no pattern                                                                  |
+| `light`       | Flat light surface, for components designed for light themes                                    |
+| `dark`        | Flat dark surface, for components designed for dark themes                                      |
+| `checker`     | Checkerboard over the themed surface — captures as that surface's colour                        |
+| `transparent` | Checkerboard while browsing, real transparency in a capture — and the "nothing declared" answer |
 
-Two different defaults are in play. The **canvas** starts on `dots` and remembers whatever the user picks from the toolbar. A **variant's** background resolves to `checker` when neither the variant nor its component declares one — that is `DEFAULT_VARIANT_BG`, what [`DiscoveryVariant.bg`](guide/external-tooling.md#reading-the-background) reports and what capture mode paints.
+Two different defaults are in play. The **canvas** starts on `dots` and remembers whatever the user picks from the toolbar. A **variant's** background resolves to `transparent` when neither the variant nor its component declares one — that is `DEFAULT_VARIANT_BG`, what [`DiscoveryVariant.bg`](guide/external-tooling.md#reading-the-background) reports and what capture mode paints. It was `checker` in the first two `22.2.0` betas; see [the note on the change](guide/visual-regression.md#breaking-the-default-background-changed).
 
 `light` and `dark` are flat by design, and their colours (`--prism-void-light`, `--prism-void-dark`) are absolute rather than theme tokens — which is what makes them the values to declare for a variant under [visual regression](guide/visual-regression.md#the-background-is-part-of-the-baseline). `dots`, `plain` and `checker` follow `--prism-bg-surface` and therefore the active theme.
 

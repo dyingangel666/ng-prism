@@ -50,7 +50,10 @@ export class PrismVariantBgService {
    * on whichever theme the runner's browser started in — a baseline that
    * flips with a persisted UI preference. The fixed default is also exactly
    * what the discovery manifest reports for the variant, so what a tool is
-   * told and what it screenshots cannot drift apart.
+   * told and what it screenshots cannot drift apart. That default is
+   * `transparent`, which removes the theme dependency outright instead of
+   * pinning one theme's colour: an undeclared variant has no opinion about its
+   * surface, and no surface is the honest capture of that.
    *
    * Interactive mode keeps `canvas.bg()`: there the dot grid on the themed
    * surface is the point, and forcing `light` would break dark-theme browsing.

@@ -179,7 +179,7 @@ describe('PrismVariantBgService in capture mode', () => {
     // the runner's browser started in. `DEFAULT_VARIANT_BG` is the same value
     // the discovery manifest reports, so the two cannot disagree.
     expect(service.effective()).toBe(DEFAULT_VARIANT_BG);
-    expect(service.effective()).toBe('checker');
+    expect(service.effective()).toBe('transparent');
   });
 
   it('matches what the discovery manifest reports for the variant', () => {

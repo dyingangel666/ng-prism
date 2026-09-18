@@ -54,7 +54,9 @@ Two consequences for a runner:
 - **Record it next to the baseline.** A variant whose `bg` changes compares a capture on one surface against a baseline on another: every pixel differs while the component is untouched. Storing the background alongside the baseline image is what lets you tell that apart from a regression — and the report has fields for both (`bg`, `baselineBg`).
 - **Declare a background on anything you baseline.** `light` and `dark` are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat — declare one when the component was designed against a surface. Declare [`transparent`](#capturing-transparency) when the component's own transparency is the thing under test. What you want to avoid is `dots`, `plain` and `checker`: all three resolve to `--prism-bg-surface`, a theme token, so a capture on one of them is only as stable as the browser profile's theme.
 
-With nothing declared a variant resolves to `checker` (`DEFAULT_VARIANT_BG`) — an honest "no surface declared", but not a stable one for a baseline: capture mode strips the pattern and leaves the themed colour behind it. Treat an undeclared `bg` on a variant you are baselining as a gap to fill, not as a default to rely on.
+With nothing declared a variant resolves to `transparent` (`DEFAULT_VARIANT_BG`). An undeclared variant has no opinion about its surface, and no surface is the honest capture of that — the earlier default, `checker`, patterned over a theme token, so an undeclared variant was photographed on whichever theme the runner's browser started in.
+
+> **Changed during the 22.2.0 beta.** `DEFAULT_VARIANT_BG` moved from `checker` to `transparent`. If you are already recording baselines against `22.2.0-beta.0` or `-beta.1`, every variant that declares no `bg` now captures differently and its baseline is invalid — see [the note below](#breaking-the-default-background-changed).
 
 ### Capturing transparency
 
@@ -84,6 +86,8 @@ await element.screenshot({ path, omitBackground: true });
 
 `omitBackground` clears the _browser's_ default page backdrop, which no stylesheet can reach. Without it the capture comes back as PNG colour type 2 — no alpha channel, fully opaque — over whatever the browser painted. It still looks like a correct screenshot. It has simply stopped testing transparency, and nothing anywhere reports that. With it, the same variants come back as colour type 6 with meaningful alpha.
 
+Since `transparent` is also what an undeclared variant resolves to, this flag is not optional for a transparency-aware runner — it applies to every variant that has not been given a `bg`, not only the ones that asked for one.
+
 Two things to know before you record baselines this way:
 
 - **Anti-aliasing becomes alpha.** Every soft edge that used to blend into an opaque surface now carries partial alpha — on a typical outlined button, around a fifth of the pixels. Within one environment this is bit-for-bit stable. Across environments it makes a macOS↔Linux font-rendering difference _more_ pronounced, not less. If your baselines were already container-only, keep them that way; this raises the cost of getting it wrong.
@@ -94,6 +98,22 @@ http://localhost:4200/?component=ButtonComponent&variant=2&capture=1
 ```
 
 No config change is required, which is the point: a CI job can drive a styleguide that was built without knowing it would ever be screenshotted.
+
+## Breaking: the default background changed
+
+`DEFAULT_VARIANT_BG` moved from `checker` to `transparent`. Nothing about the app's appearance changes — both render as the same checkerboard while browsing — but **every variant that declares no `bg` produces a different capture**, so its baseline is invalid.
+
+This does not affect a stable release. Declared backgrounds, `DEFAULT_VARIANT_BG` and capture mode all arrived together in `22.2.0-beta.0` and have never shipped outside the beta line, so the only installs that can notice are ones already recording baselines against a `22.2.0` beta.
+
+Why it moved: `checker` has no colour of its own. It patterns over `--prism-bg-surface`, a theme token, and capture mode strips the pattern and keeps the colour — so an undeclared variant was captured on whichever theme the runner's browser happened to start in. That is the runner's theme leaking into a baseline, not a neutral default. `transparent` has no theme dependency at all.
+
+If you are on a `22.2.0` beta, in this order:
+
+1. **Add `omitBackground: true`** to your runner's `screenshot(...)` call. Do this first. Without it an undeclared variant captures opaque over whatever the browser painted, which is _worse_ than the old behaviour — no longer theme-dependent but page-dependent, and nothing reports it.
+2. **Declare a `bg` where the variant has an opinion.** `light` or `dark` for a component designed against a surface, `transparent` where transparency is the thing under test. A declared value is unaffected by this change.
+3. **Re-record baselines** for everything still undeclared.
+
+To keep the old behaviour, declare `bg: 'checker'` explicitly — with the same caveat it always carried: the colour follows the theme.
 
 ## A worked example
 

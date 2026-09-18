@@ -126,8 +126,8 @@ describe('buildDiscoveryManifest', () => {
       className: 'ButtonComponent',
       title: 'Button',
       variants: [
-        { name: 'Primary', index: 0, bg: 'checker' },
-        { name: 'Secondary', index: 1, bg: 'checker' },
+        { name: 'Primary', index: 0, bg: 'transparent' },
+        { name: 'Secondary', index: 1, bg: 'transparent' },
       ],
     });
   });
@@ -140,7 +140,7 @@ describe('buildDiscoveryManifest', () => {
       })
     );
     expect(result.components[0].variants).toEqual([
-      { name: 'Default', index: 0, bg: 'checker' },
+      { name: 'Default', index: 0, bg: 'transparent' },
     ]);
   });
 
@@ -155,7 +155,7 @@ describe('buildDiscoveryManifest', () => {
       })
     );
     expect(result.components[0].variants).toEqual([
-      { name: 'Default', index: 0, bg: 'checker' },
+      { name: 'Default', index: 0, bg: 'transparent' },
     ]);
   });
 

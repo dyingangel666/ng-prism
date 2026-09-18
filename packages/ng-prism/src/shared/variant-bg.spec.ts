@@ -49,7 +49,7 @@ describe('declaredVariantBg', () => {
 describe('resolveVariantBg', () => {
   it('falls back to the default when nothing is declared', () => {
     expect(resolveVariantBg({}, 0)).toBe(DEFAULT_VARIANT_BG);
-    expect(resolveVariantBg({}, 0)).toBe('checker');
+    expect(resolveVariantBg({}, 0)).toBe('transparent');
   });
 
   it('returns the declared bg when there is one', () => {
