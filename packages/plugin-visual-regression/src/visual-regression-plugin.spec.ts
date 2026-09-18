@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import type { ScannedComponent, PrismManifest } from '@ng-prism/core/plugin';
 import { visualRegressionPlugin } from './visual-regression-plugin.js';
+import { visualRegressionPlugin as visualRegressionPluginBrowser } from './visual-regression-plugin.browser.js';
 import { DEFAULT_VRT_THRESHOLDS, resolveVrtThresholds } from './thresholds.js';
 import { clearReportCache } from './report-reader.js';
 import type {
@@ -179,5 +180,35 @@ describe('visualRegressionPlugin', () => {
       expect(widget.order).toBe(-10);
       expect(widget.loadComponent).toBeDefined();
     });
+  });
+
+  describe('navigation decoration', () => {
+    it('registers the visual-regression source', () => {
+      const ids = (visualRegressionPlugin().navigationDecorations ?? []).map(
+        (d) => d.id
+      );
+      expect(ids).toEqual(['visual-regression']);
+    });
+  });
+});
+
+/**
+ * The Node entry carries the build-time hooks and must never be reachable
+ * from a browser bundle — see `visual-regression-plugin.browser.ts`. A
+ * `navigationDecorations` entry added to only one of the two twins would
+ * silently drop the marker in exactly the setup that needs it, and no other
+ * suite would notice.
+ */
+describe('entry parity — navigation decorations', () => {
+  it('declares the same decoration ids as the browser entry', () => {
+    const nodeIds = (visualRegressionPlugin().navigationDecorations ?? []).map(
+      (d) => d.id
+    );
+    const browserIds = (
+      visualRegressionPluginBrowser().navigationDecorations ?? []
+    ).map((d) => d.id);
+
+    expect(nodeIds).toEqual(['visual-regression']);
+    expect(browserIds).toEqual(['visual-regression']);
   });
 });

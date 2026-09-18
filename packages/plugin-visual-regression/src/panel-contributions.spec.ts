@@ -1,5 +1,9 @@
 import type { RuntimeComponent } from '@ng-prism/core/plugin';
-import { hasResults, reviewBadge } from './panel-contributions.js';
+import {
+  hasResults,
+  reviewBadge,
+  VRT_NAVIGATION_DECORATION,
+} from './panel-contributions.js';
 import type { VrtStatus, VrtVariantResult } from './visual-regression.types.js';
 
 function variant(status: VrtStatus, index: number): VrtVariantResult {
@@ -84,5 +88,62 @@ describe('reviewBadge', () => {
 
   it('ignores excluded variants entirely', () => {
     expect(reviewBadge(withVariants('unchanged', 'excluded'))).toBeNull();
+  });
+});
+
+describe('VRT_NAVIGATION_DECORATION', () => {
+  it('says nothing about a component with no results', () => {
+    expect(VRT_NAVIGATION_DECORATION.badge(component())).toBeNull();
+  });
+
+  it('says nothing when the report found no entry', () => {
+    expect(
+      VRT_NAVIGATION_DECORATION.badge(
+        component({ visualRegression: { found: false } })
+      )
+    ).toBeNull();
+  });
+
+  it('says nothing when the report predates the summary field', () => {
+    expect(
+      VRT_NAVIGATION_DECORATION.badge(
+        component({
+          visualRegression: { found: true, assetBaseUrl: '', variants: [] },
+        })
+      )
+    ).toBeNull();
+  });
+
+  it('says nothing for a healthy component', () => {
+    expect(
+      VRT_NAVIGATION_DECORATION.badge(
+        component({
+          visualRegression: {
+            found: true,
+            assetBaseUrl: '',
+            variants: [],
+            summary: { value: '0.0%', variant: 'ok' },
+          },
+        })
+      )
+    ).toBeNull();
+  });
+
+  it('composes the exact label from the derived verdict', () => {
+    expect(
+      VRT_NAVIGATION_DECORATION.badge(
+        component({
+          visualRegression: {
+            found: true,
+            assetBaseUrl: '',
+            variants: [],
+            summary: { value: '12.3%', variant: 'danger' },
+          },
+        })
+      )
+    ).toEqual({
+      variant: 'danger',
+      label: 'Visual regression: 12.3% max diff',
+    });
   });
 });
