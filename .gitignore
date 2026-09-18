@@ -64,3 +64,6 @@ test-workspace/tsconfig.tsbuildinfo
 **/plugin-registry.ts
 .worktrees/
 ng-prism-cache/
+
+# Scratch-Workspace der Superpowers-Executor-Läufe (Ledger, Briefs, Reviews)
+.superpowers/
