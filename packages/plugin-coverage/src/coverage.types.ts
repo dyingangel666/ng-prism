@@ -20,6 +20,11 @@ export interface CoverageThresholds {
   statements: number;
 }
 
+export interface CoverageSummary {
+  variant: 'ok' | 'warn' | 'danger';
+  label: string;
+}
+
 export interface CoverageData {
   score: number;
   statements: MetricDetail;
@@ -29,6 +34,11 @@ export interface CoverageData {
   found: boolean;
   files?: FileCoverageDetail[];
   thresholds?: CoverageThresholds;
+  /**
+   * Pre-derived headline, written by the build-time hook. Optional because a
+   * browser-only plugin setup runs no build-time hooks and then has none.
+   */
+  summary?: CoverageSummary;
 }
 
 export interface CoveragePluginOptions {

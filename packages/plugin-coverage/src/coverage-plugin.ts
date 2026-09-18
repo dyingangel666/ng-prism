@@ -36,6 +36,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
     name: '@ng-prism/plugin-coverage',
     async onComponentScanned(component) {
       const { readCoverageForFile } = await import('./coverage-reader.js');
+      const { deriveCoverageSummary } = await import('./coverage-summary.js');
       const coverage = readCoverageForFile(coveragePath, component.filePath);
       return {
         ...component,
@@ -43,7 +44,13 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
           ...component.showcaseConfig,
           meta: {
             ...component.showcaseConfig.meta,
-            coverage: { ...coverage, thresholds },
+            coverage: {
+              ...coverage,
+              thresholds,
+              ...(coverage.found
+                ? { summary: deriveCoverageSummary(coverage.score, thresholds) }
+                : {}),
+            },
           },
         },
       };
