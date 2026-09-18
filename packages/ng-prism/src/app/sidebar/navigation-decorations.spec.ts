@@ -5,6 +5,7 @@ import type {
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import {
   decorateItem,
+  lifecycleIcon,
   resolveNavigationDecorations,
   rollupCategory,
 } from './navigation-decorations.js';
@@ -146,5 +147,18 @@ describe('rollupCategory', () => {
       problems: 0,
       variant: null,
     });
+  });
+});
+
+describe('lifecycleIcon', () => {
+  it('is the dashed box for work in progress', () => {
+    expect(lifecycleIcon('wip')).toBe('box-select');
+  });
+
+  it('is the solid box for everything else', () => {
+    expect(lifecycleIcon('stable')).toBe('box');
+    expect(lifecycleIcon('beta')).toBe('box');
+    expect(lifecycleIcon('deprecated')).toBe('box');
+    expect(lifecycleIcon(undefined)).toBe('box');
   });
 });

@@ -1,3 +1,4 @@
+import type { ComponentStatus } from '../../decorator/showcase.types.js';
 import type { NavigationDecorationDefinition } from '../../plugin/plugin.types.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 
@@ -104,4 +105,13 @@ export function rollupCategory(
   }
 
   return { problems, variant };
+}
+
+/**
+ * The left icon slot carries lifecycle — what the author declared — in form
+ * alone. Colour in the sidebar means exactly one thing, measured quality, so a
+ * work-in-progress component must never look like a finding.
+ */
+export function lifecycleIcon(status: ComponentStatus | undefined): string {
+  return status === 'wip' ? 'box-select' : 'box';
 }
