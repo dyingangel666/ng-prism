@@ -17,8 +17,14 @@ import { PrismNavigationService } from '../../services/prism-navigation.service.
 import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
-import type { A11yCoreConfig } from '../a11y/a11y.types.js';
-import type { PanelDefinition } from '../../../plugin/plugin.types.js';
+import { resolveA11yThresholds } from '../a11y/a11y-thresholds.js';
+import { PRISM_CONFIG, PRISM_MANIFEST } from '../../tokens/prism-tokens.js';
+import type { A11yCoreConfig, A11yManifestMeta } from '../a11y/a11y.types.js';
+import type {
+  NgPrismConfig,
+  PanelDefinition,
+  RuntimeManifest,
+} from '../../../plugin/plugin.types.js';
 import { resolvePanelBadge } from './panel-badge.js';
 
 type RenderedPanelEntry = {
@@ -218,16 +224,20 @@ export class PrismPanelHostComponent {
   protected readonly envInjector = inject(EnvironmentInjector);
   private readonly auditService = inject(A11yAuditService);
   private readonly rendererService = inject(PrismRendererService);
+  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+  private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
 
-  private readonly a11yScore = computed(
-    () => this.auditService.scoreResult()?.score ?? null
-  );
-
-  private readonly coverageScore = computed(() => {
-    const comp = this.nav.activeComponent() as any;
-    const coverage = comp?.meta?.showcaseConfig?.meta?.['coverage'];
-    if (!coverage?.found) return null;
-    return coverage.score as number;
+  /**
+   * The configured thresholds, resolved the way the a11y header badge resolves
+   * them: the build step's numbers as the base, the app config on top. Both
+   * are static for the session, so this is computed once rather than per tab.
+   */
+  private readonly a11yThresholds = computed(() => {
+    const meta = this.manifest.meta?.['a11y'] as A11yManifestMeta | undefined;
+    return resolveA11yThresholds({
+      ...meta?.thresholds,
+      ...this.config.a11y?.thresholds,
+    });
   });
 
   private readonly inputCount = computed(() => {
@@ -238,8 +248,8 @@ export class PrismPanelHostComponent {
   protected panelBadge(panel: PanelDefinition) {
     return resolvePanelBadge(panel, this.nav.activeComponent(), {
       inputCount: this.inputCount(),
-      a11yScore: this.a11yScore(),
-      coverageScore: this.coverageScore(),
+      a11yResult: this.auditService.scoreResult(),
+      a11yThresholds: this.a11yThresholds(),
     });
   }
 

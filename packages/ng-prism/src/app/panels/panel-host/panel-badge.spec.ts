@@ -3,12 +3,32 @@ import type {
   RuntimeComponent,
 } from '../../../plugin/plugin.types.js';
 import { resolvePanelBadge, type PanelBadgeContext } from './panel-badge.js';
+import { DEFAULT_A11Y_THRESHOLDS } from '../a11y/a11y-thresholds.js';
+import { deriveA11ySummary } from '../a11y/a11y-summary.js';
+import type { A11yScoreResult } from '../a11y/a11y.types.js';
 
 const EMPTY_CONTEXT: PanelBadgeContext = {
   inputCount: 0,
-  a11yScore: null,
-  coverageScore: null,
+  a11yResult: null,
+  a11yThresholds: DEFAULT_A11Y_THRESHOLDS,
 };
+
+/** An audit result that is clean apart from the score it is asked to carry. */
+function auditResult(
+  overrides: Partial<A11yScoreResult> = {}
+): A11yScoreResult {
+  return {
+    score: 100,
+    violations: 0,
+    critical: 0,
+    serious: 0,
+    moderate: 0,
+    minor: 0,
+    passes: 0,
+    incomplete: 0,
+    ...overrides,
+  };
+}
 
 function panel(id: string, badge?: PanelDefinition['badge']): PanelDefinition {
   return { id, label: id, ...(badge ? { badge } : {}) };
@@ -54,7 +74,7 @@ describe('resolvePanelBadge', () => {
     const own = panel('a11y', () => ({ text: 'AA', variant: 'ok' as const }));
     const badge = resolvePanelBadge(own, COMPONENT, {
       ...EMPTY_CONTEXT,
-      a11yScore: 42,
+      a11yResult: auditResult({ score: 42 }),
     });
     expect(badge).toEqual({ text: 'AA', variant: 'ok' });
   });
@@ -84,20 +104,43 @@ describe('resolvePanelBadge', () => {
     ).toBeNull();
   });
 
-  it('grades the a11y and coverage scores the same way', () => {
-    const grade = (id: string, score: number) =>
-      resolvePanelBadge(panel(id), COMPONENT, {
+  it('grades the a11y tab against the configured thresholds', () => {
+    // The tab and the navigation marker look at different numbers — a running
+    // audit versus the build-time report — but never at different scales. The
+    // expectations come from the same derivation the marker uses, so a change
+    // to one cannot quietly leave the other behind.
+    const thresholds = { ...DEFAULT_A11Y_THRESHOLDS, score: 80 };
+    const grade = (result: A11yScoreResult) =>
+      resolvePanelBadge(panel('a11y'), COMPONENT, {
         ...EMPTY_CONTEXT,
-        a11yScore: score,
-        coverageScore: score,
-      })?.variant;
+        a11yResult: result,
+        a11yThresholds: thresholds,
+      });
 
-    for (const id of ['a11y', 'coverage']) {
-      expect(grade(id, 90)).toBe('ok');
-      expect(grade(id, 89)).toBe('warn');
-      expect(grade(id, 70)).toBe('warn');
-      expect(grade(id, 69)).toBe('danger');
+    for (const result of [
+      auditResult({ score: 85 }),
+      auditResult({ score: 79 }),
+      auditResult({ score: 65 }),
+      auditResult({ score: 95, serious: 1 }),
+    ]) {
+      expect(grade(result)).toEqual({
+        text: String(result.score),
+        variant: deriveA11ySummary(result, thresholds).variant,
+      });
     }
+  });
+
+  it('does not call a component amber on the tab and green in the sidebar', () => {
+    // The concrete disagreement the shared derivation removes: 85 was 'warn'
+    // on the old hardcoded 90/70 scale and 'ok' against a configured 80.
+    const thresholds = { ...DEFAULT_A11Y_THRESHOLDS, score: 80 };
+    expect(
+      resolvePanelBadge(panel('a11y'), COMPONENT, {
+        ...EMPTY_CONTEXT,
+        a11yResult: auditResult({ score: 85 }),
+        a11yThresholds: thresholds,
+      })
+    ).toEqual({ text: '85', variant: 'ok' });
   });
 
   it('shows a zero score rather than hiding it', () => {
@@ -106,9 +149,16 @@ describe('resolvePanelBadge', () => {
     expect(
       resolvePanelBadge(panel('a11y'), COMPONENT, {
         ...EMPTY_CONTEXT,
-        a11yScore: 0,
+        a11yResult: auditResult({ score: 0, critical: 3 }),
       })
     ).toEqual({ text: '0', variant: 'danger' });
+  });
+
+  it('has nothing to say about the coverage tab', () => {
+    // The coverage plugin badges its own tab now, using its own thresholds.
+    expect(
+      resolvePanelBadge(panel('coverage'), COMPONENT, EMPTY_CONTEXT)
+    ).toBeNull();
   });
 
   it('has nothing to say about a panel it does not know', () => {

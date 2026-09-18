@@ -19,7 +19,7 @@ import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.
 import {
   DEFAULT_A11Y_REPORT_PATH,
   checkA11yThresholds,
-  readA11yForComponent,
+  readA11yForComponents,
   readA11yMeta,
 } from '../a11y/a11y-report-reader.js';
 
@@ -88,14 +88,17 @@ export async function runPrismPipeline(
           `Update components or relax thresholds via config.a11y.thresholds.`
       );
     }
+    // Read once, not once per component: the reader re-stats the file on every
+    // call even when its cache hits, so a per-component lookup scales the
+    // syscalls with the library and repeats them on every watch rebuild.
+    const a11yByComponent = readA11yForComponents(
+      a11yReportPathAbs,
+      a11yMeta.thresholds
+    );
     manifest = {
       ...manifest,
       components: manifest.components.map((component) => {
-        const a11y = readA11yForComponent(
-          a11yReportPathAbs,
-          component.className,
-          a11yMeta.thresholds
-        );
+        const a11y = a11yByComponent.get(component.className);
         if (!a11y) return component;
         return {
           ...component,

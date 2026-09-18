@@ -3,10 +3,15 @@ import type {
   A11yComponentMeta,
   A11yManifestMeta,
   A11yReport,
-  A11yScoreResult,
   A11yThresholds,
 } from '../../app/panels/a11y/a11y.types.js';
 import { resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
+import { deriveA11ySummary } from '../../app/panels/a11y/a11y-summary.js';
+
+// Re-exported so the builder side keeps one import surface for the a11y
+// report. The derivation itself lives in `app/` because the panel tab grades
+// the live audit with it and cannot reach into `builder/`.
+export { deriveA11ySummary };
 
 export const DEFAULT_A11Y_REPORT_PATH = 'a11y-report.json';
 
@@ -41,40 +46,31 @@ export function readA11yMeta(
 }
 
 /**
- * A component's standing, derived with the same precedence
- * `checkA11yThresholds` uses library-wide.
+ * Every component's entry, from a single read of the report.
  *
- * The derivation happens here, at build time, and not in the navigation:
- * `badge()` only ever sees one component and has no access to the library's
- * thresholds, so the core would otherwise have to reimplement this plugin's
- * semantics.
+ * The plural form exists because {@link readA11yForComponent} re-enters
+ * {@link loadA11yReport}, which `statSync`s the file even on a cache hit.
+ * Calling it once per scanned component turns a 300-component library into 300
+ * redundant syscalls per build, and a watch-mode rebuild repeats them all — so
+ * the pipeline reads the report once and looks components up in the result.
  */
-export function deriveA11ySummary(
-  score: A11yScoreResult,
+export function readA11yForComponents(
+  reportPath: string,
   thresholds: A11yThresholds
-): NonNullable<A11yComponentMeta['summary']> {
-  if (
-    score.critical > thresholds.critical ||
-    score.serious > thresholds.serious
-  ) {
-    const parts: string[] = [];
-    if (score.critical > 0) parts.push(`${score.critical} critical`);
-    if (score.serious > 0) parts.push(`${score.serious} serious`);
-    // Only reachable with a negative configured threshold: the branch fires
-    // on `0 > threshold` with both counts still at zero, and `parts` stays
-    // empty. Fall back to the score-based label rather than ship "A11y: ".
-    const label =
-      parts.length > 0
-        ? `A11y: ${parts.join(', ')}`
-        : `A11y score ${score.score}`;
-    return { variant: 'danger', label };
-  }
+): Map<string, A11yComponentMeta> {
+  const components = loadA11yReport(reportPath)?.components;
+  const byClassName = new Map<string, A11yComponentMeta>();
+  if (!components) return byClassName;
 
-  if (score.moderate > thresholds.moderate || score.score < thresholds.score) {
-    return { variant: 'warn', label: `A11y score ${score.score}` };
+  for (const [className, score] of Object.entries(components)) {
+    if (!score) continue;
+    byClassName.set(className, {
+      found: true,
+      score,
+      summary: deriveA11ySummary(score, thresholds),
+    });
   }
-
-  return { variant: 'ok', label: `A11y score ${score.score}` };
+  return byClassName;
 }
 
 /** The per-component entry of the report, or null when there is none. */

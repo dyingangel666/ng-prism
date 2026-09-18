@@ -8,6 +8,7 @@ import {
   readA11yMeta,
   deriveA11ySummary,
   readA11yForComponent,
+  readA11yForComponents,
 } from './a11y-report-reader.js';
 import {
   A11Y_UNLIMITED,
@@ -218,6 +219,36 @@ describe('a11y-report-reader', () => {
       expect(result?.found).toBe(true);
       expect(result?.score.critical).toBe(2);
       expect(result?.summary?.variant).toBe('danger');
+    });
+
+    it('returns every component the report knows, each with its verdict', () => {
+      // The plural form exists so the pipeline reads the report once instead
+      // of once per scanned component: the singular form re-stats the file on
+      // every call, cache hit included, which scales the syscalls with the
+      // library and repeats them on every watch rebuild. Each entry has to
+      // carry the same derivation the singular form applies.
+      write({
+        ButtonComponent: entry({ score: 50, critical: 2 }),
+        CardComponent: entry({ score: 100 }),
+      });
+
+      const byClassName = readA11yForComponents(reportPath, thresholds);
+
+      expect([...byClassName.keys()].sort()).toEqual([
+        'ButtonComponent',
+        'CardComponent',
+      ]);
+      for (const className of byClassName.keys()) {
+        expect(byClassName.get(className)).toEqual(
+          readA11yForComponent(reportPath, className, thresholds)
+        );
+      }
+    });
+
+    it('returns an empty map when the report file is missing', () => {
+      expect(
+        readA11yForComponents('does/not/exist.json', thresholds).size
+      ).toBe(0);
     });
   });
 });

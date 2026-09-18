@@ -3,6 +3,8 @@ import type {
   PanelDefinition,
   RuntimeComponent,
 } from '../../../plugin/plugin.types.js';
+import { deriveA11ySummary } from '../a11y/a11y-summary.js';
+import type { A11yScoreResult, A11yThresholds } from '../a11y/a11y.types.js';
 
 /**
  * The live figures the built-in tabs badge themselves with.
@@ -12,19 +14,16 @@ import type {
  * reason the built-in chain could not simply be expressed as
  * {@link PanelDefinition.badge} callbacks — `a11y` reports a running audit, not
  * anything the component's meta holds.
+ *
+ * The thresholds travel with the audit result rather than being baked in here.
+ * The navigation marker grades the build-time report against the configured
+ * numbers; a tab grading the live audit on its own scale would put an amber
+ * icon in the sidebar next to a red badge on the tab for the same component.
  */
 export interface PanelBadgeContext {
   inputCount: number;
-  a11yScore: number | null;
-  coverageScore: number | null;
-}
-
-/** Green at 90, amber down to 70, red below — shared by a11y and coverage. */
-function gradeScore(score: number): PanelBadge {
-  return {
-    text: String(score),
-    variant: score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'danger',
-  };
+  a11yResult: A11yScoreResult | null;
+  a11yThresholds: A11yThresholds;
 }
 
 /**
@@ -59,13 +58,12 @@ export function resolvePanelBadge(
   if (panel.id === 'a11y') {
     // `=== null` rather than a falsy check: a score of 0 is a real, and the
     // most urgent, thing to show.
-    return context.a11yScore === null ? null : gradeScore(context.a11yScore);
-  }
-
-  if (panel.id === 'coverage') {
-    return context.coverageScore === null
-      ? null
-      : gradeScore(context.coverageScore);
+    const result = context.a11yResult;
+    if (result === null) return null;
+    return {
+      text: String(result.score),
+      variant: deriveA11ySummary(result, context.a11yThresholds).variant,
+    };
   }
 
   return null;
