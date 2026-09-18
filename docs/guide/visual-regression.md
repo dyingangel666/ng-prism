@@ -37,13 +37,19 @@ Playwright (and every other driver) clips the **composited page** to the element
 
 That is worse than merely noisy. The component is centred in the stage, so the grid phase underneath it shifts whenever the component changes size — meaning a change to one variant's padding makes **every pixel** under it differ, and a real regression disappears into the noise.
 
+And "behind it" is not the only direction. The canvas _scrolls_, so a component taller or wider than the canvas viewport keeps a bounding box that extends past the canvas — and the driver captures the box's **screen coordinates**, not the part of it the canvas shows. Whatever paints at the rest of those coordinates lands in the image: the addon panel's tab bar, the variant ribbon, the toolbar. This is the failure capture mode's layout isolation exists to remove, and it is silent — a baseline recorded with chrome in it compares clean against itself forever.
+
 ### 3. Motion and persisted UI state
 
 Transitions inside your own component, a zoom level left over in `localStorage` from a previous session, an a11y overlay left active on the panel — all of them land in the image.
 
 ## Capture isolation mode
 
-`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it strips the canvas down to a patternless background — keeping the colour a `@Showcase({ bg })` or per-variant `bg` declared, or clearing it entirely for `bg: 'transparent'` — locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
+`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it strips the canvas down to a patternless background — keeping the colour a `@Showcase({ bg })` or per-variant `bg` declared, or clearing it entirely for `bg: 'transparent'` — hands the canvas the whole viewport, locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
+
+**What that buys you is the right to screenshot `.demo-wrap` directly:** the capture target is composited against its declared background over the _whole_ of its box, including the part that would scroll out of the canvas while browsing. Capture mode removes every shell region that is not the canvas — header, sidebar, view tabs, component head, variant ribbon, the addon panel and its resizer, the canvas toolbar — so nothing else can occupy those coordinates. The one thing it cannot do is make room the window does not have: a component larger than the viewport still overflows, so pin the runner's viewport to fit the largest variant you baseline.
+
+> **Changed during the 22.2.0 beta.** Capture mode used to leave the shell in place, which composited styleguide chrome into any component taller than the canvas viewport. If you are already recording baselines against a `22.2.0` beta, every baseline moves — see [the note below](#breaking-capture-mode-hands-the-canvas-the-viewport).
 
 ### The background is part of the baseline
 
@@ -114,6 +120,24 @@ If you are on a `22.2.0` beta, in this order:
 3. **Re-record baselines** for everything still undeclared.
 
 Declaring `bg: 'checker'` reproduces the old behaviour, but it is not a fix: `checker` is deprecated in the same release and removed in 23.0.0, for the reason the default moved in the first place — its colour follows the theme. Reach for `light` or `dark` instead, which are absolute.
+
+## Breaking: capture mode hands the canvas the viewport
+
+Capture mode used to leave the styleguide shell in place, on the reasoning that the shell sits outside `.demo-wrap` and so cannot appear in an element-scoped screenshot. It can. The component is centred in a canvas that scrolls, and a driver captures the target's **screen coordinates** — so a component taller or wider than the canvas viewport keeps a box that extends past the canvas, and the image picks up whichever shell region paints there.
+
+It now removes every non-canvas region from layout — header, sidebar, view tabs, component head, variant ribbon, the addon panel and its resizer, the canvas toolbar — and drops the stage's padding, so the canvas is exactly the window.
+
+**Every baseline recorded in capture mode moves, and the honest framing is that almost none of them were wrong.** The canvas grows and the component re-centres inside it, so most captures shift by a few pixels and rasterise their glyphs slightly differently — visually identical, numerically different. In the library this was found on, 2 of 85 variants actually contained shell chrome; the rest move because the geometry changed, not because they were broken.
+
+This does not affect a stable release. Capture mode arrived in `22.2.0-beta.0` and has never shipped outside the beta line, so the only installs that can notice are ones already recording baselines against a `22.2.0` beta.
+
+What to do:
+
+1. **Re-record every baseline.** There is no partial path: the canvas geometry changed for all of them. Do it in the same container you compare in.
+2. **Check your viewport against your tallest variant.** This is the new thing worth looking at. Capture mode maximises the canvas but cannot exceed the window, so a component larger than the viewport still overflows it — and that overflow is the one case the guarantee does not cover. A 1400x900 viewport (as in the example below) fits anything most libraries baseline; if you have a full-page pattern variant, give it room.
+3. **Drop any CSS of your own that hid the panel.** If you worked around this with an injected stylesheet, it is now redundant. It is also harmless — `display: none` on an already-`display: none` element changes nothing.
+
+Why `display: none` and not `visibility: hidden`: keeping the layout box does not fix it. The panel's box still occupies its space, so what paints at those coordinates becomes the main area's own background instead of the panel's tab bar — a screenshot that is merely wrong in a different colour. Measured at the bottom row of a `bg: 'transparent'` capture: `#11284e` with the panel left in layout, `#11284e` again with `visibility: hidden`, transparent only once it leaves layout. The canvas is `flex: 1`; it has to reclaim the space for the stage to paint there.
 
 ## A worked example
 
@@ -232,9 +256,9 @@ If you already deploy a preview styleguide per pull request, the two collapse in
 
 ## Sizing caveat: stretch variants
 
-A variant using `canvasLayout: 'stretch'` renders as `width: 100%; max-width: 800px`. Above 800px of available canvas the width is clamped and fully deterministic. Below it — a narrow viewport, a wide sidebar, a tall open panel — the captured width follows the canvas.
+A variant using `canvasLayout: 'stretch'` renders as `width: 100%; max-width: 800px`. Above 800px of available canvas the width is clamped and fully deterministic. Below it the captured width follows the canvas.
 
-Capture mode deliberately leaves the shell alone, so if you have stretch variants, pin the viewport size in your runner (as the example above does) and keep it stable across runs.
+In capture mode the canvas is the viewport, so "available canvas" means the viewport width and nothing else — not the sidebar width or the panel height, both of which are user-resizable and persisted. That is one fewer way for a baseline recorded on a laptop to disagree with one recorded in CI. It still leaves the viewport itself, so pin its size in your runner (as the example above does) and keep it stable across runs.
 
 ## Report format
 
