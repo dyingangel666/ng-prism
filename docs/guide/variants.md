@@ -11,7 +11,7 @@ interface Variant<T = unknown> {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
-  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
   canvasLayout?: 'fit' | 'stretch';
 }
 ```
@@ -189,7 +189,9 @@ A variant can declare a recommended canvas background. When the user selects the
 })
 ```
 
-Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
+
+`'transparent'` is declaration-only — the toolbar does not offer it, because while browsing it draws the same checkerboard as `'checker'`. The two differ only under [capture mode](guide/visual-regression.md#capturing-transparency), where `'transparent'` yields a screenshot with a real alpha channel. It is also what a variant resolves to when nothing declares a background.
 
 A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
 

@@ -189,7 +189,9 @@ Arbitrary key-value metadata consumed by plugins. Each official plugin documents
 
 Recommended canvas background for this component. Applied automatically when the user opens the component (or one of its variants), unless a variant defines its own `bg`. The user can still pick a different background via the canvas toolbar; the override is transient and resets when switching variants or components. When the user has deviated, a `Recommended: <bg>` pill appears in the canvas with a one-click `Reset` button.
 
-Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
+
+`'transparent'` is declaration-only — the toolbar does not offer it, because while browsing it draws the same checkerboard as `'checker'`. The two differ only under [capture mode](guide/visual-regression.md#capturing-transparency), where `'transparent'` yields a screenshot with a real alpha channel. It is also what a variant resolves to when nothing declares a background.
 
 ```typescript
 @Showcase({
