@@ -69,9 +69,6 @@ export const VRT_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
     const meta = componentMeta(component);
     if (!meta?.found || !meta.summary) return null;
     if (meta.summary.variant === 'ok') return null;
-    return {
-      variant: meta.summary.variant,
-      label: `Visual regression: ${meta.summary.value} max diff`,
-    };
+    return { variant: meta.summary.variant, label: meta.summary.label };
   },
 };

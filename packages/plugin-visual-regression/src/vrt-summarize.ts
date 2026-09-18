@@ -206,7 +206,28 @@ export function defaultExpandedGroups<T>(
 }
 
 /**
- * The headline figure and its colour for one component.
+ * Names the reason a warn fires when nothing was actually compared.
+ *
+ * `value` is `'—'` in exactly this case — a resized capture or a variant with
+ * no baseline yet has nothing to measure a diff against — so a label built
+ * from `value` would read "Visual regression: — max diff": amber, naming
+ * nothing actionable. This names the real cause instead, the same way the
+ * a11y danger label lists which severities fired rather than repeating a
+ * score that wouldn't explain itself.
+ */
+function warnReason(counts: VrtSummary['counts']): string {
+  const parts: string[] = [];
+  if (counts['size-mismatch'] > 0) {
+    parts.push(`${counts['size-mismatch']} resized`);
+  }
+  if (counts.new > 0) {
+    parts.push(`${counts.new} new baseline${counts.new === 1 ? '' : 's'}`);
+  }
+  return parts.join(', ');
+}
+
+/**
+ * The headline figure, colour and label for one component.
  *
  * The colour comes from the *statuses*, not from the percentage, and that is
  * deliberate: {@link DEFAULT_VRT_THRESHOLDS} already says a run is only green
@@ -215,19 +236,37 @@ export function defaultExpandedGroups<T>(
  * Amber is reserved for the variants that could not be measured at all —
  * resized and new — which are neither a regression nor a clean pass.
  *
+ * The label is composed here, alongside the value, and never again at read
+ * time — `badge()` in `panel-contributions.ts` returns it verbatim, the same
+ * contract a11y and coverage already follow for their own `summary.label`.
+ *
  * Computed at build time and stored in the component's meta, so the component
- * head can read two primitives instead of reimplementing this plugin's status
+ * head can read primitives instead of reimplementing this plugin's status
  * semantics in the core app.
  */
 export function statSummary(summary: VrtSummary): VrtStat {
   const { counts, maxDiffRatio } = summary;
+  const value = maxDiffRatio === null ? '—' : formatPercent(maxDiffRatio);
+
+  if (counts.changed > 0) {
+    return {
+      value,
+      variant: 'danger',
+      label: `Visual regression: ${value} max diff`,
+    };
+  }
+
+  if (counts['size-mismatch'] > 0 || counts.new > 0) {
+    return {
+      value,
+      variant: 'warn',
+      label: `Visual regression: ${warnReason(counts)}`,
+    };
+  }
+
   return {
-    value: maxDiffRatio === null ? '—' : formatPercent(maxDiffRatio),
-    variant:
-      counts.changed > 0
-        ? 'danger'
-        : counts['size-mismatch'] > 0 || counts.new > 0
-        ? 'warn'
-        : 'ok',
+    value,
+    variant: 'ok',
+    label: `Visual regression: ${value} max diff`,
   };
 }

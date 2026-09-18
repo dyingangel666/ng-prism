@@ -122,14 +122,22 @@ describe('VRT_NAVIGATION_DECORATION', () => {
             found: true,
             assetBaseUrl: '',
             variants: [],
-            summary: { value: '0.0%', variant: 'ok' },
+            summary: {
+              value: '0.0%',
+              variant: 'ok',
+              label: 'Visual regression: 0.0% max diff',
+            },
           },
         })
       )
     ).toBeNull();
   });
 
-  it('composes the exact label from the derived verdict', () => {
+  it('returns the label the build step composed, verbatim, without recomposing it', () => {
+    // Unlike a11y/coverage, this used to compose `Visual regression: ${value}
+    // max diff` here. It no longer does — the value passed in below would
+    // produce a different string than the label if `badge()` were still
+    // building it itself.
     expect(
       VRT_NAVIGATION_DECORATION.badge(
         component({
@@ -137,13 +145,42 @@ describe('VRT_NAVIGATION_DECORATION', () => {
             found: true,
             assetBaseUrl: '',
             variants: [],
-            summary: { value: '12.3%', variant: 'danger' },
+            summary: {
+              value: '12.3%',
+              variant: 'danger',
+              label: 'Visual regression: 12.3% max diff',
+            },
           },
         })
       )
     ).toEqual({
       variant: 'danger',
       label: 'Visual regression: 12.3% max diff',
+    });
+  });
+
+  it('returns a warn label naming its reason, not a percentage', () => {
+    // The degenerate case this closes: `value` is '—' when nothing was
+    // compared, so a label composed from it at read time would read
+    // "Visual regression: — max diff" — amber, naming nothing actionable.
+    expect(
+      VRT_NAVIGATION_DECORATION.badge(
+        component({
+          visualRegression: {
+            found: true,
+            assetBaseUrl: '',
+            variants: [],
+            summary: {
+              value: '—',
+              variant: 'warn',
+              label: 'Visual regression: 2 new baselines',
+            },
+          },
+        })
+      )
+    ).toEqual({
+      variant: 'warn',
+      label: 'Visual regression: 2 new baselines',
     });
   });
 });

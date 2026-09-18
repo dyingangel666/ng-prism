@@ -100,6 +100,13 @@ export interface VrtStat {
   /** The worst diff among compared variants, or `—` when none was. */
   value: string;
   variant: 'ok' | 'warn' | 'danger';
+  /**
+   * Pre-derived headline, composed here at build time alongside `value` —
+   * never at read time. `badge()` returns this verbatim, the same contract
+   * a11y's and coverage's `summary.label` already follow, so the navigation
+   * marker's tooltip can never disagree with what this plugin considers true.
+   */
+  label: string;
 }
 
 export interface VrtComponentMeta {
