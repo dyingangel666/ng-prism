@@ -22,10 +22,12 @@ import {
  *
  * The cost of that is precision, so the split is deliberate: the bar carries
  * the *composition* (which statuses, in what proportion) where a glance is
- * enough, and the line under it carries the two figures a reviewer acts on.
- * Exact per-status counts live one place over, in the list itself, where every
- * row already states its own status — repeating them here would be the tile
- * strip again, in a narrower column.
+ * enough, and the line under it carries the one figure a reviewer acts on.
+ * Exact per-status counts live one place over, in the grouped list below,
+ * whose headers already read "Needs review · 1" and "Unchanged · 14" —
+ * restating them here would be the tile strip again, in a narrower column.
+ * The line therefore disappears entirely when nothing could be compared,
+ * rather than printing a dash under a bar that already says so.
  */
 @Component({
   selector: 'prism-vrt-summary',
@@ -44,19 +46,13 @@ import {
         }
       </div>
 
+      @if (maxDiff(); as max) {
       <div class="vrt-sum__line">
-        <span class="vrt-sum__stat">
-          <b [attr.data-tone]="changed() > 0 ? 'danger' : 'success'">{{
-            changed()
-          }}</b>
-          of {{ summary().total }} changed
-        </span>
-        @if (maxDiff(); as max) {
         <span class="vrt-sum__stat">
           max <b [attr.data-tone]="max.tone">{{ max.value }}</b>
         </span>
-        }
       </div>
+      }
     </div>
   `,
   styles: `
@@ -106,8 +102,6 @@ export class VrtSummaryComponent {
   readonly summary = input.required<VrtSummary>();
 
   protected readonly segments = computed(() => summarySegments(this.summary()));
-
-  protected readonly changed = computed(() => this.summary().counts.changed);
 
   protected readonly maxDiff = computed(() => {
     const ratio = this.summary().maxDiffRatio;

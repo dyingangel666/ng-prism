@@ -7,8 +7,11 @@
 ## What It Does
 
 - Adds a **Visual Regression** panel to the addon tab bar, shown only for components that actually have results
+- Puts a **count on that tab** of the variants waiting on a decision — red once something changed, amber while the only open items are ones that could not be compared, and absent entirely when the component is clean
 - Shows a **library-wide VRT pill** in the header, color-coded against your thresholds
-- Heads the variant list with a **per-component summary** — a composition bar over the statuses present, plus the changed count and the worst diff. It sits in the list column rather than across the panel: the dock is 260px tall by default, and a full-width strip spent that budget before the comparison had drawn a pixel
+- Adds a **VRT Diff** figure to the component head: the worst diff among that component's variants, green only when nothing regressed
+- Heads the variant list with a **per-component summary** — a composition bar over the statuses present, plus the worst diff. It sits in the list column rather than across the panel: the dock is 260px tall by default, and a full-width strip spent that budget before the comparison had drawn a pixel
+- **Groups the variant list by what needs you**, with the clean variants collapsed out of the way — see below
 - Per variant: status, diff percentage, and a baseline / current / diff comparison. The list and the comparison scroll independently, so choosing a variant never scrolls the image you chose it for out of view
 - Three comparison modes: **Wipe**, **Side by side**, and **Diff** (the last only when the report records a distinct diff mask alongside a current capture)
 - **Zoom** at `Fit`, `1×`, `2×`, `4×`, with pixels kept as pixels — a diff is never drawn below 1:1, because a downscaled diff is one you cannot trust
@@ -71,6 +74,32 @@ It is **prepended to** the recorded path, not substituted for it, so the three v
 | `vrt/baseline/x.png`   | `vrt/`         | `vrt/vrt/baseline/x.png` ❌    |
 
 The pairing above is the one this repository's own test workspace uses, and it is the reason the report records workspace-relative paths rather than URLs: the runner does not have to know where the styleguide will serve them from.
+
+## The variant list
+
+A library's variants are overwhelmingly unchanged, and a flat list renders all of them at equal weight: fifteen identical cards, one of which is the reason you opened the panel. The list is grouped instead.
+
+```
+NEEDS REVIEW · 1
+  ┃ Outlined                    87.40%
+  ┃ CHANGED
+
+UNCHANGED · 14                        ▶
+```
+
+| Group            | Holds                             | Behaviour                        |
+| ---------------- | --------------------------------- | -------------------------------- |
+| **Needs review** | `changed`, `size-mismatch`, `new` | Always open; cannot be collapsed |
+| **Unchanged**    | `unchanged`                       | Collapsed by default             |
+| **Excluded**     | `excluded`                        | Collapsed by default             |
+
+Groups nothing fell into are not rendered, so a clean run is two lines rather than a page of zeroes. Within **Needs review** the order is worst news first: changed, then resized, then new.
+
+`new` sits in **Needs review** beside `changed`, which is the one placement worth explaining. A variant with no baseline is explicitly _not_ a failure — the row keeps its own neutral colour and the tab badge stays amber — but it is the one state that cannot resolve itself: somebody has to accept a baseline. `excluded` gets its own group rather than being folded into `unchanged`, because "compared and matched" and "never captured" are different claims and only one of them is coverage.
+
+When nothing needs review the rule inverts and the first group starts open — two collapsed headers and no rows reads as a panel that failed to load, not as a clean run.
+
+The rows themselves are unchanged: the same card with a severity edge, status label and diff percentage that the a11y violations list uses, so the two panels still read as one product. Only their arrangement is new.
 
 ## Report Format
 

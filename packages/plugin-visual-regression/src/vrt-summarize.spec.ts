@@ -1,5 +1,12 @@
 import type { VrtStatus, VrtVariantResult } from './visual-regression.types.js';
-import { formatPercent, summarize, summarySegments } from './vrt-summarize.js';
+import {
+  defaultExpandedGroups,
+  formatPercent,
+  groupRows,
+  statSummary,
+  summarize,
+  summarySegments,
+} from './vrt-summarize.js';
 
 function variant(status: VrtStatus, diffRatio?: number): VrtVariantResult {
   return {
@@ -133,5 +140,132 @@ describe('formatPercent', () => {
 
   it('keeps two decimals', () => {
     expect(formatPercent(0.1026)).toBe('10.26%');
+  });
+});
+
+function row(status: VrtStatus, name: string) {
+  return { status, name };
+}
+
+describe('groupRows', () => {
+  it('collects everything a reviewer has to act on into one group', () => {
+    const groups = groupRows([
+      row('unchanged', 'a'),
+      row('changed', 'b'),
+      row('new', 'c'),
+      row('size-mismatch', 'd'),
+    ]);
+
+    expect(groups.map((g) => g.key)).toEqual(['review', 'unchanged']);
+    // `new` belongs here because a variant with no baseline still needs a
+    // human decision — accepting one — even though it is not a failure.
+    expect(groups[0].rows.map((r) => r.name)).toEqual(['b', 'd', 'c']);
+    expect(groups[0].count).toBe(3);
+  });
+
+  it('orders the review group worst news first', () => {
+    const groups = groupRows([
+      row('new', 'n'),
+      row('size-mismatch', 's'),
+      row('changed', 'c'),
+    ]);
+    expect(groups[0].rows.map((r) => r.status)).toEqual([
+      'changed',
+      'size-mismatch',
+      'new',
+    ]);
+  });
+
+  it('keeps the declared order of variants sharing a status', () => {
+    const groups = groupRows([
+      row('changed', 'first'),
+      row('changed', 'second'),
+      row('changed', 'third'),
+    ]);
+    expect(groups[0].rows.map((r) => r.name)).toEqual([
+      'first',
+      'second',
+      'third',
+    ]);
+  });
+
+  it('omits a group nothing fell into', () => {
+    const groups = groupRows([row('unchanged', 'a')]);
+    expect(groups.map((g) => g.key)).toEqual(['unchanged']);
+  });
+
+  it('separates excluded from unchanged', () => {
+    // Both are "not your problem right now", but they are not the same claim:
+    // one was compared and matched, the other was never captured.
+    const groups = groupRows([row('excluded', 'x'), row('unchanged', 'u')]);
+    expect(groups.map((g) => g.key)).toEqual(['unchanged', 'excluded']);
+  });
+
+  it('never lets the review group be collapsed away', () => {
+    const groups = groupRows([row('changed', 'c'), row('unchanged', 'u')]);
+    expect(groups.find((g) => g.key === 'review')?.collapsible).toBe(false);
+    expect(groups.find((g) => g.key === 'unchanged')?.collapsible).toBe(true);
+  });
+
+  it('survives an empty list', () => {
+    expect(groupRows([])).toEqual([]);
+  });
+});
+
+describe('defaultExpandedGroups', () => {
+  it('keeps the quiet groups shut while something needs review', () => {
+    const groups = groupRows([row('changed', 'c'), row('unchanged', 'u')]);
+    expect(defaultExpandedGroups(groups)).toEqual([]);
+  });
+
+  it('opens the first group when nothing needs review', () => {
+    // Otherwise a clean run renders as two collapsed headers and reads as if
+    // the panel failed to load.
+    const groups = groupRows([row('unchanged', 'u'), row('excluded', 'x')]);
+    expect(defaultExpandedGroups(groups)).toEqual(['unchanged']);
+  });
+
+  it('opens whatever the first group happens to be', () => {
+    const groups = groupRows([row('excluded', 'x')]);
+    expect(defaultExpandedGroups(groups)).toEqual(['excluded']);
+  });
+
+  it('has nothing to open when there are no groups', () => {
+    expect(defaultExpandedGroups([])).toEqual([]);
+  });
+});
+
+describe('statSummary', () => {
+  it('is green only when nothing regressed', () => {
+    const stat = statSummary(summarize([variant('unchanged', 0)]));
+    expect(stat).toEqual({ value: '0%', variant: 'ok' });
+  });
+
+  it('goes red on a change, however small', () => {
+    // The plugin's own default threshold is a perfect score, so any regression
+    // is worth seeing — magnitude belongs in the value, not in the colour.
+    const stat = statSummary(
+      summarize([variant('unchanged', 0), variant('changed', 0.0004)])
+    );
+    expect(stat.variant).toBe('danger');
+    expect(stat.value).toBe('0.04%');
+  });
+
+  it('warns for a variant that could not be compared', () => {
+    expect(statSummary(summarize([variant('size-mismatch')])).variant).toBe(
+      'warn'
+    );
+    expect(statSummary(summarize([variant('new')])).variant).toBe('warn');
+  });
+
+  it('has no figure to show when nothing was compared', () => {
+    expect(statSummary(summarize([variant('new')])).value).toBe('—');
+  });
+
+  it('lets a real change outrank an unmeasurable one', () => {
+    const stat = statSummary(
+      summarize([variant('new'), variant('changed', 0.5)])
+    );
+    expect(stat.variant).toBe('danger');
   });
 });

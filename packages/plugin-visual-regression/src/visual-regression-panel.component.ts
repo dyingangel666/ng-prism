@@ -8,10 +8,13 @@ import {
 import { VrtCompareComponent } from './vrt-compare.component.js';
 import { VrtSummaryComponent } from './vrt-summary.component.js';
 import {
+  defaultExpandedGroups,
   formatPercent,
+  groupRows,
   STATUS_LABEL,
   STATUS_TONE,
   summarize,
+  type VrtGroupKey,
 } from './vrt-summarize.js';
 import type {
   VrtComponentMeta,
@@ -31,23 +34,50 @@ import type {
           <prism-vrt-summary [summary]="summary()" />
         </div>
 
-        <ul class="vrt__list">
-          @for (row of rows(); track row.key) {
-          <li>
-            <button
-              type="button"
-              class="vrt__row"
-              [attr.data-tone]="row.tone"
-              [class.vrt__row--active]="row.variant === selected()"
-              (click)="selectedKey.set(row.key)"
+        <div class="vrt__list">
+          @for (group of groups(); track group.key) { @if (group.collapsible) {
+          <button
+            type="button"
+            class="vrt__group vrt__group--toggle"
+            [attr.aria-expanded]="isExpanded(group.key)"
+            (click)="toggleGroup(group.key)"
+          >
+            <span class="vrt__group-label"
+              >{{ group.label }} · {{ group.count }}</span
             >
-              <span class="vrt__name">{{ row.label }}</span>
-              <span class="vrt__status">{{ row.statusLabel }}</span>
-              <span class="vrt__diff">{{ row.diffLabel }}</span>
-            </button>
-          </li>
-          }
-        </ul>
+            <span
+              class="vrt__caret"
+              [class.vrt__caret--open]="isExpanded(group.key)"
+              aria-hidden="true"
+              >&#9654;</span
+            >
+          </button>
+          } @else {
+          <p class="vrt__group">
+            <span class="vrt__group-label"
+              >{{ group.label }} · {{ group.count }}</span
+            >
+          </p>
+          } @if (!group.collapsible || isExpanded(group.key)) {
+          <ul class="vrt__rows">
+            @for (row of group.rows; track row.key) {
+            <li>
+              <button
+                type="button"
+                class="vrt__row"
+                [attr.data-tone]="row.tone"
+                [class.vrt__row--active]="row.variant === selected()"
+                (click)="selectedKey.set(row.key)"
+              >
+                <span class="vrt__name">{{ row.label }}</span>
+                <span class="vrt__status">{{ row.statusLabel }}</span>
+                <span class="vrt__diff">{{ row.diffLabel }}</span>
+              </button>
+            </li>
+            }
+          </ul>
+          } }
+        </div>
       </div>
 
       <div class="vrt__viewer">
@@ -116,11 +146,54 @@ import type {
       overflow: auto;
       margin: 0;
       padding: 12px 4px 12px 16px;
+    }
+
+    .vrt__rows {
+      margin: 0 0 2px;
+      padding: 0;
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
+
+    /* The group header, in both its forms: a paragraph for the group that
+       cannot collapse and a button for the ones that can, so the disclosure is
+       a real control rather than a click handler on a label — same box either
+       way, which is what keeps the two from jumping as groups appear. */
+    .vrt__group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      margin: 0;
+      padding: 10px 8px 6px;
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+    }
+    .vrt__group--toggle { cursor: pointer; }
+    .vrt__group--toggle:hover .vrt__group-label { color: var(--prism-text-2); }
+
+    .vrt__group-label {
+      font-size: var(--fs-sm);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--prism-text-muted);
+      transition: color var(--dur-fast);
+    }
+
+    .vrt__caret {
+      font-size: 9px;
+      line-height: 1;
+      color: var(--prism-text-ghost);
+      transition: transform var(--dur-fast) var(--ease-default);
+    }
+    .vrt__caret--open { transform: rotate(90deg); }
 
     /* Same card-with-severity-edge as the a11y violations list, so the two
        panels read as one product. */
@@ -259,6 +332,7 @@ export class VisualRegressionPanelComponent {
     this.variants().map((variant) => ({
       key: `${variant.className}:${variant.variantIndex}`,
       variant,
+      status: variant.status,
       label:
         variant.variantName ??
         variant.title ??
@@ -268,6 +342,32 @@ export class VisualRegressionPanelComponent {
       diffLabel: formatDiff(variant),
     }))
   );
+
+  protected readonly groups = computed(() => groupRows(this.rows()));
+
+  /**
+   * Which groups the reader has opened.
+   *
+   * `null` means "nobody has touched this yet", which is what lets the default
+   * follow the data — shut while something needs review, the first group open
+   * when nothing does. A plain set initialised once would freeze the first
+   * component's answer and apply it to every component after it.
+   */
+  private readonly expanded = signal<ReadonlySet<VrtGroupKey> | null>(null);
+
+  private readonly expandedGroups = computed<ReadonlySet<VrtGroupKey>>(
+    () => this.expanded() ?? new Set(defaultExpandedGroups(this.groups()))
+  );
+
+  protected isExpanded(key: VrtGroupKey): boolean {
+    return this.expandedGroups().has(key);
+  }
+
+  protected toggleGroup(key: VrtGroupKey): void {
+    const next = new Set(this.expandedGroups());
+    if (!next.delete(key)) next.add(key);
+    this.expanded.set(next);
+  }
 
   protected readonly selected = computed<VrtVariantResult | null>(() => {
     const rows = this.rows();

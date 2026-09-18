@@ -1,4 +1,8 @@
-import type { VrtStatus, VrtVariantResult } from './visual-regression.types.js';
+import type {
+  VrtStat,
+  VrtStatus,
+  VrtVariantResult,
+} from './visual-regression.types.js';
 
 /**
  * Colour role of a status, resolved to a theme token by the components.
@@ -115,4 +119,115 @@ export function formatPercent(ratio: number): string {
   if (pct === 0) return '0%';
   if (pct < 0.01) return '<0.01%';
   return `${pct.toFixed(2)}%`;
+}
+
+/** The three buckets the variant list is grouped into, in display order. */
+export type VrtGroupKey = 'review' | 'unchanged' | 'excluded';
+
+export interface VrtGroup<T> {
+  key: VrtGroupKey;
+  label: string;
+  count: number;
+  /**
+   * Whether the group may be collapsed. `review` never can: it is the reason
+   * the panel exists, and a list whose only interesting rows can be hidden
+   * behind a disclosure triangle is a list that gets skimmed past.
+   */
+  collapsible: boolean;
+  rows: T[];
+}
+
+const GROUP_OF: Record<VrtStatus, VrtGroupKey> = {
+  changed: 'review',
+  'size-mismatch': 'review',
+  new: 'review',
+  unchanged: 'unchanged',
+  excluded: 'excluded',
+};
+
+const GROUP_LABEL: Record<VrtGroupKey, string> = {
+  review: 'Needs review',
+  unchanged: 'Unchanged',
+  excluded: 'Excluded',
+};
+
+const GROUP_ORDER: readonly VrtGroupKey[] = ['review', 'unchanged', 'excluded'];
+
+/**
+ * The variant list split into what needs a decision and what does not.
+ *
+ * `new` sits in `review` beside `changed`, which is the one placement worth
+ * explaining. A variant with no baseline is explicitly *not* a failure — the
+ * report contract says so and the row keeps its own neutral tone — but it is
+ * the one state that cannot resolve itself: somebody has to accept a baseline.
+ * `excluded` is the mirror image and gets its own group rather than being
+ * folded into `unchanged`: both are "not your problem", but "compared and
+ * matched" and "never captured" are different claims and a reviewer counting
+ * coverage needs to tell them apart.
+ *
+ * Empty groups are dropped instead of rendered at zero. The summary bar above
+ * the list has the same rule, and for the same reason — a zero-count header is
+ * a line of chrome asserting a colour nothing on screen has.
+ *
+ * Generic over the row rather than taking `VrtVariantResult`: the panel groups
+ * its own view models, which already carry the label and the formatted diff,
+ * and threading those back through a variant-shaped API would mean building
+ * them twice.
+ */
+export function groupRows<T extends { status: VrtStatus }>(
+  rows: readonly T[]
+): VrtGroup<T>[] {
+  return GROUP_ORDER.map((key) => ({
+    key,
+    label: GROUP_LABEL[key],
+    collapsible: key !== 'review',
+    rows: STATUS_ORDER.filter((status) => GROUP_OF[status] === key).flatMap(
+      (status) => rows.filter((row) => row.status === status)
+    ),
+  }))
+    .filter((group) => group.rows.length > 0)
+    .map((group) => ({ ...group, count: group.rows.length }));
+}
+
+/**
+ * Which groups start open.
+ *
+ * Nothing, while something needs review — the point of the grouping is that
+ * the fourteen unchanged variants stop competing with the one that changed.
+ * When there is no review group the rule inverts and the first group opens,
+ * because two collapsed headers and no rows reads as a panel that failed to
+ * load rather than as a clean run.
+ */
+export function defaultExpandedGroups<T>(
+  groups: readonly VrtGroup<T>[]
+): VrtGroupKey[] {
+  if (groups.some((group) => group.key === 'review')) return [];
+  return groups.length ? [groups[0].key] : [];
+}
+
+/**
+ * The headline figure and its colour for one component.
+ *
+ * The colour comes from the *statuses*, not from the percentage, and that is
+ * deliberate: {@link DEFAULT_VRT_THRESHOLDS} already says a run is only green
+ * at a perfect score, so a "small enough to stay amber" diff would contradict
+ * the badge sitting in the same header. Magnitude is what the value carries.
+ * Amber is reserved for the variants that could not be measured at all —
+ * resized and new — which are neither a regression nor a clean pass.
+ *
+ * Computed at build time and stored in the component's meta, so the component
+ * head can read two primitives instead of reimplementing this plugin's status
+ * semantics in the core app.
+ */
+export function statSummary(summary: VrtSummary): VrtStat {
+  const { counts, maxDiffRatio } = summary;
+  return {
+    value: maxDiffRatio === null ? '—' : formatPercent(maxDiffRatio),
+    variant:
+      counts.changed > 0
+        ? 'danger'
+        : counts['size-mismatch'] > 0 || counts.new > 0
+        ? 'warn'
+        : 'ok',
+  };
 }

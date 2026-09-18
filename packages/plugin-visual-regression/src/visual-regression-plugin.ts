@@ -1,19 +1,13 @@
-import type { NgPrismPlugin, RuntimeComponent } from '@ng-prism/core/plugin';
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import type {
   VisualRegressionPluginOptions,
   VrtComponentMeta,
 } from './visual-regression.types.js';
+import { hasResults, reviewBadge } from './panel-contributions.js';
 import { resolveVrtThresholds } from './thresholds.js';
+import { statSummary, summarize } from './vrt-summarize.js';
 
 const DEFAULT_REPORT_PATH = 'vrt-report.json';
-
-/** True when the plugin recorded at least one result for this component. */
-function hasResults(component: RuntimeComponent): boolean {
-  const meta = component.meta?.showcaseConfig?.meta?.['visualRegression'] as
-    | VrtComponentMeta
-    | undefined;
-  return Boolean(meta?.found && meta.variants.length > 0);
-}
 
 /**
  * Renders a visual regression report produced by an external runner.
@@ -39,10 +33,15 @@ export function visualRegressionPlugin(
         component.className
       );
 
+      // The headline is derived here rather than in the component head so the
+      // core app never has to reimplement this plugin's status semantics.
       const meta: VrtComponentMeta = {
         found: variants.length > 0,
         variants,
         assetBaseUrl,
+        ...(variants.length
+          ? { summary: statSummary(summarize(variants)) }
+          : {}),
       };
 
       return {
@@ -74,6 +73,7 @@ export function visualRegressionPlugin(
         icon: 'camera',
         position: 'bottom',
         isVisible: hasResults,
+        badge: reviewBadge,
         loadComponent: () =>
           import('./visual-regression-panel.component.js').then(
             (m) => m.VisualRegressionPanelComponent

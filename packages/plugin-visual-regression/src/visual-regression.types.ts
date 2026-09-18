@@ -95,10 +95,24 @@ export interface VisualRegressionPluginOptions {
 }
 
 /** Shape stored under `showcaseConfig.meta.visualRegression`. */
+/** A component's visual regression standing, as the component head shows it. */
+export interface VrtStat {
+  /** The worst diff among compared variants, or `—` when none was. */
+  value: string;
+  variant: 'ok' | 'warn' | 'danger';
+}
+
 export interface VrtComponentMeta {
   found: boolean;
   variants: VrtVariantResult[];
   assetBaseUrl: string;
+  /**
+   * Pre-derived headline for the component head, written by the build-time
+   * hook. Optional because a report written before this field existed — or a
+   * browser-only plugin setup, which runs no build-time hooks — simply has
+   * none, and the stat is then left out rather than guessed at.
+   */
+  summary?: VrtStat;
 }
 
 /** Shape stored under `manifest.meta.visualRegression`. */

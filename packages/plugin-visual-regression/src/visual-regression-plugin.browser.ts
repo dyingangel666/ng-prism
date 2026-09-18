@@ -1,15 +1,6 @@
-import type { NgPrismPlugin, RuntimeComponent } from '@ng-prism/core/plugin';
-import type {
-  VisualRegressionPluginOptions,
-  VrtComponentMeta,
-} from './visual-regression.types.js';
-
-function hasResults(component: RuntimeComponent): boolean {
-  const meta = component.meta?.showcaseConfig?.meta?.['visualRegression'] as
-    | VrtComponentMeta
-    | undefined;
-  return Boolean(meta?.found && meta.variants.length > 0);
-}
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import type { VisualRegressionPluginOptions } from './visual-regression.types.js';
+import { hasResults, reviewBadge } from './panel-contributions.js';
 
 /**
  * Browser-safe twin of {@link visualRegressionPlugin}.
@@ -30,6 +21,7 @@ export function visualRegressionPlugin(
         icon: 'camera',
         position: 'bottom',
         isVisible: hasResults,
+        badge: reviewBadge,
         loadComponent: () =>
           import('./visual-regression-panel.component.js').then(
             (m) => m.VisualRegressionPanelComponent
