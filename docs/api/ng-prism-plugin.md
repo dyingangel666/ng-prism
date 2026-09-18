@@ -17,6 +17,7 @@ interface NgPrismPlugin {
   panels?: PanelDefinition[];
   controls?: ControlDefinition[];
   headerWidgets?: HeaderWidgetDefinition[];
+  navigationDecorations?: NavigationDecorationDefinition[];
   wrapComponent?: Type<unknown>;
 }
 ```
@@ -155,6 +156,32 @@ async onManifestReady(manifest) {
 
 ---
 
+### `navigationDecorations`
+
+Array of `NavigationDecorationDefinition` objects, each contributing a marker to the sidebar's navigation item for every component. Use for library-wide health signals that should be visible while browsing — a11y, coverage and visual regression standing all ship as built-ins through this exact extension point.
+
+```typescript
+navigationDecorations: [
+  {
+    id: 'todo',
+    icon: 'file-text',
+    order: 40,
+    badge: (component) => {
+      const todo = component.meta.showcaseConfig.meta?.['todo'] as
+        | { summary?: { variant: 'warn' | 'danger'; label: string } }
+        | undefined;
+      return todo?.summary
+        ? { variant: todo.summary.variant, label: todo.summary.label }
+        : null;
+    },
+  },
+];
+```
+
+See [`NavigationDecorationDefinition`](#navigationdecorationdefinition) for the full field reference, the reserved `order` values, and a complete example plugin.
+
+---
+
 ### `wrapComponent`
 
 An Angular standalone component that wraps every rendered component. Use for providing context (theme, mocks, CDK overlay host) that must exist in the component tree.
@@ -279,3 +306,130 @@ interface HeaderWidgetDefinition {
 | `order`         | Sort order within the same placement (lower = earlier). Default `0`.                                                              |
 
 > **Note:** Header widgets are root-level components. They commonly inject `PRISM_MANIFEST` from `@ng-prism/core/plugin` to access library-wide `manifest.meta` data written by `onManifestReady`.
+
+---
+
+## NavigationDecorationDefinition
+
+```typescript
+interface NavigationDecorationDefinition {
+  id: string;
+  icon: string;
+  order?: number;
+  badge: (component: RuntimeComponent) => NavigationDecoration | null;
+}
+```
+
+| Field   | Description                                                                                                                                                                                                                         |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`    | Unique id — used for de-duplication when two plugins contribute the same source. Built-ins win a collision: a plugin cannot silence or restyle `a11y`, `visual-regression` or `coverage` by reusing their id.                       |
+| `icon`  | Icon name from the built-in registry (`ICON_NAMES`). Built-in sources use `accessibility`, `camera` and `shield-check`.                                                                                                             |
+| `order` | Fixed slot order (lower = further left in the sidebar's trailing marker group). Position alone names the source to the reader, so a decoration must not move depending on plugin registration order. See the reserved values below. |
+| `badge` | The component's standing for this source, or `null` for "nothing worth saying". See [`NavigationDecoration`](#navigationdecoration) and the rules below.                                                                            |
+
+The built-in sources reserve these `order` values — pick something else (`40`, `50`, …) for a new source so its marker does not interleave with them:
+
+| `order` | Source                                                   |
+| ------- | -------------------------------------------------------- |
+| `10`    | A11y (core)                                              |
+| `20`    | Visual Regression (`@ng-prism/plugin-visual-regression`) |
+| `30`    | Coverage (`@ng-prism/plugin-coverage`)                   |
+
+Three rules make the difference between a decoration and one that quietly breaks the contract:
+
+- **Return `null` for anything healthy.** There is no `'ok'` variant on `NavigationDecoration` — a marker that is always present stops being a signal, same reasoning as [`PanelDefinition.badge`](#panelbadge).
+- **Keep it cheap and pure.** `badge()` runs during change detection: read what `component.meta.showcaseConfig.meta` already holds, do not fetch, and do not inject — a decoration has no injection context.
+- **Decide the threshold at build time, not here.** `badge()` only ever sees one component, so it has no way to know what counts as "bad" for the library as a whole — is 72% coverage fine, or a regression? Each built-in source answers that once, in `onComponentScanned`, where the full picture (thresholds, aggregates) is available, and stores the verdict under its own key in `component.showcaseConfig.meta` — conventionally a `summary: { variant, label }` field. `badge()` then does nothing but read that field back. See `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped pattern, and [Plugin Hooks](architecture/plugin-hooks.md) for the full rationale.
+
+---
+
+## NavigationDecoration
+
+```typescript
+interface NavigationDecoration {
+  variant: 'warn' | 'danger';
+  label: string;
+}
+```
+
+What one source has to say about one component, returned by [`NavigationDecorationDefinition.badge`](#navigationdecorationdefinition).
+
+| Field     | Description                                                                                                                                                           |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `variant` | Colour role. Deliberately only two — see the "return `null`" rule above.                                                                                              |
+| `label`   | One tooltip line for this source, e.g. `'A11y: 2 critical, 1 serious'`. Several sources on the same component join their labels with a newline in the item's tooltip. |
+
+---
+
+## Example: a complete navigation decoration plugin
+
+A self-contained plugin that flags components with open `// TODO` comments. It follows the same split the built-in sources use: the build-time hook reads the source file and decides the verdict once; `navigationDecorations.badge` only reads that verdict back.
+
+```typescript
+// todo-marker-plugin.ts
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import { readFileSync } from 'node:fs';
+
+interface TodoSummary {
+  variant: 'warn' | 'danger';
+  label: string;
+}
+
+interface TodoMeta {
+  count: number;
+  /** Pre-derived verdict, written by the build-time hook below. */
+  summary?: TodoSummary;
+}
+
+export function todoMarkerPlugin(): NgPrismPlugin {
+  return {
+    name: '@my-org/plugin-todo-marker',
+
+    // Build time: count `// TODO` markers and decide the verdict once, here —
+    // not in `badge()`, which never sees more than one component and cannot
+    // know what "too many" means for the library as a whole.
+    onComponentScanned(component) {
+      const source = readFileSync(component.filePath, 'utf-8');
+      const count = (source.match(/\/\/\s*TODO/g) ?? []).length;
+
+      const todo: TodoMeta = {
+        count,
+        ...(count > 0
+          ? {
+              summary: {
+                variant: count >= 5 ? 'danger' : 'warn',
+                label: `${count} open TODO${count === 1 ? '' : 's'}`,
+              },
+            }
+          : {}),
+      };
+
+      return {
+        ...component,
+        showcaseConfig: {
+          ...component.showcaseConfig,
+          meta: { ...component.showcaseConfig.meta, todo },
+        },
+      };
+    },
+
+    // Runtime: read the pre-derived verdict back. No file access, no
+    // computation — just the field the build-time hook already filled in.
+    navigationDecorations: [
+      {
+        id: 'todo',
+        icon: 'file-text',
+        order: 40,
+        badge: (component) => {
+          const todo = component.meta.showcaseConfig.meta?.['todo'] as
+            | TodoMeta
+            | undefined;
+          return todo?.summary
+            ? { variant: todo.summary.variant, label: todo.summary.label }
+            : null;
+        },
+      },
+    ],
+  };
+}
+```
