@@ -166,6 +166,8 @@ interface ComponentCategory {
               class="sb-group-rollup"
               [class.sb-group-rollup--warn]="cat.rollup.variant === 'warn'"
               [class.sb-group-rollup--danger]="cat.rollup.variant === 'danger'"
+              [attr.title]="rollupTooltip(cat.rollup)"
+              [attr.aria-label]="rollupTooltip(cat.rollup)"
               >{{ cat.rollup.problems }}</span
             >
             }
@@ -187,7 +189,7 @@ interface ComponentCategory {
               <span class="sb-item-name">{{ itemLabel(row.item) }}</span>
               @if (row.decorations) {
               <span class="sb-item-health">
-                @for (mark of row.decorations.marks; track mark.icon) {
+                @for (mark of row.decorations.marks; track mark.id) {
                 <prism-icon
                   [name]="mark.icon"
                   [size]="11"
@@ -483,18 +485,19 @@ export class PrismSidebarComponent {
       icon: sectionIcon(section.name),
       color: categoryColor(section.name),
       totalCount: section.totalCount,
-      categories: section.categories.map(
-        (cat): ComponentCategory => ({
+      categories: section.categories.map((cat): ComponentCategory => {
+        const items = cat.items.map((item) => ({
+          item,
+          icon: lifecycleIcon(this.itemStatus(item)),
+          decorations: decorateItem(item, defs),
+        }));
+        return {
           name: cat.name,
           color: categoryColor(cat.name),
-          rollup: rollupCategory(cat.items, defs),
-          items: cat.items.map((item) => ({
-            item,
-            icon: lifecycleIcon(this.itemStatus(item)),
-            decorations: decorateItem(item, defs),
-          })),
-        })
-      ),
+          rollup: rollupCategory(items.map((row) => row.decorations)),
+          items,
+        };
+      }),
     }));
   });
 
@@ -528,6 +531,17 @@ export class PrismSidebarComponent {
     return item.kind === 'component'
       ? item.data.meta.showcaseConfig.status
       : undefined;
+  }
+
+  /**
+   * Accessible name for the roll-up pill. The pill otherwise renders a bare
+   * number distinguished only by colour — a screen reader would read the
+   * group head as "Feedback 3 12" with nothing naming what either number
+   * means, and a colour-blind reader can't tell them apart at all.
+   */
+  protected rollupTooltip(rollup: CategoryRollup): string {
+    const noun = rollup.problems === 1 ? 'component needs' : 'components need';
+    return `${rollup.problems} ${noun} review`;
   }
 
   protected itemTooltip(

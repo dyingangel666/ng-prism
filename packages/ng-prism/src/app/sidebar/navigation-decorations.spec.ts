@@ -122,6 +122,20 @@ describe('decorateItem', () => {
       'a11y: danger\nvrt: danger\ncoverage: warn'
     );
   });
+
+  it('tags each mark with its definition id, even when two sources share an icon', () => {
+    // `@for` in the sidebar tracks by `mark.id`, not `mark.icon` — a
+    // third-party plugin is free to pick the same icon an existing source
+    // already uses (e.g. 'camera'), and two marks with the same track key on
+    // one item would collide.
+    const clashingDefs = [
+      def('a11y', 'camera', 10, { Dialog: 'danger' }),
+      def('vrt', 'camera', 20, { Dialog: 'warn' }),
+    ];
+    const result = decorateItem(item('Dialog'), clashingDefs);
+    expect(result?.marks.map((m) => m.id)).toEqual(['a11y', 'vrt']);
+    expect(new Set(result?.marks.map((m) => m.id)).size).toBe(2);
+  });
 });
 
 describe('rollupCategory', () => {
@@ -130,20 +144,27 @@ describe('rollupCategory', () => {
     def('coverage', 'shield-check', 30, { Dialog: 'warn', Table: 'warn' }),
   ];
 
+  // rollupCategory takes each item's already-resolved decorations rather than
+  // the raw items — the caller runs decorateItem once per item to render its
+  // marks, and this proves the roll-up reuses that instead of recomputing it.
+  function decorationsFor(names: string[]) {
+    return names.map((name) => decorateItem(item(name), defs));
+  }
+
   it('counts items with a mark, not the marks themselves', () => {
-    const items = [item('Dialog'), item('Table'), item('Button')];
-    expect(rollupCategory(items, defs).problems).toBe(2);
+    const decorations = decorationsFor(['Dialog', 'Table', 'Button']);
+    expect(rollupCategory(decorations).problems).toBe(2);
   });
 
   it('takes the worst variant in the category', () => {
-    expect(rollupCategory([item('Dialog'), item('Table')], defs).variant).toBe(
+    expect(rollupCategory(decorationsFor(['Dialog', 'Table'])).variant).toBe(
       'danger'
     );
-    expect(rollupCategory([item('Table')], defs).variant).toBe('warn');
+    expect(rollupCategory(decorationsFor(['Table'])).variant).toBe('warn');
   });
 
   it('reports nothing for a clean category', () => {
-    expect(rollupCategory([item('Button')], defs)).toEqual({
+    expect(rollupCategory(decorationsFor(['Button']))).toEqual({
       problems: 0,
       variant: null,
     });

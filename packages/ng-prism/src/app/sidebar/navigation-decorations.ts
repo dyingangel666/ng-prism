@@ -4,6 +4,13 @@ import type { NavigationItem } from '../services/navigation-item.types.js';
 
 /** One source's verdict on one component, resolved for rendering. */
 export interface ItemMark {
+  /**
+   * The definition's id. `resolveNavigationDecorations` guarantees these are
+   * unique, so this is the only field safe to `@for track` by — `icon` is a
+   * free-form string on a public extension point and two sources can pick the
+   * same one.
+   */
+  id: string;
   icon: string;
   variant: 'warn' | 'danger';
   label: string;
@@ -68,7 +75,12 @@ export function decorateItem(
   for (const def of defs) {
     const badge = def.badge(item.data);
     if (!badge) continue;
-    marks.push({ icon: def.icon, variant: badge.variant, label: badge.label });
+    marks.push({
+      id: def.id,
+      icon: def.icon,
+      variant: badge.variant,
+      label: badge.label,
+    });
   }
 
   if (marks.length === 0) return null;
@@ -87,20 +99,23 @@ export function decorateItem(
  * Items, not marks: a component with three findings is one thing to look at,
  * and a group head reading "3" for a single broken component would overstate
  * the work.
+ *
+ * Takes each item's already-resolved `ItemDecorations` rather than the raw
+ * items — callers already run `decorateItem` once per item to render its
+ * marks, and recomputing it here would both waste the work and let the
+ * roll-up drift from what actually renders.
  */
 export function rollupCategory(
-  items: readonly NavigationItem[],
-  defs: readonly NavigationDecorationDefinition[]
+  decorations: readonly (ItemDecorations | null)[]
 ): CategoryRollup {
   let problems = 0;
   let variant: 'warn' | 'danger' | null = null;
 
-  for (const item of items) {
-    const decorations = decorateItem(item, defs);
-    if (!decorations) continue;
+  for (const decoration of decorations) {
+    if (!decoration) continue;
     problems++;
-    if (!variant || SEVERITY[decorations.worst] > SEVERITY[variant]) {
-      variant = decorations.worst;
+    if (!variant || SEVERITY[decoration.worst] > SEVERITY[variant]) {
+      variant = decoration.worst;
     }
   }
 
