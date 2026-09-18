@@ -13,12 +13,29 @@ import type { CanvasBg } from '@ng-prism/core/plugin';
  * runner reports them instead of dropping them silently, so the list of skipped
  * variants stays visible rather than quietly shrinking coverage.
  */
-export type VrtStatus =
-  | 'unchanged'
-  | 'changed'
-  | 'size-mismatch'
-  | 'new'
-  | 'excluded';
+export const VRT_STATUSES = [
+  'unchanged',
+  'changed',
+  'size-mismatch',
+  'new',
+  'excluded',
+] as const;
+
+export type VrtStatus = (typeof VRT_STATUSES)[number];
+
+/**
+ * Whether a report wrote a status this plugin knows how to render.
+ *
+ * A `Set` rather than `value in someRecord`: every status-keyed table here is
+ * an object literal, so `in` also answers true for `toString`, `constructor`
+ * and the rest of `Object.prototype` — a report saying `status: "toString"`
+ * would be counted as a real status and then looked up to a function.
+ */
+const KNOWN_STATUSES: ReadonlySet<string> = new Set(VRT_STATUSES);
+
+export function isVrtStatus(value: unknown): value is VrtStatus {
+  return typeof value === 'string' && KNOWN_STATUSES.has(value);
+}
 
 export interface VrtVariantResult {
   className: string;

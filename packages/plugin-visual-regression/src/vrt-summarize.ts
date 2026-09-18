@@ -1,7 +1,8 @@
-import type {
-  VrtStat,
-  VrtStatus,
-  VrtVariantResult,
+import {
+  isVrtStatus,
+  type VrtStat,
+  type VrtStatus,
+  type VrtVariantResult,
 } from './visual-regression.types.js';
 
 /**
@@ -29,6 +30,12 @@ export const STATUS_TONE: Record<VrtStatus, VrtTone> = {
   excluded: 'muted',
 };
 
+/** The two statuses that mean a baseline and a capture were actually compared. */
+const COMPARED_STATUSES: ReadonlySet<VrtStatus> = new Set<VrtStatus>([
+  'unchanged',
+  'changed',
+]);
+
 /** Order the summary strip and any status list follow: worst news first. */
 const STATUS_ORDER: readonly VrtStatus[] = [
   'changed',
@@ -39,6 +46,10 @@ const STATUS_ORDER: readonly VrtStatus[] = [
 ];
 
 export interface VrtSummary {
+  /**
+   * Variants with a recognised status — the same set the groups render, so
+   * the headline figure and the list cannot disagree about how many there are.
+   */
   total: number;
   counts: Record<VrtStatus, number>;
   /** Variants a runner could actually measure against a baseline. */
@@ -65,22 +76,35 @@ export function summarize(variants: readonly VrtVariantResult[]): VrtSummary {
     excluded: 0,
   };
 
+  let total = 0;
   let compared = 0;
   let maxDiffRatio: number | null = null;
 
   for (const variant of variants) {
-    if (variant.status in counts) counts[variant.status]++;
+    // `isVrtStatus`, not `variant.status in counts`: `counts` is an object
+    // literal, so `in` also answers true for `Object.prototype` members and a
+    // report writing `status: "toString"` would increment a key that is not
+    // one, turning the count into `NaN`. The reader rejects such an entry
+    // before it reaches here; this keeps the function honest on its own.
+    if (!isVrtStatus(variant.status)) continue;
+    total++;
+    counts[variant.status]++;
 
     // A ratio exists only where a baseline and a capture were compared.
     // `new` has nothing to measure against and `size-mismatch` could not be
-    // measured, so neither contributes to the worst-diff figure.
+    // measured, so neither contributes to the worst-diff figure — the status
+    // is what decides that, not the mere presence of a number. A runner that
+    // records `diffRatio: 1` on a resized variant (a natural way to write
+    // "completely different") would otherwise push the component head to
+    // "VRT 100.00%" for a variant nothing ever compared.
+    if (!COMPARED_STATUSES.has(variant.status)) continue;
     if (typeof variant.diffRatio === 'number') {
       compared++;
       maxDiffRatio = Math.max(maxDiffRatio ?? 0, variant.diffRatio);
     }
   }
 
-  return { total: variants.length, counts, compared, maxDiffRatio };
+  return { total, counts, compared, maxDiffRatio };
 }
 
 /**
@@ -144,6 +168,17 @@ const GROUP_OF: Record<VrtStatus, VrtGroupKey> = {
   unchanged: 'unchanged',
   excluded: 'excluded',
 };
+
+/**
+ * Whether a status lands in the `review` group.
+ *
+ * Exported so the panel tab's badge can count the same set {@link groupRows}
+ * puts in the first group without building all three groups to find out — the
+ * badge runs on every change-detection pass, the grouping does not.
+ */
+export function isReviewStatus(status: VrtStatus): boolean {
+  return GROUP_OF[status] === 'review';
+}
 
 const GROUP_LABEL: Record<VrtGroupKey, string> = {
   review: 'Needs review',

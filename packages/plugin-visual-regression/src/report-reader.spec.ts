@@ -37,6 +37,48 @@ describe('readVariantsForComponent', () => {
     ]);
   });
 
+  it('drops a variant whose status it cannot render', () => {
+    // Everything downstream is keyed by `status`, and the group tables only
+    // know the five documented values. Letting an unknown one through used to
+    // produce a variant that the counts included and the list did not show.
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const file = writeReport(
+      JSON.stringify({
+        byVariant: [
+          { className: 'A', variantIndex: 0, status: 'unchanged' },
+          { className: 'A', variantIndex: 1, status: 'failed' },
+        ],
+      })
+    );
+
+    const variants = readVariantsForComponent(file, 'A');
+    expect(variants.map((v) => v.status)).toEqual(['unchanged']);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('"failed"');
+    warn.mockRestore();
+  });
+
+  it('warns once per unknown status, not once per component', () => {
+    const warn = jest
+      .spyOn(console, 'warn')
+      .mockImplementation(() => undefined);
+    const file = writeReport(
+      JSON.stringify({
+        byVariant: [
+          { className: 'A', variantIndex: 0, status: 'failed' },
+          { className: 'B', variantIndex: 0, status: 'failed' },
+        ],
+      })
+    );
+
+    readVariantsForComponent(file, 'A');
+    readVariantsForComponent(file, 'B');
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
   it('orders variants by variantIndex', () => {
     const variants = readVariantsForComponent(FIXTURE, 'ButtonComponent');
     expect(variants.map((v) => v.variantIndex)).toEqual([0, 1, 2]);

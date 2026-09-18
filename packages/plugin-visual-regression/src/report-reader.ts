@@ -1,11 +1,15 @@
 import { readFileSync, statSync } from 'node:fs';
-import type {
-  VrtReport,
-  VrtTotals,
-  VrtVariantResult,
+import {
+  isVrtStatus,
+  type VrtReport,
+  type VrtTotals,
+  type VrtVariantResult,
 } from './visual-regression.types.js';
 
 const cache = new Map<string, { mtime: number; data: VrtReport }>();
+
+/** Statuses already reported to the console, so a build warns once, not per component. */
+const warnedStatuses = new Set<string>();
 
 /**
  * Reads and parses the report, memoised on the file's mtime so a watch-mode
@@ -37,6 +41,14 @@ function loadReport(reportPath: string): VrtReport | null {
  * rethrown by the plugin runner and fails the whole styleguide build. A report
  * that is merely *missing* already degrades to "no results"; a truncated or
  * malformed one must not be punished harder than a missing one.
+ *
+ * `status` is part of that check and not a formality. Everything downstream is
+ * keyed by it — the counts, the summary bar, the three groups the panel
+ * renders — and the group tables only know the five documented values. An
+ * entry carrying anything else used to survive this filter, be counted as
+ * present by `summarize`, and then render in no group at all: present in the
+ * totals, absent from the list. Dropping it here keeps the two agreeing, and
+ * the warning below is what keeps the drop from being the silent kind.
  */
 export function readVariantsForComponent(
   reportPath: string,
@@ -50,7 +62,23 @@ export function readVariantsForComponent(
       (entry): entry is VrtVariantResult =>
         isRecord(entry) && entry['className'] === className
     )
+    .filter((entry) => {
+      if (isVrtStatus(entry.status)) return true;
+      warnUnknownStatus(reportPath, entry);
+      return false;
+    })
     .sort((a, b) => variantIndexOf(a) - variantIndexOf(b));
+}
+
+function warnUnknownStatus(reportPath: string, entry: VrtVariantResult): void {
+  const status = String(entry.status);
+  if (warnedStatuses.has(status)) return;
+  warnedStatuses.add(status);
+  console.warn(
+    `ng-prism/plugin-visual-regression: ${reportPath} reports an unknown ` +
+      `status ${JSON.stringify(entry.status)} (first seen on ` +
+      `${entry.className}). Those variants are left out of the panel.`
+  );
 }
 
 export function readTotals(reportPath: string): VrtTotals | null {
@@ -60,6 +88,7 @@ export function readTotals(reportPath: string): VrtTotals | null {
 
 export function clearReportCache(): void {
   cache.clear();
+  warnedStatuses.clear();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

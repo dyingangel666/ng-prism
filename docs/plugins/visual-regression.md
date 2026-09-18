@@ -149,8 +149,13 @@ Your runner writes this file; the plugin reads it.
 | `changed`       | Differs from the baseline                  | Red, with the diff percentage          |
 | `size-mismatch` | Dimensions changed, so no pixel comparison | Orange                                 |
 | `new`           | No baseline recorded yet                   | **Neutral** — explicitly not a failure |
+| `excluded`      | Deliberately not captured                  | Muted, in its own group                |
 
 `new` is neutral by design. A newly added variant has nothing to regress against, and a runner that does not fail its build on it should not be contradicted by a red panel.
+
+**The list is closed.** A variant carrying anything else — a typo, a status from a newer runner — is left out of the panel and out of the figures, and the build prints one warning per unrecognised value naming the first component it appeared on. Everything downstream is keyed by `status`, so an unknown one used to be counted as present while rendering in no group: in the totals, absent from the list. Dropping it keeps the count and the list telling the same story, and the warning keeps the drop from being the silent kind.
+
+A diff percentage is only read off `unchanged` and `changed` rows. `size-mismatch` and `new` were never compared, so a `diffRatio` recorded on one of them is ignored rather than folded into the component's headline figure.
 
 ### Image paths
 

@@ -69,10 +69,37 @@ describe('summarize', () => {
     expect(summary.counts.unchanged).toBe(0);
   });
 
-  it('ignores a status outside the union rather than throwing', () => {
+  it('leaves a status outside the union out of the figures entirely', () => {
+    // It used to count towards `total` while `groupRows` rendered no row for
+    // it: present in the headline, absent from the list. The reader rejects
+    // such an entry before it gets here, and the two agree either way.
     const rogue = { ...variant('unchanged'), status: 'wat' as VrtStatus };
     expect(() => summarize([rogue])).not.toThrow();
-    expect(summarize([rogue]).total).toBe(1);
+
+    const summary = summarize([rogue]);
+    expect(summary.total).toBe(0);
+    expect(groupRows([rogue]).flatMap((group) => group.rows)).toEqual([]);
+  });
+
+  it('does not let a prototype member pass for a status', () => {
+    // `counts` is an object literal, so the old `status in counts` check was
+    // true for `toString` and incremented a key that is not a count.
+    const rogue = { ...variant('unchanged'), status: 'toString' as VrtStatus };
+    const summary = summarize([rogue]);
+    expect(summary.total).toBe(0);
+    expect(Object.values(summary.counts).every(Number.isInteger)).toBe(true);
+  });
+
+  it('ignores a diff ratio on a variant nothing compared', () => {
+    // A runner writing `diffRatio: 1` on a resized capture means "completely
+    // different", not "100% of the pixels were measured and moved". Folding
+    // it in put `VRT 100.00%` in the component head for an uncompared variant.
+    const summary = summarize([
+      { ...variant('size-mismatch'), diffRatio: 1 },
+      { ...variant('new'), diffRatio: 1 },
+    ]);
+    expect(summary.compared).toBe(0);
+    expect(summary.maxDiffRatio).toBeNull();
   });
 });
 
