@@ -5,6 +5,7 @@ import {
   existsSync,
   readFileSync,
   statSync,
+  writeFileSync,
 } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -39,6 +40,48 @@ function createMockContext(workspaceRoot: string) {
     reportStatus: jest.fn(),
     logger: { info: jest.fn() },
   } as unknown as BuilderContext;
+}
+
+function writeA11yReport(root: string, score: number): void {
+  writeFileSync(
+    join(root, 'a11y-report.json'),
+    JSON.stringify({
+      // total erfüllt jeden Threshold — sonst wirft checkA11yThresholds,
+      // bevor der Merge überhaupt läuft.
+      total: {
+        score: 95,
+        violations: 0,
+        critical: 0,
+        serious: 0,
+        moderate: 0,
+        minor: 0,
+        passes: 40,
+        incomplete: 0,
+        auditedComponents: 1,
+        auditedVariants: 5,
+      },
+      components: {
+        ButtonComponent: {
+          score,
+          violations: 1,
+          critical: 0,
+          serious: 0,
+          moderate: 1,
+          minor: 0,
+          passes: 20,
+          incomplete: 0,
+        },
+      },
+    }),
+    'utf-8'
+  );
+}
+
+function readManifest(root: string): string {
+  return readFileSync(
+    join(root, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
+    'utf-8'
+  );
 }
 
 describe('runPrismPipeline integration', () => {
@@ -165,6 +208,33 @@ describe('runPrismPipeline integration', () => {
     expect(ctx.logger.info).toHaveBeenCalledWith(
       expect.stringContaining('Generated manifest with 9 component(s)')
     );
+  });
+
+  it('merges the per-component a11y entry into showcaseConfig.meta', async () => {
+    tmp = createTempWorkspace();
+    writeA11yReport(tmp, 55);
+
+    await runPrismPipeline(
+      defaultOptions,
+      createMockContext(tmp),
+      createPipelineState()
+    );
+
+    const content = readManifest(tmp);
+    expect(content).toContain('a11y:');
+    expect(content).toContain('variant: "warn"');
+  });
+
+  it('leaves components untouched when no report exists', async () => {
+    tmp = createTempWorkspace();
+
+    await runPrismPipeline(
+      defaultOptions,
+      createMockContext(tmp),
+      createPipelineState()
+    );
+
+    expect(readManifest(tmp)).not.toContain('a11y:');
   });
 });
 
