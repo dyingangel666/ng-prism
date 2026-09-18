@@ -1,33 +1,46 @@
+import type { CanvasBg } from './canvas-bg.type.js';
 import {
   declaredVariantBg,
   DEFAULT_VARIANT_BG,
   resolveVariantBg,
 } from './variant-bg.js';
 
+/**
+ * A variant as `@Showcase` actually declares one.
+ *
+ * Built through a function rather than written inline. `VariantBgSource`
+ * describes only the field this module reads — deliberately, so that nothing
+ * here has to import `ShowcaseConfig` — and TypeScript's excess property check
+ * rejects a `name` written straight into an argument literal, even though a
+ * real `Variant` always has one and the same object passes fine through a
+ * variable. Keeping the name is worth the helper: it is what makes "variant A"
+ * and "variant B" legible in the assertions below.
+ */
+function variant(name: string, bg?: CanvasBg) {
+  return { name, bg };
+}
+
 describe('declaredVariantBg', () => {
   it('returns null when neither level declares a bg', () => {
-    expect(declaredVariantBg({ variants: [{ name: 'A' }] }, 0)).toBeNull();
+    expect(declaredVariantBg({ variants: [variant('A')] }, 0)).toBeNull();
   });
 
   it('returns the component bg when the variant declares none', () => {
-    expect(
-      declaredVariantBg({ bg: 'dark', variants: [{ name: 'A' }] }, 0)
-    ).toBe('dark');
+    expect(declaredVariantBg({ bg: 'dark', variants: [variant('A')] }, 0)).toBe(
+      'dark'
+    );
   });
 
   it('lets the variant bg win over the component bg', () => {
     expect(
-      declaredVariantBg(
-        { bg: 'dark', variants: [{ name: 'A', bg: 'light' }] },
-        0
-      )
+      declaredVariantBg({ bg: 'dark', variants: [variant('A', 'light')] }, 0)
     ).toBe('light');
   });
 
   it('resolves per index, not per component', () => {
     const config = {
       bg: 'dark' as const,
-      variants: [{ name: 'A', bg: 'light' as const }, { name: 'B' }],
+      variants: [variant('A', 'light'), variant('B')],
     };
     expect(declaredVariantBg(config, 0)).toBe('light');
     expect(declaredVariantBg(config, 1)).toBe('dark');
@@ -55,10 +68,7 @@ describe('resolveVariantBg', () => {
   it('returns the declared bg when there is one', () => {
     expect(resolveVariantBg({ bg: 'dark' }, 0)).toBe('dark');
     expect(
-      resolveVariantBg(
-        { bg: 'dark', variants: [{ name: 'A', bg: 'plain' }] },
-        0
-      )
+      resolveVariantBg({ bg: 'dark', variants: [variant('A', 'plain')] }, 0)
     ).toBe('plain');
   });
 });
