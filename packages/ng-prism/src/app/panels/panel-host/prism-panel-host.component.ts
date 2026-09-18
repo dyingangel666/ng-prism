@@ -19,6 +19,7 @@ import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
 import type { A11yCoreConfig } from '../a11y/a11y.types.js';
 import type { PanelDefinition } from '../../../plugin/plugin.types.js';
+import { resolvePanelBadge } from './panel-badge.js';
 
 type RenderedPanelEntry = {
   id: string;
@@ -52,7 +53,7 @@ type RenderedPanelEntry = {
           <prism-icon [name]="panel.icon" [size]="13" />
           }
           {{ panel.label }}
-          @if (panelBadge(panel.id); as badge) {
+          @if (panelBadge(panel); as badge) {
           <span
             class="p-tab-badge"
             [class.ok]="badge.variant === 'ok'"
@@ -234,30 +235,12 @@ export class PrismPanelHostComponent {
     return comp?.meta.inputs.length ?? 0;
   });
 
-  protected panelBadge(
-    panelId: string
-  ): { text: string; variant: 'default' | 'ok' | 'warn' | 'danger' } | null {
-    if (panelId === 'controls') {
-      const count = this.inputCount();
-      return count > 0 ? { text: String(count), variant: 'default' } : null;
-    }
-    if (panelId === 'a11y') {
-      const score = this.a11yScore();
-      if (score === null) return null;
-      return {
-        text: String(score),
-        variant: score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'danger',
-      };
-    }
-    if (panelId === 'coverage') {
-      const score = this.coverageScore();
-      if (score === null) return null;
-      return {
-        text: String(score),
-        variant: score >= 90 ? 'ok' : score >= 70 ? 'warn' : 'danger',
-      };
-    }
-    return null;
+  protected panelBadge(panel: PanelDefinition) {
+    return resolvePanelBadge(panel, this.nav.activeComponent(), {
+      inputCount: this.inputCount(),
+      a11yScore: this.a11yScore(),
+      coverageScore: this.coverageScore(),
+    });
   }
 
   private readonly builtInPanels = BUILTIN_PANELS;

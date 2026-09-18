@@ -1,5 +1,6 @@
 import type { Provider, Type } from '@angular/core';
 import type { StyleguidePage } from './page.types.js';
+import type { CanvasBg } from '../shared/canvas-bg.type.js';
 
 export interface NgPrismPlugin {
   /** Unique plugin name — used for debugging and conflict detection */
@@ -21,6 +22,8 @@ export interface NgPrismPlugin {
   controls?: ControlDefinition[];
   /** Header widgets rendered in the Prism shell header bar */
   headerWidgets?: HeaderWidgetDefinition[];
+  /** Markers contributed to each component's navigation item. */
+  navigationDecorations?: NavigationDecorationDefinition[];
   /** Angular standalone component that wraps each rendered component */
   wrapComponent?: Type<unknown>;
 }
@@ -41,6 +44,50 @@ export interface HeaderWidgetDefinition {
   order?: number;
 }
 
+/** A short marker rendered on a panel's tab, usually a count. */
+export interface PanelBadge {
+  /** Kept to a couple of characters — the tab bar scrolls horizontally. */
+  text: string;
+  /**
+   * Colour role. `default` is the neutral primary tint used for a plain count;
+   * the other three carry a judgement and should be reserved for one.
+   */
+  variant?: 'default' | 'ok' | 'warn' | 'danger';
+}
+
+/** What one source has to say about one component in the navigation. */
+export interface NavigationDecoration {
+  /**
+   * Colour role. Deliberately only two: an 'ok' state would make the marker
+   * permanent, and a marker that is always present stops being a signal.
+   */
+  variant: 'warn' | 'danger';
+  /** One tooltip line for this source, e.g. 'A11y: 2 critical, 1 serious'. */
+  label: string;
+}
+
+export interface NavigationDecorationDefinition {
+  /** Unique id — used for de-duplication when two plugins contribute the same source. */
+  id: string;
+  /** Icon name from the built-in registry (`ICON_NAMES`). */
+  icon: string;
+  /**
+   * Fixed slot order (lower = further left). The order is part of the reading
+   * contract: position alone names the source, so a decoration must not move
+   * depending on plugin registration order.
+   * Built-in: a11y 10, visual-regression 20, coverage 30.
+   */
+  order?: number;
+  /**
+   * The component's standing for this source, or `null` for "nothing worth
+   * saying".
+   *
+   * Called during change detection, so it has to be cheap and pure: read what
+   * the component's `meta` already holds, do not fetch and do not inject.
+   */
+  badge: (component: RuntimeComponent) => NavigationDecoration | null;
+}
+
 export interface PanelDefinition {
   id: string;
   label: string;
@@ -58,6 +105,15 @@ export interface PanelDefinition {
   providers?: Provider[];
   /** When provided, the panel tab is only shown if this returns true for the active component */
   isVisible?: (component: RuntimeComponent) => boolean;
+  /**
+   * When provided, the panel's tab carries this badge for the active
+   * component. Return `null` for "nothing worth saying" — a badge that is
+   * always present stops being a signal.
+   *
+   * Called during change detection, so it has to be cheap and pure: read what
+   * the component's `meta` already holds, do not fetch and do not inject.
+   */
+  badge?: (component: RuntimeComponent) => PanelBadge | null;
   /**
    * Keep the panel's component instance alive across tab switches.
    * When `true`, the panel is rendered once on first activation and merely hidden
@@ -137,6 +193,51 @@ export interface RuntimeManifest {
 export interface RuntimeComponent {
   meta: ScannedComponent;
   type: Type<unknown>;
+}
+
+// --- Discovery manifest (the `__PRISM_MANIFEST__` global) ---
+
+/**
+ * The shape external tooling reads from `globalThis.__PRISM_MANIFEST__`.
+ *
+ * A thin, JSON-safe projection of the runtime manifest: enough to enumerate and
+ * address every variant, plus the `@Showcase` metadata a tool needs to decide how
+ * to treat one. It carries no Angular class references, and `meta` values that
+ * cannot survive a structured clone are dropped rather than half-serialised.
+ */
+export interface DiscoveryManifest {
+  components: DiscoveryComponent[];
+  pages: DiscoveryPage[];
+}
+
+export interface DiscoveryComponent {
+  className: string;
+  /** `ShowcaseConfig.title` — the display name, not the class name. */
+  title: string;
+  variants: DiscoveryVariant[];
+  /** Sanitised `ShowcaseConfig.meta`. Omitted when empty. */
+  meta?: Record<string, unknown>;
+}
+
+export interface DiscoveryVariant {
+  name: string;
+  /** 0-based index into the `variants` array — the `?variant=` URL value. */
+  index: number;
+  /**
+   * The canvas background this variant renders on, already resolved:
+   * `Variant.bg`, else `ShowcaseConfig.bg`, else `DEFAULT_VARIANT_BG`.
+   *
+   * Always present, because a screenshot runner cannot act on "nothing
+   * declared" — and it is the background capture mode paints, so the value
+   * here and the pixels in the capture agree.
+   */
+  bg: CanvasBg;
+  /** Sanitised `Variant.meta`. Omitted when empty. */
+  meta?: Record<string, unknown>;
+}
+
+export interface DiscoveryPage {
+  title: string;
 }
 
 // --- defineConfig types ---

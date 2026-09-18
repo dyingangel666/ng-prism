@@ -189,7 +189,11 @@ Arbitrary key-value metadata consumed by plugins. Each official plugin documents
 
 Recommended canvas background for this component. Applied automatically when the user opens the component (or one of its variants), unless a variant defines its own `bg`. The user can still pick a different background via the canvas toolbar; the override is transient and resets when switching variants or components. When the user has deviated, a `Recommended: <bg>` pill appears in the canvas with a one-click `Reset` button.
 
-Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
+
+`'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
+
+`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the canvas toolbar until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
 
 ```typescript
 @Showcase({

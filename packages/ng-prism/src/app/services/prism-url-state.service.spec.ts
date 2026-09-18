@@ -1,14 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import type { RuntimeComponent, RuntimeManifest, NgPrismConfig } from '../../plugin/plugin.types.js';
+import type {
+  RuntimeComponent,
+  RuntimeManifest,
+  NgPrismConfig,
+} from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismPanelService } from './prism-panel.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 import { PrismUrlStateService } from './prism-url-state.service.js';
+import { CAPTURE_PARAM } from './prism-capture.service.js';
 
 function createComponent(
-  overrides: Partial<{ className: string; title: string; variants: { name: string }[] }> = {},
+  overrides: Partial<{
+    className: string;
+    title: string;
+    variants: { name: string }[];
+  }> = {}
 ): RuntimeComponent {
   return {
     type: class {} as any,
@@ -34,7 +43,10 @@ function flush(): void {
   TestBed.inject(ApplicationRef).tick();
 }
 
-function setup(manifest: RuntimeManifest, config: NgPrismConfig = {}): {
+function setup(
+  manifest: RuntimeManifest,
+  config: NgPrismConfig = {}
+): {
   url: PrismUrlStateService;
   nav: PrismNavigationService;
   renderer: PrismRendererService;
@@ -99,7 +111,12 @@ describe('PrismUrlStateService', () => {
     });
 
     it('should restore page by title', () => {
-      const page = { type: 'component' as const, title: 'ButtonPatterns', category: 'Docs', component: class {} as any };
+      const page = {
+        type: 'component' as const,
+        title: 'ButtonPatterns',
+        category: 'Docs',
+        component: class {} as any,
+      };
       setUrl('?page=ButtonPatterns');
       const { url, nav } = setup({ components: [], pages: [page] });
 
@@ -200,7 +217,12 @@ describe('PrismUrlStateService', () => {
     });
 
     it('should write page title instead of component', () => {
-      const page = { type: 'component' as const, title: 'Patterns', category: 'Docs', component: class {} as any };
+      const page = {
+        type: 'component' as const,
+        title: 'Patterns',
+        category: 'Docs',
+        component: class {} as any,
+      };
       const { url, nav } = setup({ components: [], pages: [page] });
 
       url.init();
@@ -358,6 +380,52 @@ describe('PrismUrlStateService', () => {
       flush();
 
       expect(window.location.search).not.toContain('panel=');
+    });
+  });
+
+  describe('capture flag', () => {
+    afterEach(() => {
+      document.documentElement.removeAttribute('data-prism-capture');
+      document.getElementById('ng-prism-capture-styles')?.remove();
+    });
+
+    it('should never write the capture flag back to the URL', () => {
+      const comp = createComponent({ className: 'Foo' });
+      setUrl('?component=Foo&capture=1');
+      const { url, nav } = setup({ components: [comp] });
+
+      url.init();
+      nav.select(comp);
+      flush();
+
+      expect(window.location.search).not.toContain(CAPTURE_PARAM);
+    });
+
+    it('should still restore navigation state alongside the capture flag', () => {
+      const comp = createComponent({
+        className: 'Foo',
+        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
+      });
+      setUrl('?capture=1&component=Foo&variant=2');
+      const { url, nav, renderer } = setup({ components: [comp] });
+
+      url.init();
+
+      expect(nav.activeComponent()).toBe(comp);
+      expect(renderer.activeVariantIndex()).toBe(2);
+    });
+
+    it('should not reintroduce the capture flag on popstate', () => {
+      const comp = createComponent({ className: 'Foo' });
+      setUrl('?component=Foo&capture=1');
+      const { url, nav } = setup({ components: [comp] });
+
+      url.init();
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      nav.select(comp);
+      flush();
+
+      expect(window.location.search).not.toContain(CAPTURE_PARAM);
     });
   });
 });

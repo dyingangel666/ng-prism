@@ -6,9 +6,17 @@ import {
   clearA11yReportCache,
   loadA11yReport,
   readA11yMeta,
+  deriveA11ySummary,
+  readA11yForComponent,
 } from './a11y-report-reader.js';
-import { A11Y_UNLIMITED } from '../../app/panels/a11y/a11y-thresholds.js';
-import type { A11yReport } from '../../app/panels/a11y/a11y.types.js';
+import {
+  A11Y_UNLIMITED,
+  resolveA11yThresholds,
+} from '../../app/panels/a11y/a11y-thresholds.js';
+import type {
+  A11yReport,
+  A11yScoreResult,
+} from '../../app/panels/a11y/a11y.types.js';
 
 function makeReport(overrides?: Partial<A11yReport['total']>): A11yReport {
   return {
@@ -154,5 +162,123 @@ describe('a11y-report-reader', () => {
         { metric: 'moderate', actual: 3, threshold: 2 },
       ]);
     });
+  });
+
+  describe('readA11yForComponent', () => {
+    const thresholds = resolveA11yThresholds();
+
+    /** A per-component entry with everything clean unless overridden. */
+    const entry = (over: Partial<A11yScoreResult>): A11yScoreResult => ({
+      score: 100,
+      violations: 0,
+      critical: 0,
+      serious: 0,
+      moderate: 0,
+      minor: 0,
+      passes: 10,
+      incomplete: 0,
+      ...over,
+    });
+
+    function write(components: Record<string, A11yScoreResult>): void {
+      writeFileSync(
+        reportPath,
+        JSON.stringify({ ...makeReport(), components }),
+        'utf-8'
+      );
+      clearA11yReportCache();
+    }
+
+    it('returns null when the report file is missing', () => {
+      expect(
+        readA11yForComponent(
+          'does/not/exist.json',
+          'ButtonComponent',
+          thresholds
+        )
+      ).toBeNull();
+    });
+
+    it('returns null when the report does not know the component', () => {
+      write({ CardComponent: entry({}) });
+      expect(
+        readA11yForComponent(reportPath, 'ButtonComponent', thresholds)
+      ).toBeNull();
+    });
+
+    it('returns the score plus a derived summary', () => {
+      write({
+        ButtonComponent: entry({ score: 50, violations: 2, critical: 2 }),
+      });
+      const result = readA11yForComponent(
+        reportPath,
+        'ButtonComponent',
+        thresholds
+      );
+      expect(result?.found).toBe(true);
+      expect(result?.score.critical).toBe(2);
+      expect(result?.summary?.variant).toBe('danger');
+    });
+  });
+});
+
+describe('deriveA11ySummary', () => {
+  const thresholds = resolveA11yThresholds();
+
+  const score = (over: Partial<A11yScoreResult>): A11yScoreResult => ({
+    score: 100,
+    violations: 0,
+    critical: 0,
+    serious: 0,
+    moderate: 0,
+    minor: 0,
+    passes: 10,
+    incomplete: 0,
+    ...over,
+  });
+
+  it('is danger for a critical violation', () => {
+    const result = deriveA11ySummary(score({ critical: 2 }), thresholds);
+    expect(result.variant).toBe('danger');
+    expect(result.label).toContain('2 critical');
+  });
+
+  it('is danger for a serious violation', () => {
+    const result = deriveA11ySummary(score({ serious: 1 }), thresholds);
+    expect(result.variant).toBe('danger');
+    expect(result.label).toContain('1 serious');
+  });
+
+  it('names both counts when both are over', () => {
+    const result = deriveA11ySummary(
+      score({ critical: 1, serious: 3 }),
+      thresholds
+    );
+    expect(result.label).toBe('A11y: 1 critical, 3 serious');
+  });
+
+  it('is warn for a score below the threshold', () => {
+    const result = deriveA11ySummary(score({ score: 60 }), thresholds);
+    expect(result.variant).toBe('warn');
+    expect(result.label).toBe('A11y score 60');
+  });
+
+  it('is ok inside every threshold', () => {
+    expect(deriveA11ySummary(score({}), thresholds).variant).toBe('ok');
+  });
+
+  it('never fires on moderate with the unlimited default', () => {
+    const result = deriveA11ySummary(score({ moderate: 999 }), thresholds);
+    expect(result.variant).toBe('ok');
+  });
+
+  it('falls back to the score-based label if a negative threshold fires danger with nothing to name', () => {
+    // Not reachable with a sane config: a negative `critical` threshold makes
+    // `0 > threshold` true even though nothing was actually found, so `parts`
+    // stays empty and a naive label would read "A11y: ".
+    const negativeThresholds = resolveA11yThresholds({ critical: -1 });
+    const result = deriveA11ySummary(score({}), negativeThresholds);
+    expect(result.variant).toBe('danger');
+    expect(result.label).toBe('A11y score 100');
   });
 });

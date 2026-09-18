@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { CanvasBg } from '../../shared/canvas-bg.type.js';
+import {
+  DEFAULT_VARIANT_BG,
+  resolveVariantBg,
+} from '../../shared/variant-bg.js';
 import { PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismCanvasService } from './prism-canvas.service.js';
 import { PrismManifestService } from './prism-manifest.service.js';
@@ -138,5 +142,93 @@ describe('PrismVariantBgService', () => {
 
     service.clearOverride();
     expect(service.isDeviating()).toBe(false);
+  });
+});
+
+describe('PrismVariantBgService in capture mode', () => {
+  let nav: PrismNavigationService;
+  let manifestService: PrismManifestService;
+  let service: PrismVariantBgService;
+
+  beforeEach(() => {
+    // The URL has to be set before the injector builds PrismCaptureService,
+    // which reads the flag once at construction time.
+    window.history.replaceState({}, '', '/?capture=1');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } },
+      ],
+    });
+    nav = TestBed.inject(PrismNavigationService);
+    manifestService = TestBed.inject(PrismManifestService);
+    service = TestBed.inject(PrismVariantBgService);
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, '', '/');
+    document.documentElement.removeAttribute('data-prism-capture');
+    document.getElementById('ng-prism-capture-styles')?.remove();
+  });
+
+  it('falls back to the tooling default when no bg is declared', () => {
+    activate(manifestService, nav, makeComponent());
+    TestBed.flushEffects();
+    // Not the canvas default: `dots` resolves to `--prism-bg-surface`, a theme
+    // token, so an undeclared component would be captured on whichever theme
+    // the runner's browser started in. `DEFAULT_VARIANT_BG` is the same value
+    // the discovery manifest reports, so the two cannot disagree.
+    expect(service.effective()).toBe(DEFAULT_VARIANT_BG);
+    expect(service.effective()).toBe('transparent');
+  });
+
+  it('matches what the discovery manifest reports for the variant', () => {
+    // The manifest's promise and the painted surface are the same resolution,
+    // reached through one shared function.
+    const comp = makeComponent('dark', [
+      { name: 'A' },
+      { name: 'B', bg: 'plain' },
+    ]);
+    activate(manifestService, nav, comp);
+
+    for (const index of [0, 1]) {
+      TestBed.inject(PrismRendererService).activeVariantIndex.set(index);
+      TestBed.flushEffects();
+      expect(service.effective()).toBe(
+        resolveVariantBg(comp.meta.showcaseConfig, index)
+      );
+    }
+  });
+
+  it('keeps a component-level bg', () => {
+    // Deliberately not `checker`: that is the fallback, so declaring it could
+    // not tell "honoured the declaration" from "fell through to the default".
+    activate(manifestService, nav, makeComponent('plain'));
+    TestBed.flushEffects();
+    expect(service.effective()).toBe('plain');
+  });
+
+  it('keeps a variant-level bg', () => {
+    activate(
+      manifestService,
+      nav,
+      makeComponent('dots', [{ name: 'Dark', bg: 'dark' }])
+    );
+    TestBed.flushEffects();
+    expect(service.effective()).toBe('dark');
+  });
+
+  it('ignores a manual user override', () => {
+    activate(manifestService, nav, makeComponent('dark'));
+    TestBed.flushEffects();
+    service.setOverride('light');
+    // Session UI state must not decide what a baseline looks like.
+    expect(service.effective()).toBe('dark');
+  });
+
+  it('still reports the declared recommendation', () => {
+    activate(manifestService, nav, makeComponent('dark'));
+    TestBed.flushEffects();
+    expect(service.recommended()).toBe('dark');
   });
 });

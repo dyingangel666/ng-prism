@@ -27,6 +27,11 @@
   - [Custom UI Sections](guide/custom-ui.md)
   - [State Preservation](guide/url-state.md)
 
+- **External Tooling**
+
+  - [External Tooling API](guide/external-tooling.md)
+  - [Visual Regression](guide/visual-regression.md)
+
 - **Plugins**
 
   - [Plugin Overview](plugins/overview.md)
@@ -35,6 +40,7 @@
   - [Box Model — Inspector](plugins/box-model.md)
   - [Perf — Performance](plugins/perf.md)
   - [Coverage — Test Coverage](plugins/coverage.md)
+  - [Visual Regression — VRT Report](plugins/visual-regression.md)
   - [Writing a Plugin](plugins/writing-plugins.md)
 
 - **API Reference**

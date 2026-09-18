@@ -1,0 +1,76 @@
+{
+  "total": {
+    "auditedVariants": 6,
+    "auditedComponents": 2,
+    "unchanged": 3,
+    "changed": 1,
+    "sizeMismatch": 0,
+    "new": 1,
+    "maxDiffRatio": 0.5,
+    "score": 75,
+    "excluded": 1
+  },
+  "byVariant": [
+    {
+      "className": "DividerComponent",
+      "title": "Divider",
+      "variantName": "Horizontal",
+      "variantIndex": 0,
+      "status": "changed",
+      "width": 800,
+      "height": 2,
+      "diffPixels": 800,
+      "totalPixels": 1600,
+      "diffRatio": 0.5,
+      "baselinePath": "vrt/baseline/DividerComponent/00-horizontal.png",
+      "currentPath": "vrt/current/DividerComponent/00-horizontal.png",
+      "diffPath": "vrt/diff/DividerComponent/00-horizontal.png"
+    },
+    {
+      "className": "DividerComponent",
+      "title": "Divider",
+      "variantName": "Vertical",
+      "variantIndex": 1,
+      "status": "unchanged",
+      "width": 2,
+      "height": 40,
+      "diffPixels": 0,
+      "totalPixels": 80,
+      "diffRatio": 0,
+      "baselinePath": "vrt/baseline/DividerComponent/01-vertical.png"
+    },
+    {
+      "className": "ButtonComponent",
+      "title": "Button",
+      "variantName": "Primary",
+      "variantIndex": 0,
+      "status": "unchanged",
+      "diffRatio": 0,
+      "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png"
+    },
+    {
+      "className": "ButtonComponent",
+      "title": "Button",
+      "variantName": "Ghost",
+      "variantIndex": 1,
+      "status": "new",
+      "currentPath": "vrt/current/ButtonComponent/01-ghost.png"
+    },
+    {
+      "className": "ButtonComponent",
+      "title": "Button",
+      "variantName": "Icon",
+      "variantIndex": 2,
+      "status": "unchanged",
+      "diffRatio": 0
+    },
+    {
+      "className": "TooltipDirective",
+      "title": "Tooltip",
+      "variantName": "Top Position",
+      "variantIndex": 0,
+      "status": "excluded",
+      "reason": "The tooltip only renders after hover, so the screenshot would capture the trigger."
+    }
+  ]
+}

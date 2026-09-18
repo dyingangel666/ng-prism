@@ -135,13 +135,14 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Official Plugins
 
-| Plugin    | Package                      | Description                                  |
-| --------- | ---------------------------- | -------------------------------------------- |
-| JSDoc     | `@ng-prism/plugin-jsdoc`     | API documentation from JSDoc comments        |
-| Figma     | `@ng-prism/plugin-figma`     | Figma design embed + visual diff             |
-| Box Model | `@ng-prism/plugin-box-model` | CSS box model inspector                      |
-| Perf      | `@ng-prism/plugin-perf`      | Render performance profiling                 |
-| Coverage  | `@ng-prism/plugin-coverage`  | Per-component test coverage from Istanbul/v8 |
+| Plugin    | Package                              | Description                                                   |
+| --------- | ------------------------------------ | ------------------------------------------------------------- |
+| JSDoc     | `@ng-prism/plugin-jsdoc`             | API documentation from JSDoc comments                         |
+| Figma     | `@ng-prism/plugin-figma`             | Figma design embed + visual diff                              |
+| Box Model | `@ng-prism/plugin-box-model`         | CSS box model inspector                                       |
+| Perf      | `@ng-prism/plugin-perf`              | Render performance profiling                                  |
+| Coverage  | `@ng-prism/plugin-coverage`          | Per-component test coverage from Istanbul/v8                  |
+| VRT       | `@ng-prism/plugin-visual-regression` | Per-variant visual regression report from a screenshot runner |
 
 > **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
 

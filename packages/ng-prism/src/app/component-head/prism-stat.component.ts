@@ -9,9 +9,12 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
       <div class="stat-val">
         {{ value() }}
         @if (pill()) {
-        <span class="pill" [class.warn]="pillVariant() === 'warn'">{{
-          pill()
-        }}</span>
+        <span
+          class="pill"
+          [class.warn]="pillVariant() === 'warn'"
+          [class.danger]="pillVariant() === 'danger'"
+          >{{ pill() }}</span
+        >
         }
       </div>
       <div class="stat-lbl">{{ label() }}</div>
@@ -47,6 +50,10 @@ import { Component, ChangeDetectionStrategy, input } from '@angular/core';
       background: color-mix(in srgb, var(--prism-warn) 15%, transparent);
       color: var(--prism-warn);
     }
+    .pill.danger {
+      background: color-mix(in srgb, var(--prism-danger) 15%, transparent);
+      color: var(--prism-danger);
+    }
     .stat-lbl {
       font-size: var(--fs-xs);
       color: var(--prism-text-ghost);
@@ -60,5 +67,5 @@ export class PrismStatComponent {
   readonly value = input.required<string | number>();
   readonly label = input.required<string>();
   readonly pill = input<string>();
-  readonly pillVariant = input<'ok' | 'warn'>('ok');
+  readonly pillVariant = input<'ok' | 'warn' | 'danger'>('ok');
 }

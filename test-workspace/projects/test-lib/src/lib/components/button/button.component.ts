@@ -56,6 +56,7 @@ export type ButtonVariantType =
     {
       name: 'Filled',
       inputs: { variant: 'filled', label: 'Filled' },
+      bg: 'light',
       meta: {
         figma:
           'https://www.figma.com/design/rCsBVcHJmKQYmbFQi71DO2/%F0%9F%93%99-Component-Library?node-id=1796-2779&m=dev',

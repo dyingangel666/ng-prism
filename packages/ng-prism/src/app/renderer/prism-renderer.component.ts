@@ -30,10 +30,12 @@ import { PrismPanelService } from '../services/prism-panel.service.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismCaptureService } from '../services/prism-capture.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
 import { buildKnownInputs } from './known-inputs.js';
+import { resolveOverlay } from './overlay-resolver.js';
 
 @Component({
   selector: 'prism-renderer',
@@ -50,6 +52,7 @@ import { buildKnownInputs } from './known-inputs.js';
       [attr.data-bg]="variantBg.effective()"
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
     >
+      @if (!capture.active()) {
       <div class="canvas-badges">
         <span class="c-badge"
           >{{ Math.round(canvasService.zoom() * 100) }}%</span
@@ -61,6 +64,7 @@ import { buildKnownInputs } from './known-inputs.js';
       ></div>
       <prism-canvas-rulers />
       <prism-canvas-bg-pill />
+      }
 
       <div
         class="demo-wrap"
@@ -108,15 +112,27 @@ import { buildKnownInputs } from './known-inputs.js';
     .prism-canvas-stage[data-bg="plain"] {
       background-image: none;
     }
+    /* Flat, not dotted. "light" and "dark" name a surface a component was
+       designed against — and they are the two backgrounds whose colour is
+       absolute rather than a theme token, which is what makes them the values
+       to declare for a screenshot baseline. "dots" already exists for anyone
+       who wants the grid. */
     .prism-canvas-stage[data-bg="light"] {
       background-color: var(--prism-void-light, #f7f5fc);
-      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary-from) 15%, transparent) 1px, transparent 1px);
+      background-image: none;
     }
     .prism-canvas-stage[data-bg="dark"] {
       background-color: var(--prism-void-dark, #07050f);
-      background-image: radial-gradient(circle, color-mix(in srgb, var(--prism-primary) 18%, transparent) 1px, transparent 1px);
+      background-image: none;
     }
-    .prism-canvas-stage[data-bg="checker"] {
+    /* "transparent" shares the checkerboard on purpose. The two say the same
+       thing in the two media the canvas has: while browsing, the checkerboard
+       is already the UI's word for "no surface here"; in a capture it becomes
+       literal transparency. A stage that were really see-through in the app
+       would just show the shell through the canvas, which means nothing. The
+       split between the two lives entirely in CAPTURE_STYLES. */
+    .prism-canvas-stage[data-bg="checker"],
+    .prism-canvas-stage[data-bg="transparent"] {
       background-image:
         linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
         linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
@@ -182,6 +198,7 @@ export class PrismRendererComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly canvasService = inject(PrismCanvasService);
+  protected readonly capture = inject(PrismCaptureService);
   protected readonly variantBg = inject(PrismVariantBgService);
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
@@ -290,33 +307,26 @@ export class PrismRendererComponent {
         ...BUILTIN_PANELS,
         ...this.pluginService.panels(),
       ];
-      const panel = allPanels.find((p) => p.id === panelId) ?? null;
+      const resolution = resolveOverlay(allPanels, panelId, {
+        captureActive: this.capture.active(),
+        cache: this.overlayCache,
+      });
 
-      if (!panel) {
-        this.activeOverlay.set(null);
+      if (resolution.kind === 'eager') {
+        this.activeOverlay.set(resolution.component);
         return;
       }
-      if (panel.overlayComponent) {
-        this.activeOverlay.set(panel.overlayComponent);
-        return;
-      }
-      if (panel.loadOverlayComponent) {
-        const cached = this.overlayCache.get(panel.id);
-        if (cached) {
-          this.activeOverlay.set(cached);
-          return;
-        }
-        this.activeOverlay.set(null);
-        const requestedPanelId = panel.id;
-        panel.loadOverlayComponent().then((c) => {
-          this.overlayCache.set(requestedPanelId, c);
-          if (this.panelService.activePanelId() === requestedPanelId) {
-            this.activeOverlay.set(c);
-          }
-        });
-        return;
-      }
+
       this.activeOverlay.set(null);
+      if (resolution.kind !== 'lazy') return;
+
+      const { panelId: requestedPanelId, load } = resolution;
+      load().then((c) => {
+        this.overlayCache.set(requestedPanelId, c);
+        if (this.panelService.activePanelId() === requestedPanelId) {
+          this.activeOverlay.set(c);
+        }
+      });
     });
 
     this.destroyRef.onDestroy(() => this.cleanup());

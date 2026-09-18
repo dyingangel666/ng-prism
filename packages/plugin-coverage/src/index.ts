@@ -5,6 +5,7 @@ export type {
   CoverageData,
   CoverageManifestMeta,
   CoveragePluginOptions,
+  CoverageSummary,
   CoverageThresholds,
   MetricDetail,
 } from './coverage.types.js';

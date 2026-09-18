@@ -266,6 +266,7 @@ ng add @ng-prism/plugin-box-model
 ng add @ng-prism/plugin-coverage
 ng add @ng-prism/plugin-figma
 ng add @ng-prism/plugin-perf
+ng add @ng-prism/plugin-visual-regression
 ```
 
 Each command installs the plugin into `devDependencies` and registers it in `ng-prism.config.ts`. Re-running is safe — already-registered plugins are skipped.

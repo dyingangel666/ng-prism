@@ -6,9 +6,8 @@ import {
 } from '@angular/core';
 import { PRISM_MANIFEST } from '@ng-prism/core/plugin';
 import type { RuntimeManifest } from '@ng-prism/core/plugin';
+import { avgThreshold, deriveCoverageSummary } from './coverage-summary.js';
 import type { CoverageManifestMeta } from './coverage.types.js';
-
-type Variant = 'ok' | 'warn' | 'danger';
 
 @Component({
   selector: 'prism-coverage-header-badge',
@@ -106,22 +105,14 @@ export class CoverageHeaderBadgeComponent {
 
     const score = meta.total.score;
     const t = meta.thresholds;
-    const avgThreshold = Math.round(
-      (t.lines + t.branches + t.functions + t.statements) / 4
-    );
-
-    const variant: Variant =
-      score >= avgThreshold
-        ? 'ok'
-        : score >= avgThreshold * 0.75
-        ? 'warn'
-        : 'danger';
+    const avg = avgThreshold(t);
+    const variant = deriveCoverageSummary(score, t).variant;
 
     return {
       score,
       variant,
       title:
-        `Library coverage: ${score}% (target ${avgThreshold}%)\n` +
+        `Library coverage: ${score}% (target ${avg}%)\n` +
         `Lines ${meta.total.lines.pct}% · ` +
         `Branches ${meta.total.branches.pct}% · ` +
         `Functions ${meta.total.functions.pct}% · ` +

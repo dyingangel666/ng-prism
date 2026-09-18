@@ -19,6 +19,7 @@ import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.
 import {
   DEFAULT_A11Y_REPORT_PATH,
   checkA11yThresholds,
+  readA11yForComponent,
   readA11yMeta,
 } from '../a11y/a11y-report-reader.js';
 
@@ -74,10 +75,8 @@ export async function runPrismPipeline(
   );
 
   const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
-  const a11yMeta = readA11yMeta(
-    join(workspaceRoot, a11yReportPath),
-    config.a11y?.thresholds
-  );
+  const a11yReportPathAbs = join(workspaceRoot, a11yReportPath);
+  const a11yMeta = readA11yMeta(a11yReportPathAbs, config.a11y?.thresholds);
   if (a11yMeta) {
     const violations = checkA11yThresholds(a11yMeta);
     if (violations.length > 0) {
@@ -91,6 +90,21 @@ export async function runPrismPipeline(
     }
     manifest = {
       ...manifest,
+      components: manifest.components.map((component) => {
+        const a11y = readA11yForComponent(
+          a11yReportPathAbs,
+          component.className,
+          a11yMeta.thresholds
+        );
+        if (!a11y) return component;
+        return {
+          ...component,
+          showcaseConfig: {
+            ...component.showcaseConfig,
+            meta: { ...component.showcaseConfig.meta, a11y },
+          },
+        };
+      }),
       meta: { ...manifest.meta, a11y: a11yMeta },
     };
   }

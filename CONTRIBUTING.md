@@ -190,7 +190,8 @@ ng-prism/
 │   ├── plugin-coverage/       # @ng-prism/plugin-coverage
 │   ├── plugin-figma/          # @ng-prism/plugin-figma
 │   ├── plugin-jsdoc/          # @ng-prism/plugin-jsdoc
-│   └── plugin-perf/           # @ng-prism/plugin-perf
+│   ├── plugin-perf/           # @ng-prism/plugin-perf
+│   └── plugin-visual-regression/  # @ng-prism/plugin-visual-regression
 ├── test-workspace/            # Integration test workspace
 ├── docs/                      # Documentation (docsify)
 │   └── adr/                   # Architecture Decision Records
