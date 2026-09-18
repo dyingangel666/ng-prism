@@ -178,7 +178,7 @@ navigationDecorations: [
 ];
 ```
 
-See [`NavigationDecorationDefinition`](#navigationdecorationdefinition) for the full field reference, the reserved `order` values, and a complete example plugin.
+See [`NavigationDecorationDefinition`](#navigationdecorationdefinition) for the full field reference and the reserved `order` values, and [Example: a complete navigation decoration plugin](#example-a-complete-navigation-decoration-plugin) for a runnable one.
 
 ---
 
@@ -337,7 +337,7 @@ The built-in sources reserve these `order` values — pick something else (`40`,
 
 Three rules make the difference between a decoration and one that quietly breaks the contract:
 
-- **Return `null` for anything healthy.** There is no `'ok'` variant on `NavigationDecoration` — a marker that is always present stops being a signal, same reasoning as [`PanelDefinition.badge`](#panelbadge).
+- **Return `null` for anything healthy.** There is no `'ok'` variant on `NavigationDecoration` — a marker that is always present stops being a signal, same reasoning as [`PanelDefinition.badge`](#panelbadge). The per-source summary types stored in build-time `meta` (e.g. `CoverageSummary`, `VrtStat`) are three-valued and do include `'ok'`, because the hook that writes them needs to represent "healthy" as a real value; `badge()` is exactly the place that narrows a three-valued verdict down to the two-valued public type, by returning `null` instead of passing `'ok'` through.
 - **Keep it cheap and pure.** `badge()` runs during change detection: read what `component.meta.showcaseConfig.meta` already holds, do not fetch, and do not inject — a decoration has no injection context.
 - **Decide the threshold at build time, not here.** `badge()` only ever sees one component, so it has no way to know what counts as "bad" for the library as a whole — is 72% coverage fine, or a regression? Each built-in source answers that once, in `onComponentScanned`, where the full picture (thresholds, aggregates) is available, and stores the verdict under its own key in `component.showcaseConfig.meta` — conventionally a `summary: { variant, label }` field. `badge()` then does nothing but read that field back. See `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped pattern, and [Plugin Hooks](architecture/plugin-hooks.md) for the full rationale.
 
@@ -363,32 +363,68 @@ What one source has to say about one component, returned by [`NavigationDecorati
 
 ## Example: a complete navigation decoration plugin
 
-A self-contained plugin that flags components with open `// TODO` comments. It follows the same split the built-in sources use: the build-time hook reads the source file and decides the verdict once; `navigationDecorations.badge` only reads that verdict back.
+A self-contained plugin that flags components with open `// TODO` comments. It follows the same three-file split every shipped plugin with a build-time hook uses — `packages/plugin-coverage/src/coverage-plugin.ts`, `coverage-plugin.browser.ts` and `coverage-contributions.ts` are the reference this example mirrors.
+
+The split exists because of one fact about this project: the generated Prism app imports the config directly (see the schematic that wires it in, `packages/ng-prism/src/schematics/ng-add/index.ts`), so the config module — and every plugin it imports — lands in the **browser** bundle too, not just in the Node.js process that runs the builder. A plugin file with a top-level `import { readFileSync } from 'node:fs'` crashes the moment that bundle reaches it, whether or not the hook that uses it ever runs in the browser. `onComponentScanned` never does — but the import statement doesn't know that.
+
+Three files close that gap:
+
+- **`todo-marker-contributions.ts`** — no `node:` imports, no Angular. Declares the `navigationDecorations` entry once, so both entries below share the exact same `badge()` and can't drift apart.
+- **`todo-marker-plugin.ts`** — the **Node entry**, resolved when the builder loads the config. Carries `onComponentScanned`. Still no _static_ `node:` import: `readFileSync` is loaded with a dynamic `import()` inside the hook, the same shape `coverage-plugin.ts` uses to load `coverage-reader.js`. A dynamic import only executes when the hook actually runs, which is never in a browser bundle.
+- **`todo-marker-plugin.browser.ts`** — the **browser entry**, resolved when the Prism app itself loads the config. No build-time hooks at all — just the runtime contribution, reading back whatever the Node entry already wrote to `meta` during the last build.
 
 ```typescript
-// todo-marker-plugin.ts
-import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import { readFileSync } from 'node:fs';
+// todo-marker-contributions.ts — shared by both entries, dependency-free
+import type {
+  NavigationDecorationDefinition,
+  RuntimeComponent,
+} from '@ng-prism/core/plugin';
 
-interface TodoSummary {
+export interface TodoSummary {
   variant: 'warn' | 'danger';
   label: string;
 }
 
-interface TodoMeta {
+export interface TodoMeta {
   count: number;
-  /** Pre-derived verdict, written by the build-time hook below. */
+  /** Pre-derived verdict, written by the build-time hook in todo-marker-plugin.ts. */
   summary?: TodoSummary;
 }
+
+function todoMeta(component: RuntimeComponent): TodoMeta | undefined {
+  return component.meta.showcaseConfig.meta?.['todo'] as TodoMeta | undefined;
+}
+
+export const TODO_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
+  id: 'todo',
+  icon: 'file-text',
+  order: 40,
+  badge: (component) => {
+    const todo = todoMeta(component);
+    return todo?.summary
+      ? { variant: todo.summary.variant, label: todo.summary.label }
+      : null;
+  },
+};
+```
+
+```typescript
+// todo-marker-plugin.ts — Node entry, loaded by the builder
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import {
+  TODO_NAVIGATION_DECORATION,
+  type TodoMeta,
+} from './todo-marker-contributions.js';
 
 export function todoMarkerPlugin(): NgPrismPlugin {
   return {
     name: '@my-org/plugin-todo-marker',
 
-    // Build time: count `// TODO` markers and decide the verdict once, here —
-    // not in `badge()`, which never sees more than one component and cannot
-    // know what "too many" means for the library as a whole.
-    onComponentScanned(component) {
+    // Build time only: count `// TODO` markers and decide the verdict once,
+    // here — not in `badge()`, which never sees more than one component and
+    // cannot know what "too many" means for the library as a whole.
+    async onComponentScanned(component) {
+      const { readFileSync } = await import('node:fs');
       const source = readFileSync(component.filePath, 'utf-8');
       const count = (source.match(/\/\/\s*TODO/g) ?? []).length;
 
@@ -413,23 +449,39 @@ export function todoMarkerPlugin(): NgPrismPlugin {
       };
     },
 
-    // Runtime: read the pre-derived verdict back. No file access, no
-    // computation — just the field the build-time hook already filled in.
-    navigationDecorations: [
-      {
-        id: 'todo',
-        icon: 'file-text',
-        order: 40,
-        badge: (component) => {
-          const todo = component.meta.showcaseConfig.meta?.['todo'] as
-            | TodoMeta
-            | undefined;
-          return todo?.summary
-            ? { variant: todo.summary.variant, label: todo.summary.label }
-            : null;
-        },
-      },
-    ],
+    navigationDecorations: [TODO_NAVIGATION_DECORATION],
   };
 }
 ```
+
+```typescript
+// todo-marker-plugin.browser.ts — browser entry, loaded by the Prism app itself
+import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import { TODO_NAVIGATION_DECORATION } from './todo-marker-contributions.js';
+
+export function todoMarkerPlugin(): NgPrismPlugin {
+  return {
+    name: '@my-org/plugin-todo-marker',
+    // Runtime only: read the pre-derived verdict back. No file access, no
+    // computation, no build-time hooks — just the shared contribution.
+    navigationDecorations: [TODO_NAVIGATION_DECORATION],
+  };
+}
+```
+
+The two entries are the same exported function name in two files; a `"browser"` export condition in `package.json` picks between them so consumers write one import and get whichever twin fits where their bundle runs:
+
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/index.browser.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  }
+}
+```
+
+`packages/plugin-coverage/package.json` and `packages/plugin-visual-regression/package.json` carry the shipped version of this map — each `index.ts` re-exports the Node entry, each `index.browser.ts` re-exports the browser entry. See [Plugin Hooks](architecture/plugin-hooks.md#navigation-decorations) for why the threshold decision has to live in the Node entry's hook and never in `badge()`.

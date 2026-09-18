@@ -160,6 +160,8 @@ badge: (component) => {
 },
 ```
 
+Note that `meta.summary.variant` above is three-valued (`'ok' | 'warn' | 'danger'`) — it is the plugin's own build-time verdict type (`CoverageSummary`, `VrtStat`, …), and it has to include `'ok'` because the hook that writes it needs a way to say "healthy". The public `NavigationDecoration` returned by `badge()` is deliberately two-valued (`'warn' | 'danger'`, no `'ok'`) — the `if (... === 'ok') return null;` line above is exactly where the narrowing happens, not a special case.
+
 All three built-in sources follow this split — see `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped `onComponentScanned` → `summary` → `badge()` chain, and [`NavigationDecorationDefinition`](api/ng-prism-plugin.md#navigationdecorationdefinition) for the full field reference and the reserved `order` values.
 
 ## Async Hooks
