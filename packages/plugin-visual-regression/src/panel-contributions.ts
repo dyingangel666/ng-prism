@@ -4,7 +4,7 @@ import type {
   RuntimeComponent,
 } from '@ng-prism/core/plugin';
 import type { VrtComponentMeta } from './visual-regression.types.js';
-import { groupRows } from './vrt-summarize.js';
+import { isReviewStatus } from './vrt-summarize.js';
 
 /**
  * The runtime contributions both entry points declare.
@@ -34,27 +34,32 @@ export function hasResults(component: RuntimeComponent): boolean {
 /**
  * How many of this component's variants are waiting on a person.
  *
- * The same set the panel's first group holds, counted from the same function,
+ * The same set the panel's first group holds, decided by the same predicate,
  * so the number on the tab and the number in the group header cannot disagree.
  * Red once anything actually changed, amber while the only open items are ones
  * that could not be compared — resized and new. Null when there is nothing to
  * say, which is what keeps a clean component's tab free of a green "0".
+ *
+ * One pass over the variants rather than a call to `groupRows`. The panel host
+ * invokes this from its template, so it re-runs on every change-detection pass
+ * for every visible tab, and `PanelDefinition.badge` asks for cheap and pure
+ * on exactly those grounds — building all three groups to read the count
+ * of one allocates a group per call and filters the list five times over.
  */
 export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
   const meta = componentMeta(component);
   if (!meta?.found) return null;
 
-  const review = groupRows(meta.variants).find(
-    (group) => group.key === 'review'
-  );
-  if (!review) return null;
+  let count = 0;
+  let changed = false;
+  for (const variant of meta.variants) {
+    if (!isReviewStatus(variant.status)) continue;
+    count++;
+    if (variant.status === 'changed') changed = true;
+  }
+  if (count === 0) return null;
 
-  return {
-    text: String(review.count),
-    variant: review.rows.some((row) => row.status === 'changed')
-      ? 'danger'
-      : 'warn',
-  };
+  return { text: String(count), variant: changed ? 'danger' : 'warn' };
 }
 
 /**

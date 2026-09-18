@@ -503,11 +503,21 @@ export class VrtCompareComponent {
     const baseline = this.baselineUrl();
     const only = baseline ?? this.currentUrl() ?? this.diffUrl();
     if (!only) return null;
-    const isNew = this.variant().status === 'new';
+
+    // The caption follows which URL actually won, never the status alone.
+    // `new` promises there is no baseline, but a row that carries one anyway
+    // — a baseline accepted after a run that recorded no current capture —
+    // would otherwise show the baseline image labelled "Current".
+    const showingBaseline = Boolean(baseline);
+    const isNew = this.variant().status === 'new' && !showingBaseline;
     return {
       src: only,
-      surface: baseline ? this.baselineSurface() : this.currentSurface(),
-      label: isNew ? 'Current' : 'Recorded image',
+      surface: showingBaseline ? this.baselineSurface() : this.currentSurface(),
+      label: isNew
+        ? 'Current'
+        : showingBaseline
+        ? 'Baseline'
+        : 'Recorded image',
       title: isNew ? 'No baseline yet.' : 'Only one image recorded.',
       note: isNew
         ? 'Nothing to compare against — this is what the runner captured.'
