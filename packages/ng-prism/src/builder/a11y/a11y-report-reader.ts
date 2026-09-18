@@ -60,7 +60,14 @@ export function deriveA11ySummary(
     const parts: string[] = [];
     if (score.critical > 0) parts.push(`${score.critical} critical`);
     if (score.serious > 0) parts.push(`${score.serious} serious`);
-    return { variant: 'danger', label: `A11y: ${parts.join(', ')}` };
+    // Only reachable with a negative configured threshold: the branch fires
+    // on `0 > threshold` with both counts still at zero, and `parts` stays
+    // empty. Fall back to the score-based label rather than ship "A11y: ".
+    const label =
+      parts.length > 0
+        ? `A11y: ${parts.join(', ')}`
+        : `A11y score ${score.score}`;
+    return { variant: 'danger', label };
   }
 
   if (score.moderate > thresholds.moderate || score.score < thresholds.score) {

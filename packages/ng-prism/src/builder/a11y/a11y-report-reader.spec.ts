@@ -271,4 +271,14 @@ describe('deriveA11ySummary', () => {
     const result = deriveA11ySummary(score({ moderate: 999 }), thresholds);
     expect(result.variant).toBe('ok');
   });
+
+  it('falls back to the score-based label if a negative threshold fires danger with nothing to name', () => {
+    // Not reachable with a sane config: a negative `critical` threshold makes
+    // `0 > threshold` true even though nothing was actually found, so `parts`
+    // stays empty and a naive label would read "A11y: ".
+    const negativeThresholds = resolveA11yThresholds({ critical: -1 });
+    const result = deriveA11ySummary(score({}), negativeThresholds);
+    expect(result.variant).toBe('danger');
+    expect(result.label).toBe('A11y score 100');
+  });
 });
