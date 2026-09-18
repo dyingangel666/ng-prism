@@ -35,6 +35,12 @@ export type { VariantBgSource } from '../shared/variant-bg.js';
 export { customPage, componentPage } from './page-helpers.js';
 export type { ComponentPageOptions } from './page-helpers.js';
 export { defineConfig } from './define-config.js';
+// From the dependency-free registry module, not `prism-icon.component.js` —
+// that file also exports an `@Component` class, which would pull
+// `@angular/core` into this barrel's graph. The builder evaluates plugin
+// config (and everything it imports) in Node.js, so nothing Angular may be
+// reachable from here.
+export { ICON_NAMES } from '../app/icons/icon-registry.js';
 export {
   PRISM_RENDERER_HOOKS,
   PRISM_MANIFEST,
