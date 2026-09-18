@@ -3,7 +3,10 @@ import type {
   CoveragePluginOptions,
   CoverageThresholds,
 } from './coverage.types.js';
-import { COVERAGE_NAVIGATION_DECORATION } from './coverage-contributions.js';
+import {
+  coverageBadge,
+  COVERAGE_NAVIGATION_DECORATION,
+} from './coverage-contributions.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
 
@@ -71,6 +74,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
       {
         id: 'coverage',
         label: 'Coverage',
+        badge: coverageBadge,
         loadComponent: () =>
           import('./coverage-panel.component.js').then(
             (m) => m.CoveragePanelComponent
