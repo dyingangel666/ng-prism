@@ -238,7 +238,11 @@ describe('defaultExpandedGroups', () => {
 describe('statSummary', () => {
   it('is green only when nothing regressed', () => {
     const stat = statSummary(summarize([variant('unchanged', 0)]));
-    expect(stat).toEqual({ value: '0%', variant: 'ok' });
+    expect(stat).toEqual({
+      value: '0%',
+      variant: 'ok',
+      label: 'Visual regression: 0% max diff',
+    });
   });
 
   it('goes red on a change, however small', () => {
@@ -249,6 +253,7 @@ describe('statSummary', () => {
     );
     expect(stat.variant).toBe('danger');
     expect(stat.value).toBe('0.04%');
+    expect(stat.label).toBe('Visual regression: 0.04% max diff');
   });
 
   it('warns for a variant that could not be compared', () => {
@@ -262,10 +267,28 @@ describe('statSummary', () => {
     expect(statSummary(summarize([variant('new')])).value).toBe('—');
   });
 
+  it('names the real reason a warn fires instead of repeating the missing value', () => {
+    // `value` is '—' here — nothing was compared — so a label built from it
+    // would read "Visual regression: — max diff": amber, naming nothing.
+    const newOnly = statSummary(summarize([variant('new')]));
+    expect(newOnly.label).toBe('Visual regression: 1 new baseline');
+
+    const resizedOnly = statSummary(summarize([variant('size-mismatch')]));
+    expect(resizedOnly.label).toBe('Visual regression: 1 resized');
+  });
+
+  it('names every unmeasurable reason, worst first, when several fire', () => {
+    const stat = statSummary(
+      summarize([variant('size-mismatch'), variant('new'), variant('new')])
+    );
+    expect(stat.label).toBe('Visual regression: 1 resized, 2 new baselines');
+  });
+
   it('lets a real change outrank an unmeasurable one', () => {
     const stat = statSummary(
       summarize([variant('new'), variant('changed', 0.5)])
     );
     expect(stat.variant).toBe('danger');
+    expect(stat.label).toBe('Visual regression: 50.00% max diff');
   });
 });

@@ -9,10 +9,20 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
+import { BUILTIN_NAVIGATION_DECORATIONS } from '../panels/builtin-navigation-decorations.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import type { ComponentStatus } from '../../decorator/showcase.types.js';
+import {
+  decorateItem,
+  lifecycleIcon,
+  resolveNavigationDecorations,
+  rollupCategory,
+  type CategoryRollup,
+  type ItemDecorations,
+} from './navigation-decorations.js';
 
 const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
 
@@ -49,6 +59,19 @@ interface SidebarCategory {
   name: string;
   color: string;
   items: NavigationItem[];
+}
+
+interface SidebarItem {
+  item: NavigationItem;
+  icon: string;
+  decorations: ItemDecorations | null;
+}
+
+interface ComponentCategory {
+  name: string;
+  color: string;
+  items: SidebarItem[];
+  rollup: CategoryRollup;
 }
 
 @Component({
@@ -138,23 +161,41 @@ interface SidebarCategory {
             <prism-icon name="chevron-down" [size]="10" />
             <span class="sb-group-chip" [style.--chip]="cat.color"></span>
             {{ cat.name }}
+            @if (cat.rollup.problems) {
+            <span
+              class="sb-group-rollup"
+              [class.sb-group-rollup--warn]="cat.rollup.variant === 'warn'"
+              [class.sb-group-rollup--danger]="cat.rollup.variant === 'danger'"
+              [attr.title]="rollupTooltip(cat.rollup)"
+              [attr.aria-label]="rollupTooltip(cat.rollup)"
+              >{{ cat.rollup.problems }}</span
+            >
+            }
             <span class="sb-group-count">{{ cat.items.length }}</span>
           </button>
           @if (!isCollapsed('sec:' + section.name + ':' + cat.name)) {
           <div class="sb-group-body">
-            @for (item of cat.items; track itemKey(item)) {
+            @for (row of cat.items; track itemKey(row.item)) {
             <button
               class="sb-item"
-              [class.sb-item--active]="isActive(item)"
-              [class.sb-item--deprecated]="itemStatus(item) === 'deprecated'"
-              [attr.title]="itemTooltip(item)"
-              (click)="onSelect(item)"
+              [class.sb-item--active]="isActive(row.item)"
+              [class.sb-item--deprecated]="
+                itemStatus(row.item) === 'deprecated'
+              "
+              [attr.title]="itemTooltip(row.item, row.decorations)"
+              (click)="onSelect(row.item)"
             >
-              <prism-icon name="box" [size]="12" class="sb-item-icon" />
-              <span class="sb-item-name">{{ itemLabel(item) }}</span>
-              @if (itemStatus(item) === 'wip') {
-              <span class="sb-item-status" title="Work in progress">
-                <span class="sb-item-status-dot"></span>
+              <prism-icon [name]="row.icon" [size]="12" class="sb-item-icon" />
+              <span class="sb-item-name">{{ itemLabel(row.item) }}</span>
+              @if (row.decorations) {
+              <span class="sb-item-health">
+                @for (mark of row.decorations.marks; track mark.id) {
+                <prism-icon
+                  [name]="mark.icon"
+                  [size]="11"
+                  [class]="'sb-health sb-health--' + mark.variant"
+                />
+                }
               </span>
               }
             </button>
@@ -292,6 +333,27 @@ interface SidebarCategory {
       font-weight: 500;
     }
 
+    .sb-group-rollup {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0;
+      padding: 1px 5px;
+      border-radius: 8px;
+    }
+    .sb-group-rollup--warn {
+      color: var(--prism-warn);
+      background: color-mix(in srgb, var(--prism-warn) 16%, transparent);
+    }
+    .sb-group-rollup--danger {
+      color: var(--prism-danger);
+      background: color-mix(in srgb, var(--prism-danger) 16%, transparent);
+    }
+    .sb-group-rollup + .sb-group-count {
+      margin-left: 6px;
+    }
+
     .sb-item {
       display: flex;
       align-items: center;
@@ -338,17 +400,18 @@ interface SidebarCategory {
       text-overflow: ellipsis;
     }
 
-    .sb-item-status {
+    .sb-item-health {
       flex: 0 0 auto;
       margin-left: auto;
       display: flex;
       align-items: center;
+      gap: 5px;
     }
-    .sb-item-status-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--prism-warn);
+    .sb-health--warn {
+      color: var(--prism-warn);
+    }
+    .sb-health--danger {
+      color: var(--prism-danger);
     }
 
     .sb-item--deprecated .sb-item-name {
@@ -368,8 +431,16 @@ interface SidebarCategory {
 export class PrismSidebarComponent {
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly searchService = inject(PrismSearchService);
+  private readonly pluginService = inject(PrismPluginService);
   private readonly filterInput =
     viewChild<ElementRef<HTMLInputElement>>('filterInput');
+
+  private readonly decorations = computed(() =>
+    resolveNavigationDecorations(
+      BUILTIN_NAVIGATION_DECORATIONS,
+      this.pluginService.navigationDecorations()
+    )
+  );
 
   @HostListener('document:keydown', ['$event'])
   protected onGlobalKey(e: KeyboardEvent): void {
@@ -408,16 +479,25 @@ export class PrismSidebarComponent {
   });
 
   protected readonly componentSections = computed(() => {
+    const defs = this.decorations();
     return this.navigationService.sectionTree().map((section) => ({
       name: section.name,
       icon: sectionIcon(section.name),
       color: categoryColor(section.name),
       totalCount: section.totalCount,
-      categories: section.categories.map((cat) => ({
-        name: cat.name,
-        color: categoryColor(cat.name),
-        items: cat.items,
-      })),
+      categories: section.categories.map((cat): ComponentCategory => {
+        const items = cat.items.map((item) => ({
+          item,
+          icon: lifecycleIcon(this.itemStatus(item)),
+          decorations: decorateItem(item, defs),
+        }));
+        return {
+          name: cat.name,
+          color: categoryColor(cat.name),
+          rollup: rollupCategory(items.map((row) => row.decorations)),
+          items,
+        };
+      }),
     }));
   });
 
@@ -453,11 +533,27 @@ export class PrismSidebarComponent {
       : undefined;
   }
 
-  protected itemTooltip(item: NavigationItem): string | null {
+  /**
+   * Accessible name for the roll-up pill. The pill otherwise renders a bare
+   * number distinguished only by colour — a screen reader would read the
+   * group head as "Feedback 3 12" with nothing naming what either number
+   * means, and a colour-blind reader can't tell them apart at all.
+   */
+  protected rollupTooltip(rollup: CategoryRollup): string {
+    const noun = rollup.problems === 1 ? 'component needs' : 'components need';
+    return `${rollup.problems} ${noun} review`;
+  }
+
+  protected itemTooltip(
+    item: NavigationItem,
+    decorations: ItemDecorations | null
+  ): string | null {
     const status = this.itemStatus(item);
-    if (status === 'wip') return 'Work in progress';
-    if (status === 'deprecated') return 'Deprecated / Legacy';
-    return null;
+    const lines: string[] = [];
+    if (status === 'wip') lines.push('Work in progress');
+    if (status === 'deprecated') lines.push('Deprecated / Legacy');
+    if (decorations) lines.push(decorations.tooltip);
+    return lines.length ? lines.join('\n') : null;
   }
 
   protected isActive(item: NavigationItem): boolean {

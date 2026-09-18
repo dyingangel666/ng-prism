@@ -3,6 +3,7 @@ import type {
   CoveragePluginOptions,
   CoverageThresholds,
 } from './coverage.types.js';
+import { COVERAGE_NAVIGATION_DECORATION } from './coverage-contributions.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
 
@@ -36,6 +37,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
     name: '@ng-prism/plugin-coverage',
     async onComponentScanned(component) {
       const { readCoverageForFile } = await import('./coverage-reader.js');
+      const { deriveCoverageSummary } = await import('./coverage-summary.js');
       const coverage = readCoverageForFile(coveragePath, component.filePath);
       return {
         ...component,
@@ -43,7 +45,13 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
           ...component.showcaseConfig,
           meta: {
             ...component.showcaseConfig.meta,
-            coverage: { ...coverage, thresholds },
+            coverage: {
+              ...coverage,
+              thresholds,
+              ...(coverage.found
+                ? { summary: deriveCoverageSummary(coverage.score, thresholds) }
+                : {}),
+            },
           },
         },
       };
@@ -81,5 +89,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
           ),
       },
     ],
+
+    navigationDecorations: [COVERAGE_NAVIGATION_DECORATION],
   };
 }

@@ -1,7 +1,9 @@
 import { readFileSync, statSync } from 'node:fs';
 import type {
+  A11yComponentMeta,
   A11yManifestMeta,
   A11yReport,
+  A11yScoreResult,
   A11yThresholds,
 } from '../../app/panels/a11y/a11y.types.js';
 import { resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
@@ -36,6 +38,55 @@ export function readA11yMeta(
     total: report.total,
     thresholds: resolveA11yThresholds(thresholdsInput),
   };
+}
+
+/**
+ * A component's standing, derived with the same precedence
+ * `checkA11yThresholds` uses library-wide.
+ *
+ * The derivation happens here, at build time, and not in the navigation:
+ * `badge()` only ever sees one component and has no access to the library's
+ * thresholds, so the core would otherwise have to reimplement this plugin's
+ * semantics.
+ */
+export function deriveA11ySummary(
+  score: A11yScoreResult,
+  thresholds: A11yThresholds
+): NonNullable<A11yComponentMeta['summary']> {
+  if (
+    score.critical > thresholds.critical ||
+    score.serious > thresholds.serious
+  ) {
+    const parts: string[] = [];
+    if (score.critical > 0) parts.push(`${score.critical} critical`);
+    if (score.serious > 0) parts.push(`${score.serious} serious`);
+    // Only reachable with a negative configured threshold: the branch fires
+    // on `0 > threshold` with both counts still at zero, and `parts` stays
+    // empty. Fall back to the score-based label rather than ship "A11y: ".
+    const label =
+      parts.length > 0
+        ? `A11y: ${parts.join(', ')}`
+        : `A11y score ${score.score}`;
+    return { variant: 'danger', label };
+  }
+
+  if (score.moderate > thresholds.moderate || score.score < thresholds.score) {
+    return { variant: 'warn', label: `A11y score ${score.score}` };
+  }
+
+  return { variant: 'ok', label: `A11y score ${score.score}` };
+}
+
+/** The per-component entry of the report, or null when there is none. */
+export function readA11yForComponent(
+  reportPath: string,
+  className: string,
+  thresholds: A11yThresholds
+): A11yComponentMeta | null {
+  const score = loadA11yReport(reportPath)?.components?.[className];
+  if (!score) return null;
+
+  return { found: true, score, summary: deriveA11ySummary(score, thresholds) };
 }
 
 export interface ThresholdViolation {

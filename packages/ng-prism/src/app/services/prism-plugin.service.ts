@@ -2,6 +2,7 @@ import { computed, inject, Injectable } from '@angular/core';
 import type {
   ControlDefinition,
   HeaderWidgetDefinition,
+  NavigationDecorationDefinition,
   PanelDefinition,
 } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
@@ -54,5 +55,22 @@ export class PrismPluginService {
 
   readonly headerWidgetsEnd = computed<HeaderWidgetDefinition[]>(() =>
     this.headerWidgets().filter((w) => (w.placement ?? 'end') === 'end')
+  );
+
+  /**
+   * Plugin-contributed navigation markers. Built-ins are merged in by the
+   * consumer via `resolveNavigationDecorations`, the same split `panels` and
+   * `headerWidgets` already use.
+   */
+  readonly navigationDecorations = computed<NavigationDecorationDefinition[]>(
+    () => {
+      const result: NavigationDecorationDefinition[] = [];
+      for (const plugin of this.config.plugins ?? []) {
+        if (plugin.navigationDecorations) {
+          result.push(...plugin.navigationDecorations);
+        }
+      }
+      return result;
+    }
   );
 }

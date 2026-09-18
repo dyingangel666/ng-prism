@@ -131,6 +131,39 @@ onManifestReady(manifest) {
 
 `manifest.meta` is serialized into the runtime manifest and accessible via the `PRISM_MANIFEST` injection token in the browser.
 
+## Navigation Decorations
+
+`NgPrismPlugin.navigationDecorations` lets a plugin mark a component's sidebar item with a small icon — the built-in a11y, visual regression and coverage sources all use it to flag a component whose latest report needs attention. It is a runtime contribution (its `badge()` callback runs in the browser), but the verdict it displays has to be decided here, at build time. This section explains why.
+
+### The two-zone principle
+
+Every component's navigation item has two places a marker can live:
+
+- **The leading icon** carries _lifecycle_ — what the author declared with `@Showcase({ status })`. It speaks in **form alone**: `box` for a normal component, `box-select` for `'wip'`, a struck-through name for `'deprecated'`. Never colour.
+- **The trailing slot** carries _health_ — what a report measured. It speaks in **colour alone**: `warn` (amber) or `danger` (red), via `NavigationDecoration.variant`.
+
+The split is deliberate, not cosmetic. Before `navigationDecorations` existed, the work-in-progress marker was a 6px amber dot in the trailing slot — the exact position and the exact colour a health signal wants. Had a coverage or a11y marker landed there too, the two would have been indistinguishable: a reader could not tell "the author isn't done with this yet" from "the last audit found a problem". Keeping lifecycle in the leading slot, expressed only as shape, and health in the trailing slot, expressed only as colour, means colour in the sidebar now means exactly one thing — measured quality — and nothing else competes for it.
+
+### Why the threshold decision has to happen in a hook
+
+A `NavigationDecorationDefinition.badge()` callback receives one `RuntimeComponent` and nothing else — no injected services, no access to the plugin's configured thresholds, no view of any other component in the library. That is enough to _read_ a verdict, but not enough to _decide_ one: it cannot tell whether 72% coverage is fine or a regression, because "fine" is a library-wide threshold the badge callback never sees.
+
+That decision is made once, in `onComponentScanned`, which does have everything it needs — the plugin's resolved thresholds (closed over from `options`), and the one component's raw numbers — and is only ever run at build time, in Node.js, never on every change-detection tick. The hook writes its verdict into `component.showcaseConfig.meta` as an already-decided `{ variant, label }` pair, conventionally under a `summary` field. `badge()` then does no more than read that field back:
+
+```typescript
+// packages/plugin-coverage/src/coverage-contributions.ts (shipped)
+badge: (component) => {
+  const meta = componentMeta(component);
+  if (!meta?.found || !meta.summary) return null;
+  if (meta.summary.variant === 'ok') return null;
+  return { variant: meta.summary.variant, label: meta.summary.label };
+},
+```
+
+Note that `meta.summary.variant` above is three-valued (`'ok' | 'warn' | 'danger'`) — it is the plugin's own build-time verdict type (`CoverageSummary`, `VrtStat`, …), and it has to include `'ok'` because the hook that writes it needs a way to say "healthy". The public `NavigationDecoration` returned by `badge()` is deliberately two-valued (`'warn' | 'danger'`, no `'ok'`) — the `if (... === 'ok') return null;` line above is exactly where the narrowing happens, not a special case.
+
+All three built-in sources follow this split — see `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped `onComponentScanned` → `summary` → `badge()` chain, and [`NavigationDecorationDefinition`](api/ng-prism-plugin.md#navigationdecorationdefinition) for the full field reference and the reserved `order` values.
+
 ## Async Hooks
 
 All three hooks accept `Promise` return values. The pipeline runner uses `await` for each hook:

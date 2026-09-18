@@ -1,5 +1,6 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import type { CoveragePluginOptions } from './coverage.types.js';
+import { COVERAGE_NAVIGATION_DECORATION } from './coverage-contributions.js';
 
 export function coveragePlugin(
   _options?: CoveragePluginOptions
@@ -29,5 +30,7 @@ export function coveragePlugin(
           ),
       },
     ],
+
+    navigationDecorations: [COVERAGE_NAVIGATION_DECORATION],
   };
 }

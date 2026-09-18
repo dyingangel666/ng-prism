@@ -1,4 +1,8 @@
-import type { PanelBadge, RuntimeComponent } from '@ng-prism/core/plugin';
+import type {
+  NavigationDecorationDefinition,
+  PanelBadge,
+  RuntimeComponent,
+} from '@ng-prism/core/plugin';
 import type { VrtComponentMeta } from './visual-regression.types.js';
 import { groupRows } from './vrt-summarize.js';
 
@@ -52,3 +56,19 @@ export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
       : 'warn',
   };
 }
+
+/**
+ * The navigation marker. Reads the same pre-derived `summary` the component
+ * head shows, so the sidebar and the head cannot disagree about a component.
+ */
+export const VRT_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
+  id: 'visual-regression',
+  icon: 'camera',
+  order: 20,
+  badge: (component) => {
+    const meta = componentMeta(component);
+    if (!meta?.found || !meta.summary) return null;
+    if (meta.summary.variant === 'ok') return null;
+    return { variant: meta.summary.variant, label: meta.summary.label };
+  },
+};
