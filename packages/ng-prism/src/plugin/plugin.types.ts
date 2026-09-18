@@ -22,6 +22,8 @@ export interface NgPrismPlugin {
   controls?: ControlDefinition[];
   /** Header widgets rendered in the Prism shell header bar */
   headerWidgets?: HeaderWidgetDefinition[];
+  /** Markers contributed to each component's navigation item. */
+  navigationDecorations?: NavigationDecorationDefinition[];
   /** Angular standalone component that wraps each rendered component */
   wrapComponent?: Type<unknown>;
 }
@@ -51,6 +53,39 @@ export interface PanelBadge {
    * the other three carry a judgement and should be reserved for one.
    */
   variant?: 'default' | 'ok' | 'warn' | 'danger';
+}
+
+/** What one source has to say about one component in the navigation. */
+export interface NavigationDecoration {
+  /**
+   * Colour role. Deliberately only two: an 'ok' state would make the marker
+   * permanent, and a marker that is always present stops being a signal.
+   */
+  variant: 'warn' | 'danger';
+  /** One tooltip line for this source, e.g. 'A11y: 2 critical, 1 serious'. */
+  label: string;
+}
+
+export interface NavigationDecorationDefinition {
+  /** Unique id — used for de-duplication when two plugins contribute the same source. */
+  id: string;
+  /** Icon name from the built-in registry (`ICON_NAMES`). */
+  icon: string;
+  /**
+   * Fixed slot order (lower = further left). The order is part of the reading
+   * contract: position alone names the source, so a decoration must not move
+   * depending on plugin registration order.
+   * Built-in: a11y 10, visual-regression 20, coverage 30.
+   */
+  order?: number;
+  /**
+   * The component's standing for this source, or `null` for "nothing worth
+   * saying".
+   *
+   * Called during change detection, so it has to be cheap and pure: read what
+   * the component's `meta` already holds, do not fetch and do not inject.
+   */
+  badge: (component: RuntimeComponent) => NavigationDecoration | null;
 }
 
 export interface PanelDefinition {
