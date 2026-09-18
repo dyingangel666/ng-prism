@@ -8,12 +8,26 @@ const T: CoverageThresholds = {
   statements: 80,
 };
 
+// Sums to 322, so avg = Math.round(80.5) = 81 — an odd average, unlike T's
+// even 80. That makes avg * 0.75 = 60.75, a fractional boundary that T can
+// never exercise (80 * 0.75 = 60 is a whole number).
+const ODD_T: CoverageThresholds = {
+  lines: 80,
+  branches: 80,
+  functions: 81,
+  statements: 81,
+};
+
 describe('avgThreshold', () => {
   it('rounds the mean of the four metrics', () => {
     expect(avgThreshold(T)).toBe(80);
     expect(
       avgThreshold({ lines: 90, branches: 70, functions: 85, statements: 76 })
     ).toBe(80);
+  });
+
+  it('rounds a fractional mean up to an odd average', () => {
+    expect(avgThreshold(ODD_T)).toBe(81);
   });
 });
 
@@ -32,6 +46,14 @@ describe('deriveCoverageSummary', () => {
 
   it('is danger below three quarters', () => {
     expect(deriveCoverageSummary(59, T).variant).toBe('danger');
+  });
+
+  it('is warn exactly at a fractional three-quarters boundary', () => {
+    expect(deriveCoverageSummary(61, ODD_T).variant).toBe('warn');
+  });
+
+  it('is danger just below a fractional three-quarters boundary', () => {
+    expect(deriveCoverageSummary(60, ODD_T).variant).toBe('danger');
   });
 
   it('names the score and the target', () => {
