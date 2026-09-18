@@ -38,4 +38,22 @@ describe('resolveAssetUrl', () => {
   it('leaves a root-relative path alone when no base is configured', () => {
     expect(resolveAssetUrl('', '/vrt/a.png')).toBe('/vrt/a.png');
   });
+
+  it('collapses a run of trailing slashes on the base', () => {
+    expect(resolveAssetUrl('assets///', 'vrt/a.png')).toBe('assets/vrt/a.png');
+    expect(resolveAssetUrl('assets///', '/vrt/a.png')).toBe('assets/vrt/a.png');
+  });
+
+  it('trims the base in linear time', () => {
+    // Guards the reason `replace(/\/+$/, '')` is not used here. That pattern
+    // backtracks over the whole slash run from every offset in it, so this
+    // input took ~22s to resolve; the backward scan takes well under a
+    // millisecond. The bound is four orders of magnitude above the linear
+    // cost and four below the quadratic one, so it cannot flake either way.
+    const base = '/'.repeat(200_000) + 'a';
+
+    const started = performance.now();
+    expect(resolveAssetUrl(base, 'vrt/a.png')).toBe(`${base}/vrt/a.png`);
+    expect(performance.now() - started).toBeLessThan(500);
+  });
 });
