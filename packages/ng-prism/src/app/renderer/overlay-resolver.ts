@@ -39,9 +39,20 @@ export function resolveOverlay(
 
   if (panel.loadOverlayComponent) {
     const cached = options.cache.get(panel.id);
+    const loadOverlayComponent = panel.loadOverlayComponent;
     return cached
       ? { kind: 'eager', component: cached }
-      : { kind: 'lazy', panelId: panel.id, load: panel.loadOverlayComponent };
+      : {
+          kind: 'lazy',
+          panelId: panel.id,
+          // Wrapped rather than passed by reference: handing the bare method
+          // over detaches it from its panel, and the renderer would call it
+          // with `this === undefined`. A definition written in method
+          // shorthand that reads its own object then throws inside a promise
+          // the renderer does not catch, and the overlay silently never
+          // appears.
+          load: () => loadOverlayComponent.call(panel),
+        };
   }
 
   return NONE;
