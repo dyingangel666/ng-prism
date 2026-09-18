@@ -173,6 +173,7 @@ Two consequences for tooling:
 
 - Navigating with a full page load per variant (the normal pattern) works exactly as expected — pass `capture=1` on every URL.
 - Driving navigation **in-page** (clicking the sidebar, pushing history) keeps capture mode on, but the URL no longer advertises it. Do not read the mode back off `window.location`; use the `data-prism-capture` attribute instead.
+- **Reloading after in-page navigation drops the mode.** `page.reload()`, or navigating to a URL derived from `page.url()`, replays an address the flag has already been stripped from — the document boots without it and renders with the full shell. Nothing errors and the screenshot still looks plausible, so the baseline it records is the contaminated one. Keep `capture=1` in the URL your runner holds rather than in the one the app is showing.
 
 ### The guarantee, and its one limit
 
