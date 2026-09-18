@@ -46,8 +46,27 @@ function expandSelfClosing(template: string): string {
   return template.replace(/<([a-z][a-z0-9-]*)([^<>]*?)\s*\/>/g, '<$1$2></$1>');
 }
 
+/** The `selector:` of a component source, e.g. `prism-shell`. */
+function selectorOf(source: string): string {
+  const match = /selector:\s*'([^']+)'/.exec(source);
+  if (!match) throw new Error('no selector in component source');
+  return match[1];
+}
+
+/**
+ * `:host` rewritten to the element the component mounts on.
+ *
+ * Angular resolves `:host` against the host element; nothing does that here,
+ * so a `:host` rule would simply never match and a background declared there
+ * would be invisible to every assertion. Scoped per source rather than
+ * globally — the shell's `:host` and the renderer's are different elements.
+ */
+function scopeHost(styles: string, selector: string): string {
+  return styles.replace(/:host\b/g, selector);
+}
+
 export interface CaptureDom {
-  /** The detached wrapper both the shell and its stylesheet were mounted in. */
+  /** The shell's own host element — the one the app bootstraps. */
   host: HTMLElement;
   shell: Element;
   stage: Element;
@@ -87,13 +106,18 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
   }
 
   const style = document.createElement('style');
-  style.textContent = `${literal(rendererSource, 'styles')}\n${literal(
-    shellSource,
-    'styles'
-  )}`;
+  style.textContent = [
+    scopeHost(literal(rendererSource, 'styles'), selectorOf(rendererSource)),
+    scopeHost(literal(shellSource, 'styles'), selectorOf(shellSource)),
+  ].join('\n');
   document.head.appendChild(style);
 
-  const host = document.createElement('div');
+  // The real host element, not a bare `<div>`. The app bootstraps
+  // `<prism-shell>` and the template's `div.prism-shell` lives *inside* it, so
+  // a wrapper of any other name would drop a layer out of the chain these
+  // fixtures exist to describe — and a `:host` background added to the shell
+  // would then paint above a capture without a single test noticing.
+  const host = document.createElement(selectorOf(shellSource));
   host.innerHTML = composed;
   document.body.appendChild(host);
 

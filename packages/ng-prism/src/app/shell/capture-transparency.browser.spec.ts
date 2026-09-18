@@ -78,6 +78,19 @@ describe('capture mode with a transparent background', () => {
     expect(describeAll(unneutralised)).toEqual([]);
   });
 
+  it('should walk through the bootstrapped host element, not only the div inside it', () => {
+    const { host, demoWrap } = renderCanvasChain();
+
+    // The app bootstraps `<prism-shell>`; the template's `div.prism-shell`
+    // lives inside it. Mounting the template in a bare wrapper left the outer
+    // element out of the chain, and `:host { background }` on the shell — the
+    // easiest painting layer to add by accident — is declared on exactly that
+    // element. The walk has to see it and the selector has to reach it.
+    expect(host.tagName.toLowerCase()).toBe('prism-shell');
+    expect(ancestorsToRoot(demoWrap)).toContain(host);
+    expect(matchesSafely(host, CAPTURE_TRANSPARENT_SELECTOR)).toBe(true);
+  });
+
   it('should leave every other background painting as it did', () => {
     const { demoWrap } = renderCanvasChain('light');
 

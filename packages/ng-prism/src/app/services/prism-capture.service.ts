@@ -22,6 +22,12 @@ const STYLE_ELEMENT_ID = 'ng-prism-capture-styles';
  * Above `html` the backdrop is the browser's own and no stylesheet reaches it;
  * a runner has to clear that with `omitBackground: true`.
  *
+ * `prism-shell` is the *host element* the app bootstraps into, not the
+ * `div.prism-shell` inside its template — both are in the chain and either can
+ * be given a background, a `:host` rule being the easy way to do it by
+ * accident. `.prism-body` is the grid between the shell and `.prism-main` and
+ * is listed on the same insurance grounds.
+ *
  * Scoped by `:has()` to a *transparent* stage, so the other five backgrounds
  * behave exactly as before. Exported so a test can assert the invariant
  * against the real DOM rather than against this list — the list is the
@@ -31,7 +37,7 @@ const STYLE_ELEMENT_ID = 'ng-prism-capture-styles';
  */
 export const CAPTURE_TRANSPARENT_SELECTOR =
   `[${CAPTURE_ATTRIBUTE}] .prism-canvas-stage[data-bg='transparent'],\n` +
-  `[${CAPTURE_ATTRIBUTE}] :is(html, body, .prism-shell, .prism-main, .prism-canvas-wrap):has(.prism-canvas-stage[data-bg='transparent'])`;
+  `[${CAPTURE_ATTRIBUTE}] :is(html, body, prism-shell, .prism-shell, .prism-body, .prism-main, .prism-canvas-wrap):has(.prism-canvas-stage[data-bg='transparent'])`;
 
 /**
  * Everything capture mode removes from layout so the canvas owns the viewport.
