@@ -25,6 +25,7 @@ describe('resolveEntryPointExports', () => {
     expect(names).toEqual([
       'ButtonComponent',
       'CardComponent',
+      'DeprecatedBgComponent',
       'HighlightDirective',
       'InvalidBgComponent',
       'InvalidStatusComponent',

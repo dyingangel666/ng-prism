@@ -41,7 +41,7 @@ describe('scanComponents', () => {
     expect(names).toContain('InvalidStatusComponent');
     expect(names).toContain('SectionedComponent');
     expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(8);
+    expect(components).toHaveLength(9);
   });
 
   it('should extract showcase config for ButtonComponent', () => {
@@ -185,6 +185,37 @@ describe('scanComponents', () => {
         'MissingTitleComponent has @Showcase without a "title" field'
       )
     );
+
+    warnSpy.mockRestore();
+  });
+
+  it('should warn that a checker background is deprecated', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    scanComponents(exports, checker);
+
+    // Once for the component and once for the variant that declares its own:
+    // a reviewer fixing this has to find both, and only the variant warning
+    // says which variant.
+    const messages = warnSpy.mock.calls
+      .map((call) => String(call[0]))
+      .filter((message) => message.includes('DeprecatedBgComponent'));
+    expect(messages.filter((m) => m.includes('deprecated'))).toHaveLength(2);
+    expect(messages.some((m) => m.includes('Also checker'))).toBe(true);
+
+    warnSpy.mockRestore();
+  });
+
+  it('should keep a checker background despite deprecating it', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    const components = scanComponents(exports, checker);
+    const deprecated = components.find(
+      (c) => c.className === 'DeprecatedBgComponent'
+    )!;
+
+    // Deprecated is not invalid. Dropping the value would change what the
+    // component renders on, which is a break dressed up as a warning.
+    expect(deprecated.showcaseConfig.bg).toBe('checker');
+    expect(deprecated.showcaseConfig.variants?.[0].bg).toBe('checker');
 
     warnSpy.mockRestore();
   });

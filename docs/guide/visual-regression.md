@@ -113,7 +113,7 @@ If you are on a `22.2.0` beta, in this order:
 2. **Declare a `bg` where the variant has an opinion.** `light` or `dark` for a component designed against a surface, `transparent` where transparency is the thing under test. A declared value is unaffected by this change.
 3. **Re-record baselines** for everything still undeclared.
 
-To keep the old behaviour, declare `bg: 'checker'` explicitly — with the same caveat it always carried: the colour follows the theme.
+Declaring `bg: 'checker'` reproduces the old behaviour, but it is not a fix: `checker` is deprecated in the same release and removed in 23.0.0, for the reason the default moved in the first place — its colour follows the theme. Reach for `light` or `dark` instead, which are absolute.
 
 ## A worked example
 

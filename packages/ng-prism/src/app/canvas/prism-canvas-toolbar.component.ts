@@ -1,9 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
-import {
-  PrismCanvasService,
-  type CanvasBg,
-} from '../services/prism-canvas.service.js';
+import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismLayoutService } from '../services/prism-layout.service.js';
 
@@ -21,11 +19,7 @@ import { PrismLayoutService } from '../services/prism-layout.service.js';
           class="tool-btn"
           [class.tool-btn--active]="variantBg.effective() === bg"
           [class.tool-btn--recommended]="variantBg.recommended() === bg"
-          [title]="
-            variantBg.recommended() === bg
-              ? 'Recommended background for this variant'
-              : null
-          "
+          [title]="bgTitle(bg)"
           (click)="setBg(bg)"
         >
           @if (variantBg.recommended() === bg) {
@@ -196,21 +190,36 @@ export class PrismCanvasToolbarComponent {
   }
 
   /**
-   * The backgrounds a user can cycle through — deliberately not every
-   * {@link CanvasBg}.
+   * Every {@link CanvasBg}, and the canonical list rather than a copy of it.
    *
-   * `transparent` is missing on purpose. It renders as the checkerboard while
-   * browsing, so offering it next to `checker` would be two buttons that paint
-   * the same thing; the difference only exists in a capture, which is not a
-   * thing this toolbar can show. It stays a value a `@Showcase` declares.
+   * This group is a readout as much as a control: the active button is
+   * `effective()` and the starred one is `recommended()`. A value missing here
+   * therefore cannot be *shown* either — a variant declaring it leaves the
+   * whole group with nothing active and the star with nowhere to sit. That is
+   * what a shorter list bought when `transparent` was left out of it, so the
+   * list is now the type's own.
+   *
+   * `checker` and `transparent` do paint the same checkerboard here, which is
+   * why they carry titles: the difference between them is what a capture does,
+   * and the canvas cannot show that. `checker` is deprecated for exactly that
+   * reason and says so, but it stays in the list until 23.0.0 — a component
+   * can still declare it, and the group has to be able to show what it has.
    */
-  protected readonly bgs: CanvasBg[] = [
-    'dots',
-    'plain',
-    'light',
-    'dark',
-    'checker',
-  ];
+  protected readonly bgs = CANVAS_BGS;
+
+  /** What a background means, where the canvas cannot show the difference. */
+  protected bgTitle(bg: CanvasBg): string | null {
+    if (this.variantBg.recommended() === bg) {
+      return 'Recommended background for this variant';
+    }
+    if (bg === 'transparent') {
+      return 'Checkerboard here, a real alpha channel in a capture';
+    }
+    if (bg === 'checker') {
+      return 'Deprecated — same look as Transparent, but a capture keeps the themed colour';
+    }
+    return null;
+  }
   protected readonly zooms = [
     { value: 0.75, label: '75%' },
     { value: 1, label: '100%' },
