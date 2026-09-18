@@ -42,6 +42,17 @@ export interface HeaderWidgetDefinition {
   order?: number;
 }
 
+/** A short marker rendered on a panel's tab, usually a count. */
+export interface PanelBadge {
+  /** Kept to a couple of characters — the tab bar scrolls horizontally. */
+  text: string;
+  /**
+   * Colour role. `default` is the neutral primary tint used for a plain count;
+   * the other three carry a judgement and should be reserved for one.
+   */
+  variant?: 'default' | 'ok' | 'warn' | 'danger';
+}
+
 export interface PanelDefinition {
   id: string;
   label: string;
@@ -59,6 +70,15 @@ export interface PanelDefinition {
   providers?: Provider[];
   /** When provided, the panel tab is only shown if this returns true for the active component */
   isVisible?: (component: RuntimeComponent) => boolean;
+  /**
+   * When provided, the panel's tab carries this badge for the active
+   * component. Return `null` for "nothing worth saying" — a badge that is
+   * always present stops being a signal.
+   *
+   * Called during change detection, so it has to be cheap and pure: read what
+   * the component's `meta` already holds, do not fetch and do not inject.
+   */
+  badge?: (component: RuntimeComponent) => PanelBadge | null;
   /**
    * Keep the panel's component instance alive across tab switches.
    * When `true`, the panel is rendered once on first activation and merely hidden

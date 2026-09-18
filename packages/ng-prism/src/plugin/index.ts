@@ -1,6 +1,7 @@
 // Plugin API exports
 export type {
   NgPrismPlugin,
+  PanelBadge,
   PanelDefinition,
   ControlDefinition,
   HeaderWidgetDefinition,

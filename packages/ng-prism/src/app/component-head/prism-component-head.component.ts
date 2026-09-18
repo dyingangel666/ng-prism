@@ -99,6 +99,13 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
             pill="A11y"
             [pillVariant]="a11yScore()! >= 90 ? 'ok' : 'warn'"
           />
+          } @if (vrtStat(); as vrt) {
+          <prism-stat
+            [value]="vrt.value"
+            label="VRT Diff"
+            pill="VRT"
+            [pillVariant]="vrt.variant"
+          />
           }
         </div>
       </div>
@@ -296,6 +303,28 @@ export class PrismComponentHeadComponent {
 
   protected readonly a11yScore = computed<number | null>(() => {
     return this.auditService.scoreResult()?.score ?? null;
+  });
+
+  /**
+   * The visual regression headline, as the plugin already derived it.
+   *
+   * Read whole rather than recomputed: the colour follows the plugin's status
+   * semantics — red for any changed variant, amber for ones that could not be
+   * compared — and duplicating that rule here would mean the stat and the
+   * plugin's own panel could disagree about the same component.
+   */
+  protected readonly vrtStat = computed<{
+    value: string;
+    variant: 'ok' | 'warn' | 'danger';
+  } | null>(() => {
+    const vrt = this.componentMeta()?.['visualRegression'] as
+      | { found?: boolean; summary?: { value: string; variant: string } }
+      | undefined;
+    if (!vrt?.found || !vrt.summary) return null;
+    const { value, variant } = vrt.summary;
+    return variant === 'ok' || variant === 'warn' || variant === 'danger'
+      ? { value, variant }
+      : null;
   });
 
   private readonly componentMeta = computed(() => {

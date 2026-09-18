@@ -180,6 +180,7 @@ interface PanelDefinition {
   placement?: 'addon' | 'view';
   providers?: Provider[];
   isVisible?: (component: RuntimeComponent) => boolean;
+  badge?: (component: RuntimeComponent) => PanelBadge | null;
   keepAlive?: boolean;
 }
 ```
@@ -197,9 +198,47 @@ interface PanelDefinition {
 | `placement`            | `'addon'` = bottom tab bar, `'view'` = view toolbar toggle                                                                                                                                                      |
 | `providers`            | Providers scoped to this panel's child `EnvironmentInjector`                                                                                                                                                    |
 | `isVisible`            | Predicate — when provided, the panel tab is only shown if it returns `true` for the active component                                                                                                            |
+| `badge`                | When provided, the panel's tab carries a [badge](#panelbadge) for the active component. Return `null` for "nothing worth saying".                                                                               |
 | `keepAlive`            | When `true`, the panel component is rendered once on first activation and merely hidden (instead of destroyed) on tab switch. Use for expensive panels — iframes, remote previews, heavy DOM. Default: `false`. |
 
 > **Note:** Always prefer `loadComponent` over `component`. The config file is evaluated by the Angular builder in Node.js — a static import of a component that uses `DomSanitizer` or any browser global will crash the build.
+
+---
+
+## PanelBadge
+
+```typescript
+interface PanelBadge {
+  text: string;
+  variant?: 'default' | 'ok' | 'warn' | 'danger';
+}
+```
+
+A short marker on a panel's tab, returned by [`PanelDefinition.badge`](#paneldefinition).
+
+| Field     | Description                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| `text`    | Usually a count. Keep it to a couple of characters — the tab bar scrolls horizontally on a narrow panel. |
+| `variant` | Colour role. `default` is a neutral tint for a plain count; `ok` / `warn` / `danger` carry a judgement.  |
+
+```typescript
+panels: [
+  {
+    id: 'visual-regression',
+    label: 'Visual Regression',
+    badge: (component) => {
+      const open = countOpenItems(component);
+      return open ? { text: String(open), variant: 'danger' } : null;
+    },
+    loadComponent: () => import('./panel.component.js').then((m) => m.Panel),
+  },
+];
+```
+
+Two rules make the difference between a badge and decoration:
+
+- **Return `null` when there is nothing to report.** A badge that is always present stops being a signal — a green `0` on every tab trains people to ignore the one tab showing `3`.
+- **Keep it cheap and pure.** The callback runs during change detection. Read what the component's `meta` already holds; do not fetch, and do not inject — a badge has no injection context.
 
 ---
 
