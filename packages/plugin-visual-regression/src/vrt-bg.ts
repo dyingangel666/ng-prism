@@ -17,18 +17,20 @@ const SURFACE: Partial<Record<CanvasBg, string>> = {
 /**
  * Background declarations for the box that holds a capture.
  *
- * The captures themselves are opaque, so this is mostly invisible — except
- * under a diff mask, where the unchanged pixels a comparator leaves
- * transparent let it through. There the surface decides whether a diff reads
- * as a diff or as a chequered mess.
+ * Mostly invisible behind an opaque capture — but not behind every one. It
+ * shows through a diff mask, where the unchanged pixels a comparator leaves
+ * transparent let it past, and through a `transparent` capture, which is see-
+ * through by design. In both places the surface decides whether the image
+ * reads as itself or as a chequered mess.
  *
- * Only `light` and `dark` produce a colour. `dots`, `plain` and `checker` all
- * paint `--prism-bg-surface`, a *theme* token, and the panel cannot know which
- * theme the runner's browser ran in — so those keep the checkerboard, which
- * reads as "transparent" rather than as a guess painted as fact. For `checker`
- * that is also the literal rendering, and since it is what an undeclared
- * variant resolves to, an undeclared capture frames itself correctly. Same for
- * a report that recorded no background at all.
+ * Only `light` and `dark` produce a colour. The rest keep the checkerboard,
+ * for two different reasons. `dots`, `plain` and `checker` paint
+ * `--prism-bg-surface`, a *theme* token, and the panel cannot know which theme
+ * the runner's browser ran in — so a colour here would be a guess painted as
+ * fact. `transparent` is the opposite case: its capture genuinely has an alpha
+ * channel, and the checkerboard is what makes that legible instead of
+ * inventing a surface the capture deliberately omitted. A report that recorded
+ * no background at all is treated the same way.
  */
 export function shotSurfaceStyle(
   bg: CanvasBg | undefined

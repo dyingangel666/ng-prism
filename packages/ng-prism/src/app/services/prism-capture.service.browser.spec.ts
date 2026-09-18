@@ -9,6 +9,17 @@ function setSearch(search: string): void {
   window.history.replaceState({}, '', `/${search}`);
 }
 
+function captureRules(): CSSStyleRule[] {
+  const style = document.getElementById(
+    'ng-prism-capture-styles'
+  ) as HTMLStyleElement | null;
+  const sheet = style?.sheet;
+  if (!sheet) throw new Error('capture stylesheet not injected');
+  return [...sheet.cssRules].filter(
+    (rule): rule is CSSStyleRule => rule instanceof CSSStyleRule
+  );
+}
+
 function createService(): PrismCaptureService {
   TestBed.resetTestingModule();
   TestBed.configureTestingModule({});
@@ -95,9 +106,24 @@ describe('PrismCaptureService', () => {
       '[data-prism-capture] .prism-canvas-stage'
     );
     expect(style?.textContent).toContain('background-image: none !important');
-    // A declared `@Showcase({ bg })` survives capture mode; only the
-    // non-deterministic pattern is removed.
-    expect(style?.textContent).not.toContain('background-color');
+  });
+
+  it('should zero a background colour only for a transparent background', () => {
+    setSearch('?capture=1');
+    createService();
+    const rules = captureRules();
+    const colouring = rules.filter((rule) =>
+      rule.style.getPropertyValue('background-color')
+    );
+    // A declared `@Showcase({ bg })` survives capture mode: `light`, `dark`,
+    // `dots`, `plain` and `checker` keep their colour and lose only the
+    // non-deterministic pattern. `transparent` is the sole value whose colour
+    // capture mode is allowed to touch.
+    expect(colouring).toHaveLength(1);
+    expect(colouring[0].selectorText).toContain("data-bg='transparent'");
+    expect(colouring[0].style.getPropertyValue('background-color')).toBe(
+      'transparent'
+    );
   });
 
   it('should not inject a stylesheet when inactive', () => {

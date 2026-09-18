@@ -145,11 +145,11 @@ All three are optional and the panel degrades gracefully:
 | `bg`         | no       | The canvas background this run captured on         |
 | `baselineBg` | no       | The background the stored baseline was captured on |
 
-Both take a `CanvasBg` value (`light`, `dark`, `dots`, `plain`, `checker`). A runner gets `bg` for free: it is the resolved [`bg` on the variant](guide/external-tooling.md#reading-the-background) it already read from `__PRISM_MANIFEST__` to drive the app. `baselineBg` requires the runner to store the background next to the baseline image.
+Both take a `CanvasBg` value (`light`, `dark`, `dots`, `plain`, `checker`, `transparent`). A runner gets `bg` for free: it is the resolved [`bg` on the variant](guide/external-tooling.md#reading-the-background) it already read from `__PRISM_MANIFEST__` to drive the app. `baselineBg` requires the runner to store the background next to the baseline image.
 
 They buy two things in the panel:
 
-- **The frame under a capture** is painted in the recorded colour instead of the transparency checkerboard. This matters for the diff mask, whose unchanged pixels a comparator typically leaves transparent — on a checkerboard a dark variant's diff is unreadable. Only `light` and `dark` produce a colour; `dots`, `plain` and `checker` resolve to the themed surface, which the panel cannot know the runner's value for, so those keep the checkerboard. For `checker` — which is also what a variant with no declared background resolves to — that is simply the honest rendering.
+- **The frame under a capture** is painted in the recorded colour instead of the transparency checkerboard. This matters for the diff mask, whose unchanged pixels a comparator typically leaves transparent — on a checkerboard a dark variant's diff is unreadable. Only `light` and `dark` produce a colour; `dots`, `plain` and `checker` resolve to the themed surface, which the panel cannot know the runner's value for, so those keep the checkerboard. For `checker` — which is also what a variant with no declared background resolves to — that is simply the honest rendering. `transparent` keeps it for the opposite reason: its capture really does have an alpha channel, and the checkerboard is what makes that legible instead of inventing a surface the capture deliberately left out.
 - **A named cause for a 100% diff.** With both fields present and different, the panel says the background moved from one surface to the other instead of leaving a reviewer to hunt a regression in an untouched component.
 
 Both are optional throughout. A report without them renders exactly as before.

@@ -37,6 +37,15 @@ describe('shotSurfaceStyle', () => {
   it('keeps the checkerboard when the report recorded no background', () => {
     expect(shotSurfaceStyle(undefined)).toEqual({});
   });
+
+  it('declares no background at all for a transparent capture', () => {
+    // Worth nailing down precisely because it works by omission: `SURFACE` has
+    // no `transparent` entry, so the lookup falls through. Turn `SURFACE` into
+    // a total record, or give it a default, and every transparent capture gets
+    // painted over — with the panel still looking entirely plausible, because
+    // a flat surface behind a capture is exactly what the other values want.
+    expect(shotSurfaceStyle('transparent')).toEqual({});
+  });
 });
 
 describe('bgChange', () => {

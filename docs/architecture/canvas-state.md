@@ -6,7 +6,7 @@ The canvas (`PrismRendererComponent`) is governed by two cooperating services wi
 
 Holds the user's globally persisted canvas preferences:
 
-- `bg` — global default canvas background (one of `dots | plain | light | dark | checker`)
+- `bg` — global default canvas background (one of `dots | plain | light | dark | checker`; `transparent` is a declaration-only value and never enters this state)
 - `zoom`, `guides`, `rulers` — toolbar toggles
 
 State is persisted to `localStorage` under the key `ng-prism-canvas`. This is the source of truth for the user's preferred working environment across sessions.

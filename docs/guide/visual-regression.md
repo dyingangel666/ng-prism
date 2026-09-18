@@ -43,7 +43,7 @@ Transitions inside your own component, a zoom level left over in `localStorage` 
 
 ## Capture isolation mode
 
-`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it strips the canvas down to an opaque, patternless background — keeping the colour a `@Showcase({ bg })` or per-variant `bg` declared — locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
+`?capture=1` solves all three of the state-related problems in one switch. See [Capture Isolation Mode](guide/external-tooling.md#capture-isolation-mode) for the full behaviour table; in short it strips the canvas down to a patternless background — keeping the colour a `@Showcase({ bg })` or per-variant `bg` declared, or clearing it entirely for `bg: 'transparent'` — locks zoom to 1, suppresses panel overlays, freezes transitions and animations document-wide, and ignores persisted session state.
 
 ### The background is part of the baseline
 
@@ -52,9 +52,42 @@ A variant declares `bg` because that is the surface it has to work on — an out
 Two consequences for a runner:
 
 - **Record it next to the baseline.** A variant whose `bg` changes compares a capture on one surface against a baseline on another: every pixel differs while the component is untouched. Storing the background alongside the baseline image is what lets you tell that apart from a regression — and the report has fields for both (`bg`, `baselineBg`).
-- **Declare `light` or `dark` on anything you baseline.** They are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat. `dots`, `plain` and `checker` resolve to `--prism-bg-surface`, a theme token, so a capture on one of them is only as stable as the browser profile's theme.
+- **Declare a background on anything you baseline.** `light` and `dark` are absolute colours (`--prism-void-light`, `--prism-void-dark`) and flat — declare one when the component was designed against a surface. Declare [`transparent`](#capturing-transparency) when the component's own transparency is the thing under test. What you want to avoid is `dots`, `plain` and `checker`: all three resolve to `--prism-bg-surface`, a theme token, so a capture on one of them is only as stable as the browser profile's theme.
 
 With nothing declared a variant resolves to `checker` (`DEFAULT_VARIANT_BG`) — an honest "no surface declared", but not a stable one for a baseline: capture mode strips the pattern and leaves the themed colour behind it. Treat an undeclared `bg` on a variant you are baselining as a gap to fill, not as a default to rely on.
+
+### Capturing transparency
+
+`light` and `dark` answer "what surface was this designed for". They answer it by flattening the component onto an opaque colour — which is the wrong question for a component whose _own_ transparency is what you are testing. An outlined button, a tertiary button, an icon, a divider: photograph one on an opaque surface and a transparent fill and a painted fill produce identical pixels. A component given the exact colour it is shot on becomes an invisible regression by construction.
+
+`bg: 'transparent'` captures the alpha channel instead of flattening it.
+
+```typescript
+@Showcase({
+  title: 'Button',
+  variants: [
+    { name: 'Primary', bg: 'light' },        // designed for a light surface
+    { name: 'Outlined', bg: 'transparent' }, // its transparency is the point
+  ],
+})
+```
+
+While browsing, `transparent` draws the checkerboard — the same thing `checker` draws, and for the same reason: it is the UI's word for "no surface here". A canvas that were literally see-through would just show the app shell through it. The two values diverge only under `?capture=1`, where `transparent` clears the canvas and every wrapper behind it so nothing is composited into the shot.
+
+#### The runner has to ask for it
+
+One flag, and without it the feature silently does nothing:
+
+```js
+await element.screenshot({ path, omitBackground: true });
+```
+
+`omitBackground` clears the _browser's_ default page backdrop, which no stylesheet can reach. Without it the capture comes back as PNG colour type 2 — no alpha channel, fully opaque — over whatever the browser painted. It still looks like a correct screenshot. It has simply stopped testing transparency, and nothing anywhere reports that. With it, the same variants come back as colour type 6 with meaningful alpha.
+
+Two things to know before you record baselines this way:
+
+- **Anti-aliasing becomes alpha.** Every soft edge that used to blend into an opaque surface now carries partial alpha — on a typical outlined button, around a fifth of the pixels. Within one environment this is bit-for-bit stable. Across environments it makes a macOS↔Linux font-rendering difference _more_ pronounced, not less. If your baselines were already container-only, keep them that way; this raises the cost of getting it wrong.
+- **The comparator already handles it.** pixelmatch v7 blends semi-transparent pixels against a deterministic pattern before comparing (its `checkerboard` option, on by default), so no runner change is needed beyond the flag. The [visual-regression panel](plugins/visual-regression.md) likewise frames a transparent capture on a checkerboard rather than inventing a surface for it.
 
 ```
 http://localhost:4200/?component=ButtonComponent&variant=2&capture=1

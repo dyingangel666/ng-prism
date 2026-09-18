@@ -125,7 +125,14 @@ import { resolveOverlay } from './overlay-resolver.js';
       background-color: var(--prism-void-dark, #07050f);
       background-image: none;
     }
-    .prism-canvas-stage[data-bg="checker"] {
+    /* "transparent" shares the checkerboard on purpose. The two say the same
+       thing in the two media the canvas has: while browsing, the checkerboard
+       is already the UI's word for "no surface here"; in a capture it becomes
+       literal transparency. A stage that were really see-through in the app
+       would just show the shell through the canvas, which means nothing. The
+       split between the two lives entirely in CAPTURE_STYLES. */
+    .prism-canvas-stage[data-bg="checker"],
+    .prism-canvas-stage[data-bg="transparent"] {
       background-image:
         linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
         linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),

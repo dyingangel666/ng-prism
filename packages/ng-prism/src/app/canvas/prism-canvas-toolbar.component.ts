@@ -195,6 +195,15 @@ export class PrismCanvasToolbarComponent {
     }
   }
 
+  /**
+   * The backgrounds a user can cycle through — deliberately not every
+   * {@link CanvasBg}.
+   *
+   * `transparent` is missing on purpose. It renders as the checkerboard while
+   * browsing, so offering it next to `checker` would be two buttons that paint
+   * the same thing; the difference only exists in a capture, which is not a
+   * thing this toolbar can show. It stays a value a `@Showcase` declares.
+   */
   protected readonly bgs: CanvasBg[] = [
     'dots',
     'plain',

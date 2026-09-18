@@ -169,7 +169,9 @@ Optional arbitrary key-value metadata. Plugins read their own namespaced keys fr
 
 Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background via the canvas toolbar — the override is transient and resets when switching variants or components.
 
-Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
+
+`'transparent'` is declaration-only — it is not in the toolbar's cycle, because it draws the same checkerboard as `'checker'` while browsing. The two differ only under [capture mode](guide/visual-regression.md#capturing-transparency), where `'transparent'` produces a screenshot with a real alpha channel.
 
 ```typescript
 @Showcase({
