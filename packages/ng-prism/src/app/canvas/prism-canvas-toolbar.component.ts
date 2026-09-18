@@ -19,7 +19,7 @@ import { PrismLayoutService } from '../services/prism-layout.service.js';
           class="tool-btn"
           [class.tool-btn--active]="variantBg.effective() === bg"
           [class.tool-btn--recommended]="variantBg.recommended() === bg"
-          [title]="bgTitle(bg)"
+          [attr.title]="bgTitle(bg)"
           (click)="setBg(bg)"
         >
           @if (variantBg.recommended() === bg) {
@@ -208,6 +208,12 @@ export class PrismCanvasToolbarComponent {
   protected readonly bgs = CANVAS_BGS;
 
   /** What a background means, where the canvas cannot show the difference. */
+  /**
+   * Bound with `[attr.title]`, never `[title]`. A property binding assigns to
+   * `HTMLElement.title`, a non-nullable DOMString, so the `null` below would
+   * be stringified and every unremarkable button would carry a tooltip
+   * reading "null" — four of the six in the common case.
+   */
   protected bgTitle(bg: CanvasBg): string | null {
     if (this.variantBg.recommended() === bg) {
       return 'Recommended background for this variant';
