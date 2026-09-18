@@ -26,11 +26,11 @@ import type {
   template: `
     @if (meta(); as m) { @if (m.found) {
     <div class="vrt">
-      <div class="vrt__summary">
-        <prism-vrt-summary [summary]="summary()" />
-      </div>
+      <div class="vrt__aside">
+        <div class="vrt__summary">
+          <prism-vrt-summary [summary]="summary()" />
+        </div>
 
-      <div class="vrt__split">
         <ul class="vrt__list">
           @for (row of rows(); track row.key) {
           <li>
@@ -48,14 +48,14 @@ import type {
           </li>
           }
         </ul>
+      </div>
 
-        <div class="vrt__viewer">
-          @if (selected(); as v) {
-          <prism-vrt-compare [variant]="v" [assetBaseUrl]="assetBaseUrl()" />
-          } @else {
-          <p class="vrt__empty">Select a variant.</p>
-          }
-        </div>
+      <div class="vrt__viewer">
+        @if (selected(); as v) {
+        <prism-vrt-compare [variant]="v" [assetBaseUrl]="assetBaseUrl()" />
+        } @else {
+        <p class="vrt__empty">Select a variant.</p>
+        }
       </div>
     </div>
     } @else {
@@ -71,38 +71,55 @@ import type {
     }
   `,
   styles: `
+    /*
+     * Not a scroll container.
+     *
+     * It used to be overflow:auto, which made the whole panel one scroller:
+     * both columns simply grew and the panel scrolled as a unit, so picking a
+     * variant further down the list scrolled the comparison off the top and
+     * you had to scroll back up to see what you had picked. The two columns
+     * own their scrolling now, and the chain of min-height:0 below is what
+     * lets them — a grid or flex item defaults to min-height:auto, refuses
+     * to shrink below its content, and pushes the overflow back up here.
+     */
     :host {
       display: block;
       height: 100%;
-      overflow: auto;
+      overflow: hidden;
       font-size: var(--fs-md);
       color: var(--prism-text);
     }
 
     .vrt {
-      display: flex;
-      flex-direction: column;
-      min-height: 100%;
-    }
-
-    .vrt__summary { padding: 14px 16px 0; }
-
-    .vrt__split {
       display: grid;
       grid-template-columns: minmax(200px, 250px) 1fr;
-      flex: 1;
+      height: 100%;
       min-height: 0;
-      padding-top: 14px;
+    }
+
+    .vrt__aside {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    .vrt__summary {
+      flex: none;
+      padding: 12px 12px 11px 16px;
+      border-bottom: 1px solid var(--prism-border);
     }
 
     .vrt__list {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
       margin: 0;
-      padding: 0 4px 14px 16px;
+      padding: 12px 4px 12px 16px;
       list-style: none;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      min-width: 0;
     }
 
     /* Same card-with-severity-edge as the a11y violations list, so the two
@@ -174,6 +191,7 @@ import type {
     .vrt__viewer {
       min-width: 0;
       min-height: 0;
+      overflow: auto;
       border-left: 1px solid var(--prism-border);
     }
 
@@ -198,10 +216,18 @@ import type {
       background: var(--prism-input-bg);
     }
 
+    /* Too narrow for two columns: stack them, and hand the scrolling back to
+       the panel as a whole — side by side the two scrollers keep the list and
+       the image in view at once, stacked there is nothing to keep in view. */
     @media (max-width: 860px) {
-      .vrt__split { grid-template-columns: 1fr; }
-      .vrt__list { padding-right: 16px; }
-      .vrt__viewer { border-left: none; border-top: 1px solid var(--prism-border); }
+      :host { overflow: auto; }
+      .vrt { grid-template-columns: 1fr; height: auto; }
+      .vrt__list { overflow: visible; padding-right: 16px; }
+      .vrt__viewer {
+        overflow: visible;
+        border-left: none;
+        border-top: 1px solid var(--prism-border);
+      }
     }
   `,
 })

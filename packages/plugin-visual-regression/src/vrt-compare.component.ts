@@ -191,17 +191,23 @@ const MODE_LABEL: Record<CompareMode, string> = {
     </div>
   `,
   styles: `
-    :host { display: block; min-width: 0; }
+    :host { display: block; min-width: 0; height: 100%; }
 
+    /* Fills the viewer column rather than growing with its content, so the
+       stage gets whatever height is left over instead of the panel scrolling.
+       The toolbar then stays put while a large capture scrolls inside the
+       stage, which is the one place scrolling belongs here. */
     .vrt-cmp {
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: 14px 16px;
       min-width: 0;
+      height: 100%;
     }
 
     .vrt-cmp__bar {
+      flex: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -288,6 +294,11 @@ const MODE_LABEL: Record<CompareMode, string> = {
     }
 
     .vrt-cmp__stage {
+      /* Takes the leftover height, but only down to a floor — below that the
+         viewer column scrolls instead, because a stage squashed to nothing is
+         not a comparison. */
+      flex: 1;
+      min-height: 140px;
       display: flex;
       /* overflow-safe centring: justify-content would clip the left edge of an
          image wider than the stage, margin auto scrolls to it instead. */
@@ -310,14 +321,17 @@ const MODE_LABEL: Record<CompareMode, string> = {
       --vrt-fit-basis: calc((100% - var(--vrt-gap)) / 2);
     }
 
+    /* auto margins rather than the stage centring its children: with
+       overflow:auto on the stage, centring clips the leading edge of
+       anything larger than it, while auto margins scroll to it. */
     .vrt-cmp__frame {
-      margin: 0 auto;
+      margin: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
       flex: none;
     }
-    .vrt-cmp__stage--split .vrt-cmp__frame { margin: 0; }
+    .vrt-cmp__stage--split .vrt-cmp__frame { margin: auto 0; }
 
     figure.vrt-cmp__frame figcaption {
       font-size: var(--fs-sm);
@@ -403,6 +417,7 @@ const MODE_LABEL: Record<CompareMode, string> = {
     }
 
     .vrt-cmp__note {
+      flex: none;
       display: flex;
       flex-direction: column;
       gap: 3px;

@@ -43,12 +43,11 @@ export interface VrtSummary {
   maxDiffRatio: number | null;
 }
 
-export interface VrtTile {
-  key: string;
+export interface VrtSegment {
+  key: VrtStatus;
   label: string;
-  value: string;
-  /** How far the tile's bar fills, 0–1. */
-  ratio: number;
+  /** Raw count — the bar weights its slices by this, so it needs no ratio. */
+  count: number;
   tone: VrtTone;
 }
 
@@ -81,47 +80,27 @@ export function summarize(variants: readonly VrtVariantResult[]): VrtSummary {
 }
 
 /**
- * The tiles the summary strip renders.
+ * The slices of the composition bar, worst news first.
  *
- * `Changed` and `Unchanged` are always present: a strip that loses a column
- * when a run goes green would make the panel change shape with its content,
- * and "no Changed tile" is easy to misread as "no data". Everything else
- * appears only when it has something to report, so a library that never
- * excludes a variant is never asked to wonder what `Excluded` means.
+ * Only statuses that actually occurred. The tile strip this replaced had to
+ * keep `changed` and `unchanged` present at zero so the panel would not change
+ * shape with its content — a bar has no such problem, because a zero count is
+ * a zero-width slice. Carrying it would add an invisible segment and a legend
+ * entry claiming a colour nothing on screen has.
+ *
+ * Counts rather than ratios: the bar divides itself with `flex-grow`, so it
+ * needs the weights, not pre-divided shares, and an empty run yields an empty
+ * bar instead of a division by zero.
  */
-export function summaryTiles(summary: VrtSummary): VrtTile[] {
-  const share = (count: number) =>
-    summary.total === 0 ? 0 : count / summary.total;
-
-  const tiles: VrtTile[] = STATUS_ORDER.filter(
-    (status) =>
-      summary.counts[status] > 0 ||
-      status === 'changed' ||
-      status === 'unchanged'
-  ).map((status) => {
-    const count = summary.counts[status];
-    return {
+export function summarySegments(summary: VrtSummary): VrtSegment[] {
+  return STATUS_ORDER.filter((status) => summary.counts[status] > 0).map(
+    (status) => ({
       key: status,
       label: STATUS_LABEL[status],
-      value: String(count),
-      ratio: share(count),
-      // A count of zero is the absence of news, not news in that colour:
-      // "Changed 0" rendered in danger red screams the opposite of what it says.
-      tone: count === 0 ? ('muted' as const) : STATUS_TONE[status],
-    };
-  });
-
-  if (summary.maxDiffRatio !== null) {
-    tiles.push({
-      key: 'max-diff',
-      label: 'Max diff',
-      value: formatPercent(summary.maxDiffRatio),
-      ratio: summary.maxDiffRatio,
-      tone: summary.maxDiffRatio > 0 ? 'danger' : 'success',
-    });
-  }
-
-  return tiles;
+      count: summary.counts[status],
+      tone: STATUS_TONE[status],
+    })
+  );
 }
 
 /**

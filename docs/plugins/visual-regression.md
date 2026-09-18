@@ -8,8 +8,8 @@
 
 - Adds a **Visual Regression** panel to the addon tab bar, shown only for components that actually have results
 - Shows a **library-wide VRT pill** in the header, color-coded against your thresholds
-- Opens with a **per-component summary** — changed, resized, unchanged, new, excluded, and the worst diff in the component
-- Per variant: status, diff percentage, and a baseline / current / diff comparison
+- Heads the variant list with a **per-component summary** — a composition bar over the statuses present, plus the changed count and the worst diff. It sits in the list column rather than across the panel: the dock is 260px tall by default, and a full-width strip spent that budget before the comparison had drawn a pixel
+- Per variant: status, diff percentage, and a baseline / current / diff comparison. The list and the comparison scroll independently, so choosing a variant never scrolls the image you chose it for out of view
 - Three comparison modes: **Wipe**, **Side by side**, and **Diff** (the last only when the report records a distinct diff mask alongside a current capture)
 - **Zoom** at `Fit`, `1×`, `2×`, `4×`, with pixels kept as pixels — a diff is never drawn below 1:1, because a downscaled diff is one you cannot trust
 - Treats a variant with no baseline yet (`new`) as a neutral state, never as a failure

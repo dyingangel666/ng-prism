@@ -4,15 +4,28 @@ import {
   computed,
   input,
 } from '@angular/core';
-import { summaryTiles, type VrtSummary } from './vrt-summarize.js';
+import {
+  formatPercent,
+  summarySegments,
+  type VrtSummary,
+} from './vrt-summarize.js';
 
 /**
- * The strip that opens the panel.
+ * The run's headline, sitting above the variant list.
  *
- * Every other ng-prism panel leads with a summary — the a11y score ring, the
- * coverage stat row — so the visual regression panel does too, and it borrows
- * their card, micro-label and mono-numeral treatment rather than inventing a
- * third one.
+ * It lives in the 250px column rather than in a band across the panel, and
+ * that placement is the whole design. This panel docks at the bottom of the
+ * app at 260px by default, which leaves ~228px inside it; a full-width summary
+ * strip took ~89px of that before the comparison had rendered a single pixel.
+ * In the narrow column it costs the variant list about one row and costs the
+ * image nothing — and the image is what the panel is for.
+ *
+ * The cost of that is precision, so the split is deliberate: the bar carries
+ * the *composition* (which statuses, in what proportion) where a glance is
+ * enough, and the line under it carries the two figures a reviewer acts on.
+ * Exact per-status counts live one place over, in the list itself, where every
+ * row already states its own status — repeating them here would be the tile
+ * strip again, in a narrower column.
  */
 @Component({
   selector: 'prism-vrt-summary',
@@ -20,72 +33,66 @@ import { summaryTiles, type VrtSummary } from './vrt-summarize.js';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="vrt-sum">
-      @for (tile of tiles(); track tile.key) {
-      <div class="vrt-sum__tile" [attr.data-tone]="tile.tone">
-        <div class="vrt-sum__label">{{ tile.label }}</div>
-        <div class="vrt-sum__value">{{ tile.value }}</div>
-        <div class="vrt-sum__bar">
-          <div
-            class="vrt-sum__bar-fill"
-            [style.width.%]="tile.ratio * 100"
-          ></div>
-        </div>
+      <div class="vrt-sum__bar" role="img" [attr.aria-label]="barLabel()">
+        @for (segment of segments(); track segment.key) {
+        <div
+          class="vrt-sum__seg"
+          [attr.data-tone]="segment.tone"
+          [style.flex-grow]="segment.count"
+          [title]="segment.label + ': ' + segment.count"
+        ></div>
+        }
       </div>
-      }
+
+      <div class="vrt-sum__line">
+        <span class="vrt-sum__stat">
+          <b [attr.data-tone]="changed() > 0 ? 'danger' : 'success'">{{
+            changed()
+          }}</b>
+          of {{ summary().total }} changed
+        </span>
+        @if (maxDiff(); as max) {
+        <span class="vrt-sum__stat">
+          max <b [attr.data-tone]="max.tone">{{ max.value }}</b>
+        </span>
+        }
+      </div>
     </div>
   `,
   styles: `
     :host { display: block; }
 
-    .vrt-sum {
-      display: grid;
-      /* auto-fit rather than a fixed column count: the strip carries between
-         two and six tiles depending on what the run produced. */
-      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
-      gap: 10px;
-    }
-
-    .vrt-sum__tile {
-      padding: 10px 12px;
-      background: var(--prism-bg-surface);
-      border: 1px solid var(--prism-border);
-      border-radius: var(--radius-lg);
-      min-width: 0;
-    }
-
-    .vrt-sum__label {
-      font-size: 10.5px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 700;
-      color: var(--prism-text-ghost);
-      margin-bottom: 5px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .vrt-sum__value {
-      font-family: var(--font-mono);
-      font-size: 21px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--tone-color, var(--prism-text));
-      line-height: 1.1;
-    }
-
     .vrt-sum__bar {
-      margin-top: 8px;
-      height: 4px;
-      background: var(--prism-input-bg);
-      border-radius: 2px;
+      display: flex;
+      gap: 1px;
+      height: 6px;
+      border-radius: 3px;
       overflow: hidden;
+      background: var(--prism-input-bg);
     }
-    .vrt-sum__bar-fill {
-      height: 100%;
-      border-radius: 2px;
-      background: var(--tone-color, var(--prism-primary));
-      transition: width var(--dur-slow) var(--ease-default);
+    /* flex-basis 0 so a slice's width comes from its count alone — with the
+       default of auto an empty div still claims its content box and every
+       segment would render the same width. */
+    .vrt-sum__seg {
+      flex-basis: 0;
+      background: var(--tone-color, var(--prism-text-muted));
+      transition: flex-grow var(--dur-slow) var(--ease-default);
+    }
+
+    .vrt-sum__line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 9px;
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm);
+      color: var(--prism-text-muted);
+    }
+    .vrt-sum__stat { white-space: nowrap; }
+    .vrt-sum__line b {
+      font-weight: 700;
+      color: var(--tone-color, var(--prism-text));
     }
 
     [data-tone='success'] { --tone-color: var(--prism-success); }
@@ -98,5 +105,32 @@ import { summaryTiles, type VrtSummary } from './vrt-summarize.js';
 export class VrtSummaryComponent {
   readonly summary = input.required<VrtSummary>();
 
-  protected readonly tiles = computed(() => summaryTiles(this.summary()));
+  protected readonly segments = computed(() => summarySegments(this.summary()));
+
+  protected readonly changed = computed(() => this.summary().counts.changed);
+
+  protected readonly maxDiff = computed(() => {
+    const ratio = this.summary().maxDiffRatio;
+    if (ratio === null) return null;
+    return {
+      value: formatPercent(ratio),
+      tone: ratio > 0 ? 'danger' : 'success',
+    };
+  });
+
+  /**
+   * The bar's content as a sentence.
+   *
+   * The slices are the only place the per-status breakdown is shown, and they
+   * are colour and proportion — nothing a screen reader can read. Each slice
+   * carries a `title` for a pointer; this carries the same thing for everyone
+   * else.
+   */
+  protected readonly barLabel = computed(() =>
+    this.segments().length === 0
+      ? 'No variants'
+      : this.segments()
+          .map((segment) => `${segment.count} ${segment.label.toLowerCase()}`)
+          .join(', ')
+  );
 }
