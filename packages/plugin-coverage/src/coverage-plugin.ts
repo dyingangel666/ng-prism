@@ -3,6 +3,7 @@ import type {
   CoveragePluginOptions,
   CoverageThresholds,
 } from './coverage.types.js';
+import { COVERAGE_NAVIGATION_DECORATION } from './coverage-contributions.js';
 
 const DEFAULT_COVERAGE_PATH = 'coverage/coverage-summary.json';
 
@@ -88,5 +89,7 @@ export function coveragePlugin(options?: CoveragePluginOptions): NgPrismPlugin {
           ),
       },
     ],
+
+    navigationDecorations: [COVERAGE_NAVIGATION_DECORATION],
   };
 }

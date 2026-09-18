@@ -3,7 +3,11 @@ import type {
   VisualRegressionPluginOptions,
   VrtComponentMeta,
 } from './visual-regression.types.js';
-import { hasResults, reviewBadge } from './panel-contributions.js';
+import {
+  hasResults,
+  reviewBadge,
+  VRT_NAVIGATION_DECORATION,
+} from './panel-contributions.js';
 import { resolveVrtThresholds } from './thresholds.js';
 import { statSummary, summarize } from './vrt-summarize.js';
 
@@ -92,5 +96,7 @@ export function visualRegressionPlugin(
           ),
       },
     ],
+
+    navigationDecorations: [VRT_NAVIGATION_DECORATION],
   };
 }
