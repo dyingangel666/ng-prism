@@ -93,9 +93,9 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
           @if (navigationService.activeComponent()) { @if (viewPanels().length >
           0) {
           <prism-view-tab-bar class="prism-main__view-bar" />
-          } @if (panelService.activeViewId() === 'renderer') { @if
-          (layout.toolbarVisible()) {
+          } @if (panelService.activeViewId() === 'renderer') {
           <prism-component-head />
+          @if (layout.toolbarVisible()) {
           <prism-variant-ribbon />
           }
           <div class="prism-canvas-wrap">
@@ -151,7 +151,7 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
       --density: 1;
       height: 100vh;
       display: grid;
-      grid-template-rows: 52px 1fr;
+      grid-template-rows: var(--band-header) 1fr;
       background: var(--prism-void);
       font-family: var(--font-sans, var(--prism-font-sans));
       color: var(--prism-text);
@@ -347,6 +347,9 @@ export class PrismShellComponent {
         e.preventDefault();
         this.layout.toggleSidebar();
         break;
+      // Alt+T toggles the variant rail only. It used to hide the component
+      // head as well, but the head now carries the Playground/API switcher and
+      // hiding it would take primary navigation with it.
       case 'KeyT':
         e.preventDefault();
         this.layout.toggleToolbar();
