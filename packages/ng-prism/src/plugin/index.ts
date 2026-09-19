@@ -51,3 +51,7 @@ export {
   PRISM_CONFIG,
 } from '../app/tokens/prism-tokens.js';
 export type { PrismRendererHooks } from '../app/tokens/prism-tokens.js';
+
+// Shared presentational components for plugin contributions.
+export { PrismMetricBadgeComponent } from '../app/shared/prism-metric-badge.component.js';
+export { PrismIconComponent } from '../app/icons/prism-icon.component.js';
