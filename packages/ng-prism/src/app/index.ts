@@ -1,10 +1,7 @@
 // Tokens
 // PRISM_RENDERER_HOOKS + PrismRendererHooks are exported from the plugin entry point
 // (src/plugin/index.ts) since they belong to the plugin API surface.
-export {
-  PRISM_MANIFEST,
-  PRISM_CONFIG,
-} from './tokens/prism-tokens.js';
+export { PRISM_MANIFEST, PRISM_CONFIG } from './tokens/prism-tokens.js';
 
 // Theme
 export {
@@ -44,3 +41,12 @@ export type { ProvidePrismOptions } from './provide-prism.js';
 
 // HMR helper
 export { enablePrismHmr } from './hmr.js';
+
+// Shared presentational components for plugin contributions. These live on
+// the main entry rather than `plugin/index.ts` because the builder evaluates
+// plugin config — and everything it imports — in Node.js, and that barrel
+// draws an explicit line at decorated declarations. Plugin badge components
+// are lazy-loaded in the browser through `loadComponent`, so importing them
+// from `@ng-prism/core` never crosses the Node path.
+export { PrismMetricBadgeComponent } from './shared/prism-metric-badge.component.js';
+export { PrismIconComponent } from './icons/prism-icon.component.js';
