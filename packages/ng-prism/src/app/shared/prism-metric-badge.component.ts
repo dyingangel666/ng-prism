@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 
 /**
@@ -14,7 +19,11 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
  * same one the source contributes to the navigation marks and its panel tab,
  * so one symbol means one source wherever it appears — and the badge gets
  * narrow enough that three of them fit a 40px header without crowding it.
- * The written-out label survives in `aria-label` and `title`.
+ * The icon is `aria-hidden` — it is decoration, not content. The accessible
+ * name is composed here as "label: value" (e.g. "Library coverage: 23%"), so
+ * the figure that is the whole point of the badge cannot be dropped by a
+ * consumer that only passes `label`. `title` stays the full text the
+ * consumer passes, for the hover tooltip.
  */
 @Component({
   selector: 'prism-metric-badge',
@@ -27,9 +36,9 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
       [class.metric-badge--warn]="variant() === 'warn'"
       [class.metric-badge--danger]="variant() === 'danger'"
       [attr.title]="title() || label()"
-      [attr.aria-label]="label()"
+      [attr.aria-label]="accessibleName()"
     >
-      <prism-icon [name]="icon()" [size]="12" />
+      <prism-icon [name]="icon()" [size]="12" aria-hidden="true" />
       <span class="metric-badge__value">{{ value() }}</span>
     </span>
   `,
@@ -74,4 +83,7 @@ export class PrismMetricBadgeComponent {
   readonly label = input.required<string>();
   readonly title = input<string>('');
   readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
+
+  /** "label: value" — the accessible name, so the figure is never dropped. */
+  readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
 }
