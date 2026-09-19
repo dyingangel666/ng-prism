@@ -86,3 +86,30 @@ describe('mark roles', () => {
     }
   );
 });
+
+describe('stage tokens', () => {
+  const themes = [
+    ['dark', PRISM_DARK_THEME],
+    ['light', PRISM_LIGHT_THEME],
+  ] as const;
+
+  it.each(themes)('%s theme declares a stage surface', (_name, theme) => {
+    expect(theme['--prism-stage']).toBeDefined();
+  });
+
+  it.each(themes)('%s theme declares a stage edge', (_name, theme) => {
+    expect(theme['--prism-stage-edge']).toBeDefined();
+  });
+
+  /**
+   * The defect this guards: the stage and its container both read
+   * `--prism-bg-surface`, so in light mode the boundary between tool and
+   * specimen disappears entirely. The stage needs a surface of its own.
+   */
+  it.each(themes)(
+    '%s theme keeps the stage distinct from the container surface',
+    (_name, theme) => {
+      expect(theme['--prism-stage']).not.toBe(theme['--prism-bg-surface']);
+    }
+  );
+});

@@ -97,7 +97,21 @@ import { resolveOverlay } from './overlay-resolver.js';
       padding: 32px;
       min-height: 200px;
       height: 100%;
-      background-color: var(--prism-bg-surface);
+      background-color: var(--prism-stage);
+
+      /* The edge is outline + shadow, never border and never extra padding.
+         plugin-visual-regression screenshots .demo-wrap, which is centred in
+         this element; a border would shrink the content box by 2px and move
+         that centre, shifting all 15 baselines in test-workspace/vrt/baseline
+         without a single component having changed. Capture mode resets this
+         element's padding but not its border, and this repo has no VRT runner
+         to catch the drift. outline and box-shadow do not participate in
+         layout, so the box is provably unchanged. Keep it that way. */
+      outline: 1px solid var(--prism-stage-edge);
+      outline-offset: -1px;
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.10),
+        0 8px 24px -12px rgba(0, 0, 0, 0.18);
       background-image: radial-gradient(circle, var(--prism-dot) 1px, transparent 1px);
       background-size: 20px 20px;
       transition: filter var(--dur-base);

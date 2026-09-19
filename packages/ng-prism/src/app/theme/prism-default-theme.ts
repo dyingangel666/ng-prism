@@ -8,6 +8,8 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-bg': '#0d0b1c',
   '--prism-bg-surface': '#131022',
   '--prism-bg-elevated': '#1a1535',
+  '--prism-stage': '#16122b',
+  '--prism-stage-edge': 'rgba(255, 255, 255, 0.10)',
 
   '--prism-text': '#ede9f8',
   '--prism-text-2': '#b0a6c8',
@@ -50,6 +52,8 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-bg': '#ffffff',
   '--prism-bg-surface': '#faf9fd',
   '--prism-bg-elevated': '#ffffff',
+  '--prism-stage': '#ffffff',
+  '--prism-stage-edge': 'rgba(28, 21, 48, 0.14)',
 
   '--prism-text': '#1c1530',
   '--prism-text-2': '#4d4266',
