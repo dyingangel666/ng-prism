@@ -1,7 +1,5 @@
 # Visual Regression Plugin
 
-> **Status: implemented, not yet published.** The package lives in this repository and is wired into the test workspace, but it has not been released to npm yet — `ng add @ng-prism/plugin-visual-regression` will not resolve until it is. Everything else on this page describes shipped behaviour.
-
 `@ng-prism/plugin-visual-regression` renders a visual regression report inside the styleguide, so per-variant screenshot diffs live next to the component they belong to instead of in a CI log.
 
 ## What It Does
