@@ -229,3 +229,19 @@ A variant can override the wrapper layout used in the canvas. The default is `'f
 In `'stretch'` mode `.demo-wrap` becomes `display: block; width: 100%; max-width: 800px`, giving children a real container width to size against. The variant-level value always wins over the component-level value.
 
 See [Showcase Decorator — canvasLayout](guide/showcase-decorator.md#canvaslayout) for the component-level setting and the [`CanvasLayout`](api/types.md#canvaslayout) type for the wrapper styles applied in each mode.
+
+## Overview — All Variants at Once
+
+Next to `Playground` and `API` the component header carries a third view tab: **Overview**. It renders every variant of the active component at the same time, as a grid of cells — a contact sheet rather than a viewfinder. Use it to compare variants against each other instead of stepping through them one by one.
+
+The tab appears when a component declares **two or more** variants. It stays hidden for single-variant components (a one-cell grid says nothing the Playground does not say better) and for components using [`renderPage`](guide/component-pages.md) — those render a page that reads its values from a single shared renderer state, so every cell would show the same thing.
+
+Each cell renders its variant exactly as declared:
+
+- **Background** — a variant's own [`bg`](guide/showcase-decorator.md#bg) paints that cell, so an `on dark` variant sits on dark while its neighbours do not. Variants that declare nothing get the checkerboard, matching what external tooling is told the variant renders on.
+- **Layout** — a variant with `canvasLayout: 'stretch'` takes a full row instead of a column, because it has no intrinsic width to compare against its neighbours.
+- **Caption** — running number and variant name below the frame, e.g. `08 on dark`.
+
+The Overview is a stage, not a workbench: it has no controls, no density or zoom settings, and no addon panel. Control values you changed in the Playground do not leak into it — every cell shows the variant as the decorator declares it.
+
+Link straight to it with `?view=overview`, see [State Preservation](guide/url-state.md).
