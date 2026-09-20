@@ -54,7 +54,7 @@ import { PrismLayoutService } from '../services/prism-layout.service.js';
               />
             </svg>
           </span>
-          <span class="layout-menu__label">Show toolbar</span>
+          <span class="layout-menu__label">Show variant rail</span>
           <span class="layout-menu__kbd"><kbd>⌥</kbd><kbd>T</kbd></span>
         </button>
         <button class="layout-menu__item" (click)="toggle('addons')">

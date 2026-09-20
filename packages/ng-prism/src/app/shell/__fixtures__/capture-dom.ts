@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CANVAS_BG_STYLES } from '../../canvas/canvas-bg.styles.js';
 
 const SHELL_SOURCE = join(__dirname, '..', 'prism-shell.component.ts');
 const RENDERER_SOURCE = join(
@@ -16,9 +17,18 @@ const RENDERER_SOURCE = join(
  * A plain scan between the two backticks that follow the key. Neither literal
  * can contain a backtick of its own — one would terminate the literal and the
  * file would not compile — so there is nothing subtler to get right here.
+ *
+ * `styles` may be a single literal (`styles: \`…\``) or, as of the renderer's
+ * shared `[data-bg]` rules, an array whose first element is the literal
+ * (`styles: [\n    \`…\`,`). Anchoring on the key alone rather than on the key
+ * plus an immediately-following backtick covers both — but either way this
+ * returns only *one* element. When `styles` is an array, the caller is
+ * responsible for composing whatever else belongs in it; see
+ * `renderCanvasChain`, which appends `CANVAS_BG_STYLES` itself rather than
+ * expecting this function to find it by scanning text.
  */
 export function literal(source: string, key: 'template' | 'styles'): string {
-  const keyAt = source.indexOf(`${key}: \``);
+  const keyAt = source.indexOf(`${key}:`);
   if (keyAt === -1) throw new Error(`no ${key} literal in component source`);
   const open = source.indexOf('`', keyAt);
   const close = source.indexOf('`', open + 1);
@@ -105,9 +115,36 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     throw new Error('the renderer template was not spliced into the shell');
   }
 
+  // This fixture injects CANVAS_BG_STYLES below unconditionally — it does not
+  // scan the renderer source for it the way it scans for `demo-wrap` above.
+  // That is only honest for as long as the renderer's own `styles` array
+  // still composes the same constant: if someone drops it from there, the
+  // fixture would keep supplying the rules the real component no longer has,
+  // and capture-transparency.browser.spec.ts would stay green while the app
+  // silently stopped painting every declared background. Guard it the same
+  // way the demo-wrap splice is guarded, so that drift fails loudly instead
+  // of quietly.
+  if (!rendererSource.includes('CANVAS_BG_STYLES')) {
+    throw new Error(
+      'the renderer no longer composes CANVAS_BG_STYLES into its styles'
+    );
+  }
+
+  // CANVAS_BG_STYLES is imported rather than parsed out of the renderer
+  // source: it is a plain exported string with no Angular compilation
+  // involved, so importing it cannot drift out of step with the array the
+  // way a second positional `literal()` scan could. It is not run through
+  // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute
+  // selectors with no `:host` in them, so that rewrite has nothing to do.
+  // Placed directly after the renderer's own base literal, mirroring its
+  // position as the last entry of the real `styles` array: `.prism-canvas-
+  // stage` and `[data-bg="light"]` are equal specificity either way — a
+  // class selector and an attribute selector both weigh (0,1,0) — so source
+  // order is what decides here too, exactly as in the component.
   const style = document.createElement('style');
   style.textContent = [
     scopeHost(literal(rendererSource, 'styles'), selectorOf(rendererSource)),
+    CANVAS_BG_STYLES,
     scopeHost(literal(shellSource, 'styles'), selectorOf(shellSource)),
   ].join('\n');
   document.head.appendChild(style);
@@ -124,7 +161,25 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
   const shell = host.querySelector('.prism-shell');
   const stage = host.querySelector('.prism-canvas-stage');
   const demoWrap = host.querySelector('.demo-wrap');
-  if (!shell || !stage || !demoWrap) throw new Error('canvas markup not found');
+  const canvasWrap = host.querySelector('.prism-canvas-wrap');
+  if (!shell || !stage || !demoWrap || !canvasWrap) {
+    throw new Error('canvas markup not found');
+  }
+
+  // The canvas tool rail, which the composed template does not carry: it is
+  // declared inside `prism-canvas-toolbar`, and only the renderer's template is
+  // spliced in above. Its host is `display: contents`, so the rail is a child
+  // of `.prism-canvas-wrap` in layout terms — precisely the position capture
+  // mode's structural rule exists to catch, and precisely the position a rail
+  // moved into the renderer or the stage would lose. Added at that level rather
+  // than under a `prism-canvas-toolbar` element so the level-by-level walk in
+  // `capture-layout.browser.spec.ts` asserts the rail itself: jsdom computes no
+  // inherited `display`, so an element nested one level deeper would be visited
+  // by nothing and prove nothing.
+  const toolrail = document.createElement('div');
+  toolrail.className = 'prism-toolrail';
+  canvasWrap.appendChild(toolrail);
+
   // `data-bg` is a binding, so the markup carries no value. Setting the one
   // the variant resolved to is exactly what the renderer does at runtime.
   stage.setAttribute('data-bg', bg);

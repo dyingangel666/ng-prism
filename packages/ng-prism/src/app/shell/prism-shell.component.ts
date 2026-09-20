@@ -13,7 +13,6 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
 import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismComponentHeadComponent } from '../component-head/prism-component-head.component.js';
 import { PrismVariantRibbonComponent } from '../variant-ribbon/prism-variant-ribbon.component.js';
 import { PrismHeaderComponent } from '../header/prism-header.component.js';
@@ -21,7 +20,6 @@ import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.c
 import { PrismRendererComponent } from '../renderer/prism-renderer.component.js';
 import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
 import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
-import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
 import { PrismUrlStateService } from '../services/prism-url-state.service.js';
 import { PrismPersistenceService } from '../services/prism-persistence.service.js';
 import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
@@ -29,6 +27,7 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
 import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
 import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
 import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
+import { nextViewId } from '../view-tab-bar/next-view-id.js';
 
 @Component({
   selector: 'prism-shell',
@@ -90,12 +89,14 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
           class="prism-main"
           [style.--ph.px]="showPanel() ? layout.panelHeight() : 0"
         >
-          @if (navigationService.activeComponent()) { @if (viewPanels().length >
-          0) {
-          <prism-view-tab-bar class="prism-main__view-bar" />
-          } @if (panelService.activeViewId() === 'renderer') { @if
-          (layout.toolbarVisible()) {
-          <prism-component-head />
+          @if (navigationService.activeComponent()) { @if
+          (panelService.activeViewId() === 'renderer') {
+          <prism-component-head>
+            @if (viewPanels().length > 0) {
+            <prism-view-tab-bar headEnd />
+            }
+          </prism-component-head>
+          @if (layout.toolbarVisible()) {
           <prism-variant-ribbon />
           }
           <div class="prism-canvas-wrap">
@@ -104,6 +105,9 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
             <prism-template-popover />
           </div>
           } @else {
+          <prism-component-head>
+            <prism-view-tab-bar headEnd />
+          </prism-component-head>
           <prism-view-panel-host class="prism-main__canvas" />
           } @if (showPanel()) {
           <div
@@ -150,7 +154,7 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
     .prism-shell {
       height: 100vh;
       display: grid;
-      grid-template-rows: 52px 1fr;
+      grid-template-rows: var(--band-header) 1fr;
       background: var(--prism-void);
       font-family: var(--font-sans, var(--prism-font-sans));
       color: var(--prism-text);
@@ -235,16 +239,18 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
       background: var(--prism-primary);
     }
 
+    /* One row, not two: the canvas tools no longer occupy a band above the
+       stage, they float over it from a rail absolutely positioned against
+       this element. The position: relative below is what anchors it. */
     .prism-canvas-wrap {
       flex: 1;
       min-height: 0;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
       background: var(--prism-bg-surface);
       overflow: hidden;
       position: relative;
     }
-    .prism-main__view-bar { flex-shrink: 0; }
     .prism-main__canvas { flex: 1; min-height: 0; overflow: auto; }
 
     .prism-main__panel {
@@ -287,14 +293,10 @@ export class PrismShellComponent {
   private readonly themeService = inject(PrismThemeService);
   protected readonly layout = inject(PrismLayoutService);
   protected readonly panelService = inject(PrismPanelService);
-  private readonly pluginService = inject(PrismPluginService);
   private readonly urlStateService = inject(PrismUrlStateService);
   private readonly persistenceService = inject(PrismPersistenceService);
 
-  protected readonly viewPanels = computed(() => [
-    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
-    ...this.pluginService.viewPanels(),
-  ]);
+  protected readonly viewPanels = this.panelService.visibleViewPanels;
 
   protected readonly showPanel = computed(
     () =>
@@ -314,18 +316,21 @@ export class PrismShellComponent {
     this.urlStateService.init();
     this.persistenceService.init();
 
-    let lastItemKey: string | null = null;
+    // A view survives a component switch as long as the new component still
+    // offers it — browsing a library variant-sheet by variant-sheet was
+    // impossible while every navigation dropped back to the Playground. The
+    // old rule watched for the *event* of switching and needed a key to
+    // remember; this one states the invariant and needs nothing. The rule
+    // itself lives in `nextViewId`, a pure function with its own tests — this
+    // effect only reads the two signals it needs and applies the result.
     effect(() => {
-      const item = this.navigationService.activeItem();
-      const key = item
-        ? item.kind === 'component'
-          ? item.data.meta.className
-          : item.data.title
-        : null;
-      if (lastItemKey !== null && lastItemKey !== key) {
-        untracked(() => this.panelService.activeViewId.set('renderer'));
+      const next = nextViewId(
+        this.panelService.activeViewId(),
+        this.panelService.visibleViewPanels()
+      );
+      if (next !== null) {
+        untracked(() => this.panelService.activeViewId.set(next));
       }
-      lastItemKey = key;
     });
 
     effect(() => {
@@ -346,6 +351,9 @@ export class PrismShellComponent {
         e.preventDefault();
         this.layout.toggleSidebar();
         break;
+      // Alt+T toggles the variant rail only. It used to hide the component
+      // head as well, but the head now carries the Playground/API switcher and
+      // hiding it would take primary navigation with it.
       case 'KeyT':
         e.preventDefault();
         this.layout.toggleToolbar();

@@ -17,14 +17,14 @@ export class MyComponent {
 }
 ```
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `manifest` | `Signal<RuntimeManifest>` | Full runtime manifest (read-only) |
-| `components` | `Signal<RuntimeComponent[]>` | All registered components |
-| `pages` | `Signal<StyleguidePage[]>` | All registered pages |
-| `categories` | `Signal<string[]>` | Distinct category names, sorted by `categoryOrder` then alphabetically |
-| `groupedByCategory` | `Signal<Map<string, RuntimeComponent[]>>` | Components keyed by category |
-| `updateManifest(manifest)` | `void` | Replace the entire manifest — used by HMR |
+| Member                     | Type                                      | Description                                                            |
+| -------------------------- | ----------------------------------------- | ---------------------------------------------------------------------- |
+| `manifest`                 | `Signal<RuntimeManifest>`                 | Full runtime manifest (read-only)                                      |
+| `components`               | `Signal<RuntimeComponent[]>`              | All registered components                                              |
+| `pages`                    | `Signal<StyleguidePage[]>`                | All registered pages                                                   |
+| `categories`               | `Signal<string[]>`                        | Distinct category names, sorted by `categoryOrder` then alphabetically |
+| `groupedByCategory`        | `Signal<Map<string, RuntimeComponent[]>>` | Components keyed by category                                           |
+| `updateManifest(manifest)` | `void`                                    | Replace the entire manifest — used by HMR                              |
 
 ---
 
@@ -32,15 +32,15 @@ export class MyComponent {
 
 Manages which component or page is currently selected in the sidebar.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `activeItem` | `WritableSignal<NavigationItem \| null>` | Currently active navigation item |
-| `activeComponent` | `Signal<RuntimeComponent \| null>` | Derived from `activeItem` if kind is `'component'` |
-| `activePage` | `Signal<StyleguidePage \| null>` | Derived from `activeItem` if kind is `'page'` |
-| `categoryTree` | `Signal<Map<string, NavigationItem[]>>` | Sidebar tree — filtered by search, sorted by order |
-| `select(comp)` | `void` | Select a `RuntimeComponent` |
-| `selectPage(page)` | `void` | Select a `StyleguidePage` |
-| `selectFirst()` | `void` | Select the first component or page in the manifest |
+| Member             | Type                                     | Description                                        |
+| ------------------ | ---------------------------------------- | -------------------------------------------------- |
+| `activeItem`       | `WritableSignal<NavigationItem \| null>` | Currently active navigation item                   |
+| `activeComponent`  | `Signal<RuntimeComponent \| null>`       | Derived from `activeItem` if kind is `'component'` |
+| `activePage`       | `Signal<StyleguidePage \| null>`         | Derived from `activeItem` if kind is `'page'`      |
+| `categoryTree`     | `Signal<Map<string, NavigationItem[]>>`  | Sidebar tree — filtered by search, sorted by order |
+| `select(comp)`     | `void`                                   | Select a `RuntimeComponent`                        |
+| `selectPage(page)` | `void`                                   | Select a `StyleguidePage`                          |
+| `selectFirst()`    | `void`                                   | Select the first component or page in the manifest |
 
 ---
 
@@ -48,16 +48,16 @@ Manages which component or page is currently selected in the sidebar.
 
 Tracks the active variant and input values for the currently rendered component.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `activeVariantIndex` | `WritableSignal<number>` | Index of the active variant tab (0-based) |
-| `inputValues` | `WritableSignal<Record<string, unknown>>` | Current input values (merged defaults + variant + user overrides) |
-| `activeContent` | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas |
-| `renderedElement` | `WritableSignal<Element \| null>` | Reference to the root DOM element of the rendered component |
-| `resetForComponent(comp)` | `void` | Full reset — resets variant index, inputs, and content to variant 0 |
-| `reconcileForComponent(comp)` | `void` | Soft reset — preserves variant index and user-overridden inputs on HMR or initial mount; merges input defaults when the prior className was `null` (fresh mount) |
-| `selectVariant(index)` | `void` | Change variant and apply its inputs |
-| `updateInput(name, value)` | `void` | Update a single input value (merges into `inputValues`) |
+| Member                        | Type                                                    | Description                                                                                                                                                      |
+| ----------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activeVariantIndex`          | `WritableSignal<number>`                                | Index of the active variant tab (0-based)                                                                                                                        |
+| `inputValues`                 | `WritableSignal<Record<string, unknown>>`               | Current input values (merged defaults + variant + user overrides)                                                                                                |
+| `activeContent`               | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas                                                                                                                                |
+| `renderedElement`             | `WritableSignal<Element \| null>`                       | Reference to the root DOM element of the rendered component                                                                                                      |
+| `resetForComponent(comp)`     | `void`                                                  | Full reset — resets variant index, inputs, and content to variant 0                                                                                              |
+| `reconcileForComponent(comp)` | `void`                                                  | Soft reset — preserves variant index and user-overridden inputs on HMR or initial mount; merges input defaults when the prior className was `null` (fresh mount) |
+| `selectVariant(index)`        | `void`                                                  | Change variant and apply its inputs                                                                                                                              |
+| `updateInput(name, value)`    | `void`                                                  | Update a single input value (merges into `inputValues`)                                                                                                          |
 
 Use `inputValues()` in Component Pages to react to Controls panel changes:
 
@@ -73,13 +73,13 @@ readonly rowCount = computed(() =>
 
 Provides sidebar search and filtering.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `query` | `Signal<string>` | Current search query |
+| Member               | Type                         | Description                                           |
+| -------------------- | ---------------------------- | ----------------------------------------------------- |
+| `query`              | `Signal<string>`             | Current search query                                  |
 | `filteredComponents` | `Signal<RuntimeComponent[]>` | Components matching the query (title, category, tags) |
-| `filteredPages` | `Signal<StyleguidePage[]>` | Pages matching the query (title, category) |
-| `search(q)` | `void` | Set the search query |
-| `clear()` | `void` | Clear the search query |
+| `filteredPages`      | `Signal<StyleguidePage[]>`   | Pages matching the query (title, category)            |
+| `search(q)`          | `void`                       | Set the search query                                  |
+| `clear()`            | `void`                       | Clear the search query                                |
 
 ---
 
@@ -87,11 +87,11 @@ Provides sidebar search and filtering.
 
 Records output events emitted by the rendered component for display in the Events panel.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `events` | `Signal<EventLogEntry[]>` | List of logged events (most recent first) |
-| `log(name, value)` | `void` | Append an event entry |
-| `clear()` | `void` | Clear all entries |
+| Member             | Type                      | Description                               |
+| ------------------ | ------------------------- | ----------------------------------------- |
+| `events`           | `Signal<EventLogEntry[]>` | List of logged events (most recent first) |
+| `log(name, value)` | `void`                    | Append an event entry                     |
+| `clear()`          | `void`                    | Clear all entries                         |
 
 `EventLogEntry`:
 
@@ -112,33 +112,33 @@ The built-in renderer calls `log()` automatically for all `output()` signals. Us
 
 Controls which addon panel and view tab are active.
 
-| Member | Type | Description |
-|--------|------|-------------|
+| Member          | Type                     | Description                                              |
+| --------------- | ------------------------ | -------------------------------------------------------- |
 | `activePanelId` | `WritableSignal<string>` | ID of the active addon panel tab (default: `'controls'`) |
-| `activeViewId` | `WritableSignal<string>` | ID of the active view tab (default: `'renderer'`) |
+| `activeViewId`  | `WritableSignal<string>` | ID of the active view tab (default: `'renderer'`)        |
 
 ---
 
 ## PrismLayoutService
 
-Manages sidebar, toolbar, and panel visibility. State is persisted to `localStorage` under the key `ng-prism-layout`.
+Manages sidebar, variant rail, and panel visibility. State is persisted to `localStorage` under the key `ng-prism-layout`.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `sidebarVisible` | `Signal<boolean>` | Whether the sidebar is visible |
-| `addonsVisible` | `Signal<boolean>` | Whether the addon panel area is visible |
-| `toolbarVisible` | `Signal<boolean>` | Whether the renderer toolbar is visible |
-| `addonsOrientation` | `Signal<'bottom' \| 'right'>` | Panel area orientation |
-| `sidebarWidth` | `Signal<number>` | Sidebar width in pixels (160–600) |
-| `panelHeight` | `Signal<number>` | Addon panel height in pixels, used when orientation is `'bottom'` (100–600) |
-| `panelWidth` | `Signal<number>` | Addon panel width in pixels, used when orientation is `'right'` (200–600) |
-| `toggleSidebar()` | `void` | Toggle sidebar visibility |
-| `toggleAddons()` | `void` | Toggle addon panel visibility |
-| `toggleToolbar()` | `void` | Toggle toolbar visibility |
-| `toggleOrientation()` | `void` | Switch between bottom and right orientation |
-| `setSidebarWidth(px)` | `void` | Set sidebar width with clamping |
-| `setPanelHeight(px)` | `void` | Set panel height with clamping |
-| `setPanelWidth(px)` | `void` | Set panel width with clamping |
+| Member                | Type                          | Description                                                                                                                                                                                  |
+| --------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sidebarVisible`      | `Signal<boolean>`             | Whether the sidebar is visible                                                                                                                                                               |
+| `addonsVisible`       | `Signal<boolean>`             | Whether the addon panel area is visible                                                                                                                                                      |
+| `toolbarVisible`      | `Signal<boolean>`             | Whether the variant rail (the variant ribbon above the canvas) is visible. The name predates the removal of the canvas toolbar band, which is now a floating rail and has no visibility flag |
+| `addonsOrientation`   | `Signal<'bottom' \| 'right'>` | Panel area orientation                                                                                                                                                                       |
+| `sidebarWidth`        | `Signal<number>`              | Sidebar width in pixels (160–600)                                                                                                                                                            |
+| `panelHeight`         | `Signal<number>`              | Addon panel height in pixels, used when orientation is `'bottom'` (100–600)                                                                                                                  |
+| `panelWidth`          | `Signal<number>`              | Addon panel width in pixels, used when orientation is `'right'` (200–600)                                                                                                                    |
+| `toggleSidebar()`     | `void`                        | Toggle sidebar visibility                                                                                                                                                                    |
+| `toggleAddons()`      | `void`                        | Toggle addon panel visibility                                                                                                                                                                |
+| `toggleToolbar()`     | `void`                        | Toggle variant rail visibility (`Alt+T`)                                                                                                                                                     |
+| `toggleOrientation()` | `void`                        | Switch between bottom and right orientation                                                                                                                                                  |
+| `setSidebarWidth(px)` | `void`                        | Set sidebar width with clamping                                                                                                                                                              |
+| `setPanelHeight(px)`  | `void`                        | Set panel height with clamping                                                                                                                                                               |
+| `setPanelWidth(px)`   | `void`                        | Set panel width with clamping                                                                                                                                                                |
 
 ---
 
@@ -146,12 +146,12 @@ Manages sidebar, toolbar, and panel visibility. State is persisted to `localStor
 
 Provides aggregated plugin contributions (panels and controls) derived from `NgPrismConfig.plugins`.
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `panels` | `Signal<PanelDefinition[]>` | All panels from all plugins |
-| `addonPanels` | `Signal<PanelDefinition[]>` | Panels with `placement !== 'view'` |
-| `viewPanels` | `Signal<PanelDefinition[]>` | Panels with `placement === 'view'` |
-| `controls` | `Signal<ControlDefinition[]>` | All controls from all plugins |
+| Member        | Type                          | Description                        |
+| ------------- | ----------------------------- | ---------------------------------- |
+| `panels`      | `Signal<PanelDefinition[]>`   | All panels from all plugins        |
+| `addonPanels` | `Signal<PanelDefinition[]>`   | Panels with `placement !== 'view'` |
+| `viewPanels`  | `Signal<PanelDefinition[]>`   | Panels with `placement === 'view'` |
+| `controls`    | `Signal<ControlDefinition[]>` | All controls from all plugins      |
 
 ---
 
@@ -159,8 +159,8 @@ Provides aggregated plugin contributions (panels and controls) derived from `NgP
 
 Synchronizes navigation state with URL query parameters: `component`, `page`, `variant`, `view`, `panel`. Initialized automatically by `PrismShellComponent`.
 
-| Member | Description |
-|--------|-------------|
+| Member   | Description                                                                         |
+| -------- | ----------------------------------------------------------------------------------- |
 | `init()` | Reads initial state from URL, starts sync effect, and registers `popstate` listener |
 
 Disabled via `NgPrismConfig.urlState = false`. See [State Preservation](guide/url-state.md).
@@ -171,8 +171,8 @@ Disabled via `NgPrismConfig.urlState = false`. See [State Preservation](guide/ur
 
 Persists control panel input overrides (per `className` + `variantIndex`) and a11y sub-state (`activeTab`, `perspective`) to `sessionStorage` under the key `ng-prism:state`. Initialized automatically by `PrismShellComponent` immediately after `PrismUrlStateService`.
 
-| Member | Description |
-|--------|-------------|
+| Member   | Description                                                                               |
+| -------- | ----------------------------------------------------------------------------------------- |
 | `init()` | Reads sessionStorage, applies persisted state, and starts a debounced sync effect (200ms) |
 
 Schema version, corrupted JSON, quota-exceeded errors, and a missing `sessionStorage` (Privacy/SecurityError) are all handled gracefully. Layout, theme, and canvas are persisted independently to `localStorage` by their own services.

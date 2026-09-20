@@ -9,9 +9,15 @@ interface NgPrismPlugin {
   name: string;
 
   // Build-time hooks (run in Node.js)
-  onComponentScanned?: (component: ScannedComponent) => ScannedComponent | void | Promise<ScannedComponent | void>;
-  onPageScanned?: (page: StyleguidePage)             => StyleguidePage | void   | Promise<StyleguidePage | void>;
-  onManifestReady?: (manifest: PrismManifest)        => PrismManifest | void   | Promise<PrismManifest | void>;
+  onComponentScanned?: (
+    component: ScannedComponent
+  ) => ScannedComponent | void | Promise<ScannedComponent | void>;
+  onPageScanned?: (
+    page: StyleguidePage
+  ) => StyleguidePage | void | Promise<StyleguidePage | void>;
+  onManifestReady?: (
+    manifest: PrismManifest
+  ) => PrismManifest | void | Promise<PrismManifest | void>;
 
   // Runtime contributions (run in the browser)
   panels?: PanelDefinition[];
@@ -127,20 +133,93 @@ wrapComponent: MyThemeWrapperComponent,
 
 The wrapper receives no inputs. Use `inject()` to access services.
 
+## Header and Panel Widgets
+
+`@ng-prism/core` (the **main** entry, not `@ng-prism/core/plugin`) exports two presentational components for building a `headerWidgets` entry or a panel's own chrome, so a plugin does not have to invent its own metric pill or reimplement icon rendering:
+
+```typescript
+import { PrismMetricBadgeComponent, PrismIconComponent } from '@ng-prism/core';
+```
+
+### `PrismMetricBadgeComponent`
+
+The pill every built-in header widget (a11y, coverage, visual regression) renders through.
+
+| Input     | Type                         | Required | Description                                                                                                           |
+| --------- | ---------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------- |
+| `icon`    | `string`                     | yes      | Icon name from the registry. Reuse the same one the source uses for its `navigationDecorations` marker and panel tab. |
+| `value`   | `string`                     | yes      | Already-formatted figure, e.g. `'87%'`.                                                                               |
+| `label`   | `string`                     | yes      | Metric name, composed into the accessible name as `"label: value"`.                                                   |
+| `title`   | `string`                     | no       | Tooltip text. Defaults to `label`.                                                                                    |
+| `variant` | `'ok' \| 'warn' \| 'danger'` | no       | Colour role. Default `'ok'`, which draws no accent colour at all.                                                     |
+
+### `PrismIconComponent`
+
+Renders one glyph from the same registry `PanelDefinition.icon` resolves against, as a sized inline `<svg>`.
+
+| Input  | Type     | Required | Description                                 |
+| ------ | -------- | -------- | ------------------------------------------- |
+| `name` | `string` | yes      | Icon name from the registry (`ICON_NAMES`). |
+| `size` | `number` | no       | Width/height in pixels. Default `16`.       |
+
+### Example
+
+```typescript
+// coverage-header-badge.component.ts
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
+import { PRISM_MANIFEST, type RuntimeManifest } from '@ng-prism/core/plugin';
+import { PrismMetricBadgeComponent } from '@ng-prism/core';
+
+@Component({
+  selector: 'prism-coverage-header-badge',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PrismMetricBadgeComponent],
+  template: `
+    @if (data(); as d) {
+    <prism-metric-badge
+      icon="shield-check"
+      label="Library coverage"
+      [value]="d.score + '%'"
+      [variant]="d.variant"
+    />
+    }
+  `,
+})
+export class CoverageHeaderBadgeComponent {
+  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+  protected readonly data = computed(() => {
+    const meta = this.manifest.meta?.['coverage'] as
+      | { total?: { found: boolean; score: number } }
+      | undefined;
+    return meta?.total?.found
+      ? { score: meta.total.score, variant: 'ok' as const }
+      : null;
+  });
+}
+```
+
+Registered like any other `headerWidgets` entry — see [`HeaderWidgetDefinition`](api/ng-prism-plugin.md#headerwidgetdefinition). Full field reference: [`PrismMetricBadgeComponent`](api/ng-prism-plugin.md#prismmetricbadgecomponent) and [`PrismIconComponent`](api/ng-prism-plugin.md#prismiconcomponent).
+
 ## PanelDefinition Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Unique panel identifier |
-| `label` | `string` | Tab label |
-| `component` | `Type<unknown>` | Static panel component |
-| `loadComponent` | `() => Promise<Type>` | Lazy-loaded panel component (use when importing browser-only APIs) |
-| `overlayComponent` | `Type<unknown>` | Canvas overlay component |
-| `loadOverlayComponent` | `() => Promise<Type>` | Lazy-loaded canvas overlay |
-| `icon` | `string` | Icon name (optional) |
-| `position` | `'bottom' \| 'right'` | Panel area placement |
-| `placement` | `'addon' \| 'view'` | `addon` = bottom tab bar, `view` = top view toolbar |
-| `providers` | `Provider[]` | Providers scoped to this panel's injector |
+| Field                  | Type                  | Description                                                        |
+| ---------------------- | --------------------- | ------------------------------------------------------------------ |
+| `id`                   | `string`              | Unique panel identifier                                            |
+| `label`                | `string`              | Tab label                                                          |
+| `component`            | `Type<unknown>`       | Static panel component                                             |
+| `loadComponent`        | `() => Promise<Type>` | Lazy-loaded panel component (use when importing browser-only APIs) |
+| `overlayComponent`     | `Type<unknown>`       | Canvas overlay component                                           |
+| `loadOverlayComponent` | `() => Promise<Type>` | Lazy-loaded canvas overlay                                         |
+| `icon`                 | `string`              | Icon name (optional)                                               |
+| `position`             | `'bottom' \| 'right'` | Panel area placement                                               |
+| `placement`            | `'addon' \| 'view'`   | `addon` = bottom tab bar, `view` = top view toolbar                |
+| `providers`            | `Provider[]`          | Providers scoped to this panel's injector                          |
 
 > **Note:** Always use `loadComponent` rather than `component` if your panel component imports anything from `@angular/platform-browser` or any other browser-only package. The config file is loaded in Node.js during the build — a static import of a browser component crashes the builder.
 
@@ -158,7 +237,9 @@ export function myNotesPlugin(): NgPrismPlugin {
         id: 'notes',
         label: 'Notes',
         loadComponent: () =>
-          import('./notes-panel.component.js').then(m => m.NotesPanelComponent),
+          import('./notes-panel.component.js').then(
+            (m) => m.NotesPanelComponent
+          ),
         position: 'bottom',
         placement: 'addon',
       },
@@ -226,8 +307,10 @@ export class ColorSwatchControlComponent {
   readonly inputMeta = input.required<InputMeta>();
   readonly rendererService = input.required<PrismRendererService>();
 
-  currentValue = computed(() =>
-    this.rendererService().inputValues()[this.inputMeta().name] as string ?? '#000000',
+  currentValue = computed(
+    () =>
+      (this.rendererService().inputValues()[this.inputMeta().name] as string) ??
+      '#000000'
   );
 
   onChange(event: Event) {

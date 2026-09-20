@@ -9,7 +9,7 @@
 - Adds a **Visual Regression** panel to the addon tab bar, shown only for components that actually have results
 - Puts a **count on that tab** of the variants waiting on a decision — red once something changed, amber while the only open items are ones that could not be compared, and absent entirely when the component is clean
 - Shows a **library-wide VRT pill** in the header, color-coded against your thresholds
-- Adds a **VRT Diff** figure to the component head: the worst diff among that component's variants, green only when nothing regressed
+- Adds a **VRT diff** row to the component head's gauge readout: the worst diff among that component's variants. The gauge chip in the head only names it while it deviates — and only when nothing else deviates more
 - Heads the variant list with a **per-component summary** — a composition bar over the statuses present, plus the worst diff. It sits in the list column rather than across the panel: the dock is 260px tall by default, and a full-width strip spent that budget before the comparison had drawn a pixel
 - **Groups the variant list by what needs you**, with the clean variants collapsed out of the way — see below
 - Per variant: status, diff percentage, and a baseline / current / diff comparison. The list and the comparison scroll independently, so choosing a variant never scrolls the image you chose it for out of view

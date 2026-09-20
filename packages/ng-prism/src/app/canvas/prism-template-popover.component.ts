@@ -4,10 +4,8 @@ import {
   computed,
   signal,
   ChangeDetectionStrategy,
-  HostListener,
 } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
-import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { generateSnippet } from '../renderer/snippet-generator.js';
@@ -47,17 +45,22 @@ function tokenizeXml(code: string): string {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismIconComponent],
   template: `
-    @if (layoutService.templatePopoverVisible()) {
+    <!-- A native popover: the platform owns open, light-dismiss and Escape, so
+         there is no visibility signal, no document click listener and no key
+         handler here. The id is what the rail's button names in its
+         popovertarget. -->
     <div
+      popover
+      id="prism-template"
       class="tpl-popover"
       role="dialog"
       aria-label="Angular template"
-      (click)="$event.stopPropagation()"
     >
       <div class="tpl-popover-head">
         <prism-icon name="code" [size]="13" />
         <span>Angular Template</span>
         <button
+          type="button"
           class="tpl-popover-copy"
           (click)="copy()"
           [title]="copied() ? 'Copied!' : 'Copy to clipboard'"
@@ -66,8 +69,10 @@ function tokenizeXml(code: string): string {
           {{ copied() ? 'Copied' : 'Copy' }}
         </button>
         <button
+          type="button"
           class="tpl-popover-close"
-          (click)="layoutService.closeTemplatePopover()"
+          popovertarget="prism-template"
+          popovertargetaction="hide"
           aria-label="Close"
           title="Close (Esc)"
         >
@@ -76,29 +81,44 @@ function tokenizeXml(code: string): string {
       </div>
       <pre class="tpl-popover-body" [innerHTML]="highlighted()"></pre>
     </div>
-    }
   `,
   styles: `
     :host { display: contents; }
 
+    /* No position of its own: a popover is in the top layer, where the
+       containing block is the viewport, so the old right/top pair against the
+       canvas would have parked this in the corner of the *window* and over the
+       header. It hangs off the rail instead, the same way the head popovers
+       hang off their triggers. Viewport units, not percentages — a percentage
+       here resolves against the position area, not the canvas. */
     .tpl-popover {
-      position: absolute;
-      right: 20px;
-      top: 8px;
       width: 520px;
-      max-width: calc(100% - 40px);
-      max-height: min(420px, calc(100% - 16px));
+      max-width: calc(100vw - var(--sp-6));
+      max-height: min(420px, calc(100vh - var(--sp-7)));
+      position-anchor: --prism-toolrail;
+      position-area: block-end span-inline-start;
+      position-try-fallbacks: flip-block, flip-inline;
+      inset: auto;
+      margin: var(--sp-2) 0 0 0;
       background: var(--prism-bg-elevated);
       border: 1px solid var(--prism-border-strong);
       border-radius: var(--radius-lg, 10px);
       box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.45),
         0 0 0 1px color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      display: flex;
-      flex-direction: column;
-      z-index: 30;
       overflow: hidden;
       animation: tpl-fade-in var(--dur-fast, 0.15s) var(--ease-default, ease-out);
+    }
+
+    /* display belongs on :popover-open and nowhere else. The UA stylesheet
+       hides a closed popover with [popover]:not(:popover-open) { display: none },
+       and any author display on the base rule outranks it — the panel then
+       shows permanently and neither Escape nor light-dismiss can hide it,
+       because closing only drops :popover-open and leaves the author rule
+       standing. */
+    .tpl-popover:popover-open {
+      display: flex;
+      flex-direction: column;
     }
 
     @keyframes tpl-fade-in {
@@ -206,7 +226,6 @@ function tokenizeXml(code: string): string {
 export class PrismTemplatePopoverComponent {
   private readonly navigationService = inject(PrismNavigationService);
   private readonly rendererService = inject(PrismRendererService);
-  protected readonly layoutService = inject(PrismLayoutService);
 
   protected readonly copied = signal(false);
   private copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
@@ -247,12 +266,5 @@ export class PrismTemplatePopoverComponent {
     this.copied.set(true);
     if (this.copiedResetTimer) clearTimeout(this.copiedResetTimer);
     this.copiedResetTimer = setTimeout(() => this.copied.set(false), 1500);
-  }
-
-  @HostListener('document:keydown.escape')
-  protected onEscape(): void {
-    if (this.layoutService.templatePopoverVisible()) {
-      this.layoutService.closeTemplatePopover();
-    }
   }
 }

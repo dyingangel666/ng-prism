@@ -76,6 +76,8 @@ export default defineConfig({
 });
 ```
 
+`--prism-header-height` is now an alias for `--band-header` (one of the [density-scaled band tokens](guide/theming.md#band-heights-and-density)) rather than its own fixed value — it still resolves, so the example above needs no change, but a stylesheet that wants to affect header height specifically should set `--band-header` (or the shared `--density`) instead of overriding the alias.
+
 ## Example: Custom Sidebar
 
 Inject `PrismNavigationService` to read the category tree and handle selection:

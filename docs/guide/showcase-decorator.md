@@ -50,16 +50,14 @@ Display name shown in the sidebar and above the component canvas.
 
 ### `description`
 
-Markdown-supported text rendered below the component title. Good for documenting intent, usage notes, and accessibility hints.
+Text rendered in the component head's details popover, behind the ⓘ glyph next to the title. Good for documenting intent, usage notes, and accessibility hints.
 
 ```typescript
 @Showcase({
   title: 'Alert Banner',
-  description: `
-Use to communicate status messages. **Do not use** for persistent UI elements.
-
-Supports \`info\`, \`warning\`, \`success\`, and \`error\` severity levels.
-  `,
+  description:
+    'Communicates status messages. Not for persistent UI elements. ' +
+    'Severity levels: info, warning, success, error.',
 })
 ```
 
@@ -187,13 +185,13 @@ Arbitrary key-value metadata consumed by plugins. Each official plugin documents
 
 ### `bg`
 
-Recommended canvas background for this component. Applied automatically when the user opens the component (or one of its variants), unless a variant defines its own `bg`. The user can still pick a different background via the canvas toolbar; the override is transient and resets when switching variants or components. When the user has deviated, a `Recommended: <bg>` pill appears in the canvas with a one-click `Reset` button.
+Recommended canvas background for this component. Applied automatically when the user opens the component (or one of its variants), unless a variant defines its own `bg`. The user can still pick a different background from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail); the override is transient and resets when switching variants or components. When the user has deviated, a `Recommended: <bg>` pill appears in the canvas with a one-click `Reset` button.
 
 Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
 
 `'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the canvas toolbar until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
+`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
 
 ```typescript
 @Showcase({
@@ -274,15 +272,15 @@ When `status` is omitted, the component is treated as stable but renders **witho
 
 **Visual impact**
 
-| Status         | Sidebar item                           | Component header                            |
+| Status         | Sidebar item                           | Component head                              |
 | -------------- | -------------------------------------- | ------------------------------------------- |
-| _unset_        | unchanged                              | no status pill                              |
-| `'stable'`     | unchanged                              | green "Stable" pill with check icon         |
-| `'beta'`       | unchanged                              | blue "Beta" pill                            |
-| `'wip'`        | amber dot at the right edge (tooltip)  | amber "Work in progress" pill (hollow ring) |
-| `'deprecated'` | name struck-through + dimmed (tooltip) | muted "Deprecated" pill                     |
+| _unset_        | unchanged                              | no status chip                              |
+| `'stable'`     | unchanged                              | muted outlined "Stable" chip                |
+| `'beta'`       | unchanged                              | amber "Beta" chip                           |
+| `'wip'`        | amber dot at the right edge (tooltip)  | amber "Work in progress" chip (hollow ring) |
+| `'deprecated'` | name struck-through + dimmed (tooltip) | red "Deprecated" chip                       |
 
-The status pill is rendered inline with the title and the `<selector>` pill in the component header. All colors come from the existing theme tokens, so light/dark mode are handled automatically — except for the Beta accent (`#60a5fa`) because the design system has no `--prism-info` token yet.
+The status chip is rendered inline with the title in the component head's single row; the `<selector>` now lives in the details popover behind the ⓘ glyph. All colors come from the `--prism-mark-*` role tokens, so light/dark mode are handled automatically. A status chip is always an outline and never a filled surface — a permanently visible band is the wrong place for a filled alarm colour, so `deprecated` separates itself by hue rather than by weight.
 
 Use this to communicate migration state while moving components from a legacy library into a new one — set `'wip'` on what's actively being migrated, `'deprecated'` on what should no longer be used, and `'stable'` / `'beta'` to badge maturity once a component is done.
 

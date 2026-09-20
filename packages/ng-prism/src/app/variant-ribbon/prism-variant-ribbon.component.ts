@@ -11,20 +11,7 @@ import {
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-
-function variantColor(name: string, index: number): string {
-  const palette = [
-    '#a78bfa',
-    '#60a5fa',
-    '#34d399',
-    '#fbbf24',
-    '#f472b6',
-    '#8476a2',
-    '#ec4899',
-    '#06b6d4',
-  ];
-  return palette[index % palette.length];
-}
+import { spectrumSlot } from './spectrum.js';
 
 @Component({
   selector: 'prism-variant-ribbon',
@@ -40,10 +27,10 @@ function variantColor(name: string, index: number): string {
           #tabButton
           class="v-tab"
           [class.v-tab--active]="rendererService.activeVariantIndex() === i"
-          [style.--vc]="variantColor(v.name, i)"
+          [style.--i]="slot(i).i"
+          [style.--n]="slot(i).n"
           (click)="rendererService.selectVariant(i)"
         >
-          <span class="v-dot"></span>
           {{ v.name }}
         </button>
         }
@@ -83,10 +70,10 @@ function variantColor(name: string, index: number): string {
     .variant-ribbon {
       display: flex;
       align-items: center;
-      padding: 0 28px;
+      padding: 0 var(--sp-5);
       background: var(--prism-bg);
       border-bottom: 1px solid var(--prism-border);
-      height: 42px;
+      height: var(--band-rail);
     }
 
     .variant-ribbon-tabs {
@@ -118,33 +105,27 @@ function variantColor(name: string, index: number): string {
       cursor: pointer;
       font-family: var(--font-sans);
     }
+    /* Colour as position, not assignment: each tab shows the slice of one
+       broken spectrum that corresponds to where it sits in the sequence. Nine
+       arbitrary hues used to say nothing at all; this says "you are here". */
     .v-tab::after {
       content: '';
       position: absolute;
-      left: 10px;
-      right: 10px;
+      left: var(--sp-3);
+      right: var(--sp-3);
       bottom: 0;
       height: 2px;
-      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+      border-radius: 2px;
+      background: var(--prism-spectrum);
+      background-size: calc(var(--n) * 100%) 100%;
+      background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0;
       opacity: 0;
-      transition: opacity var(--dur-fast);
-      border-radius: 1px 1px 0 0;
+      transition: opacity var(--dur-fast) var(--ease-default);
     }
     .v-tab:hover { color: var(--prism-text-2); }
     .v-tab--active { color: var(--prism-text); }
     .v-tab--active::after { opacity: 1; }
-
-    .v-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 2px;
-      background: var(--vc, var(--prism-primary));
-      opacity: 0.6;
-    }
-    .v-tab--active .v-dot {
-      opacity: 1;
-      box-shadow: 0 0 6px var(--vc);
-    }
+    .v-tab:hover::after { opacity: 0.4; }
 
     .variant-ribbon-right {
       flex-shrink: 0;
@@ -218,8 +199,8 @@ export class PrismVariantRibbonComponent {
     });
   }
 
-  protected variantColor(name: string, index: number): string {
-    return variantColor(name, index);
+  protected slot(index: number): { i: number; n: number } {
+    return spectrumSlot(index, this.variants().length);
   }
 
   protected prev(): void {

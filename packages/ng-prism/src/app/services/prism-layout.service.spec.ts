@@ -68,37 +68,6 @@ describe('PrismLayoutService', () => {
     expect(s.addonsOrientation()).toBe('bottom');
   });
 
-  it('should default template popover to hidden', () => {
-    const s = createService();
-    expect(s.templatePopoverVisible()).toBe(false);
-  });
-
-  it('should toggle template popover', () => {
-    const s = createService();
-    s.toggleTemplatePopover();
-    expect(s.templatePopoverVisible()).toBe(true);
-    s.toggleTemplatePopover();
-    expect(s.templatePopoverVisible()).toBe(false);
-  });
-
-  it('should close template popover', () => {
-    const s = createService();
-    s.toggleTemplatePopover();
-    expect(s.templatePopoverVisible()).toBe(true);
-    s.closeTemplatePopover();
-    expect(s.templatePopoverVisible()).toBe(false);
-  });
-
-  it('should not persist template popover state to localStorage', () => {
-    const s = createService();
-    s.toggleTemplatePopover();
-    const raw = localStorage.getItem('ng-prism-layout');
-    if (raw) {
-      const stored = JSON.parse(raw);
-      expect(stored.templatePopoverVisible).toBeUndefined();
-    }
-  });
-
   it('should clamp sidebar width to [160, 600]', () => {
     const s = createService();
     s.setSidebarWidth(50);

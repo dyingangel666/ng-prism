@@ -8,6 +8,8 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-bg': '#0d0b1c',
   '--prism-bg-surface': '#131022',
   '--prism-bg-elevated': '#1a1535',
+  '--prism-stage': '#16122b',
+  '--prism-stage-edge': 'rgba(255, 255, 255, 0.10)',
 
   '--prism-text': '#ede9f8',
   '--prism-text-2': '#b0a6c8',
@@ -31,6 +33,13 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-success': '#34d399',
   '--prism-warn': '#fbbf24',
   '--prism-danger': '#f87171',
+
+  '--prism-mark-nominal': '#34d399',
+  '--prism-mark-attention': '#e8a33d',
+  '--prism-mark-critical': '#e5484d',
+  '--prism-measure': '#22d3ee',
+  '--prism-spectrum':
+    'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))',
 };
 
 export const PRISM_LIGHT_THEME: Record<string, string> = {
@@ -43,6 +52,8 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-bg': '#ffffff',
   '--prism-bg-surface': '#faf9fd',
   '--prism-bg-elevated': '#ffffff',
+  '--prism-stage': '#ffffff',
+  '--prism-stage-edge': 'rgba(28, 21, 48, 0.14)',
 
   '--prism-text': '#1c1530',
   '--prism-text-2': '#4d4266',
@@ -63,9 +74,16 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-input-bg': 'rgba(28, 21, 48, 0.04)',
   '--prism-dot': 'rgba(124, 58, 237, 0.2)',
 
-  '--prism-success': '#059669',
-  '--prism-warn': '#d97706',
-  '--prism-danger': '#dc2626',
+  '--prism-success': '#047857',
+  '--prism-warn': '#8f6b00',
+  '--prism-danger': '#951226',
+
+  '--prism-mark-nominal': '#047857',
+  '--prism-mark-attention': '#8f6b00',
+  '--prism-mark-critical': '#951226',
+  '--prism-measure': '#0b93ad',
+  '--prism-spectrum':
+    'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))',
 };
 
 export const PRISM_BASE_TOKENS: Record<string, string> = {
@@ -79,6 +97,14 @@ export const PRISM_BASE_TOKENS: Record<string, string> = {
   '--fs-xl': '15px',
   '--fs-2xl': '22px',
 
+  '--sp-1': '2px',
+  '--sp-2': '4px',
+  '--sp-3': '8px',
+  '--sp-4': '12px',
+  '--sp-5': '16px',
+  '--sp-6': '24px',
+  '--sp-7': '40px',
+
   '--radius-xs': '3px',
   '--radius-sm': '5px',
   '--radius-md': '7px',
@@ -89,11 +115,32 @@ export const PRISM_BASE_TOKENS: Record<string, string> = {
   '--dur-base': '0.2s',
   '--dur-slow': '0.3s',
 
+  /**
+   * Chrome density. Set on the shell host, so a consuming app can compact or
+   * loosen the entire interface from CSS alone:
+   *
+   *   prism-shell { --density: .8 }
+   *
+   * There is deliberately no signal, service or menu behind this — the whole
+   * control surface is the custom property.
+   */
+  '--density': '1',
+
+  '--band-header': 'calc(40px * var(--density))',
+  '--band-head': 'calc(36px * var(--density))',
+  '--band-rail': 'calc(28px * var(--density))',
+  '--band-tabs': 'calc(34px * var(--density))',
+
   '--prism-void-light': '#f7f5fc',
   '--prism-void-dark': '#07050f',
   '--prism-text-light': '#ede9f8',
 
-  '--prism-header-height': '52px',
+  /**
+   * Kept as an alias rather than removed: it is exported through
+   * PRISM_BASE_TOKENS, so a consuming stylesheet may reference it even though
+   * nothing inside this package does.
+   */
+  '--prism-header-height': 'var(--band-header)',
 
   '--prism-font-sans': 'var(--font-sans)',
   '--prism-font-mono': 'var(--font-mono)',

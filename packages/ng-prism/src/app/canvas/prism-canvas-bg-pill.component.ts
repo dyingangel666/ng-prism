@@ -22,13 +22,19 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
     }
   `,
   styles: `
+    /* Top left, opposite the tool rail. Both used to claim the right corner and
+       the rail won, hiding a notice whose whole job is to be noticed. The rail
+       is permanent and the notice is not, so the permanent thing keeps the
+       corner it sits in and this moves. Nothing else occupies the left corner:
+       the zoom badge that used to live here was a duplicate of the readout the
+       rail carries. */
     :host {
       position: absolute;
       top: var(--prism-canvas-overlay-top, 12px);
-      right: var(--prism-canvas-overlay-inline, 20px);
+      left: var(--prism-canvas-overlay-inline, 20px);
       pointer-events: none;
       z-index: 2;
-      transition: top var(--dur-base), right var(--dur-base);
+      transition: top var(--dur-base), left var(--dur-base);
     }
     .prism-bg-pill {
       display: inline-flex;

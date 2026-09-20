@@ -4,10 +4,11 @@ import {
   computed,
   ChangeDetectionStrategy,
 } from '@angular/core';
-import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { A11yAuditService } from '../panels/a11y/a11y-audit.service.js';
-import { PrismStatComponent } from './prism-stat.component.js';
+import { PrismHeadInfoComponent } from './prism-head-info.component.js';
+import { PrismHeadGaugeComponent } from './prism-head-gauge.component.js';
+import type { HeadMetric } from './head-metrics.js';
 import type { ComponentStatus } from '../../decorator/showcase.types.js';
 
 interface StatusBadge {
@@ -38,77 +39,34 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
   selector: 'prism-component-head',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent, PrismStatComponent],
+  imports: [PrismHeadInfoComponent, PrismHeadGaugeComponent],
   template: `
     @if (comp(); as c) {
     <section class="comp-head">
-      <div class="comp-head-top">
-        <div>
-          <div class="comp-crumb">
-            <span>{{ category() }}</span>
-            <prism-icon name="chevron-right" [size]="10" />
-            <span>{{ c.meta.showcaseConfig.title }}</span>
-          </div>
-          <h1 class="comp-title">
-            {{ c.meta.showcaseConfig.title }}
-            <span class="comp-selector"
-              >&lt;{{ c.meta.componentMeta.selector }}&gt;</span
-            >
-            @if (status(); as s) {
-            <span
-              class="comp-status comp-status--{{ s }}"
-              [attr.title]="statusBadge()!.tooltip"
-            >
-              @if (s === 'stable') {
-              <prism-icon name="check" [size]="13" />
-              } @else if (s === 'wip') {
-              <span class="comp-status-ring" aria-hidden="true"></span>
-              } @else {
-              <span class="comp-status-dot" aria-hidden="true"></span>
-              }
-              <span class="comp-status-label">{{ statusBadge()!.label }}</span>
-            </span>
-            }
-          </h1>
-          @if (c.meta.showcaseConfig.description) {
-          <p class="comp-desc">{{ c.meta.showcaseConfig.description }}</p>
-          } @if (c.meta.showcaseConfig.tags?.length) {
-          <div class="comp-tags">
-            @for (tag of c.meta.showcaseConfig.tags; track tag) {
-            <span class="comp-tag">{{ tag }}</span>
-            }
-          </div>
-          }
-        </div>
-        <div class="comp-head-stats">
-          @if (variantCount() > 0) {
-          <prism-stat [value]="variantCount()" label="Variants" />
-          } @if (coveragePercent() !== null) {
-          <prism-stat
-            [value]="coveragePercent()! + '%'"
-            label="Coverage"
-            [pill]="coveragePercent()! >= 90 ? 'OK' : 'WARN'"
-            [pillVariant]="coveragePercent()! >= 90 ? 'ok' : 'warn'"
-          />
-          } @if (bundleSize() !== null) {
-          <prism-stat [value]="bundleSize()!" label="Bundle" />
-          } @if (a11yScore() !== null) {
-          <prism-stat
-            [value]="a11yScore()!"
-            label="Score"
-            pill="A11y"
-            [pillVariant]="a11yScore()! >= 90 ? 'ok' : 'warn'"
-          />
-          } @if (vrtStat(); as vrt) {
-          <prism-stat
-            [value]="vrt.value"
-            label="VRT Diff"
-            pill="VRT"
-            [pillVariant]="vrt.variant"
-          />
-          }
-        </div>
-      </div>
+      <span class="comp-crumb">{{ category() }}</span>
+      <h1 class="comp-title">{{ c.meta.showcaseConfig.title }}</h1>
+
+      <prism-head-info
+        [selector]="c.meta.componentMeta.selector"
+        [description]="c.meta.showcaseConfig.description"
+        [tags]="c.meta.showcaseConfig.tags ?? []"
+        [variantCount]="variantCount()"
+      />
+
+      @if (statusBadge(); as badge) {
+      <span
+        class="comp-status comp-status--{{ status() }}"
+        [attr.title]="badge.tooltip"
+      >
+        <span class="comp-status-mark" aria-hidden="true"></span>
+        {{ badge.label }}
+      </span>
+      }
+
+      <span class="comp-spacer"></span>
+
+      <prism-head-gauge [metrics]="metrics()" />
+      <span class="comp-head-end"><ng-content select="[headEnd]" /></span>
     </section>
     }
   `,
@@ -116,142 +74,105 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
     :host { display: block; flex-shrink: 0; }
 
     .comp-head {
-      padding: 12px 28px;
+      height: var(--band-head);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: 0 var(--sp-5);
       background: var(--prism-bg);
       border-bottom: 1px solid var(--prism-border);
-      position: relative;
-    }
-    .comp-head::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 6px;
-      background: linear-gradient(180deg, var(--prism-primary-from) 0%, var(--prism-accent) 50%, var(--prism-primary-to) 100%);
     }
 
-    .comp-head-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
+    /* The text yields, the controls never do. A long category and a long title
+       would otherwise push the gauge out of a fixed-height row whose ancestors
+       clip — making the measurement unreachable in exactly the case where you
+       most want to read it, and costing the gauge the fixed position it was
+       designed around. The trade is deliberate: a title truncated with an
+       ellipsis, so the chip stays put at the right edge. The crumb gives way
+       first, being the least important text in the row. */
     .comp-crumb {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: var(--fs-sm);
+      flex: 0 8 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: var(--fs-xs);
       color: var(--prism-text-ghost);
-      margin-bottom: 6px;
-      font-weight: 500;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
+      white-space: nowrap;
     }
-    .comp-crumb prism-icon { opacity: 0.6; }
+    .comp-crumb::after { content: ' /'; }
 
     .comp-title {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       margin: 0;
-      font-size: var(--fs-2xl);
-      font-weight: 700;
-      letter-spacing: -0.02em;
+      font-size: var(--fs-xl);
+      font-weight: 600;
+      letter-spacing: -0.015em;
       color: var(--prism-text);
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      white-space: nowrap;
     }
 
-    .comp-selector {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: var(--prism-primary);
-      padding: 3px 8px;
-      border-radius: var(--radius-sm);
-      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      border: 1px solid color-mix(in srgb, var(--prism-primary) 20%, transparent);
-      font-weight: 500;
-    }
+    .comp-spacer { flex: 1; }
 
+    .comp-status,
+    prism-head-info,
+    prism-head-gauge,
+    .comp-head-end { flex: none; }
+
+    /* Wraps the slot rather than styling the projected element, which this
+       stylesheet cannot reach. :empty keeps the row's trailing gap from
+       appearing when nothing is projected — comment anchors do not count. */
+    .comp-head-end { display: inline-flex; align-items: center; }
+    .comp-head-end:empty { display: none; }
+
+    /* Always an outline, never a filled surface — deprecated separates itself
+       by hue, not by weight. A filled alarm-coloured chip in a permanently
+       visible band is exactly the "red as background texture" problem this
+       redesign exists to fix. */
     .comp-status {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      height: 24px;
-      padding: 0 10px 0 8px;
-      border-radius: 5px;
-      font-size: 11.5px;
+      gap: var(--sp-2);
+      height: 18px;
+      padding: 0 var(--sp-3) 0 var(--sp-2);
+      border-radius: var(--radius-xs);
+      border: 1px solid currentColor;
+      font-size: var(--fs-xs);
       font-weight: 600;
-      letter-spacing: 0.02em;
-      border: 1px solid;
-      background: transparent;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      color: var(--prism-text-muted);
     }
-    .comp-status-label { line-height: 1; }
-    .comp-status-dot {
-      width: 7px;
-      height: 7px;
+    .comp-status-mark {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: currentColor;
     }
-    .comp-status-ring {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      border: 1.5px solid currentColor;
-      background: transparent;
-      box-sizing: border-box;
-    }
-    .comp-status prism-icon { display: inline-flex; }
-
     .comp-status--stable {
-      color: var(--prism-success);
-      background: color-mix(in srgb, var(--prism-success) 10%, transparent);
-      border-color: color-mix(in srgb, var(--prism-success) 35%, transparent);
+      color: var(--prism-mark-nominal);
+      background: color-mix(in srgb, var(--prism-mark-nominal) 10%, transparent);
     }
-    .comp-status--beta {
-      color: #60a5fa;
-      background: color-mix(in srgb, #60a5fa 10%, transparent);
-      border-color: color-mix(in srgb, #60a5fa 35%, transparent);
-    }
+    .comp-status--beta,
     .comp-status--wip {
-      color: var(--prism-warn);
-      background: color-mix(in srgb, var(--prism-warn) 10%, transparent);
-      border-color: color-mix(in srgb, var(--prism-warn) 35%, transparent);
+      color: var(--prism-mark-attention);
+      background: color-mix(in srgb, var(--prism-mark-attention) 10%, transparent);
+    }
+    .comp-status--wip .comp-status-mark {
+      background: transparent;
+      border: 1.5px solid currentColor;
+      box-sizing: border-box;
+      width: 7px;
+      height: 7px;
     }
     .comp-status--deprecated {
-      color: var(--prism-text-muted);
-      background: var(--prism-input-bg);
-      border-color: var(--prism-border-strong);
-    }
-
-    .comp-desc {
-      margin: 6px 0 0;
-      font-size: var(--fs-lg);
-      color: var(--prism-text-2);
-      max-width: 72ch;
-      line-height: 1.55;
-    }
-
-    .comp-tags {
-      margin-top: 10px;
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .comp-tag {
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 500;
-      border-radius: var(--radius-xs);
-      background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
-      color: var(--prism-primary);
-      border: 1px solid color-mix(in srgb, var(--prism-primary) 20%, transparent);
-    }
-
-    .comp-head-stats {
-      display: flex;
-      gap: 18px;
-      flex-shrink: 0;
+      color: var(--prism-mark-critical);
+      background: color-mix(in srgb, var(--prism-mark-critical) 12%, transparent);
+      border-color: color-mix(in srgb, var(--prism-mark-critical) 55%, transparent);
     }
   `,
 })
@@ -290,16 +211,21 @@ export class PrismComponentHeadComponent {
     return null;
   });
 
-  protected readonly bundleSize = computed<string | null>(() => {
-    const meta = this.componentMeta();
-    const perf = meta?.['perf'] as Record<string, unknown> | undefined;
-    const bundle = perf?.['bundle'] as Record<string, unknown> | undefined;
-    if (bundle && typeof bundle['gzipKb'] === 'number')
-      return bundle['gzipKb'] + ' kb';
-    if (bundle && typeof bundle['sizeKb'] === 'number')
-      return bundle['sizeKb'] + ' kb';
-    return null;
-  });
+  /*
+   * There is deliberately no bundle metric here.
+   *
+   * The computed that used to produce one read `meta.perf.bundle.gzipKb` and
+   * `.sizeKb`. `@ng-prism/plugin-perf` writes neither: `bundle-scanner.ts`
+   * stores `sourceSize` and `gzipEstimate`, and `perf.types.ts` declares only
+   * those two. So the value was always null, and the old head simply hid the
+   * tile — a gauge row reading `Bundle —` on every component is noise, not
+   * information.
+   *
+   * Do not re-add the read against the real key names without first settling
+   * whether `gzipEstimate` is bytes or kilobytes. The old code appended ' kb'
+   * to whatever it found, and that question belongs to the perf plugin, not
+   * to the head.
+   */
 
   protected readonly a11yScore = computed<number | null>(() => {
     return this.auditService.scoreResult()?.score ?? null;
@@ -325,6 +251,40 @@ export class PrismComponentHeadComponent {
     return variant === 'ok' || variant === 'warn' || variant === 'danger'
       ? { value, variant }
       : null;
+  });
+
+  /**
+   * The full metric list for the gauge, in source order.
+   *
+   * Order matters: `summarizeMetrics` breaks severity ties by position, so
+   * this sequence is what makes the chip show a stable metric rather than
+   * flickering between two equally bad ones.
+   */
+  protected readonly metrics = computed<HeadMetric[]>(() => {
+    const coverage = this.coveragePercent();
+    const a11y = this.a11yScore();
+    const vrt = this.vrtStat();
+
+    return [
+      {
+        id: 'coverage',
+        label: 'Coverage',
+        value: coverage === null ? '—' : `${coverage}%`,
+        variant: coverage === null ? 'none' : coverage >= 90 ? 'ok' : 'warn',
+      },
+      {
+        id: 'a11y',
+        label: 'A11y score',
+        value: a11y === null ? '—' : String(a11y),
+        variant: a11y === null ? 'none' : a11y >= 90 ? 'ok' : 'warn',
+      },
+      {
+        id: 'vrt',
+        label: 'VRT diff',
+        value: vrt === null ? '—' : vrt.value,
+        variant: vrt === null ? 'none' : vrt.variant,
+      },
+    ];
   });
 
   private readonly componentMeta = computed(() => {

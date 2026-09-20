@@ -123,10 +123,13 @@ export function rollupCategory(
 }
 
 /**
- * The left icon slot carries lifecycle — what the author declared — in form
- * alone. Colour in the sidebar means exactly one thing, measured quality, so a
- * work-in-progress component must never look like a finding.
+ * The lifecycle glyph for the sidebar's left slot.
+ *
+ * Shape only, never colour: a work-in-progress component must never read as a
+ * finding. At 11px the previous pair (cube vs dashed square) was effectively
+ * one glyph, so `wip` now uses a shape that differs in silhouette rather than
+ * in stroke style.
  */
 export function lifecycleIcon(status: ComponentStatus | undefined): string {
-  return status === 'wip' ? 'box-select' : 'box';
+  return status === 'wip' ? 'circle-dashed' : 'box';
 }

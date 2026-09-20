@@ -1,11 +1,10 @@
-import { Component, computed, inject } from '@angular/core';
-import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismPluginService } from '../services/prism-plugin.service.js';
 
 @Component({
   selector: 'prism-view-tab-bar',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="prism-view-tab-bar">
       <button
@@ -31,52 +30,43 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
     </div>
   `,
   styles: `
+    :host { display: inline-flex; }
+
     .prism-view-tab-bar {
-      display: flex;
-      border-bottom: 1px solid var(--prism-border);
-      padding: 0 8px;
-      flex-shrink: 0;
-      background: var(--prism-bg-elevated);
+      display: inline-flex;
+      gap: 2px;
+      padding: 2px;
+      border-radius: var(--radius-sm);
+      background: var(--prism-input-bg);
     }
 
     .prism-view-tab-bar__tab {
-      padding: 9px 14px;
-      font-size: 13px;
-      font-family: var(--prism-font-sans);
-      border: none;
+      padding: 2px var(--sp-4);
+      border: 0;
+      border-radius: var(--radius-xs);
       background: none;
+      font-family: var(--prism-font-sans);
+      font-size: var(--fs-md);
       color: var(--prism-text-muted);
       cursor: pointer;
-      position: relative;
-      margin-bottom: -1px;
-      transition: color 0.12s;
+      white-space: nowrap;
+      transition: color var(--dur-fast) var(--ease-default);
     }
-
-    .prism-view-tab-bar__tab::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 8px;
-      right: 8px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
-      opacity: 0;
-      transition: opacity 0.12s;
-    }
-
     .prism-view-tab-bar__tab:hover { color: var(--prism-text-2); }
-
-    .prism-view-tab-bar__tab--active { color: var(--prism-primary); font-weight: 500; }
-
-    .prism-view-tab-bar__tab--active::after { opacity: 1; }
+    .prism-view-tab-bar__tab:focus-visible {
+      outline: 2px solid var(--prism-primary);
+      outline-offset: 1px;
+    }
+    .prism-view-tab-bar__tab--active {
+      background: var(--prism-bg-elevated);
+      color: var(--prism-text);
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
   `,
 })
 export class PrismViewTabBarComponent {
   protected readonly panelService = inject(PrismPanelService);
-  private readonly pluginService = inject(PrismPluginService);
 
-  protected readonly viewPanels = computed(() => [
-    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
-    ...this.pluginService.viewPanels(),
-  ]);
+  protected readonly viewPanels = this.panelService.visibleViewPanels;
 }

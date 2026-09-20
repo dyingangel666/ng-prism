@@ -1,9 +1,17 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, createEnvironmentInjector, effect, EnvironmentInjector, inject, OnDestroy, signal, type Type } from '@angular/core';
-import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import {
+  Component,
+  computed,
+  createEnvironmentInjector,
+  effect,
+  EnvironmentInjector,
+  inject,
+  OnDestroy,
+  signal,
+  type Type,
+} from '@angular/core';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismPluginService } from '../services/prism-plugin.service.js';
 
 @Component({
   selector: 'prism-view-panel-host',
@@ -12,7 +20,13 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
   template: `
     <div class="prism-view-panel-host">
       @if (resolvedComponent()) {
-        <ng-container *ngComponentOutlet="resolvedComponent(); inputs: panelInputs(); injector: activeInjector()" />
+      <ng-container
+        *ngComponentOutlet="
+          resolvedComponent();
+          inputs: panelInputs();
+          injector: activeInjector()
+        "
+      />
       }
     </div>
   `,
@@ -27,15 +41,11 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
   `,
 })
 export class PrismViewPanelHostComponent implements OnDestroy {
-  private readonly pluginService = inject(PrismPluginService);
   private readonly nav = inject(PrismNavigationService);
   protected readonly panelService = inject(PrismPanelService);
   private readonly envInjector = inject(EnvironmentInjector);
 
-  private readonly allViewPanels = computed(() => [
-    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
-    ...this.pluginService.viewPanels(),
-  ]);
+  private readonly allViewPanels = this.panelService.viewPanels;
 
   protected readonly resolvedComponent = signal<Type<unknown> | null>(null);
   protected readonly panelInputs = computed(() => ({
@@ -53,7 +63,11 @@ export class PrismViewPanelHostComponent implements OnDestroy {
     if (!this.injectorCache.has(panel.id)) {
       this.injectorCache.set(
         panel.id,
-        createEnvironmentInjector(panel.providers, this.envInjector, `PrismViewPanel[${panel.id}]`),
+        createEnvironmentInjector(
+          panel.providers,
+          this.envInjector,
+          `PrismViewPanel[${panel.id}]`
+        )
       );
     }
     return this.injectorCache.get(panel.id)!;
@@ -61,7 +75,10 @@ export class PrismViewPanelHostComponent implements OnDestroy {
 
   constructor() {
     effect(() => {
-      const panel = this.allViewPanels().find((p) => p.id === this.panelService.activeViewId()) ?? null;
+      const panel =
+        this.allViewPanels().find(
+          (p) => p.id === this.panelService.activeViewId()
+        ) ?? null;
       if (!panel) {
         this.resolvedComponent.set(null);
         return;

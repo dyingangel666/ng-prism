@@ -43,12 +43,12 @@ The optional generic parameter `T` is the component class. When set via `@Showca
 
 ### `description`
 
-Optional Markdown-formatted text rendered below the component title.
+Optional text rendered in the component head's details popover, behind the ⓘ glyph next to the title.
 
 ```typescript
 @Showcase({
   title: 'Alert Banner',
-  description: 'Displays status messages. Supports `info`, `warning`, `success`, and `error`.',
+  description: 'Displays status messages in four severities: info, warning, success and error.',
 })
 ```
 
@@ -167,13 +167,13 @@ Optional arbitrary key-value metadata. Plugins read their own namespaced keys fr
 
 ### `bg`
 
-Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background via the canvas toolbar — the override is transient and resets when switching variants or components.
+Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail) — the override is transient and resets when switching variants or components.
 
 Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
 
 `'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the canvas toolbar until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
+`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
 
 ```typescript
 @Showcase({
@@ -276,7 +276,7 @@ Optional migration / maturity badge. Accepts one of four values from the `Compon
 @Showcase({ title: 'Dialog', status: 'deprecated' })
 ```
 
-When the property is omitted, the component is treated like `stable` but rendered **without** any indicator — neither in the sidebar nor in the component header. Set the property explicitly only when you want to draw attention to the migration state.
+When the property is omitted, the component is treated like `stable` but rendered **without** any indicator — neither in the sidebar nor in the component head. Set the property explicitly only when you want to draw attention to the migration state.
 
 UI impact:
 
@@ -284,9 +284,9 @@ UI impact:
   - `'wip'` → small amber dot at the right edge of the sidebar item, with a native tooltip "Work in progress".
   - `'deprecated'` → component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
   - `'stable'` / `'beta'` / unset → no sidebar decoration.
-- **Component header** — next to the selector pill, an inline status pill renders for every explicit value (Stable, Beta, Work in progress, Deprecated). The pill stays inline with title and `<selector>` pill.
+- **Component head** — an outlined status chip renders inline with the title for every explicit value (Stable, Beta, Work in progress, Deprecated). The `<selector>` itself has moved into the details popover behind the ⓘ glyph.
 
-All colors come from the existing theme tokens (`--prism-success`, `--prism-warn`, `--prism-text-muted`, `--prism-text-ghost`, `--prism-input-bg`, `--prism-border-strong`) and adapt automatically to light/dark mode. The Beta accent uses `#60a5fa` because no `--prism-info` token exists yet.
+All colors come from the `--prism-mark-*` role tokens (plus `--prism-text-muted` for `stable`) and adapt automatically to light/dark mode. The chip is always an outline and never a filled surface, so `deprecated` separates itself by hue rather than by weight.
 
 ---
 

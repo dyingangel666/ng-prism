@@ -34,8 +34,10 @@ import { PrismCaptureService } from '../services/prism-capture.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
+import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
 import { buildKnownInputs } from './known-inputs.js';
 import { resolveOverlay } from './overlay-resolver.js';
+import { parseContentToNodes } from './projectable-content.js';
 
 @Component({
   selector: 'prism-renderer',
@@ -53,11 +55,6 @@ import { resolveOverlay } from './overlay-resolver.js';
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
     >
       @if (!capture.active()) {
-      <div class="canvas-badges">
-        <span class="c-badge"
-          >{{ Math.round(canvasService.zoom() * 100) }}%</span
-        >
-      </div>
       <div
         class="stage-crosshair"
         [class.visible]="canvasService.guides()"
@@ -85,116 +82,94 @@ import { resolveOverlay } from './overlay-resolver.js';
       </div>
     </div>
   `,
-  styles: `
-    :host { display: block; min-height: 0; flex: 1; }
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 0;
+        flex: 1;
+      }
 
-    .prism-canvas-stage {
-      position: relative;
-      overflow: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      min-height: 200px;
-      height: 100%;
-      background-color: var(--prism-bg-surface);
-      background-image: radial-gradient(circle, var(--prism-dot) 1px, transparent 1px);
-      background-size: 20px 20px;
-      transition: filter var(--dur-base);
-      --prism-canvas-overlay-top: 12px;
-      --prism-canvas-overlay-inline: 20px;
-    }
-    .prism-canvas-stage[data-rulers] {
-      --prism-canvas-overlay-top: 28px;
-      --prism-canvas-overlay-inline: 28px;
-    }
+      .prism-canvas-stage {
+        position: relative;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        min-height: 200px;
+        height: 100%;
+        background-color: var(--prism-stage);
 
-    .prism-canvas-stage[data-bg="plain"] {
-      background-image: none;
-    }
-    /* Flat, not dotted. "light" and "dark" name a surface a component was
-       designed against — and they are the two backgrounds whose colour is
-       absolute rather than a theme token, which is what makes them the values
-       to declare for a screenshot baseline. "dots" already exists for anyone
-       who wants the grid. */
-    .prism-canvas-stage[data-bg="light"] {
-      background-color: var(--prism-void-light, #f7f5fc);
-      background-image: none;
-    }
-    .prism-canvas-stage[data-bg="dark"] {
-      background-color: var(--prism-void-dark, #07050f);
-      background-image: none;
-    }
-    /* "transparent" shares the checkerboard on purpose. The two say the same
-       thing in the two media the canvas has: while browsing, the checkerboard
-       is already the UI's word for "no surface here"; in a capture it becomes
-       literal transparency. A stage that were really see-through in the app
-       would just show the shell through the canvas, which means nothing. The
-       split between the two lives entirely in CAPTURE_STYLES. */
-    .prism-canvas-stage[data-bg="checker"],
-    .prism-canvas-stage[data-bg="transparent"] {
-      background-image:
-        linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--prism-border) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--prism-border) 75%);
-      background-size: 16px 16px;
-      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-    }
+        /* The edge is outline + shadow, never border and never extra padding.
+         plugin-visual-regression screenshots .demo-wrap, which is centred in
+         this element; a border would shrink the content box by 2px and move
+         that centre, shifting all 15 baselines in test-workspace/vrt/baseline
+         without a single component having changed. Capture mode resets this
+         element's padding but not its border, and this repo has no VRT runner
+         to catch the drift. outline and box-shadow do not participate in
+         layout, so the box is provably unchanged. Keep it that way.
+         They do still paint, and outline-offset is negative, so the line lands
+         inside the box: CAPTURE_STYLES in prism-capture.service.ts sets both
+         to none, which is only safe because neither is load-bearing here. */
+        outline: 1px solid var(--prism-stage-edge);
+        outline-offset: -1px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+          0 8px 24px -12px rgba(0, 0, 0, 0.18);
+        transition: filter var(--dur-base);
+        --prism-canvas-overlay-top: 12px;
+        --prism-canvas-overlay-inline: 20px;
+      }
+      .prism-canvas-stage[data-rulers] {
+        --prism-canvas-overlay-top: 28px;
+        --prism-canvas-overlay-inline: 28px;
+      }
 
-    .stage-crosshair {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity var(--dur-base);
-    }
-    .stage-crosshair.visible { opacity: 1; }
-    .stage-crosshair::before,
-    .stage-crosshair::after {
-      content: '';
-      position: absolute;
-      background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
-    }
-    .stage-crosshair::before { left: 0; right: 0; top: 50%; height: 1px; }
-    .stage-crosshair::after { top: 0; bottom: 0; left: 50%; width: 1px; }
+      .stage-crosshair {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--dur-base);
+      }
+      .stage-crosshair.visible {
+        opacity: 1;
+      }
+      .stage-crosshair::before,
+      .stage-crosshair::after {
+        content: '';
+        position: absolute;
+        background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
+      }
+      .stage-crosshair::before {
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+      }
+      .stage-crosshair::after {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+      }
 
-    .canvas-badges {
-      position: absolute;
-      top: var(--prism-canvas-overlay-top);
-      left: var(--prism-canvas-overlay-inline);
-      display: flex;
-      gap: 6px;
-      pointer-events: none;
-      transition: top var(--dur-base), left var(--dur-base);
-    }
-    .c-badge {
-      font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      padding: 3px 7px;
-      border-radius: 4px;
-      background: color-mix(in srgb, var(--prism-bg-elevated) 90%, transparent);
-      border: 1px solid var(--prism-border);
-      color: var(--prism-text-muted);
-      backdrop-filter: blur(8px);
-    }
-
-    .demo-wrap {
-      position: relative;
-      display: inline-block;
-      transform: scale(var(--zoom, 1));
-      transition: transform 0.18s;
-    }
-    .demo-wrap[data-canvas-layout="stretch"] {
-      display: block;
-      width: 100%;
-      max-width: 800px;
-    }
-
-  `,
+      .demo-wrap {
+        position: relative;
+        display: inline-block;
+        transform: scale(var(--zoom, 1));
+        transition: transform 0.18s;
+      }
+      .demo-wrap[data-canvas-layout='stretch'] {
+        display: block;
+        width: 100%;
+        max-width: 800px;
+      }
+    `,
+    CANVAS_BG_STYLES,
+  ],
 })
 export class PrismRendererComponent {
-  protected readonly Math = Math;
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly canvasService = inject(PrismCanvasService);
@@ -438,63 +413,5 @@ export class PrismRendererComponent {
     if (hadComponent) {
       this.rendererHooks?.onAfterDestroy?.('');
     }
-  }
-}
-
-// SAFETY: `content` originates from `@Showcase({ variants: [{ content }] })`
-// in developer-authored source code. It is trusted by ng-prism's threat model
-// (see SECURITY.md). Sanitization would strip the Angular component/directive
-// selectors that variant content is meant to project.
-function parseContentToNodes(
-  content: string | Record<string, string>
-): Node[][] {
-  if (typeof content === 'string') {
-    return [htmlToNodes(content)];
-  }
-
-  const defaultNodes = content['default']
-    ? htmlToNodes(content['default'])
-    : [];
-  const result: Node[][] = [defaultNodes];
-
-  for (const [selector, html] of Object.entries(content)) {
-    if (selector === 'default') continue;
-    const wrapper = document.createElement('div');
-    // SAFETY: trusted developer-authored HTML — see SECURITY.md.
-    wrapper.innerHTML = html;
-    const nodes: Node[] = [];
-    for (const child of Array.from(wrapper.childNodes)) {
-      const el = document.createElement('div');
-      // SAFETY: trusted developer-authored HTML — see SECURITY.md.
-      el.innerHTML = (child as Element).outerHTML ?? child.textContent ?? '';
-      const projected = el.firstChild;
-      if (projected && projected instanceof Element) {
-        applySelector(projected, selector);
-        nodes.push(projected);
-      } else if (projected) {
-        const span = document.createElement('span');
-        applySelector(span, selector);
-        span.textContent = child.textContent;
-        nodes.push(span);
-      }
-    }
-    result.push(nodes);
-  }
-
-  return result;
-}
-
-// SAFETY: see `parseContentToNodes` above and SECURITY.md — `html` is trusted
-// developer-authored variant content from the `@Showcase` decorator.
-function htmlToNodes(html: string): Node[] {
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = html;
-  return Array.from(wrapper.childNodes);
-}
-
-function applySelector(el: Element, selector: string): void {
-  const attrMatch = selector.match(/^\[([^\]=]+)]$/);
-  if (attrMatch) {
-    el.setAttribute(attrMatch[1], '');
   }
 }

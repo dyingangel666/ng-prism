@@ -26,16 +26,6 @@ import {
 
 const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Data Display': '#f472b6',
-  Feedback: '#fbbf24',
-  Inputs: '#a78bfa',
-  Layout: '#34d399',
-  Navigation: '#60a5fa',
-  Overlay: '#c084fc',
-  Directives: '#ec4899',
-};
-
 const SECTION_ICONS: Record<string, string> = {
   Components: 'box',
   Directives: 'zap',
@@ -46,18 +36,8 @@ function sectionIcon(name: string): string {
   return SECTION_ICONS[name] ?? DEFAULT_SECTION_ICON;
 }
 
-function categoryColor(name: string): string {
-  if (CATEGORY_COLORS[name]) return CATEGORY_COLORS[name];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++)
-    hash = ((hash << 5) - hash + name.charCodeAt(i)) | 0;
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 70%, 65%)`;
-}
-
 interface SidebarCategory {
   name: string;
-  color: string;
   items: NavigationItem[];
 }
 
@@ -69,7 +49,6 @@ interface SidebarItem {
 
 interface ComponentCategory {
   name: string;
-  color: string;
   items: SidebarItem[];
   rollup: CategoryRollup;
 }
@@ -113,7 +92,7 @@ interface ComponentCategory {
               [attr.aria-expanded]="!isCollapsed('page:' + cat.name)"
             >
               <prism-icon name="chevron-down" [size]="10" />
-              <span class="sb-group-chip" [style.--chip]="cat.color"></span>
+              <span class="sb-group-chip"></span>
               {{ cat.name }}
             </button>
             @if (!isCollapsed('page:' + cat.name)) {
@@ -159,19 +138,24 @@ interface ComponentCategory {
             "
           >
             <prism-icon name="chevron-down" [size]="10" />
-            <span class="sb-group-chip" [style.--chip]="cat.color"></span>
+            <span class="sb-group-chip"></span>
             {{ cat.name }}
-            @if (cat.rollup.problems) {
             <span
-              class="sb-group-rollup"
-              [class.sb-group-rollup--warn]="cat.rollup.variant === 'warn'"
-              [class.sb-group-rollup--danger]="cat.rollup.variant === 'danger'"
-              [attr.title]="rollupTooltip(cat.rollup)"
-              [attr.aria-label]="rollupTooltip(cat.rollup)"
-              >{{ cat.rollup.problems }}</span
+              class="sb-group-count"
+              [class.sb-group-count--warn]="cat.rollup.variant === 'warn'"
+              [class.sb-group-count--danger]="cat.rollup.variant === 'danger'"
+              [attr.title]="
+                cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+              "
+              [attr.aria-label]="
+                cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+              "
             >
-            }
-            <span class="sb-group-count">{{ cat.items.length }}</span>
+              @if (cat.rollup.problems) { {{ cat.rollup.problems }}/{{
+                cat.items.length
+              }}
+              } @else { {{ cat.items.length }} }
+            </span>
           </button>
           @if (!isCollapsed('sec:' + section.name + ':' + cat.name)) {
           <div class="sb-group-body">
@@ -187,9 +171,8 @@ interface ComponentCategory {
             >
               <prism-icon [name]="row.icon" [size]="12" class="sb-item-icon" />
               <span class="sb-item-name">{{ itemLabel(row.item) }}</span>
-              @if (row.decorations) {
               <span class="sb-item-health">
-                @for (mark of row.decorations.marks; track mark.id) {
+                @for (mark of row.decorations?.marks ?? []; track mark.id) {
                 <prism-icon
                   [name]="mark.icon"
                   [size]="11"
@@ -197,7 +180,6 @@ interface ComponentCategory {
                 />
                 }
               </span>
-              }
             </button>
             }
           </div>
@@ -322,8 +304,7 @@ interface ComponentCategory {
       width: 6px;
       height: 6px;
       border-radius: 2px;
-      background: var(--chip, var(--prism-primary));
-      box-shadow: 0 0 6px var(--chip, var(--prism-primary));
+      background: var(--prism-text-ghost);
     }
     .sb-group-count {
       margin-left: auto;
@@ -332,27 +313,8 @@ interface ComponentCategory {
       color: var(--prism-text-ghost);
       font-weight: 500;
     }
-
-    .sb-group-rollup {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 9.5px;
-      font-weight: 600;
-      letter-spacing: 0;
-      padding: 1px 5px;
-      border-radius: 8px;
-    }
-    .sb-group-rollup--warn {
-      color: var(--prism-warn);
-      background: color-mix(in srgb, var(--prism-warn) 16%, transparent);
-    }
-    .sb-group-rollup--danger {
-      color: var(--prism-danger);
-      background: color-mix(in srgb, var(--prism-danger) 16%, transparent);
-    }
-    .sb-group-rollup + .sb-group-count {
-      margin-left: 6px;
-    }
+    .sb-group-count--warn { color: var(--prism-mark-attention); }
+    .sb-group-count--danger { color: var(--prism-mark-critical); }
 
     .sb-item {
       display: flex;
@@ -365,9 +327,7 @@ interface ComponentCategory {
       color: var(--prism-text-2);
       cursor: pointer;
       border: none;
-      border-left: 2px solid transparent;
       background: none;
-      position: relative;
       transition: background var(--dur-fast), color var(--dur-fast);
       text-align: left;
       font-family: var(--font-sans);
@@ -377,19 +337,8 @@ interface ComponentCategory {
       color: var(--prism-text);
     }
     .sb-item--active {
-      border-left-color: var(--prism-primary);
       background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
-      color: var(--prism-text);
       font-weight: 500;
-    }
-    .sb-item--active::before {
-      content: '';
-      position: absolute;
-      left: -1px;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--prism-primary-from), var(--prism-primary-to));
     }
     .sb-item-icon { flex: 0 0 12px; opacity: 0.7; }
     .sb-item-name {
@@ -400,19 +349,33 @@ interface ComponentCategory {
       text-overflow: ellipsis;
     }
 
+    /* Fixed width sized for the three built-in decoration sources (a11y,
+       plugin-coverage, plugin-visual-regression) at 11px each plus two
+       --sp-1 gaps, with a little headroom. navigationDecorations is an open
+       extension point, so a fourth mark from a third-party plugin is
+       clipped via overflow: hidden rather than allowed to grow the gutter —
+       the point of a fixed-width gutter is that rows never shift
+       horizontally as you scan the list. */
     .sb-item-health {
-      flex: 0 0 auto;
-      margin-left: auto;
+      width: 40px;
+      flex: none;
       display: flex;
       align-items: center;
-      gap: 5px;
+      justify-content: flex-end;
+      gap: var(--sp-1);
+      overflow: hidden;
     }
+
+    /* Outline, not fill, and full saturation only for danger. The mechanism
+       behind these marks is already deviation-driven: decorateItem returns
+       null for a clean component and every source bails out at variant === 'ok'.
+       What made them read as wallpaper was the drawing: a filled shape at full
+       saturation, one per row, in a repo where deviating is the normal case. */
+    .sb-health { fill: none; stroke: currentColor; stroke-width: 2; }
     .sb-health--warn {
-      color: var(--prism-warn);
+      color: color-mix(in srgb, var(--prism-mark-attention) 80%, transparent);
     }
-    .sb-health--danger {
-      color: var(--prism-danger);
-    }
+    .sb-health--danger { color: var(--prism-mark-critical); }
 
     .sb-item--deprecated .sb-item-name {
       text-decoration: line-through;
@@ -473,7 +436,6 @@ export class PrismSidebarComponent {
     }
     return [...catMap.entries()].map(([name, items]) => ({
       name,
-      color: categoryColor(name),
       items,
     }));
   });
@@ -483,7 +445,6 @@ export class PrismSidebarComponent {
     return this.navigationService.sectionTree().map((section) => ({
       name: section.name,
       icon: sectionIcon(section.name),
-      color: categoryColor(section.name),
       totalCount: section.totalCount,
       categories: section.categories.map((cat): ComponentCategory => {
         const items = cat.items.map((item) => ({
@@ -493,7 +454,6 @@ export class PrismSidebarComponent {
         }));
         return {
           name: cat.name,
-          color: categoryColor(cat.name),
           rollup: rollupCategory(items.map((row) => row.decorations)),
           items,
         };
@@ -534,10 +494,17 @@ export class PrismSidebarComponent {
   }
 
   /**
-   * Accessible name for the roll-up pill. The pill otherwise renders a bare
-   * number distinguished only by colour — a screen reader would read the
-   * group head as "Feedback 3 12" with nothing naming what either number
-   * means, and a colour-blind reader can't tell them apart at all.
+   * Accessible name for the roll-up pill, for the deviating case only. The
+   * pill otherwise renders a bare number distinguished only by colour — a
+   * screen reader would read the group head as "Feedback 3 12" with nothing
+   * naming what either number means, and a colour-blind reader can't tell
+   * them apart at all.
+   *
+   * There is deliberately no zero branch: a clean category renders its plain
+   * item count and the template leaves both attributes off, because
+   * `aria-label` on a descendant feeds the group button's name-from-content
+   * and "Buttons 0 components need review" is a claim about a group that has
+   * nothing to review.
    */
   protected rollupTooltip(rollup: CategoryRollup): string {
     const noun = rollup.problems === 1 ? 'component needs' : 'components need';
