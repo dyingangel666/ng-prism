@@ -1,0 +1,19 @@
+{
+  // Type-check-only twin of `tsconfig.lib.json`.
+  //
+  // `tsconfig.lib.json` is compiled by `ngc` (the `build` target) into `dist`,
+  // and that output is what every plugin package consumes through its
+  // `@ng-prism/core` path mapping. Nx's inferred `typecheck` target runs plain
+  // `tsc --build`, which emits declarations *without* Angular's `ɵfac`/`ɵcmp`
+  // — and because `typecheck` depends on `build`, it ran second and overwrote
+  // them. A consumer then sees `PrismMetricBadgeComponent` as an ordinary
+  // class and fails with NG2012 ("Component imports must be standalone
+  // components…"), which is only reproducible once both targets have run.
+  //
+  // So `dist` has exactly one writer, `ngc`, and the tsc pass emits here.
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/typecheck",
+    "tsBuildInfoFile": "./out-tsc/typecheck/tsconfig.typecheck.tsbuildinfo"
+  }
+}
