@@ -30,7 +30,13 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
       <prism-icon name="info" [size]="13" />
     </button>
 
-    <div popover id="prism-head-info" class="info-card">
+    <div
+      popover
+      id="prism-head-info"
+      class="info-card"
+      role="dialog"
+      aria-label="Component details"
+    >
       <code class="info-card__selector">&lt;{{ selector() }}&gt;</code>
       @if (description()) {
       <p class="info-card__desc">{{ description() }}</p>

@@ -170,4 +170,20 @@ describe('capture mode layout isolation', () => {
     // 22px past the canvas with every region gone but the padding kept.
     expect(getComputedStyle(stage).padding).toBe('0px');
   });
+
+  it('should strip the stage edge so it never lands in a screenshot', () => {
+    const { stage } = renderInCaptureMode();
+
+    // The edge is outline + box-shadow so that it stays out of layout and no
+    // baseline moves when it changes. The flip side is that it still paints,
+    // and `outline-offset: -1px` puts the line *inside* the border box — with
+    // the padding above gone it sits flush against the component, so a
+    // `.demo-wrap` that reaches the stage edge composites it into the PNG.
+    // The transparency selector clears background colour and cannot reach it.
+    const style = getComputedStyle(stage);
+    // The shorthands, not the longhands: jsdom stores what the stylesheet
+    // declared and never expands `outline` into `outline-style`.
+    expect(style.outline).toBe('none');
+    expect(style.boxShadow).toBe('none');
+  });
 });

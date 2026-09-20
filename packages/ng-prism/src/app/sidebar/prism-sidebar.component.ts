@@ -144,8 +144,12 @@ interface ComponentCategory {
               class="sb-group-count"
               [class.sb-group-count--warn]="cat.rollup.variant === 'warn'"
               [class.sb-group-count--danger]="cat.rollup.variant === 'danger'"
-              [attr.title]="rollupTooltip(cat.rollup)"
-              [attr.aria-label]="rollupTooltip(cat.rollup)"
+              [attr.title]="
+                cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+              "
+              [attr.aria-label]="
+                cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+              "
             >
               @if (cat.rollup.problems) { {{ cat.rollup.problems }}/{{
                 cat.items.length
@@ -490,10 +494,17 @@ export class PrismSidebarComponent {
   }
 
   /**
-   * Accessible name for the roll-up pill. The pill otherwise renders a bare
-   * number distinguished only by colour — a screen reader would read the
-   * group head as "Feedback 3 12" with nothing naming what either number
-   * means, and a colour-blind reader can't tell them apart at all.
+   * Accessible name for the roll-up pill, for the deviating case only. The
+   * pill otherwise renders a bare number distinguished only by colour — a
+   * screen reader would read the group head as "Feedback 3 12" with nothing
+   * naming what either number means, and a colour-blind reader can't tell
+   * them apart at all.
+   *
+   * There is deliberately no zero branch: a clean category renders its plain
+   * item count and the template leaves both attributes off, because
+   * `aria-label` on a descendant feeds the group button's name-from-content
+   * and "Buttons 0 components need review" is a claim about a group that has
+   * nothing to review.
    */
   protected rollupTooltip(rollup: CategoryRollup): string {
     const noun = rollup.problems === 1 ? 'component needs' : 'components need';

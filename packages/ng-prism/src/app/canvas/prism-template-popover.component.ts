@@ -60,6 +60,7 @@ function tokenizeXml(code: string): string {
         <prism-icon name="code" [size]="13" />
         <span>Angular Template</span>
         <button
+          type="button"
           class="tpl-popover-copy"
           (click)="copy()"
           [title]="copied() ? 'Copied!' : 'Copy to clipboard'"
@@ -68,6 +69,7 @@ function tokenizeXml(code: string): string {
           {{ copied() ? 'Copied' : 'Copy' }}
         </button>
         <button
+          type="button"
           class="tpl-popover-close"
           popovertarget="prism-template"
           popovertargetaction="hide"

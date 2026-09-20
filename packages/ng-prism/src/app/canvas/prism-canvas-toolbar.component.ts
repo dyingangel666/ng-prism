@@ -38,6 +38,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       >
 
       <button
+        type="button"
         class="prism-toolrail__btn"
         [class.is-on]="canvas.guides()"
         (click)="canvas.toggleGuides()"
@@ -49,6 +50,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       </button>
 
       <button
+        type="button"
         class="prism-toolrail__btn"
         [class.is-on]="canvas.rulers()"
         (click)="canvas.toggleRulers()"
@@ -60,6 +62,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       </button>
 
       <button
+        type="button"
         class="prism-toolrail__btn"
         popovertarget="prism-tools"
         title="Canvas and zoom"
@@ -71,6 +74,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       <span class="prism-toolrail__sep"></span>
 
       <button
+        type="button"
         class="prism-toolrail__btn"
         popovertarget="prism-template"
         title="Toggle Angular template"
@@ -83,11 +87,18 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
     <!-- Only the two choosers. The toggles stay outside: you flip guides and
          rulers constantly while measuring, and a toggle two clicks deep is the
          classic mistake. What you only ever set may live in a menu. -->
-    <div popover id="prism-tools" class="prism-toolmenu">
+    <div
+      popover
+      id="prism-tools"
+      class="prism-toolmenu"
+      role="dialog"
+      aria-label="Canvas and zoom"
+    >
       <span class="prism-toolmenu__lbl">Canvas</span>
       <div class="prism-toolmenu__row">
         @for (bg of bgs; track bg) {
         <button
+          type="button"
           [class.is-on]="variantBg.effective() === bg"
           [class.is-rec]="variantBg.recommended() === bg"
           [attr.title]="bgTitle(bg)"
@@ -102,6 +113,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       <div class="prism-toolmenu__row">
         @for (z of zooms; track z.value) {
         <button
+          type="button"
           [class.is-on]="canvas.zoom() === z.value"
           (click)="canvas.setZoom(z.value)"
         >

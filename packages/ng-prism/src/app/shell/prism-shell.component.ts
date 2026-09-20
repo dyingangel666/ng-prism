@@ -153,7 +153,6 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
     :host { display: block; height: 100%; }
 
     .prism-shell {
-      --density: 1;
       height: 100vh;
       display: grid;
       grid-template-rows: var(--band-header) 1fr;

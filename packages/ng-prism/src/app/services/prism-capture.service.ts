@@ -126,6 +126,24 @@ const CAPTURE_CANVAS_ONLY_SELECTOR =
  * 200x700 component at 1280x720 still leaks 22px past the canvas with the
  * regions gone but the padding kept. None of that padding is ever inside a
  * `.demo-wrap` screenshot, so nothing is lost by removing it.
+ *
+ * The stage's edge goes with them, and it is stripped rather than reshaped for
+ * the same reason it exists in that shape at all. The edge is deliberately
+ * built from `outline` plus `box-shadow` and never from a border or padding,
+ * because neither participates in layout: `plugin-visual-regression`
+ * screenshots `.demo-wrap`, which is centred in the stage, and a border would
+ * shrink the stage's content box by 2px and move that centre, shifting every
+ * recorded baseline without a component having changed. Not participating in
+ * layout is not the same as not painting. `outline-offset: -1px` draws the
+ * line *inside* the border box, and with the padding above gone the stage edge
+ * sits flush against the component, so for anything whose `.demo-wrap` reaches
+ * it that 1px line and the shadow under it composite straight into the
+ * screenshot. So capture mode removes the paint and leaves the geometry
+ * untouched — the same division of labour the edge was chosen for, and the
+ * only one that keeps both halves of the guarantee.
+ *
+ * {@link CAPTURE_TRANSPARENT_SELECTOR} cannot cover this: it clears background
+ * colour, and an outline is not a background.
  */
 const CAPTURE_STYLES = `
 [${CAPTURE_ATTRIBUTE}] *,
@@ -140,6 +158,8 @@ const CAPTURE_STYLES = `
 [${CAPTURE_ATTRIBUTE}] .prism-canvas-stage {
   background-image: none !important;
   padding: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 ${CAPTURE_TRANSPARENT_SELECTOR} {

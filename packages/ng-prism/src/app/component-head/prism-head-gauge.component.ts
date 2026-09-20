@@ -45,7 +45,13 @@ import { PrismStatComponent } from './prism-stat.component.js';
       }
     </button>
 
-    <div popover id="prism-head-gauge" class="gauge-card">
+    <div
+      popover
+      id="prism-head-gauge"
+      class="gauge-card"
+      role="dialog"
+      aria-label="Component metrics"
+    >
       @for (m of metrics(); track m.id) {
       <prism-stat [label]="m.label" [value]="m.value" [variant]="m.variant" />
       }

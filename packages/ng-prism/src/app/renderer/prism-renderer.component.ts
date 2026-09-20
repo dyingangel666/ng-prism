@@ -106,7 +106,10 @@ import { resolveOverlay } from './overlay-resolver.js';
          without a single component having changed. Capture mode resets this
          element's padding but not its border, and this repo has no VRT runner
          to catch the drift. outline and box-shadow do not participate in
-         layout, so the box is provably unchanged. Keep it that way. */
+         layout, so the box is provably unchanged. Keep it that way.
+         They do still paint, and outline-offset is negative, so the line lands
+         inside the box: CAPTURE_STYLES in prism-capture.service.ts sets both
+         to none, which is only safe because neither is load-bearing here. */
       outline: 1px solid var(--prism-stage-edge);
       outline-offset: -1px;
       box-shadow:
