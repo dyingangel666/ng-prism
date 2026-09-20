@@ -172,8 +172,8 @@ describe('rollupCategory', () => {
 });
 
 describe('lifecycleIcon', () => {
-  it('is the dashed box for work in progress', () => {
-    expect(lifecycleIcon('wip')).toBe('box-select');
+  it('is the dashed circle for work in progress', () => {
+    expect(lifecycleIcon('wip')).toBe('circle-dashed');
   });
 
   it('is the solid box for everything else', () => {
