@@ -84,7 +84,7 @@ import { PrismHeaderWidgetHostComponent } from './prism-header-widget-host.compo
   `,
   styles: `
     .prism-header {
-      height: 52px;
+      height: var(--band-header);
       display: grid;
       grid-template-columns: minmax(min-content, var(--sw, 264px)) 1fr auto;
       align-items: center;
