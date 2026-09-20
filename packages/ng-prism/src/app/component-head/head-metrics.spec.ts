@@ -72,3 +72,22 @@ describe('summarizeMetrics', () => {
     expect(result.others).toBe(1);
   });
 });
+
+describe('metrics without a threshold', () => {
+  /**
+   * A variant count is a fact, not a verdict. It renders grey like a missing
+   * value and stays out of the tally, so the gauge's quiet number means "this
+   * many metrics were measured against a threshold and all of them passed"
+   * rather than counting a number that could not have failed.
+   */
+  it('keeps a plain count out of the tally', () => {
+    const result = summarizeMetrics([
+      metric('variants', 'none', '9'),
+      metric('coverage', 'ok', '99%'),
+      metric('a11y', 'ok', '100'),
+    ]);
+    expect(result.measured).toBe(2);
+    expect(result.worst).toBeNull();
+    expect(result.variant).toBe('ok');
+  });
+});

@@ -1,4 +1,11 @@
-/** How a metric compares to its threshold. `none` means there is no data. */
+/**
+ * How a metric compares to its threshold.
+ *
+ * `none` means there is no verdict to give — either the value is missing, or
+ * it is a plain fact with no threshold to compare against, like a count of
+ * variants. Those render grey and stay out of the gauge's tally, which counts
+ * the metrics that actually passed something.
+ */
 export type MetricVariant = 'ok' | 'warn' | 'danger' | 'none';
 
 /** One measured value, already formatted for display. */
