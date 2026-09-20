@@ -30,15 +30,18 @@ export class PrismUrlStateService {
 
     this.restoreFromUrl();
 
-    effect(() => {
-      const item = this.navigationService.activeItem();
-      const variantIndex = this.rendererService.activeVariantIndex();
-      const viewId = this.panelService.activeViewId();
-      const panelId = this.panelService.activePanelId();
+    effect(
+      () => {
+        const item = this.navigationService.activeItem();
+        const variantIndex = this.rendererService.activeVariantIndex();
+        const viewId = this.panelService.activeViewId();
+        const panelId = this.panelService.activePanelId();
 
-      if (this.suppressSync) return;
-      this.writeToUrl(item, variantIndex, viewId, panelId);
-    }, { injector: this.injector });
+        if (this.suppressSync) return;
+        this.writeToUrl(item, variantIndex, viewId, panelId);
+      },
+      { injector: this.injector }
+    );
 
     window.addEventListener('popstate', () => this.restoreFromUrl());
   }
@@ -54,20 +57,23 @@ export class PrismUrlStateService {
     this.suppressSync = true;
     try {
       if (componentClassName) {
-        const comp = this.manifestService.components()
+        const comp = this.manifestService
+          .components()
           .find((c) => c.meta.className === componentClassName);
         if (comp) {
           this.navigationService.select(comp);
           if (variantParam !== null) {
             const index = parseInt(variantParam, 10);
-            const maxIndex = (comp.meta.showcaseConfig.variants?.length ?? 1) - 1;
+            const maxIndex =
+              (comp.meta.showcaseConfig.variants?.length ?? 1) - 1;
             if (!Number.isNaN(index) && index >= 0 && index <= maxIndex) {
               this.rendererService.activeVariantIndex.set(index);
             }
           }
         }
       } else if (pageTitle) {
-        const page = this.manifestService.pages()
+        const page = this.manifestService
+          .pages()
           .find((p) => p.title === pageTitle);
         if (page) {
           this.navigationService.selectPage(page);
@@ -89,8 +95,11 @@ export class PrismUrlStateService {
     item: NavigationItem | null,
     variantIndex: number,
     viewId: string,
-    panelId: string,
+    panelId: string
   ): void {
+    // Built from scratch, never from the current search string: parameters the
+    // app does not own must not survive a navigation. `?capture=1` relies on
+    // this — see the "capture flag" specs, which pin the guarantee.
     const params = new URLSearchParams();
 
     if (item?.kind === 'component') {
@@ -117,7 +126,8 @@ export class PrismUrlStateService {
     if (newUrl === window.location.pathname + window.location.search) return;
 
     const currentParams = new URLSearchParams(window.location.search);
-    const prevNavKey = currentParams.get(PARAM_COMPONENT) ?? currentParams.get(PARAM_PAGE);
+    const prevNavKey =
+      currentParams.get(PARAM_COMPONENT) ?? currentParams.get(PARAM_PAGE);
     const newNavKey = params.get(PARAM_COMPONENT) ?? params.get(PARAM_PAGE);
 
     if (prevNavKey !== newNavKey) {

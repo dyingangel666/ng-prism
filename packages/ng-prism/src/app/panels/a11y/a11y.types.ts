@@ -44,6 +44,18 @@ export interface A11yManifestMeta {
   thresholds: A11yThresholds;
 }
 
+/** Shape stored under `showcaseConfig.meta.a11y`. */
+export interface A11yComponentMeta {
+  found: boolean;
+  score: A11yScoreResult;
+  /**
+   * Pre-derived headline, written by the build step. Optional because a report
+   * written before this field existed simply has none, and the marker is then
+   * left out rather than guessed at.
+   */
+  summary?: { variant: 'ok' | 'warn' | 'danger'; label: string };
+}
+
 export interface NgPrismA11yConfig {
   /** Thresholds for the header badge color-coding and (when run via the CLI) build failure. */
   thresholds?: Partial<A11yThresholds>;

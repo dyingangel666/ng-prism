@@ -42,13 +42,14 @@ Plugins run in registration order during build-time hooks and are activated in o
 
 ## Official Plugins
 
-| Package                                              | Description                                                                             |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| [`@ng-prism/plugin-jsdoc`](plugins/jsdoc.md)         | Extracts JSDoc comments from source and renders an API documentation panel              |
-| [`@ng-prism/plugin-figma`](plugins/figma.md)         | Embeds Figma designs and runs pixel-perfect Design Diffs against the rendered component |
-| [`@ng-prism/plugin-box-model`](plugins/box-model.md) | Overlays CSS box model dimensions on the rendered component                             |
-| [`@ng-prism/plugin-perf`](plugins/perf.md)           | Profiles render and re-render timing via the Performance API                            |
-| [`@ng-prism/plugin-coverage`](plugins/coverage.md)   | Displays per-component test coverage from Istanbul/v8 reports                           |
+| Package                                                              | Description                                                                             |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [`@ng-prism/plugin-jsdoc`](plugins/jsdoc.md)                         | Extracts JSDoc comments from source and renders an API documentation panel              |
+| [`@ng-prism/plugin-figma`](plugins/figma.md)                         | Embeds Figma designs and runs pixel-perfect Design Diffs against the rendered component |
+| [`@ng-prism/plugin-box-model`](plugins/box-model.md)                 | Overlays CSS box model dimensions on the rendered component                             |
+| [`@ng-prism/plugin-perf`](plugins/perf.md)                           | Profiles render and re-render timing via the Performance API                            |
+| [`@ng-prism/plugin-coverage`](plugins/coverage.md)                   | Displays per-component test coverage from Istanbul/v8 reports                           |
+| [`@ng-prism/plugin-visual-regression`](plugins/visual-regression.md) | Renders a per-variant visual regression report inside the styleguide                    |
 
 > **Note:** Accessibility auditing (axe-core, keyboard navigation, ARIA tree, screen reader simulation) is built into ng-prism core. No plugin needed.
 

@@ -5,6 +5,7 @@ import {
   existsSync,
   readFileSync,
   statSync,
+  writeFileSync,
 } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -41,6 +42,48 @@ function createMockContext(workspaceRoot: string) {
   } as unknown as BuilderContext;
 }
 
+function writeA11yReport(root: string, score: number): void {
+  writeFileSync(
+    join(root, 'a11y-report.json'),
+    JSON.stringify({
+      // total erfüllt jeden Threshold — sonst wirft checkA11yThresholds,
+      // bevor der Merge überhaupt läuft.
+      total: {
+        score: 95,
+        violations: 0,
+        critical: 0,
+        serious: 0,
+        moderate: 0,
+        minor: 0,
+        passes: 40,
+        incomplete: 0,
+        auditedComponents: 1,
+        auditedVariants: 5,
+      },
+      components: {
+        ButtonComponent: {
+          score,
+          violations: 1,
+          critical: 0,
+          serious: 0,
+          moderate: 1,
+          minor: 0,
+          passes: 20,
+          incomplete: 0,
+        },
+      },
+    }),
+    'utf-8'
+  );
+}
+
+function readManifest(root: string): string {
+  return readFileSync(
+    join(root, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'),
+    'utf-8'
+  );
+}
+
 describe('runPrismPipeline integration', () => {
   let tmp: string;
 
@@ -67,7 +110,7 @@ describe('runPrismPipeline integration', () => {
       createPipelineState()
     );
 
-    expect(result.componentCount).toBe(8);
+    expect(result.componentCount).toBe(9);
   });
 
   it('should write prism-manifest.ts to expected path', async () => {
@@ -97,7 +140,7 @@ describe('runPrismPipeline integration', () => {
       'utf-8'
     );
     expect(content).toContain(
-      "import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective, InvalidBgComponent, InvalidStatusComponent, SectionedComponent } from 'my-lib'"
+      "import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective, InvalidBgComponent, InvalidStatusComponent, DeprecatedBgComponent, SectionedComponent } from 'my-lib'"
     );
   });
 
@@ -163,8 +206,79 @@ describe('runPrismPipeline integration', () => {
     );
     expect(ctx.reportStatus).toHaveBeenCalledWith('');
     expect(ctx.logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Generated manifest with 8 component(s)')
+      expect.stringContaining('Generated manifest with 9 component(s)')
     );
+  });
+
+  it('merges the per-component a11y entry into showcaseConfig.meta', async () => {
+    tmp = createTempWorkspace();
+    writeA11yReport(tmp, 55);
+
+    await runPrismPipeline(
+      defaultOptions,
+      createMockContext(tmp),
+      createPipelineState()
+    );
+
+    const content = readManifest(tmp);
+    expect(content).toContain('a11y:');
+    expect(content).toContain('variant: "warn"');
+  });
+
+  it('leaves components untouched when no report exists', async () => {
+    tmp = createTempWorkspace();
+
+    await runPrismPipeline(
+      defaultOptions,
+      createMockContext(tmp),
+      createPipelineState()
+    );
+
+    expect(readManifest(tmp)).not.toContain('a11y:');
+  });
+
+  it('does not overwrite plugin meta written by runPluginHooks when merging the a11y entry', async () => {
+    // The a11y merge runs after runPluginHooks specifically so a plugin's
+    // `showcaseConfig.meta` survives it. Swapping the order of the two
+    // blocks in `runPrismPipeline` — or having the a11y merge replace
+    // `meta` outright instead of spreading it — would silently drop
+    // whatever a plugin wrote, and every other test in this file uses a
+    // config with no a11y report or a plugin that leaves no trace in
+    // `showcaseConfig.meta`, so none of them would catch it.
+    tmp = createTempWorkspace();
+    writeA11yReport(tmp, 55);
+    // `Object.assign` rather than object-spread: this file is transpiled and
+    // then dynamically `import()`-ed from a temp path outside the workspace
+    // (see config-loader.ts), which Jest's own transform also reaches for —
+    // and its helper injection for object spread can't resolve `@swc/helpers`
+    // from that temp path. The pre-existing `test-meta-plugin` fixture beside
+    // this one works around the same thing the same way.
+    writeFileSync(
+      join(tmp, 'ng-prism.config.ts'),
+      `export default {
+        plugins: [
+          {
+            name: 'test-showcase-meta-plugin',
+            onComponentScanned(component) {
+              var meta = Object.assign({}, component.showcaseConfig.meta, { fromPlugin: 'still-here' });
+              var showcaseConfig = Object.assign({}, component.showcaseConfig, { meta: meta });
+              return Object.assign({}, component, { showcaseConfig: showcaseConfig });
+            },
+          },
+        ],
+      };`,
+      'utf-8'
+    );
+
+    await runPrismPipeline(
+      defaultOptions,
+      createMockContext(tmp),
+      createPipelineState()
+    );
+
+    const content = readManifest(tmp);
+    expect(content).toContain('fromPlugin: "still-here"');
+    expect(content).toContain('a11y:');
   });
 });
 

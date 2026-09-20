@@ -1,5 +1,8 @@
 import { Injector, runInInjectionContext } from '@angular/core';
-import type { NgPrismConfig, NgPrismPlugin } from '../../plugin/plugin.types.js';
+import type {
+  NgPrismConfig,
+  NgPrismPlugin,
+} from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PrismPluginService } from './prism-plugin.service.js';
 
@@ -20,9 +23,7 @@ describe('PrismPluginService', () => {
   it('should collect panels from plugins', () => {
     const plugin: NgPrismPlugin = {
       name: 'test-plugin',
-      panels: [
-        { id: 'test', label: 'Test', component: class {} as any },
-      ],
+      panels: [{ id: 'test', label: 'Test', component: class {} as any }],
     };
     const service = setup({ plugins: [plugin] });
     expect(service.panels().length).toBe(1);
@@ -32,9 +33,7 @@ describe('PrismPluginService', () => {
   it('should collect controls from plugins', () => {
     const plugin: NgPrismPlugin = {
       name: 'test-plugin',
-      controls: [
-        { matchType: () => true, component: class {} as any },
-      ],
+      controls: [{ matchType: () => true, component: class {} as any }],
     };
     const service = setup({ plugins: [plugin] });
     expect(service.controls().length).toBe(1);
@@ -52,5 +51,34 @@ describe('PrismPluginService', () => {
     const service = setup({ plugins: [plugin1, plugin2] });
     expect(service.panels().length).toBe(2);
     expect(service.panels().map((p) => p.id)).toEqual(['a', 'b']);
+  });
+
+  it('should return no navigation decorations with no plugins', () => {
+    const service = setup({});
+    expect(service.navigationDecorations()).toEqual([]);
+  });
+
+  it('should collect navigation decorations from plugins', () => {
+    const plugin: NgPrismPlugin = {
+      name: 'test-plugin',
+      navigationDecorations: [
+        { id: 'test', icon: 'box', order: 10, badge: () => null },
+      ],
+    };
+    const service = setup({ plugins: [plugin] });
+    expect(service.navigationDecorations().map((d) => d.id)).toEqual(['test']);
+  });
+
+  it('should keep contributions from several plugins', () => {
+    const a: NgPrismPlugin = {
+      name: 'a',
+      navigationDecorations: [{ id: 'a', icon: 'box', badge: () => null }],
+    };
+    const b: NgPrismPlugin = {
+      name: 'b',
+      navigationDecorations: [{ id: 'b', icon: 'camera', badge: () => null }],
+    };
+    const service = setup({ plugins: [a, b] });
+    expect(service.navigationDecorations()).toHaveLength(2);
   });
 });

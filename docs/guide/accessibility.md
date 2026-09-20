@@ -98,15 +98,9 @@ Write the report at build time using any tool you like — headless browsers + a
 
 #### External Audit API
 
-The Prism app exposes a small contract for external audit scripts:
+The Prism app exposes a small contract for driving it from the outside — `window.__PRISM_MANIFEST__` to enumerate components and variants, `?component=`/`?variant=` to navigate, and `data-prism-rendered` on `.demo-wrap` as the render marker. It is documented in full under [External Tooling API](guide/external-tooling.md).
 
-| Anchor                                                               | Where                           | Purpose                                                                                                                       |
-| -------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `window.__PRISM_MANIFEST__`                                          | global, set by `providePrism()` | Shape: `{ components: [{ className, variants: [{ name, index }] }], pages: [{ title }] }`. Use it to enumerate what to audit. |
-| URL params `?component=<className>&variant=<index>`                  | navigation state                | Drive the app to a specific component+variant from the outside. `variant` is the array index; omit it for index `0`.          |
-| `[data-prism-rendered="<className>:<variantIndex>"]` on `.demo-wrap` | renderer host element           | Render-completion marker — wait for this attribute to match the expected key before running axe-core against the variant.     |
-
-Typical Playwright flow:
+An axe-core audit loop over every variant looks like this:
 
 ```js
 await page.goto(baseUrl, { waitUntil: 'networkidle' });
@@ -132,6 +126,8 @@ for (const comp of manifest.components) {
   }
 }
 ```
+
+> Auditing accessibility does not need [capture isolation mode](guide/external-tooling.md#capture-isolation-mode) — axe-core inspects the DOM, not pixels. Screenshot tooling does; see [Visual Regression](guide/visual-regression.md).
 
 The file must match this JSON shape:
 
@@ -198,11 +194,42 @@ The build pipeline reads `a11y-report.json` and embeds the aggregate data into t
 
 ### CI integration
 
+The audit produces two independent things: the **report** and an **exit code**. Chaining them together is the most common way to lose the report exactly when it matters.
+
+```yaml
+# Broken: the audit fails the job, so the build that embeds the report never runs
+- run: npx nx run my-lib:test --coverage
+- run: npx nx run my-lib:audit-a11y # exits non-zero on a threshold violation
+- run: npx nx run my-lib-prism:build # never reached
+```
+
+The moment the library drops below its threshold, the audit exits non-zero, the second build never happens, and the styleguide that would have shown you _which_ components regressed is never deployed. The gate has eaten the tool that explains the gate.
+
+Separate them. The gate blocks the merge; it must not block the deploy:
+
 ```yaml
 - run: npx nx run my-lib:test --coverage
-- run: npx nx run my-lib:audit-a11y # your audit script — writes a11y-report.json
-- run: npx nx run my-lib-prism:build # reads the report into the manifest
+- run: npx nx run my-lib-prism:build
+
+# Always write the report, never fail here
+- run: npx nx run my-lib:audit-a11y -- --no-fail
+
+# Rebuild so the report lands in the manifest, then publish
+- run: npx nx run my-lib-prism:build
+  if: always()
+- run: npm run deploy:styleguide
+  if: always()
+
+# Now evaluate the result and fail the job
+- run: npx nx run my-lib:audit-a11y:gate
+  if: always()
 ```
+
+The job still turns red and the pull request is still blocked — but the styleguide is deployed, and the header pill plus the A11y panel show you what caused it.
+
+This requires your audit script to be able to _not_ fail: write the report before checking thresholds, and put the threshold check behind a flag or a separate gate command that re-reads the report. The same reasoning applies to visual regression testing — see [CI integration](guide/visual-regression.md#ci-integration-keep-the-gate-away-from-the-deploy) there for the longer treatment.
+
+> Note that `&&` chains in an npm script have the same problem as sequential CI steps: `build && audit && build` stops at the first non-zero exit.
 
 ## Peer Dependency
 

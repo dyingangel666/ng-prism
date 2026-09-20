@@ -3,6 +3,7 @@ import {
   coveragePlugin,
   resolveCoverageThresholds,
 } from './coverage-plugin.js';
+import { coveragePlugin as coveragePluginBrowser } from './coverage-plugin.browser.js';
 import { clearCoverageCache } from './coverage-reader.js';
 import type { PrismManifest, ScannedComponent } from '@ng-prism/core/plugin';
 import type { CoverageManifestMeta } from './coverage.types.js';
@@ -253,6 +254,15 @@ describe('coveragePlugin', () => {
     });
   });
 
+  describe('navigation decoration', () => {
+    it('registers the coverage source', () => {
+      const ids = (coveragePlugin().navigationDecorations ?? []).map(
+        (d) => d.id
+      );
+      expect(ids).toEqual(['coverage']);
+    });
+  });
+
   describe('resolveCoverageThresholds', () => {
     it('returns defaults when input is undefined', () => {
       expect(resolveCoverageThresholds()).toEqual({
@@ -280,5 +290,26 @@ describe('coveragePlugin', () => {
         statements: 80,
       });
     });
+  });
+});
+
+/**
+ * The Node entry carries the build-time hooks and must never be reachable
+ * from a browser bundle — see `coverage-plugin.browser.ts`. A
+ * `navigationDecorations` entry added to only one of the two twins would
+ * silently drop the marker in exactly the setup that needs it, and no other
+ * suite would notice.
+ */
+describe('entry parity — navigation decorations', () => {
+  it('declares the same decoration ids as the browser entry', () => {
+    const nodeIds = (coveragePlugin().navigationDecorations ?? []).map(
+      (d) => d.id
+    );
+    const browserIds = (
+      coveragePluginBrowser().navigationDecorations ?? []
+    ).map((d) => d.id);
+
+    expect(nodeIds).toEqual(['coverage']);
+    expect(browserIds).toEqual(['coverage']);
   });
 });

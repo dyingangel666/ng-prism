@@ -11,7 +11,33 @@ PACKAGES=(
   "packages/plugin-figma"
   "packages/plugin-jsdoc"
   "packages/plugin-perf"
+  "packages/plugin-visual-regression"
 )
+
+# ─── Nx project names, derived from PACKAGES ───
+# An Nx project is named after its package directory. Deriving the list means a
+# new package joins every release step through its PACKAGES entry alone.
+# plugin-visual-regression had to be added to two places by hand and reached
+# neither, so a release bumped, built and published around it in silence.
+project_names() {
+  local names=() pkg
+  for pkg in "${PACKAGES[@]}"; do
+    names+=("$(basename "$pkg")")
+  done
+  local IFS=','
+  echo "${names[*]}"
+}
+
+# Same, without the core package — for steps that handle it separately.
+plugin_project_names() {
+  local names=() pkg
+  for pkg in "${PACKAGES[@]}"; do
+    [[ "$pkg" == "packages/ng-prism" ]] && continue
+    names+=("$(basename "$pkg")")
+  done
+  local IFS=','
+  echo "${names[*]}"
+}
 
 # ─── Colors ───
 VIOLET='\033[0;35m'
@@ -229,7 +255,22 @@ preflight_checks() {
 # ─── Tests ───
 run_tests() {
   header "Running tests"
-  npx nx test ng-prism 2>&1 | tail -3
+
+  # Every published package, not only the core. A plugin's suite is the only
+  # thing that checks its own half of the contract, so a release that ran just
+  # `nx test ng-prism` could ship a broken plugin with green output.
+  #
+  # Unpiped on purpose: `set -o pipefail` already aborts the release on a
+  # failure, but the previous `| tail -3` reduced that failure to a summary
+  # line and hid which test broke.
+  #
+  # `static` is what the pipe used to imply. Nx picks its Terminal UI when it
+  # detects an interactive stdout, and that UI waits for a keypress after the
+  # run — a release script would sit there until someone pressed q. `static`
+  # is Nx's own recommendation for non-interactive environments: every task's
+  # output, printed once, in order, and the process exits on its own.
+  npx nx run-many -t test --projects="$(project_names)" --outputStyle=static
+
   ok "Tests passed"
 }
 
@@ -241,7 +282,7 @@ build_all() {
   npx nx build ng-prism 2>&1 | tail -1
 
   info "Building plugins..."
-  npx nx run-many -t build --projects='plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf' 2>&1 | tail -1
+  npx nx run-many -t build --projects="$(plugin_project_names)" 2>&1 | tail -1
 
   ok "All packages built"
 }

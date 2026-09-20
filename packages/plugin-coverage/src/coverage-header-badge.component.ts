@@ -6,9 +6,8 @@ import {
 } from '@angular/core';
 import { PRISM_MANIFEST } from '@ng-prism/core/plugin';
 import type { RuntimeManifest } from '@ng-prism/core/plugin';
+import { deriveCoverageSummary } from './coverage-summary.js';
 import type { CoverageManifestMeta } from './coverage.types.js';
-
-type Variant = 'ok' | 'warn' | 'danger';
 
 @Component({
   selector: 'prism-coverage-header-badge',
@@ -105,23 +104,15 @@ export class CoverageHeaderBadgeComponent {
     if (!meta?.total?.found) return null;
 
     const score = meta.total.score;
-    const t = meta.thresholds;
-    const avgThreshold = Math.round(
-      (t.lines + t.branches + t.functions + t.statements) / 4
-    );
-
-    const variant: Variant =
-      score >= avgThreshold
-        ? 'ok'
-        : score >= avgThreshold * 0.75
-        ? 'warn'
-        : 'danger';
+    // Both halves come from the one derivation, so the pill's first line and
+    // the navigation marker's tooltip cannot name different targets.
+    const { variant, label } = deriveCoverageSummary(score, meta.thresholds);
 
     return {
       score,
       variant,
       title:
-        `Library coverage: ${score}% (target ${avgThreshold}%)\n` +
+        `Library ${label}\n` +
         `Lines ${meta.total.lines.pct}% · ` +
         `Branches ${meta.total.branches.pct}% · ` +
         `Functions ${meta.total.functions.pct}% · ` +

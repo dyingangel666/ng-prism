@@ -25,6 +25,33 @@ import {
 } from './ast-utils.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
 
+/**
+ * Backgrounds that still work but should not be reached for any more.
+ *
+ * `checker` draws the same checkerboard as `transparent` while browsing, so
+ * the canvas cannot tell them apart — but it captures as `--prism-bg-surface`,
+ * a *theme* token, which makes a baseline recorded on it depend on the theme
+ * the runner's browser started in. Since `transparent` took over as the
+ * default, it is the value that looks like transparency and is not.
+ *
+ * Warned rather than rejected: the value is valid, and dropping it would
+ * change what a component renders on — a break wearing a warning's clothes.
+ * Scheduled for removal in 23.0.0, the next Angular-aligned major.
+ */
+const DEPRECATED_BGS: Partial<Record<CanvasBg, string>> = {
+  checker:
+    "use 'transparent' for the same look with a capture that keeps its alpha, or 'light'/'dark' for an absolute colour",
+};
+
+function warnDeprecatedBg(bg: CanvasBg, where: string): void {
+  const advice = DEPRECATED_BGS[bg];
+  if (!advice) return;
+  console.warn(
+    `⚠ ng-prism: ${where} declares bg "${bg}", which is deprecated and will ` +
+      `be removed in 23.0.0 — ${advice}.`
+  );
+}
+
 function isCanvasBg(value: unknown): value is CanvasBg {
   return (
     typeof value === 'string' &&
@@ -151,12 +178,12 @@ function extractShowcaseConfig(
   if (obj['bg'] !== undefined) {
     if (isCanvasBg(obj['bg'])) {
       config.bg = obj['bg'];
+      warnDeprecatedBg(obj['bg'], className);
     } else {
       console.warn(
         `⚠ ng-prism: ${className} declares invalid bg "${String(
           obj['bg']
-        )}" — ` +
-          `expected one of: dots, plain, light, dark, checker. Skipping.`
+        )}" — ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`
       );
     }
   }
@@ -177,14 +204,19 @@ function extractShowcaseConfig(
     config.variants = (obj['variants'] as Array<Record<string, unknown>>).map(
       (variant) => {
         const cleaned: Record<string, unknown> = { ...variant };
+        if (isCanvasBg(variant['bg'])) {
+          warnDeprecatedBg(
+            variant['bg'],
+            `${className} variant "${String(variant['name'])}"`
+          );
+        }
         if (variant['bg'] !== undefined && !isCanvasBg(variant['bg'])) {
           console.warn(
             `⚠ ng-prism: ${className} variant "${String(
               variant['name']
             )}" declares ` +
-              `invalid bg "${String(
-                variant['bg']
-              )}" — expected one of: dots, plain, light, dark, checker. Skipping.`
+              `invalid bg "${String(variant['bg'])}" — expected one of: ` +
+              `${CANVAS_BGS.join(', ')}. Skipping.`
           );
           delete cleaned['bg'];
         }

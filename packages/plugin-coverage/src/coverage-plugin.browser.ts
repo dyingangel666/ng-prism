@@ -1,5 +1,9 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import type { CoveragePluginOptions } from './coverage.types.js';
+import {
+  coverageBadge,
+  COVERAGE_NAVIGATION_DECORATION,
+} from './coverage-contributions.js';
 
 export function coveragePlugin(
   _options?: CoveragePluginOptions
@@ -10,6 +14,7 @@ export function coveragePlugin(
       {
         id: 'coverage',
         label: 'Coverage',
+        badge: coverageBadge,
         icon: 'shield-check',
         loadComponent: () =>
           import('./coverage-panel.component.js').then(
@@ -29,5 +34,7 @@ export function coveragePlugin(
           ),
       },
     ],
+
+    navigationDecorations: [COVERAGE_NAVIGATION_DECORATION],
   };
 }

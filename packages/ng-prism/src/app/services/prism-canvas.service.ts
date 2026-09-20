@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+import { PrismCaptureService } from './prism-capture.service.js';
 
 export type { CanvasBg };
 
@@ -12,7 +13,14 @@ export class PrismCanvasService {
   readonly guides = signal(false);
   readonly rulers = signal(false);
 
+  private readonly capture = inject(PrismCaptureService);
+
   constructor() {
+    // Capture mode renders for a screenshot tool: persisted zoom, guides and
+    // rulers would leak a previous session's state into the image, so the
+    // defaults (zoom 1, no guides, no rulers) are kept and nothing is written
+    // back.
+    if (this.capture.active()) return;
     this.loadFromStorage();
   }
 
@@ -51,6 +59,7 @@ export class PrismCanvasService {
   }
 
   private save(): void {
+    if (this.capture.active()) return;
     try {
       localStorage.setItem(
         STORAGE_KEY,

@@ -11,7 +11,7 @@ interface Variant<T = unknown> {
   content?: string | Record<string, string>;
   description?: string;
   meta?: Record<string, unknown>;
-  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker';
+  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
   canvasLayout?: 'fit' | 'stretch';
 }
 ```
@@ -189,7 +189,11 @@ A variant can declare a recommended canvas background. When the user selects the
 })
 ```
 
-Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`.
+Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
+
+`'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
+
+`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the canvas toolbar until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
 
 A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
 
