@@ -32,7 +32,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
          a viewport-fixed rail would float over the sidebar and the panel, stay
          put while those are resized, and sit on top of running text in the API
          view where it has no business being. -->
-    <div class="prism-toolrail">
+    <div class="prism-toolrail" [class.has-rulers]="canvas.rulers()">
       <span class="prism-toolrail__zoom"
         >{{ Math.round(canvas.zoom() * 100) }}%</span
       >
@@ -126,11 +126,23 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
   styles: `
     :host { display: contents; }
 
+    /* Canvas overlays sit at --prism-canvas-overlay-*, which the stage grows
+       when the rulers claim its top and left edges (see the
+       .prism-canvas-stage[data-rulers] rule in prism-renderer.component.ts).
+       prism-canvas-bg-pill simply inherits those; this rail cannot, because
+       capture mode requires it to be a direct child of .prism-canvas-wrap
+       outside the stage. So it mirrors the same values off canvas.rulers()
+       instead — keep the two in step.
+
+       z-index outranks the rulers' 4 rather than matching it: the rail is a
+       control and they are chrome, and the toolbar renders before the
+       renderer in the shell, so an equal z-index let the rulers paint over
+       the buttons. */
     .prism-toolrail {
       position: absolute;
-      top: var(--sp-4);
-      right: var(--sp-4);
-      z-index: 4;
+      top: var(--prism-canvas-overlay-top, 12px);
+      right: var(--prism-canvas-overlay-inline, 20px);
+      z-index: 5;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -141,6 +153,10 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       background: var(--prism-bg-elevated);
       box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.4);
       anchor-name: --prism-toolrail;
+    }
+    .prism-toolrail.has-rulers {
+      --prism-canvas-overlay-top: 28px;
+      --prism-canvas-overlay-inline: 28px;
     }
 
     .prism-toolrail__zoom {
