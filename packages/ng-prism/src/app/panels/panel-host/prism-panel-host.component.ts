@@ -59,15 +59,14 @@ type RenderedPanelEntry = {
           <prism-icon [name]="panel.icon" [size]="13" />
           }
           {{ panel.label }}
-          @if (panelBadge(panel); as badge) {
+          @if (panelBadge(panel); as badge) { @if (badge.variant !== 'ok') {
           <span
             class="p-tab-badge"
-            [class.ok]="badge.variant === 'ok'"
             [class.warn]="badge.variant === 'warn'"
             [class.danger]="badge.variant === 'danger'"
             >{{ badge.text }}</span
           >
-          }
+          } }
         </button>
         }
       </nav>
@@ -160,10 +159,6 @@ type RenderedPanelEntry = {
       font-weight: 700;
       display: grid;
       place-items: center;
-    }
-    .p-tab-badge.ok {
-      background: color-mix(in srgb, var(--prism-success) 18%, transparent);
-      color: var(--prism-success);
     }
     .p-tab-badge.warn {
       background: color-mix(in srgb, var(--prism-warn) 18%, transparent);

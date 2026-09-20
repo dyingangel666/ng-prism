@@ -309,6 +309,110 @@ interface HeaderWidgetDefinition {
 
 ---
 
+## PrismMetricBadgeComponent
+
+Exported from the **main** `@ng-prism/core` entry (not `@ng-prism/core/plugin`, since it is an `@Component` class and the plugin entry stays evaluable in Node.js). The presentational badge every built-in header widget renders through — a11y, coverage and visual regression all use it, so the three badges share one appearance instead of three near-identical ones.
+
+```typescript
+import { PrismMetricBadgeComponent } from '@ng-prism/core';
+```
+
+| Input     | Type                         | Required | Description                                                                                                                                                                                                                                 |
+| --------- | ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `icon`    | `string`                     | yes      | Name from the built-in icon registry (`ICON_NAMES`). Convention: reuse the same icon the source contributes to `navigationDecorations` and its panel tab, so one glyph means one source everywhere it appears.                              |
+| `value`   | `string`                     | yes      | The already-formatted figure, e.g. `'87%'`. The component does no formatting or unit conversion of its own.                                                                                                                                 |
+| `label`   | `string`                     | yes      | Human-readable name for the metric, e.g. `'Library coverage'`. Composed with `value` into the accessible name (`"label: value"`), so the figure cannot be dropped by a caller that only sets `label`.                                       |
+| `title`   | `string`                     | no       | Full text for the hover tooltip. Defaults to `label` when omitted.                                                                                                                                                                          |
+| `variant` | `'ok' \| 'warn' \| 'danger'` | no       | Colour role, drawn from `--prism-mark-attention` / `--prism-mark-critical`. Default `'ok'`, which renders with no accent colour at all — see [Marks, Measurement and Stage Tokens](../guide/theming.md#marks-measurement-and-stage-tokens). |
+
+The icon is `aria-hidden`; the badge's own `role="img"` and computed `aria-label` carry the accessible name instead.
+
+---
+
+## PrismIconComponent
+
+Also exported from the **main** entry. Renders one glyph from the shared registry as an inline `<svg>` sized in pixels — the same registry `PanelDefinition.icon` and `NavigationDecorationDefinition.icon` names resolve against.
+
+```typescript
+import { PrismIconComponent } from '@ng-prism/core';
+```
+
+| Input  | Type     | Required | Description                                                                                                                                |
+| ------ | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name` | `string` | yes      | Icon name from the registry (`ICON_NAMES`). An unknown name renders an empty, correctly-sized glyph and logs one console warning per name. |
+| `size` | `number` | no       | Width and height in pixels. Default `16`.                                                                                                  |
+
+`ICON_NAMES` itself — the list of valid `name` values — is also re-exported from `@ng-prism/core/plugin`, deliberately from a dependency-free module so a plugin's Node-evaluated entry can validate or reference an icon name without pulling `@angular/core` into a module graph the builder loads in Node.js.
+
+### Example: a header widget built from both
+
+The shipped `@ng-prism/plugin-coverage` header badge is the reference for this pattern — a `PrismMetricBadgeComponent` driven by manifest data, registered as a `headerWidgets` entry:
+
+```typescript
+// coverage-header-badge.component.ts
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+} from '@angular/core';
+import { PRISM_MANIFEST, type RuntimeManifest } from '@ng-prism/core/plugin';
+import { PrismMetricBadgeComponent } from '@ng-prism/core';
+
+@Component({
+  selector: 'prism-coverage-header-badge',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [PrismMetricBadgeComponent],
+  template: `
+    @if (data(); as d) {
+    <prism-metric-badge
+      icon="shield-check"
+      label="Library coverage"
+      [value]="d.score + '%'"
+      [variant]="d.variant"
+      [title]="d.title"
+    />
+    }
+  `,
+})
+export class CoverageHeaderBadgeComponent {
+  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+
+  protected readonly data = computed(() => {
+    const meta = this.manifest.meta?.['coverage'] as
+      | { total?: { found: boolean; score: number } }
+      | undefined;
+    if (!meta?.total?.found) return null;
+    return {
+      score: meta.total.score,
+      variant: 'ok' as const,
+      title: 'Library coverage',
+    };
+  });
+}
+```
+
+Registered the usual way:
+
+```typescript
+headerWidgets: [
+  {
+    id: 'coverage-total',
+    placement: 'end',
+    order: -10,
+    loadComponent: () =>
+      import('./coverage-header-badge.component.js').then(
+        (m) => m.CoverageHeaderBadgeComponent
+      ),
+  },
+];
+```
+
+`PrismIconComponent` is available the same way for a panel or header widget that needs a bare glyph rather than a full metric badge — `<prism-icon name="camera" [size]="14" />`.
+
+---
+
 ## NavigationDecorationDefinition
 
 ```typescript

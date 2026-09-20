@@ -306,8 +306,21 @@ A new optional `cacheDir` option on both `@ng-prism/core:serve` and `@ng-prism/c
 
 Relative paths resolve against `workspaceRoot`. If you set this option, also update the tsconfig path mapping target accordingly.
 
+## Breaking changes in 22.2.0
+
+`22.2.0` reduces the fixed chrome above the canvas — the component head's description, tags, selector and stat row moved into a details popover, the canvas tools left the layout for a floating rail, and the panel tabs picked up a consistent icon per tab. Every new token below is **additive**; every existing token is kept. The breaking surface is small and entirely in application code, not in `ShowcaseConfig`:
+
+- **`PrismLayoutService.templatePopoverVisible`, `toggleTemplatePopover()` and `closeTemplatePopover()` are gone.** The Angular-template popover now uses the platform [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API): open and close are wired through `popovertarget`/`popovertargetaction` attributes rather than a service call. If your own code called any of these three members directly (rather than through the canvas toolbar's own button), replace the call with a `popovertarget="prism-template"` attribute on your trigger element — there is no programmatic open/close left to call.
+- **`Alt+T` toggles only the variant rail now.** The component head no longer hides with it, because the head carries the Playground/API view switcher — hiding it would take primary navigation with it. If you built tooling that asserts on the component head disappearing after `Alt+T`, update it to expect only the variant ribbon to hide.
+- **Four internal class names are gone from the DOM:** `.comp-desc`, `.comp-tags`, `.comp-selector`, `.comp-head-stats` on the component head, and the variant ribbon's `--vc` custom property. None of these were documented public API, but a `themeStylesheet` or a browser extension that targeted them by class will no longer match anything. The description and tags now render inside the component head's details popover (behind the ⓘ glyph); the selector lives there too; the stat row was replaced by the head gauge. The variant ribbon no longer assigns a per-tab colour via `--vc` — each tab reads a slice of `--prism-spectrum` instead, positioned with `--i`/`--n`.
+- **The canvas toolbar is no longer a band.** It used to occupy a fixed-height strip between the variant ribbon and the canvas stage; it is now a floating rail (`.prism-toolrail`) absolutely positioned inside `.prism-canvas-wrap`, plus a popover menu for the background and zoom choosers. See [ADR 007](../adr/007-tools-leave-the-layout.md) for why, and [Theming — Marks, Measurement and Stage Tokens](theming.md#marks-measurement-and-stage-tokens) for the recommendation marker's replacement (a tinted border, not a star).
+- **The gauge readout in the component head shows four values, not five:** variants, coverage, a11y score and VRT diff. A bundle-size figure was never actually reliable — `bundleSize()` read `gzipKb`/`sizeKb`, while `@ng-prism/plugin-perf` writes `sourceSize`/`gzipEstimate`, so the property lookup always missed and the value was always `null`. It has been dropped from the gauge rather than fixed, since nothing currently populates the fields it expected.
+
+None of this affects `ShowcaseConfig`, the manifest format, or any plugin's public API — see [`PrismMetricBadgeComponent` and `PrismIconComponent`](../plugins/writing-plugins.md#header-and-panel-widgets) if you are building a header widget and want the same building blocks the built-in gauge uses.
+
 ## Related
 
 - ADR 006: [`prism-manifest.ts` lebt in `ng-prism-cache/`](../adr/006-manifest-cache-dir.md)
+- ADR 007: [The canvas tools leave the layout](../adr/007-tools-leave-the-layout.md)
 - Issue [#13](https://github.com/dyingangel666/ng-prism/issues/13)
 - Follow-up RFC [#14](https://github.com/dyingangel666/ng-prism/issues/14) — drop the separate `<lib>-prism` project entirely

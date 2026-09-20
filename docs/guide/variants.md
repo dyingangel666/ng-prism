@@ -177,7 +177,7 @@ variants: [
 
 ## Per-Variant Background
 
-A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically — overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it via the canvas toolbar, but switching variants resets to the recommendation.
+A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically — overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail), but switching variants resets to the recommendation.
 
 ```typescript
 @Showcase({
@@ -193,9 +193,9 @@ Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transp
 
 `'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the canvas toolbar until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
+`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
 
-A small gold star appears next to the matching background button in the canvas toolbar, signalling which background is recommended for the active variant.
+The matching background's button in that group carries a tinted border, signalling which background is recommended for the active variant; the active background's button carries the filled state, and both can be the same button.
 
 See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.
 

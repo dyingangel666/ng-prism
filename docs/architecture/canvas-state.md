@@ -7,7 +7,7 @@ The canvas (`PrismRendererComponent`) is governed by two cooperating services wi
 Holds the user's globally persisted canvas preferences:
 
 - `bg` — global default canvas background (any `CanvasBg`: `dots | plain | light | dark | checker | transparent`)
-- `zoom`, `guides`, `rulers` — toolbar toggles
+- `zoom`, `guides`, `rulers` — set from the floating canvas rail; guides and rulers are toggle buttons on the rail itself, zoom is a chooser in the rail's tools menu
 
 State is persisted to `localStorage` under the key `ng-prism-canvas`. This is the source of truth for the user's preferred working environment across sessions.
 
@@ -20,7 +20,7 @@ effective = override  ??  variant.bg  ??  component.bg  ??  canvas.bg()
 ```
 
 - `recommended` — computed from the active component and variant (`Variant.bg` wins over `ShowcaseConfig.bg`)
-- `override` — read-only view of a transient signal; set when the user picks a background via the canvas toolbar while a recommendation is active
+- `override` — read-only view of a transient signal; set when the user picks a background from the tools menu's **Canvas** group while a recommendation is active
 - `effective` — the final `CanvasBg` value bound to the `data-bg` attribute of `.prism-canvas-stage`
 - `isDeviating` — computed boolean; true when the override is non-null AND differs from the current recommendation
 
@@ -32,6 +32,6 @@ The override auto-clears whenever the active variant or component changes, so na
 
 ## UI Affordances
 
-- **Canvas toolbar — recommendation marker** — a small gold star appears next to the recommended background button (driven by `recommended()`). Tooltip: `Recommended background for this variant`. Passive, always visible while a recommendation is active.
+- **Tools menu — recommendation marker** — the recommended background's button in the **Canvas** group carries a tinted border (driven by `recommended()`), rather than a separate glyph. Title attribute: `Recommended background for this variant`. Passive, always visible while a recommendation is active.
 - **Canvas pill** — `Recommended: <bg> [Reset]` appears in the top-right of the canvas only when `isDeviating()` is true (actionable; the button clears the override and returns to the recommendation).
-- **Canvas toolbar — active state** — the active background button binds to `effective()`. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`).
+- **Tools menu — active state** — the active background button binds to `effective()` and carries the filled `is-on` state. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`). The recommended and active buttons can be the same one.
