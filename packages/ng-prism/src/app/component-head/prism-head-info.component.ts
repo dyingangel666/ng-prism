@@ -40,6 +40,10 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
       <code class="info-card__selector">&lt;{{ selector() }}&gt;</code>
       @if (description()) {
       <p class="info-card__desc">{{ description() }}</p>
+      } @if (variantCount() > 0) {
+      <p class="info-card__meta">
+        {{ variantCount() }} {{ variantCount() === 1 ? 'variant' : 'variants' }}
+      </p>
       } @if (tags().length) {
       <div class="info-card__tags">
         @for (tag of tags(); track tag) {
@@ -99,6 +103,14 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
       font-size: var(--fs-lg);
       line-height: 1.55;
     }
+    /* A plain fact about the component, not a measurement — it sits here with
+       the selector and the tags rather than in the gauge, whose numbers all
+       answer "did this pass its threshold". A count cannot. */
+    .info-card__meta {
+      margin: var(--sp-3) 0 0;
+      font-size: var(--fs-md);
+      color: var(--prism-text-muted);
+    }
     .info-card__tags {
       margin-top: var(--sp-4);
       display: flex;
@@ -118,4 +130,5 @@ export class PrismHeadInfoComponent {
   readonly selector = input.required<string>();
   readonly description = input<string | undefined>(undefined);
   readonly tags = input<readonly string[]>([]);
+  readonly variantCount = input<number>(0);
 }

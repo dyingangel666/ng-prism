@@ -50,6 +50,7 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
         [selector]="c.meta.componentMeta.selector"
         [description]="c.meta.showcaseConfig.description"
         [tags]="c.meta.showcaseConfig.tags ?? []"
+        [variantCount]="variantCount()"
       />
 
       @if (statusBadge(); as badge) {
@@ -265,15 +266,6 @@ export class PrismComponentHeadComponent {
     const vrt = this.vrtStat();
 
     return [
-      {
-        // Always 'none': a count has no threshold to pass, so it gets no
-        // verdict colour and does not inflate the gauge's tally of metrics
-        // that are within theirs.
-        id: 'variants',
-        label: 'Variants',
-        value: this.variantCount() > 0 ? String(this.variantCount()) : '—',
-        variant: 'none',
-      },
       {
         id: 'coverage',
         label: 'Coverage',
