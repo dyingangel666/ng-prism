@@ -115,6 +115,21 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     throw new Error('the renderer template was not spliced into the shell');
   }
 
+  // This fixture injects CANVAS_BG_STYLES below unconditionally — it does not
+  // scan the renderer source for it the way it scans for `demo-wrap` above.
+  // That is only honest for as long as the renderer's own `styles` array
+  // still composes the same constant: if someone drops it from there, the
+  // fixture would keep supplying the rules the real component no longer has,
+  // and capture-transparency.browser.spec.ts would stay green while the app
+  // silently stopped painting every declared background. Guard it the same
+  // way the demo-wrap splice is guarded, so that drift fails loudly instead
+  // of quietly.
+  if (!rendererSource.includes('CANVAS_BG_STYLES')) {
+    throw new Error(
+      'the renderer no longer composes CANVAS_BG_STYLES into its styles'
+    );
+  }
+
   // CANVAS_BG_STYLES is imported rather than parsed out of the renderer
   // source: it is a plain exported string with no Angular compilation
   // involved, so importing it cannot drift out of step with the array the

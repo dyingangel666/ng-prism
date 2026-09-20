@@ -21,8 +21,8 @@ import { PrismOverviewCellComponent } from './prism-overview-cell.component.js';
   imports: [PrismOverviewCellComponent],
   template: `
     @if (activeComponent(); as component) {
-    <div class="prism-overview">
-      @for (variant of variants(); track $index) {
+    <div class="prism-overview" role="list">
+      @for (_ of variants(); track $index) {
       <prism-overview-cell [component]="component" [index]="$index" />
       }
     </div>

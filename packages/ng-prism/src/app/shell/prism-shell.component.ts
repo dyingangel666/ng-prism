@@ -27,6 +27,7 @@ import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-ho
 import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
 import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
 import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
+import { nextViewId } from '../view-tab-bar/next-view-id.js';
 
 @Component({
   selector: 'prism-shell',
@@ -319,13 +320,16 @@ export class PrismShellComponent {
     // offers it — browsing a library variant-sheet by variant-sheet was
     // impossible while every navigation dropped back to the Playground. The
     // old rule watched for the *event* of switching and needed a key to
-    // remember; this one states the invariant and needs nothing.
+    // remember; this one states the invariant and needs nothing. The rule
+    // itself lives in `nextViewId`, a pure function with its own tests — this
+    // effect only reads the two signals it needs and applies the result.
     effect(() => {
-      const active = this.panelService.activeViewId();
-      if (active === 'renderer') return;
-      const visible = this.panelService.visibleViewPanels();
-      if (!visible.some((p) => p.id === active)) {
-        untracked(() => this.panelService.activeViewId.set('renderer'));
+      const next = nextViewId(
+        this.panelService.activeViewId(),
+        this.panelService.visibleViewPanels()
+      );
+      if (next !== null) {
+        untracked(() => this.panelService.activeViewId.set(next));
       }
     });
 

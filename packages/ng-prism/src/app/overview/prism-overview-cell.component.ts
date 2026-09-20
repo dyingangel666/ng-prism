@@ -34,6 +34,7 @@ import { computeVariantState } from '../services/prism-renderer.service.js';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
+    role: 'listitem',
     '[attr.data-wide]': "isWide() ? '' : null",
   },
   template: `
@@ -114,6 +115,11 @@ export class PrismOverviewCellComponent {
     const variant =
       this.component().meta.showcaseConfig.variants?.[this.index()];
     const number = String(this.index() + 1).padStart(2, '0');
+    // Defensive, not reachable today: `Variant.name` is required
+    // (decorator/showcase.types.ts) and `prism-overview` only ever creates a
+    // cell for an index it just read out of that same `variants` array. A
+    // bare `07` would only appear if those two facts stopped lining up — the
+    // grid indexing past the array it iterates, or `name` becoming optional.
     return variant ? `${number} ${variant.name}` : number;
   });
 
@@ -135,32 +141,49 @@ export class PrismOverviewCellComponent {
     this.destroyRef.onDestroy(() => this.outlet().clear());
   }
 
+  // The Playground lets a variant that throws on construction propagate: one
+  // broken instance, and the user navigates away from it. The Overview
+  // fans instantiation out from one instance to n, all mounted in the same
+  // change-detection pass — an uncaught throw here would abort the refresh of
+  // every cell after it, so one bad variant would take down the whole sheet
+  // instead of just its own cell. That asymmetry is deliberate: contain here,
+  // propagate there.
   private mount(component: RuntimeComponent, index: number): void {
-    this.outlet().clear();
+    try {
+      this.outlet().clear();
 
-    // No `onUnknownInput` callback: the Playground already warns once per
-    // component, and repeating that warning per cell would say the same thing
-    // n times.
-    const { values, activeContent } = computeVariantState(component, index);
+      // No `onUnknownInput` callback: the Playground already warns once per
+      // component, and repeating that warning per cell would say the same thing
+      // n times.
+      const { values, activeContent } = computeVariantState(component, index);
 
-    const injector = Injector.create({
-      providers: component.meta.showcaseConfig.providers ?? [],
-      parent: this.injector,
-    });
-    const projectableNodes = activeContent
-      ? parseContentToNodes(activeContent)
-      : undefined;
+      const injector = Injector.create({
+        providers: component.meta.showcaseConfig.providers ?? [],
+        parent: this.injector,
+      });
+      const projectableNodes = activeContent
+        ? parseContentToNodes(activeContent)
+        : undefined;
 
-    const ref = this.outlet().createComponent(component.type, {
-      injector,
-      projectableNodes,
-    });
+      const ref = this.outlet().createComponent(component.type, {
+        injector,
+        projectableNodes,
+      });
 
-    const knownInputs = buildKnownInputs(component);
-    for (const [key, value] of Object.entries(values)) {
-      if (!knownInputs.has(key)) continue;
-      ref.setInput(key, value);
+      const knownInputs = buildKnownInputs(component);
+      for (const [key, value] of Object.entries(values)) {
+        if (!knownInputs.has(key)) continue;
+        ref.setInput(key, value);
+      }
+      ref.changeDetectorRef.detectChanges();
+    } catch (error) {
+      // A caught cell shows an empty stage with its caption still in place —
+      // an honest picture of "this variant failed", rather than a broken grid
+      // with no indication of which cell caused it.
+      console.error(
+        `[ng-prism] Variant ${index} of ${component.meta.className} failed to render:`,
+        error
+      );
     }
-    ref.changeDetectorRef.detectChanges();
   }
 }
