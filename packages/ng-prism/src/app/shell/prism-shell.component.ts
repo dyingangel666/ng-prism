@@ -90,11 +90,13 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
           class="prism-main"
           [style.--ph.px]="showPanel() ? layout.panelHeight() : 0"
         >
-          @if (navigationService.activeComponent()) { @if (viewPanels().length >
-          0) {
-          <prism-view-tab-bar class="prism-main__view-bar" />
-          } @if (panelService.activeViewId() === 'renderer') {
-          <prism-component-head />
+          @if (navigationService.activeComponent()) { @if
+          (panelService.activeViewId() === 'renderer') {
+          <prism-component-head>
+            @if (viewPanels().length > 0) {
+            <prism-view-tab-bar headEnd />
+            }
+          </prism-component-head>
           @if (layout.toolbarVisible()) {
           <prism-variant-ribbon />
           }
@@ -104,6 +106,9 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
             <prism-template-popover />
           </div>
           } @else {
+          <prism-component-head>
+            <prism-view-tab-bar headEnd />
+          </prism-component-head>
           <prism-view-panel-host class="prism-main__canvas" />
           } @if (showPanel()) {
           <div
@@ -245,7 +250,6 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
       overflow: hidden;
       position: relative;
     }
-    .prism-main__view-bar { flex-shrink: 0; }
     .prism-main__canvas { flex: 1; min-height: 0; overflow: auto; }
 
     .prism-main__panel {
