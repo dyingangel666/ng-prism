@@ -177,9 +177,15 @@ export class PrismOverviewCellComponent {
       }
       ref.changeDetectorRef.detectChanges();
     } catch (error) {
-      // A caught cell shows an empty stage with its caption still in place —
-      // an honest picture of "this variant failed", rather than a broken grid
-      // with no indication of which cell caused it.
+      // `createComponent` attaches the host element and its structural DOM
+      // synchronously; a throw almost always comes from `detectChanges` right
+      // above, i.e. from a template expression or a lifecycle hook running
+      // *after* that attach. So there is usually a half-built subtree sitting
+      // in the outlet by the time we get here, and clearing it is what makes
+      // a caught cell actually show an empty stage with its caption still in
+      // place — an honest picture of "this variant failed", rather than a
+      // broken grid with no indication of which cell caused it.
+      this.outlet().clear();
       console.error(
         `[ng-prism] Variant ${index} of ${component.meta.className} failed to render:`,
         error
