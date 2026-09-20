@@ -20,7 +20,7 @@ import { Component, input } from '@angular/core';
   `,
 })
 export class ButtonComponent {
-  label   = input.required<string>();
+  label = input.required<string>();
   variant = input<'primary' | 'secondary' | 'danger'>('primary');
   disabled = input(false);
 }
@@ -32,12 +32,13 @@ Import `Showcase` from `ng-prism` and add the decorator above `@Component`:
 
 ```typescript
 import { Component, input } from '@angular/core';
-import { Showcase } from '@ng-prism/core';  // ← add this
+import { Showcase } from '@ng-prism/core'; // ← add this
 
 @Showcase({
   title: 'Button',
   category: 'Atoms',
-  description: 'The primary action element. Use for form submissions and navigation triggers.',
+  description:
+    'The primary action element. Use for form submissions and navigation triggers.',
   variants: [
     {
       name: 'Primary',
@@ -59,20 +60,20 @@ import { Showcase } from '@ng-prism/core';  // ← add this
   template: `...`,
 })
 export class ButtonComponent {
-  label    = input.required<string>();
-  variant  = input<'primary' | 'secondary' | 'danger'>('primary');
+  label = input.required<string>();
+  variant = input<'primary' | 'secondary' | 'danger'>('primary');
   disabled = input(false);
 }
 ```
 
 ## What Each Field Does
 
-| Field | Effect |
-|-------|--------|
-| `title` | Display name in the sidebar and component header |
-| `category` | Groups this component in the sidebar. Omit to land in "Uncategorized". |
-| `description` | Shown below the component header. Supports Markdown. |
-| `variants` | Named tabs above the rendered component. Each tab sets different `inputs`. |
+| Field         | Effect                                                                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | Display name in the sidebar and component head                                                                                         |
+| `category`    | Groups this component in the sidebar, and is the breadcrumb ahead of the title in the component head. Omit to land in "Uncategorized". |
+| `description` | Shown in the component head's details popover, behind the ⓘ glyph next to the title.                                                   |
+| `variants`    | Named tabs above the rendered component. Each tab sets different `inputs`.                                                             |
 
 ## Make Sure It Is Exported
 
