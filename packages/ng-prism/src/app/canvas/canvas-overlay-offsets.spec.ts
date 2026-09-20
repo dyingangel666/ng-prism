@@ -72,6 +72,27 @@ describe('canvas overlay offsets', () => {
     expect(rail).toEqual(stage);
   });
 
+  /**
+   * Two overlays that anchor to the same corner do not tile — they stack, and
+   * the one drawn later wins. That is how the tool rail came to sit on top of
+   * the background pill: both read the same two offsets, one from `right` and
+   * one from `right`. The rail is permanent and the pill is a notice, so the
+   * rail keeps the right corner and the pill takes the left.
+   */
+  it('the rail and the background pill claim opposite corners', () => {
+    const pill = readFileSync(
+      join(__dirname, 'prism-canvas-bg-pill.component.ts'),
+      'utf-8'
+    );
+    const rail = readFileSync(TOOLBAR, 'utf-8');
+
+    expect(pill).toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
+    expect(pill).not.toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
+
+    expect(rail).toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
+    expect(rail).not.toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
+  });
+
   it('the tool rail falls back to the stage values when rulers are off', () => {
     const base = offsets(RENDERER, '.prism-canvas-stage {');
     const src = readFileSync(TOOLBAR, 'utf-8');

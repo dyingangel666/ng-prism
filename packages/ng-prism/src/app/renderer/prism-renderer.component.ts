@@ -53,11 +53,6 @@ import { resolveOverlay } from './overlay-resolver.js';
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
     >
       @if (!capture.active()) {
-      <div class="canvas-badges">
-        <span class="c-badge"
-          >{{ Math.round(canvasService.zoom() * 100) }}%</span
-        >
-      </div>
       <div
         class="stage-crosshair"
         [class.visible]="canvasService.guides()"
@@ -176,26 +171,6 @@ import { resolveOverlay } from './overlay-resolver.js';
     .stage-crosshair::before { left: 0; right: 0; top: 50%; height: 1px; }
     .stage-crosshair::after { top: 0; bottom: 0; left: 50%; width: 1px; }
 
-    .canvas-badges {
-      position: absolute;
-      top: var(--prism-canvas-overlay-top);
-      left: var(--prism-canvas-overlay-inline);
-      display: flex;
-      gap: 6px;
-      pointer-events: none;
-      transition: top var(--dur-base), left var(--dur-base);
-    }
-    .c-badge {
-      font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      padding: 3px 7px;
-      border-radius: 4px;
-      background: color-mix(in srgb, var(--prism-bg-elevated) 90%, transparent);
-      border: 1px solid var(--prism-border);
-      color: var(--prism-text-muted);
-      backdrop-filter: blur(8px);
-    }
-
     .demo-wrap {
       position: relative;
       display: inline-block;
@@ -211,7 +186,6 @@ import { resolveOverlay } from './overlay-resolver.js';
   `,
 })
 export class PrismRendererComponent {
-  protected readonly Math = Math;
   protected readonly navigationService = inject(PrismNavigationService);
   protected readonly rendererService = inject(PrismRendererService);
   protected readonly canvasService = inject(PrismCanvasService);
