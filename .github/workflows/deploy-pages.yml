@@ -36,57 +36,21 @@ jobs:
           npm_config_registry: https://registry.npmjs.org
         run: npm install
 
-      - name: Scaffold prism app and build demo
+      - name: Generate coverage report
+        working-directory: test-workspace
+        # Must run before the demo build: the coverage plugin reads
+        # coverage-summary.json while scanning, and matches its entries against
+        # absolute source paths — so the report has to come from this checkout.
+        run: npm run test:coverage
+
+      - name: Build demo
         working-directory: test-workspace
         run: |
-          # Create ng-prism.config.ts
-          cat > ng-prism.config.ts << 'EOF'
-          import { defineConfig } from '@ng-prism/core/config';
-          export default defineConfig({ plugins: [] });
-          EOF
+          # ng-prism.config.ts is gitignored because `ng add` writes it, so the
+          # demo mirrors the checked-in example — which enables every plugin.
+          cp ng-prism.config.example.ts ng-prism.config.ts
 
-          # Scaffold test-lib-prism app (normally created by ng add)
-          mkdir -p projects/test-lib-prism/src/pages
-
-          cat > projects/test-lib-prism/tsconfig.app.json << 'EOF'
-          {
-            "extends": "../../tsconfig.json",
-            "compilerOptions": {
-              "outDir": "../../out-tsc/app",
-              "types": []
-            },
-            "files": ["src/main.ts"],
-            "include": ["src/**/*.d.ts"]
-          }
-          EOF
-
-          cat > projects/test-lib-prism/src/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1" />
-            <title>ng-prism Demo</title>
-            <style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body { height: 100%; }</style>
-          </head>
-          <body>
-            <prism-shell></prism-shell>
-          </body>
-          </html>
-          EOF
-
-          cat > projects/test-lib-prism/src/main.ts << 'EOF'
-          import { bootstrapApplication } from '@angular/platform-browser';
-          import { PrismShellComponent, providePrism } from '@ng-prism/core';
-          import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/test-lib-prism';
-          import config from 'ng-prism.config';
-
-          bootstrapApplication(PrismShellComponent, {
-            providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],
-          });
-          EOF
-
-          # Set baseHref for GitHub Pages subpath
+          # Serve from the GitHub Pages subpath.
           node -e "
             const fs = require('fs');
             const cfg = JSON.parse(fs.readFileSync('angular.json','utf-8'));
@@ -94,7 +58,6 @@ jobs:
             fs.writeFileSync('angular.json', JSON.stringify(cfg, null, 2));
           "
 
-          # Build
           npx ng run test-lib:prism-build
 
       - name: Assemble site

@@ -58,6 +58,9 @@ test-workspace/.env
 test-workspace/package-lock.json
 test-workspace/projects/test-lib-prism/
 test-workspace/ng-prism.config.ts
+# Von `npm run test:coverage` erzeugt, vom Coverage-Plugin gelesen.
+# Nicht committen: enthaelt absolute Pfade der erzeugenden Maschine.
+test-workspace/coverage
 test-workspace/**/*.d.ts
 test-workspace/tsconfig.tsbuildinfo
 
