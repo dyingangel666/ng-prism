@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CANVAS_BG_STYLES } from '../../canvas/canvas-bg.styles.js';
 
 const SHELL_SOURCE = join(__dirname, '..', 'prism-shell.component.ts');
 const RENDERER_SOURCE = join(
@@ -20,9 +21,11 @@ const RENDERER_SOURCE = join(
  * `styles` may be a single literal (`styles: \`…\``) or, as of the renderer's
  * shared `[data-bg]` rules, an array whose first element is the literal
  * (`styles: [\n    \`…\`,`). Anchoring on the key alone rather than on the key
- * plus an immediately-following backtick covers both: this only ever returns
- * the *first* literal, which is exactly the one these fixtures compose — the
- * base stage rules, not the shared `CANVAS_BG_STYLES` appended after it.
+ * plus an immediately-following backtick covers both — but either way this
+ * returns only *one* element. When `styles` is an array, the caller is
+ * responsible for composing whatever else belongs in it; see
+ * `renderCanvasChain`, which appends `CANVAS_BG_STYLES` itself rather than
+ * expecting this function to find it by scanning text.
  */
 export function literal(source: string, key: 'template' | 'styles'): string {
   const keyAt = source.indexOf(`${key}:`);
@@ -112,9 +115,21 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     throw new Error('the renderer template was not spliced into the shell');
   }
 
+  // CANVAS_BG_STYLES is imported rather than parsed out of the renderer
+  // source: it is a plain exported string with no Angular compilation
+  // involved, so importing it cannot drift out of step with the array the
+  // way a second positional `literal()` scan could. It is not run through
+  // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute
+  // selectors with no `:host` in them, so that rewrite has nothing to do.
+  // Placed directly after the renderer's own base literal, mirroring its
+  // position as the last entry of the real `styles` array: `.prism-canvas-
+  // stage` and `[data-bg="light"]` are equal specificity either way — a
+  // class selector and an attribute selector both weigh (0,1,0) — so source
+  // order is what decides here too, exactly as in the component.
   const style = document.createElement('style');
   style.textContent = [
     scopeHost(literal(rendererSource, 'styles'), selectorOf(rendererSource)),
+    CANVAS_BG_STYLES,
     scopeHost(literal(shellSource, 'styles'), selectorOf(shellSource)),
   ].join('\n');
   document.head.appendChild(style);
