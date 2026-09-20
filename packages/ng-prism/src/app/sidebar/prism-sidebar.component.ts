@@ -145,6 +145,7 @@ interface ComponentCategory {
               [class.sb-group-count--warn]="cat.rollup.variant === 'warn'"
               [class.sb-group-count--danger]="cat.rollup.variant === 'danger'"
               [attr.title]="rollupTooltip(cat.rollup)"
+              [attr.aria-label]="rollupTooltip(cat.rollup)"
             >
               @if (cat.rollup.problems) { {{ cat.rollup.problems }}/{{
                 cat.items.length
@@ -344,13 +345,21 @@ interface ComponentCategory {
       text-overflow: ellipsis;
     }
 
+    /* Fixed width sized for the three built-in decoration sources (a11y,
+       plugin-coverage, plugin-visual-regression) at 11px each plus two
+       --sp-1 gaps, with a little headroom. navigationDecorations is an open
+       extension point, so a fourth mark from a third-party plugin is
+       clipped via overflow: hidden rather than allowed to grow the gutter —
+       the point of a fixed-width gutter is that rows never shift
+       horizontally as you scan the list. */
     .sb-item-health {
-      width: 32px;
+      width: 40px;
       flex: none;
       display: flex;
       align-items: center;
       justify-content: flex-end;
       gap: var(--sp-1);
+      overflow: hidden;
     }
 
     /* Outline, not fill, and full saturation only for danger. The mechanism
