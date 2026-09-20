@@ -13,7 +13,6 @@ import { PrismThemeService } from '../services/prism-theme.service.js';
 import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismComponentHeadComponent } from '../component-head/prism-component-head.component.js';
 import { PrismVariantRibbonComponent } from '../variant-ribbon/prism-variant-ribbon.component.js';
 import { PrismHeaderComponent } from '../header/prism-header.component.js';
@@ -21,7 +20,6 @@ import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.c
 import { PrismRendererComponent } from '../renderer/prism-renderer.component.js';
 import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
 import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
-import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
 import { PrismUrlStateService } from '../services/prism-url-state.service.js';
 import { PrismPersistenceService } from '../services/prism-persistence.service.js';
 import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
@@ -294,14 +292,10 @@ export class PrismShellComponent {
   private readonly themeService = inject(PrismThemeService);
   protected readonly layout = inject(PrismLayoutService);
   protected readonly panelService = inject(PrismPanelService);
-  private readonly pluginService = inject(PrismPluginService);
   private readonly urlStateService = inject(PrismUrlStateService);
   private readonly persistenceService = inject(PrismPersistenceService);
 
-  protected readonly viewPanels = computed(() => [
-    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
-    ...this.pluginService.viewPanels(),
-  ]);
+  protected readonly viewPanels = this.panelService.visibleViewPanels;
 
   protected readonly showPanel = computed(
     () =>
@@ -321,18 +315,18 @@ export class PrismShellComponent {
     this.urlStateService.init();
     this.persistenceService.init();
 
-    let lastItemKey: string | null = null;
+    // A view survives a component switch as long as the new component still
+    // offers it — browsing a library variant-sheet by variant-sheet was
+    // impossible while every navigation dropped back to the Playground. The
+    // old rule watched for the *event* of switching and needed a key to
+    // remember; this one states the invariant and needs nothing.
     effect(() => {
-      const item = this.navigationService.activeItem();
-      const key = item
-        ? item.kind === 'component'
-          ? item.data.meta.className
-          : item.data.title
-        : null;
-      if (lastItemKey !== null && lastItemKey !== key) {
+      const active = this.panelService.activeViewId();
+      if (active === 'renderer') return;
+      const visible = this.panelService.visibleViewPanels();
+      if (!visible.some((p) => p.id === active)) {
         untracked(() => this.panelService.activeViewId.set('renderer'));
       }
-      lastItemKey = key;
     });
 
     effect(() => {

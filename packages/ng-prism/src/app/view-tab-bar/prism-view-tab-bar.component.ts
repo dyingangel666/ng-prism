@@ -1,12 +1,5 @@
-import {
-  Component,
-  computed,
-  inject,
-  ChangeDetectionStrategy,
-} from '@angular/core';
-import { BUILTIN_PANELS } from '../panels/builtin-panels.js';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismPluginService } from '../services/prism-plugin.service.js';
 
 @Component({
   selector: 'prism-view-tab-bar',
@@ -74,10 +67,6 @@ import { PrismPluginService } from '../services/prism-plugin.service.js';
 })
 export class PrismViewTabBarComponent {
   protected readonly panelService = inject(PrismPanelService);
-  private readonly pluginService = inject(PrismPluginService);
 
-  protected readonly viewPanels = computed(() => [
-    ...BUILTIN_PANELS.filter((p) => p.placement === 'view'),
-    ...this.pluginService.viewPanels(),
-  ]);
+  protected readonly viewPanels = this.panelService.visibleViewPanels;
 }
