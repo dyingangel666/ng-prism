@@ -34,6 +34,7 @@ import { PrismCaptureService } from '../services/prism-capture.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
+import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
 import { buildKnownInputs } from './known-inputs.js';
 import { resolveOverlay } from './overlay-resolver.js';
 import { parseContentToNodes } from './projectable-content.js';
@@ -81,21 +82,26 @@ import { parseContentToNodes } from './projectable-content.js';
       </div>
     </div>
   `,
-  styles: `
-    :host { display: block; min-height: 0; flex: 1; }
+  styles: [
+    `
+      :host {
+        display: block;
+        min-height: 0;
+        flex: 1;
+      }
 
-    .prism-canvas-stage {
-      position: relative;
-      overflow: auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      min-height: 200px;
-      height: 100%;
-      background-color: var(--prism-stage);
+      .prism-canvas-stage {
+        position: relative;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        min-height: 200px;
+        height: 100%;
+        background-color: var(--prism-stage);
 
-      /* The edge is outline + shadow, never border and never extra padding.
+        /* The edge is outline + shadow, never border and never extra padding.
          plugin-visual-regression screenshots .demo-wrap, which is centred in
          this element; a border would shrink the content box by 2px and move
          that centre, shifting all 15 baselines in test-workspace/vrt/baseline
@@ -106,85 +112,62 @@ import { parseContentToNodes } from './projectable-content.js';
          They do still paint, and outline-offset is negative, so the line lands
          inside the box: CAPTURE_STYLES in prism-capture.service.ts sets both
          to none, which is only safe because neither is load-bearing here. */
-      outline: 1px solid var(--prism-stage-edge);
-      outline-offset: -1px;
-      box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.10),
-        0 8px 24px -12px rgba(0, 0, 0, 0.18);
-      background-image: radial-gradient(circle, var(--prism-dot) 1px, transparent 1px);
-      background-size: 20px 20px;
-      transition: filter var(--dur-base);
-      --prism-canvas-overlay-top: 12px;
-      --prism-canvas-overlay-inline: 20px;
-    }
-    .prism-canvas-stage[data-rulers] {
-      --prism-canvas-overlay-top: 28px;
-      --prism-canvas-overlay-inline: 28px;
-    }
+        outline: 1px solid var(--prism-stage-edge);
+        outline-offset: -1px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1),
+          0 8px 24px -12px rgba(0, 0, 0, 0.18);
+        transition: filter var(--dur-base);
+        --prism-canvas-overlay-top: 12px;
+        --prism-canvas-overlay-inline: 20px;
+      }
+      .prism-canvas-stage[data-rulers] {
+        --prism-canvas-overlay-top: 28px;
+        --prism-canvas-overlay-inline: 28px;
+      }
 
-    .prism-canvas-stage[data-bg="plain"] {
-      background-image: none;
-    }
-    /* Flat, not dotted. "light" and "dark" name a surface a component was
-       designed against — and they are the two backgrounds whose colour is
-       absolute rather than a theme token, which is what makes them the values
-       to declare for a screenshot baseline. "dots" already exists for anyone
-       who wants the grid. */
-    .prism-canvas-stage[data-bg="light"] {
-      background-color: var(--prism-void-light, #f7f5fc);
-      background-image: none;
-    }
-    .prism-canvas-stage[data-bg="dark"] {
-      background-color: var(--prism-void-dark, #07050f);
-      background-image: none;
-    }
-    /* "transparent" shares the checkerboard on purpose. The two say the same
-       thing in the two media the canvas has: while browsing, the checkerboard
-       is already the UI's word for "no surface here"; in a capture it becomes
-       literal transparency. A stage that were really see-through in the app
-       would just show the shell through the canvas, which means nothing. The
-       split between the two lives entirely in CAPTURE_STYLES. */
-    .prism-canvas-stage[data-bg="checker"],
-    .prism-canvas-stage[data-bg="transparent"] {
-      background-image:
-        linear-gradient(45deg, var(--prism-border) 25%, transparent 25%),
-        linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, var(--prism-border) 75%),
-        linear-gradient(-45deg, transparent 75%, var(--prism-border) 75%);
-      background-size: 16px 16px;
-      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
-    }
+      .stage-crosshair {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--dur-base);
+      }
+      .stage-crosshair.visible {
+        opacity: 1;
+      }
+      .stage-crosshair::before,
+      .stage-crosshair::after {
+        content: '';
+        position: absolute;
+        background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
+      }
+      .stage-crosshair::before {
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+      }
+      .stage-crosshair::after {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+      }
 
-    .stage-crosshair {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity var(--dur-base);
-    }
-    .stage-crosshair.visible { opacity: 1; }
-    .stage-crosshair::before,
-    .stage-crosshair::after {
-      content: '';
-      position: absolute;
-      background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
-    }
-    .stage-crosshair::before { left: 0; right: 0; top: 50%; height: 1px; }
-    .stage-crosshair::after { top: 0; bottom: 0; left: 50%; width: 1px; }
-
-    .demo-wrap {
-      position: relative;
-      display: inline-block;
-      transform: scale(var(--zoom, 1));
-      transition: transform 0.18s;
-    }
-    .demo-wrap[data-canvas-layout="stretch"] {
-      display: block;
-      width: 100%;
-      max-width: 800px;
-    }
-
-  `,
+      .demo-wrap {
+        position: relative;
+        display: inline-block;
+        transform: scale(var(--zoom, 1));
+        transition: transform 0.18s;
+      }
+      .demo-wrap[data-canvas-layout='stretch'] {
+        display: block;
+        width: 100%;
+        max-width: 800px;
+      }
+    `,
+    CANVAS_BG_STYLES,
+  ],
 })
 export class PrismRendererComponent {
   protected readonly navigationService = inject(PrismNavigationService);

@@ -16,9 +16,16 @@ const RENDERER_SOURCE = join(
  * A plain scan between the two backticks that follow the key. Neither literal
  * can contain a backtick of its own — one would terminate the literal and the
  * file would not compile — so there is nothing subtler to get right here.
+ *
+ * `styles` may be a single literal (`styles: \`…\``) or, as of the renderer's
+ * shared `[data-bg]` rules, an array whose first element is the literal
+ * (`styles: [\n    \`…\`,`). Anchoring on the key alone rather than on the key
+ * plus an immediately-following backtick covers both: this only ever returns
+ * the *first* literal, which is exactly the one these fixtures compose — the
+ * base stage rules, not the shared `CANVAS_BG_STYLES` appended after it.
  */
 export function literal(source: string, key: 'template' | 'styles'): string {
-  const keyAt = source.indexOf(`${key}: \``);
+  const keyAt = source.indexOf(`${key}:`);
   if (keyAt === -1) throw new Error(`no ${key} literal in component source`);
   const open = source.indexOf('`', keyAt);
   const close = source.indexOf('`', open + 1);
