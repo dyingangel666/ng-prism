@@ -109,13 +109,20 @@ import { PrismStatComponent } from './prism-stat.component.js';
       border-radius: var(--radius-md);
       background: var(--prism-bg-elevated);
       box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
-      display: flex;
-      flex-direction: column;
       gap: 1px;
       position-anchor: --prism-head-gauge;
       position-area: block-end span-inline-start;
       position-try-fallbacks: flip-block, flip-inline;
       inset: auto;
+    }
+
+    /* display belongs on :popover-open and nowhere else — see the note in
+       prism-template-popover.component.ts. An author display on the base
+       rule outranks the UA's [popover]:not(:popover-open) { display: none }
+       and pins the readout open. */
+    .gauge-card:popover-open {
+      display: flex;
+      flex-direction: column;
     }
   `,
 })

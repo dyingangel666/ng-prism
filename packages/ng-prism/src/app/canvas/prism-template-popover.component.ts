@@ -106,10 +106,19 @@ function tokenizeXml(code: string): string {
       box-shadow:
         0 20px 60px rgba(0, 0, 0, 0.45),
         0 0 0 1px color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      display: flex;
-      flex-direction: column;
       overflow: hidden;
       animation: tpl-fade-in var(--dur-fast, 0.15s) var(--ease-default, ease-out);
+    }
+
+    /* display belongs on :popover-open and nowhere else. The UA stylesheet
+       hides a closed popover with [popover]:not(:popover-open) { display: none },
+       and any author display on the base rule outranks it — the panel then
+       shows permanently and neither Escape nor light-dismiss can hide it,
+       because closing only drops :popover-open and leaves the author rule
+       standing. */
+    .tpl-popover:popover-open {
+      display: flex;
+      flex-direction: column;
     }
 
     @keyframes tpl-fade-in {

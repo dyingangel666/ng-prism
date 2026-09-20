@@ -188,8 +188,6 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       border-radius: var(--radius-md);
       background: var(--prism-bg-elevated);
       box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
-      display: flex;
-      flex-direction: column;
       gap: var(--sp-2);
       position-anchor: --prism-toolrail;
       position-area: inline-start;
@@ -197,6 +195,16 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       inset: auto;
       margin-inline-end: var(--sp-2);
     }
+
+    /* display belongs on :popover-open and nowhere else — see the note in
+       prism-template-popover.component.ts. An author display on the base
+       rule outranks the UA's [popover]:not(:popover-open) { display: none }
+       and pins the menu open. */
+    .prism-toolmenu:popover-open {
+      display: flex;
+      flex-direction: column;
+    }
+
     .prism-toolmenu__lbl {
       font-size: var(--fs-xs);
       letter-spacing: 0.08em;

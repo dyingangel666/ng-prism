@@ -73,4 +73,54 @@ describe('popover wiring', () => {
       }
     }
   });
+
+  /**
+   * The regression this guards actually shipped: three of the four popovers
+   * carried `display: flex` on their base rule.
+   *
+   * The UA stylesheet hides a closed popover with
+   * `[popover]:not(:popover-open) { display: none }`. That is a user-agent
+   * rule, so any author `display` on the same element outranks it — the panel
+   * renders permanently, and neither Escape nor light-dismiss can put it away,
+   * because closing only drops `:popover-open` and leaves the author rule
+   * standing. It looks like a broken popover and reads like a broken script,
+   * but it is entirely a cascade problem.
+   *
+   * jsdom has no Popover API, so the behaviour cannot be exercised. The
+   * stylesheet contract can: `display` may appear on `<class>:popover-open`
+   * and must not appear in the base block of the popover's own class.
+   */
+  const popoverClasses = (src: string): string[] =>
+    [...src.matchAll(/<[a-z][^>]*>/gi)]
+      .filter((m) => /\spopover(\s|=|>)/.test(m[0]))
+      .map((m) => /\sclass="([^"]+)"/.exec(m[0])?.[1]?.split(/\s+/)[0])
+      .filter((c): c is string => Boolean(c));
+
+  /** The declaration block of `.<cls> { … }`, or null when there is none. */
+  const baseBlock = (src: string, cls: string): string | null => {
+    const start = src.indexOf(`.${cls} {`);
+    if (start === -1) return null;
+    const end = src.indexOf('}', start);
+    return end === -1 ? null : src.slice(start, end);
+  };
+
+  it.each(TEMPLATES)(
+    '%s keeps display off every popover base rule',
+    (relative) => {
+      const src = read(relative);
+      const classes = popoverClasses(src);
+      expect(classes.length).toBeGreaterThan(0);
+
+      for (const cls of classes) {
+        const block = baseBlock(src, cls);
+        if (block === null) continue;
+        // The base rule must stay silent about display. A popover that needs a
+        // layout other than the element's default states it on
+        // `.<cls>:popover-open`, which only matches while the popover is open
+        // and therefore cannot pin it there. A popover that is happy with the
+        // default — a plain block for a div — needs no display rule at all.
+        expect(block).not.toMatch(/\bdisplay\s*:/);
+      }
+    }
+  );
 });
