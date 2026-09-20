@@ -80,9 +80,9 @@ export default defineConfig({
 
 | Property          | Default (dark) | Default (light) | Description          |
 | ----------------- | -------------- | --------------- | -------------------- |
-| `--prism-success` | `#34d399`      | `#059669`       | Success state        |
-| `--prism-warn`    | `#fbbf24`      | `#d97706`       | Warning state        |
-| `--prism-danger`  | `#f87171`      | `#dc2626`       | Danger / error state |
+| `--prism-success` | `#34d399`      | `#047857`       | Success state        |
+| `--prism-warn`    | `#fbbf24`      | `#8f6b00`       | Warning state        |
+| `--prism-danger`  | `#f87171`      | `#951226`       | Danger / error state |
 
 ## Code Syntax Colors
 
@@ -122,12 +122,21 @@ Introduced alongside the panel-tab and canvas-tool redesign — these are additi
 | Property                 | Default (dark)                                                                               | Default (light)                 | Description                                                                                                                                                                                                                                                                 |
 | ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--prism-mark-nominal`   | `transparent`                                                                                | `transparent`                   | The "nothing to report" role. Deliberately invisible — a nominal state draws no colour at all, which is what makes `--prism-mark-attention` and `--prism-mark-critical` read as signals rather than as one more color in a row of them.                                     |
-| `--prism-mark-attention` | `#e8a33d`                                                                                    | `#b4700d`                       | Amber role for a value past its warning threshold — used by the sidebar's health dot, `PrismMetricBadgeComponent`'s `warn` variant, the component head's status chip, the head gauge, and `PrismStatComponent`'s `warn` dot.                                                |
-| `--prism-mark-critical`  | `#e5484d`                                                                                    | `#c62b30`                       | Red role for a value past its critical threshold — same consumers as `--prism-mark-attention`, `danger`/`critical` variant.                                                                                                                                                 |
+| `--prism-mark-attention` | `#e8a33d`                                                                                    | `#8f6b00`                       | Amber role for a value past its warning threshold — used by the sidebar's health dot, `PrismMetricBadgeComponent`'s `warn` variant, the component head's status chip, the head gauge, and `PrismStatComponent`'s `warn` dot.                                                |
+| `--prism-mark-critical`  | `#e5484d`                                                                                    | `#951226`                       | Red role for a value past its critical threshold — same consumers as `--prism-mark-attention`, `danger`/`critical` variant.                                                                                                                                                 |
 | `--prism-measure`        | `#22d3ee`                                                                                    | `#0b93ad`                       | Reserved role for measurement and dimension UI (rulers, guides, box-model-style overlays). Not yet drawn from by ng-prism core itself — declared so a plugin can adopt one consistent "this is a measurement, not a status" colour instead of picking its own.              |
 | `--prism-stage`          | `#16122b`                                                                                    | `#ffffff`                       | Background colour of `.prism-canvas-stage`, independent of the variant's `bg` (`dots`/`plain`/`light`/`dark`/etc. paint on top of it).                                                                                                                                      |
 | `--prism-stage-edge`     | `rgba(255,255,255,0.10)`                                                                     | `rgba(28,21,48,0.14)`           | The stage's boundary colour. Applied via `outline` + `box-shadow`, never `border` — a border would shrink the content box by its width and shift where `.demo-wrap` centres, moving every visual-regression baseline the day someone reached for the more obvious property. |
 | `--prism-spectrum`       | `linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))` | same shape, light-theme colours | The gradient the variant ribbon reads a per-tab slice from (via `--i`/`--n` custom properties on each tab) so each variant's underline shows _where it sits in the sequence_ rather than an arbitrary per-index hue.                                                        |
+
+> **Writing your own semantic colours?** Two floors are enforced by
+> `semantic-colours.spec.ts` and worth matching in a custom theme: each colour
+> needs at least **4.5:1** against `--prism-bg`, and the warning/error pair needs
+> at least **ΔE 45** and **ΔL\* 14** between them. The lightness gap is the part
+> that is easy to lose — these colours appear at 5–11px, where lightness carries
+> far more of the distinction than hue, and for a reader with deuteranopia it is
+> all that is left. The light theme originally shipped a pair only ΔL\* 3 apart
+> and they read as one colour.
 
 Why `--prism-mark-*` and not the older `--prism-success`/`--prism-warn`/`--prism-danger`: the two families are not redundant. `--prism-success`/`--prism-warn`/`--prism-danger` remain in use for surfaces that need a positive "all clear" colour (green). `--prism-mark-*` has no nominal-good colour at all — by design, for chrome that reports _deviation_ (status chips, badges, health dots): drawing green for "fine" on every one of those would be exactly the visual noise this redesign removed.
 

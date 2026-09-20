@@ -74,13 +74,13 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-input-bg': 'rgba(28, 21, 48, 0.04)',
   '--prism-dot': 'rgba(124, 58, 237, 0.2)',
 
-  '--prism-success': '#059669',
-  '--prism-warn': '#d97706',
-  '--prism-danger': '#dc2626',
+  '--prism-success': '#047857',
+  '--prism-warn': '#8f6b00',
+  '--prism-danger': '#951226',
 
   '--prism-mark-nominal': 'transparent',
-  '--prism-mark-attention': '#b4700d',
-  '--prism-mark-critical': '#c62b30',
+  '--prism-mark-attention': '#8f6b00',
+  '--prism-mark-critical': '#951226',
   '--prism-measure': '#0b93ad',
   '--prism-spectrum':
     'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))',
