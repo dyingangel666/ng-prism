@@ -28,6 +28,7 @@ import { PrismStatComponent } from './prism-stat.component.js';
   template: `
     <button
       class="gauge"
+      type="button"
       [class.gauge--warn]="summary().variant === 'warn'"
       [class.gauge--danger]="summary().variant === 'danger'"
       popovertarget="prism-head-gauge"

@@ -65,7 +65,7 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
       <span class="comp-spacer"></span>
 
       <prism-head-gauge [metrics]="metrics()" />
-      <ng-content select="[headEnd]" />
+      <span class="comp-head-end"><ng-content select="[headEnd]" /></span>
     </section>
     }
   `,
@@ -82,7 +82,18 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
       border-bottom: 1px solid var(--prism-border);
     }
 
+    /* The text yields, the controls never do. A long category and a long title
+       would otherwise push the gauge out of a fixed-height row whose ancestors
+       clip — making the measurement unreachable in exactly the case where you
+       most want to read it, and costing the gauge the fixed position it was
+       designed around. The trade is deliberate: a title truncated with an
+       ellipsis, so the chip stays put at the right edge. The crumb gives way
+       first, being the least important text in the row. */
     .comp-crumb {
+      flex: 0 8 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       font-size: var(--fs-xs);
       color: var(--prism-text-ghost);
       letter-spacing: 0.06em;
@@ -92,6 +103,10 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
     .comp-crumb::after { content: ' /'; }
 
     .comp-title {
+      flex: 0 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
       margin: 0;
       font-size: var(--fs-xl);
       font-weight: 600;
@@ -101,6 +116,17 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
     }
 
     .comp-spacer { flex: 1; }
+
+    .comp-status,
+    prism-head-info,
+    prism-head-gauge,
+    .comp-head-end { flex: none; }
+
+    /* Wraps the slot rather than styling the projected element, which this
+       stylesheet cannot reach. :empty keeps the row's trailing gap from
+       appearing when nothing is projected — comment anchors do not count. */
+    .comp-head-end { display: inline-flex; align-items: center; }
+    .comp-head-end:empty { display: none; }
 
     /* Always an outline, never a filled surface — deprecated separates itself
        by hue, not by weight. A filled alarm-coloured chip in a permanently
@@ -239,7 +265,7 @@ export class PrismComponentHeadComponent {
       {
         id: 'variants',
         label: 'Variants',
-        value: String(this.variantCount()),
+        value: this.variantCount() > 0 ? String(this.variantCount()) : '—',
         variant: this.variantCount() > 0 ? 'ok' : 'none',
       },
       {

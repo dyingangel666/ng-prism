@@ -22,6 +22,7 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
   template: `
     <button
       class="info-btn"
+      type="button"
       popovertarget="prism-head-info"
       title="Component details"
       aria-label="Component details"

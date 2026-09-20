@@ -48,7 +48,7 @@ Optional text rendered in the component head's details popover, behind the ⓘ g
 ```typescript
 @Showcase({
   title: 'Alert Banner',
-  description: 'Displays status messages. Supports `info`, `warning`, `success`, and `error`.',
+  description: 'Displays status messages in four severities: info, warning, success and error.',
 })
 ```
 

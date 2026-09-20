@@ -55,11 +55,9 @@ Text rendered in the component head's details popover, behind the ⓘ glyph next
 ```typescript
 @Showcase({
   title: 'Alert Banner',
-  description: `
-Use to communicate status messages. **Do not use** for persistent UI elements.
-
-Supports \`info\`, \`warning\`, \`success\`, and \`error\` severity levels.
-  `,
+  description:
+    'Communicates status messages. Not for persistent UI elements. ' +
+    'Severity levels: info, warning, success, error.',
 })
 ```
 
