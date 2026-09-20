@@ -33,6 +33,7 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
   template: `
     <span
       class="metric-badge"
+      role="img"
       [class.metric-badge--warn]="variant() === 'warn'"
       [class.metric-badge--danger]="variant() === 'danger'"
       [attr.title]="title() || label()"

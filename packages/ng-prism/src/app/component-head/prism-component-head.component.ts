@@ -181,16 +181,21 @@ export class PrismComponentHeadComponent {
     return null;
   });
 
-  protected readonly bundleSize = computed<string | null>(() => {
-    const meta = this.componentMeta();
-    const perf = meta?.['perf'] as Record<string, unknown> | undefined;
-    const bundle = perf?.['bundle'] as Record<string, unknown> | undefined;
-    if (bundle && typeof bundle['gzipKb'] === 'number')
-      return bundle['gzipKb'] + ' kb';
-    if (bundle && typeof bundle['sizeKb'] === 'number')
-      return bundle['sizeKb'] + ' kb';
-    return null;
-  });
+  /*
+   * There is deliberately no bundle metric here.
+   *
+   * The computed that used to produce one read `meta.perf.bundle.gzipKb` and
+   * `.sizeKb`. `@ng-prism/plugin-perf` writes neither: `bundle-scanner.ts`
+   * stores `sourceSize` and `gzipEstimate`, and `perf.types.ts` declares only
+   * those two. So the value was always null, and the old head simply hid the
+   * tile — a gauge row reading `Bundle —` on every component is noise, not
+   * information.
+   *
+   * Do not re-add the read against the real key names without first settling
+   * whether `gzipEstimate` is bytes or kilobytes. The old code appended ' kb'
+   * to whatever it found, and that question belongs to the perf plugin, not
+   * to the head.
+   */
 
   protected readonly a11yScore = computed<number | null>(() => {
     return this.auditService.scoreResult()?.score ?? null;
@@ -229,7 +234,6 @@ export class PrismComponentHeadComponent {
     const coverage = this.coveragePercent();
     const a11y = this.a11yScore();
     const vrt = this.vrtStat();
-    const bundle = this.bundleSize();
 
     return [
       {
@@ -255,12 +259,6 @@ export class PrismComponentHeadComponent {
         label: 'VRT diff',
         value: vrt === null ? '—' : vrt.value,
         variant: vrt === null ? 'none' : vrt.variant,
-      },
-      {
-        id: 'bundle',
-        label: 'Bundle',
-        value: bundle ?? '—',
-        variant: bundle === null ? 'none' : 'ok',
       },
     ];
   });
