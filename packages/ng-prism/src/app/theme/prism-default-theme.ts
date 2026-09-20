@@ -34,7 +34,7 @@ export const PRISM_DARK_THEME: Record<string, string> = {
   '--prism-warn': '#fbbf24',
   '--prism-danger': '#f87171',
 
-  '--prism-mark-nominal': 'transparent',
+  '--prism-mark-nominal': '#34d399',
   '--prism-mark-attention': '#e8a33d',
   '--prism-mark-critical': '#e5484d',
   '--prism-measure': '#22d3ee',
@@ -78,7 +78,7 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-warn': '#8f6b00',
   '--prism-danger': '#951226',
 
-  '--prism-mark-nominal': 'transparent',
+  '--prism-mark-nominal': '#047857',
   '--prism-mark-attention': '#8f6b00',
   '--prism-mark-critical': '#951226',
   '--prism-measure': '#0b93ad',

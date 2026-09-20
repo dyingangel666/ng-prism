@@ -14,6 +14,7 @@ import type { MetricVariant } from './head-metrics.js';
   template: `
     <div
       class="stat"
+      [class.stat--ok]="variant() === 'ok'"
       [class.stat--warn]="variant() === 'warn'"
       [class.stat--danger]="variant() === 'danger'"
     >
@@ -46,6 +47,12 @@ import type { MetricVariant } from './head-metrics.js';
       font-variant-numeric: tabular-nums;
       color: var(--prism-text);
     }
+    /* Four states, four treatments. "ok" earns the nominal green, and "none"
+       deliberately does not: a metric with no data has nothing to report, and
+       colouring it green would claim a clean result the tool never measured.
+       That is the one distinction worth keeping grey. */
+    .stat--ok .stat__dot { background: var(--prism-mark-nominal); }
+    .stat--ok .stat__val { color: var(--prism-mark-nominal); }
     .stat--warn .stat__dot { background: var(--prism-mark-attention); }
     .stat--warn .stat__val { color: var(--prism-mark-attention); }
     .stat--danger .stat__dot { background: var(--prism-mark-critical); }

@@ -62,16 +62,19 @@ describe('mark roles', () => {
   ] as const;
 
   /**
-   * The nominal state is invisible. That single rule is what turns the
-   * navigation marks from a background texture back into a signal, so it is
-   * asserted rather than left to a stylesheet.
+   * The nominal role is a colour, not an absence.
+   *
+   * It began as `transparent`, on the argument that drawing anything for a
+   * healthy value is the wallpaper problem in another hue. That still holds
+   * where a mark would otherwise not exist — the sidebar renders nothing for a
+   * clean component, because `decorateItem` returns `null`. But the status
+   * chip, the header badges and the gauge render regardless, and there grey
+   * made "measured and fine" look like "not measured at all". Those read this
+   * token; nothing has been added to the sidebar.
    */
-  it.each(themes)(
-    '%s theme renders the nominal state invisible',
-    (_n, theme) => {
-      expect(theme['--prism-mark-nominal']).toBe('transparent');
-    }
-  );
+  it.each(themes)('%s theme gives the nominal state a colour', (_n, theme) => {
+    expect(theme['--prism-mark-nominal']).toMatch(/^#[0-9a-f]{6}$/);
+  });
 
   it.each(themes)('%s theme declares attention and critical', (_n, theme) => {
     expect(theme['--prism-mark-attention']).toMatch(/^#[0-9a-f]{6}$/);

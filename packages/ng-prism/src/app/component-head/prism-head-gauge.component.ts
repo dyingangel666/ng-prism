@@ -11,10 +11,10 @@ import { PrismStatComponent } from './prism-stat.component.js';
  * Measurement disclosure for the component head.
  *
  * Replaces four always-present stat tiles with one element of fixed width at a
- * fixed position, so the row does not shift when you switch components. Quiet
- * and grey while everything is within threshold — a gauge you do not have to
- * read is one that is in order — and the worst value in plain text when it is
- * not. The full readout is one click away and never disappears.
+ * fixed position, so the row does not shift when you switch components. It
+ * shows a plain count in the nominal green while everything is within
+ * threshold, and the worst value in plain text when it is not. The full
+ * readout is one click away and never disappears.
  *
  * It knows no individual metric. The list arrives already resolved, in the
  * same shape `decorateItem` produces for the sidebar, which is less code than
@@ -29,6 +29,7 @@ import { PrismStatComponent } from './prism-stat.component.js';
     <button
       class="gauge"
       type="button"
+      [class.gauge--ok]="summary().variant === 'ok'"
       [class.gauge--warn]="summary().variant === 'warn'"
       [class.gauge--danger]="summary().variant === 'danger'"
       popovertarget="prism-head-gauge"
@@ -90,6 +91,13 @@ import { PrismStatComponent } from './prism-stat.component.js';
     }
     .gauge__more { opacity: 0.6; }
 
+    /* The quiet state is green now, not grey: the gauge says "these values
+       were measured and all of them are fine", which is a result, not an
+       absence. A metric with no data at all stays grey in the readout rows. */
+    .gauge--ok {
+      color: var(--prism-mark-nominal);
+      border-color: color-mix(in srgb, var(--prism-mark-nominal) 40%, transparent);
+    }
     .gauge--warn {
       color: var(--prism-mark-attention);
       border-color: color-mix(in srgb, var(--prism-mark-attention) 40%, transparent);
@@ -98,6 +106,7 @@ import { PrismStatComponent } from './prism-stat.component.js';
       color: var(--prism-mark-critical);
       border-color: color-mix(in srgb, var(--prism-mark-critical) 45%, transparent);
     }
+    .gauge--ok .gauge__dot,
     .gauge--warn .gauge__dot,
     .gauge--danger .gauge__dot { opacity: 1; }
 

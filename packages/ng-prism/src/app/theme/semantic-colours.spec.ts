@@ -62,8 +62,34 @@ const THEMES = [
   ['dark', PRISM_DARK_THEME],
 ] as const;
 
-/** Pairs that must never be mistaken for one another. */
+/**
+ * Every leg of the traffic light has to be separable at a glance.
+ *
+ * The three mark roles are one scale, so all three legs are checked rather
+ * than only the pair that originally collapsed.
+ */
 const CONFUSABLE = [
+  ['--prism-warn', '--prism-danger'],
+  ['--prism-mark-nominal', '--prism-mark-attention'],
+  ['--prism-mark-nominal', '--prism-mark-critical'],
+  ['--prism-mark-attention', '--prism-mark-critical'],
+] as const;
+
+/**
+ * The legs where hue cannot be relied on, and lightness has to carry it.
+ *
+ * Amber and red are neighbours on the wheel: at 5–11px their hue difference is
+ * marginal, and the light theme shipped a pair only ΔL* 3 apart that read as
+ * one colour. Green against either is a wide hue gap (ΔE 65 and 100 in the
+ * light theme) and needs no lightness floor.
+ *
+ * Applying the floor to all three legs was tried and is not reachable: a
+ * three-step scale separated in lightness needs roughly L* 30/45/60, and L* 60
+ * cannot hold 4.5:1 against white. Where lightness cannot separate them, the
+ * glyph does — each mark carries its own icon, the status chip its own word,
+ * and every readout row its own label.
+ */
+const WARM_PAIRS = [
   ['--prism-warn', '--prism-danger'],
   ['--prism-mark-attention', '--prism-mark-critical'],
 ] as const;
@@ -72,6 +98,7 @@ const SEMANTIC = [
   '--prism-success',
   '--prism-warn',
   '--prism-danger',
+  '--prism-mark-nominal',
   '--prism-mark-attention',
   '--prism-mark-critical',
 ] as const;
@@ -99,10 +126,19 @@ describe('semantic colours', () => {
       )
     )
   )('%s stays distinguishable', (_label, theme, a, b) => {
-    // Matched to the dark pair that works in practice: ΔE 55, ΔL* 18. The
-    // floors sit just under it so a deliberate tweak has room, and a drift
-    // back to "two dark warm colours" does not.
+    // Matched to the dark pair that works in practice: ΔE 55. The floor sits
+    // just under it so a deliberate tweak has room, and a drift back to "two
+    // dark warm colours" does not.
     expect(deltaE(theme[a], theme[b])).toBeGreaterThanOrEqual(45);
+  });
+
+  it.each(
+    THEMES.flatMap(([name, theme]) =>
+      WARM_PAIRS.map(
+        ([a, b]) => [`${name}: ${a} vs ${b}`, theme, a, b] as const
+      )
+    )
+  )('%s separates in lightness, not only hue', (_label, theme, a, b) => {
     expect(lightnessGap(theme[a], theme[b])).toBeGreaterThanOrEqual(14);
   });
 });

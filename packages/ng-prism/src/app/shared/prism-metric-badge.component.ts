@@ -34,6 +34,7 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
     <span
       class="metric-badge"
       role="img"
+      [class.metric-badge--ok]="variant() === 'ok'"
       [class.metric-badge--warn]="variant() === 'warn'"
       [class.metric-badge--danger]="variant() === 'danger'"
       [attr.title]="title() || label()"
@@ -62,6 +63,13 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
       white-space: nowrap;
     }
     .metric-badge__value { color: var(--prism-text); font-weight: 600; }
+
+    .metric-badge--ok {
+      color: var(--prism-mark-nominal);
+      border-color: color-mix(in srgb, var(--prism-mark-nominal) 35%, transparent);
+      background: color-mix(in srgb, var(--prism-mark-nominal) 10%, transparent);
+    }
+    .metric-badge--ok .metric-badge__value { color: var(--prism-mark-nominal); }
 
     .metric-badge--warn {
       color: var(--prism-mark-attention);

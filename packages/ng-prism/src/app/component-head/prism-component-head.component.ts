@@ -152,7 +152,10 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
       border-radius: 50%;
       background: currentColor;
     }
-    .comp-status--stable { color: var(--prism-text-muted); }
+    .comp-status--stable {
+      color: var(--prism-mark-nominal);
+      background: color-mix(in srgb, var(--prism-mark-nominal) 10%, transparent);
+    }
     .comp-status--beta,
     .comp-status--wip {
       color: var(--prism-mark-attention);
