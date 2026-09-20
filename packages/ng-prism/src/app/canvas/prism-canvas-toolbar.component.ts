@@ -3,183 +3,221 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
-import { PrismLayoutService } from '../services/prism-layout.service.js';
 
+/**
+ * The canvas tools, as a rail floating over the canvas instead of a band above
+ * it.
+ *
+ * The five entries were never one kind of control, and the split follows that
+ * rather than the topic: guides and rulers are toggles you flip constantly
+ * while measuring, so they toggle at their own button; canvas background and
+ * zoom are choosers you set once, so they move behind a menu; the template is a
+ * view rather than a setting and keeps its own button. The zoom *value* stays
+ * on the rail as a readout — it is the one number here you read far more often
+ * than you set.
+ *
+ * The host deliberately generates no box. The rail has to be a direct child of
+ * `.prism-canvas-wrap` that does not contain the stage, because that is exactly
+ * what capture mode's structural rule in `prism-capture.service.ts` suppresses;
+ * a rail nested inside the renderer or the stage would survive into every
+ * screenshot and silently corrupt visual-regression baselines.
+ */
 @Component({
   selector: 'prism-canvas-toolbar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismIconComponent],
   template: `
-    <div class="canvas-toolbar">
-      <span class="tool-label">Canvas</span>
-      <div class="tool-group">
+    <!-- Anchored in .prism-canvas-wrap, deliberately absolute and not fixed:
+         a viewport-fixed rail would float over the sidebar and the panel, stay
+         put while those are resized, and sit on top of running text in the API
+         view where it has no business being. -->
+    <div class="prism-toolrail">
+      <span class="prism-toolrail__zoom"
+        >{{ Math.round(canvas.zoom() * 100) }}%</span
+      >
+
+      <button
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.guides()"
+        (click)="canvas.toggleGuides()"
+        title="Toggle guides"
+        aria-label="Toggle guides"
+        [attr.aria-pressed]="canvas.guides()"
+      >
+        <prism-icon name="crosshair" [size]="14" />
+      </button>
+
+      <button
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.rulers()"
+        (click)="canvas.toggleRulers()"
+        title="Toggle rulers"
+        aria-label="Toggle rulers"
+        [attr.aria-pressed]="canvas.rulers()"
+      >
+        <prism-icon name="move" [size]="14" />
+      </button>
+
+      <button
+        class="prism-toolrail__btn"
+        popovertarget="prism-tools"
+        title="Canvas and zoom"
+        aria-label="Canvas and zoom"
+      >
+        <prism-icon name="sliders-horizontal" [size]="14" />
+      </button>
+
+      <span class="prism-toolrail__sep"></span>
+
+      <button
+        class="prism-toolrail__btn"
+        popovertarget="prism-template"
+        title="Toggle Angular template"
+        aria-label="Toggle Angular template"
+      >
+        <prism-icon name="code" [size]="14" />
+      </button>
+    </div>
+
+    <!-- Only the two choosers. The toggles stay outside: you flip guides and
+         rulers constantly while measuring, and a toggle two clicks deep is the
+         classic mistake. What you only ever set may live in a menu. -->
+    <div popover id="prism-tools" class="prism-toolmenu">
+      <span class="prism-toolmenu__lbl">Canvas</span>
+      <div class="prism-toolmenu__row">
         @for (bg of bgs; track bg) {
         <button
-          class="tool-btn"
-          [class.tool-btn--active]="variantBg.effective() === bg"
-          [class.tool-btn--recommended]="variantBg.recommended() === bg"
+          [class.is-on]="variantBg.effective() === bg"
+          [class.is-rec]="variantBg.recommended() === bg"
           [attr.title]="bgTitle(bg)"
           (click)="setBg(bg)"
         >
-          @if (variantBg.recommended() === bg) {
-          <svg
-            class="bg-star"
-            width="11"
-            height="11"
-            viewBox="0 0 24 24"
-            fill="#facc15"
-            aria-label="Recommended"
-          >
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"
-            />
-          </svg>
-          }
           {{ capitalize(bg) }}
         </button>
         }
       </div>
-      <div class="tool-sep"></div>
-      <span class="tool-label">Zoom</span>
-      <div class="tool-group">
+
+      <span class="prism-toolmenu__lbl">Zoom</span>
+      <div class="prism-toolmenu__row">
         @for (z of zooms; track z.value) {
         <button
-          class="tool-btn"
-          [class.tool-btn--active]="canvas.zoom() === z.value"
+          [class.is-on]="canvas.zoom() === z.value"
           (click)="canvas.setZoom(z.value)"
         >
           {{ z.label }}
         </button>
         }
       </div>
-      <div class="tool-sep"></div>
-      <button
-        class="tool-btn"
-        [class.tool-btn--active]="canvas.guides()"
-        (click)="canvas.toggleGuides()"
-        title="Toggle guides"
-        aria-label="Toggle guides"
-      >
-        <prism-icon name="crosshair" [size]="13" />
-        Guides
-      </button>
-      <button
-        class="tool-btn"
-        [class.tool-btn--active]="canvas.rulers()"
-        (click)="canvas.toggleRulers()"
-        title="Toggle rulers"
-        aria-label="Toggle rulers"
-      >
-        <prism-icon name="move" [size]="13" />
-        Rulers
-      </button>
-
-      <div class="tool-spacer"></div>
-
-      <button
-        class="tool-btn tool-btn--tpl"
-        [class.tool-btn--tpl-active]="layout.templatePopoverVisible()"
-        (click)="layout.toggleTemplatePopover()"
-        title="Toggle Angular template"
-        aria-label="Toggle Angular template"
-      >
-        <prism-icon name="code" [size]="13" />
-        Template
-      </button>
     </div>
   `,
   styles: `
-    .canvas-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 20px;
-      border-bottom: 1px solid var(--prism-border);
-      background: var(--prism-bg);
-      min-height: 44px;
-    }
+    :host { display: contents; }
 
-    .tool-group {
+    .prism-toolrail {
+      position: absolute;
+      top: var(--sp-4);
+      right: var(--sp-4);
+      z-index: 4;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 1px;
-      padding: 2px;
-      background: var(--prism-input-bg);
-      border: 1px solid var(--prism-border);
+      gap: var(--sp-1);
+      padding: var(--sp-2);
+      border: 1px solid var(--prism-border-strong);
       border-radius: var(--radius-md);
+      background: var(--prism-bg-elevated);
+      box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.4);
+      anchor-name: --prism-toolrail;
     }
 
-    .tool-btn {
-      height: 24px;
-      padding: 0 9px;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: var(--fs-sm);
-      color: var(--prism-text-muted);
-      transition: all var(--dur-fast);
-      font-weight: 500;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: var(--font-sans);
-    }
-    .tool-btn:hover {
-      color: var(--prism-text);
-      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
-    }
-    .tool-btn--active {
-      color: var(--prism-text);
-      background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
-      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--prism-primary) 30%, transparent);
-    }
-    .bg-star {
-      flex-shrink: 0;
-      filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.4));
-    }
-
-    .tool-sep {
-      width: 1px;
-      height: 18px;
-      background: var(--prism-border);
-      margin: 0 4px;
-    }
-
-    .tool-label {
-      font-size: var(--fs-xs);
-      color: var(--prism-text-ghost);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-weight: 600;
-      margin-right: 2px;
-    }
-
-    .tool-spacer { flex: 1; }
-
-    .tool-btn--tpl {
-      color: var(--prism-primary);
-      background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-      border: 1px solid
-        color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    .prism-toolrail__zoom {
+      width: 100%;
+      padding-bottom: var(--sp-1);
+      border-bottom: 1px solid var(--prism-border);
       font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--prism-text-ghost);
+      text-align: center;
     }
-    .tool-btn--tpl:hover {
-      color: var(--prism-primary);
+
+    .prism-toolrail__btn {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: 0;
+      border-radius: var(--radius-xs);
+      background: transparent;
+      color: var(--prism-text-muted);
+      cursor: pointer;
+    }
+    .prism-toolrail__btn:hover { color: var(--prism-text); }
+    .prism-toolrail__btn:focus-visible {
+      outline: 2px solid var(--prism-primary);
+      outline-offset: 1px;
+    }
+    .prism-toolrail__btn.is-on {
       background: color-mix(in srgb, var(--prism-primary) 18%, transparent);
+      color: var(--prism-text);
     }
-    .tool-btn--tpl.tool-btn--tpl-active {
-      background: color-mix(in srgb, var(--prism-primary) 22%, transparent);
-      box-shadow: inset 0 0 0 1px
-        color-mix(in srgb, var(--prism-primary) 35%, transparent);
+    .prism-toolrail__sep {
+      width: 14px;
+      height: 1px;
+      background: var(--prism-border);
+      margin: var(--sp-1) 0;
+    }
+
+    .prism-toolmenu {
+      margin: 0;
+      padding: var(--sp-3);
+      border: 1px solid var(--prism-border-strong);
+      border-radius: var(--radius-md);
+      background: var(--prism-bg-elevated);
+      box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-2);
+      position-anchor: --prism-toolrail;
+      position-area: inline-start;
+      position-try-fallbacks: flip-inline;
+      inset: auto;
+      margin-inline-end: var(--sp-2);
+    }
+    .prism-toolmenu__lbl {
+      font-size: var(--fs-xs);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--prism-text-ghost);
+    }
+    .prism-toolmenu__row { display: flex; flex-wrap: wrap; gap: var(--sp-1); }
+    .prism-toolmenu__row button {
+      padding: 2px var(--sp-3);
+      border: 1px solid var(--prism-border);
+      border-radius: var(--radius-xs);
+      background: transparent;
+      font-size: var(--fs-md);
+      color: var(--prism-text-2);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .prism-toolmenu__row button.is-on {
+      background: color-mix(in srgb, var(--prism-primary) 16%, transparent);
+      border-color: color-mix(in srgb, var(--prism-primary) 38%, transparent);
+      color: var(--prism-text);
+    }
+    .prism-toolmenu__row button.is-rec {
+      border-color: color-mix(in srgb, var(--prism-primary) 30%, transparent);
     }
   `,
 })
 export class PrismCanvasToolbarComponent {
   protected readonly canvas = inject(PrismCanvasService);
   protected readonly variantBg = inject(PrismVariantBgService);
-  protected readonly layout = inject(PrismLayoutService);
+
+  /** Angular templates resolve names against the component, not the global scope. */
+  protected readonly Math = Math;
 
   protected setBg(bg: CanvasBg): void {
     if (this.variantBg.recommended() !== null) {
@@ -193,11 +231,11 @@ export class PrismCanvasToolbarComponent {
    * Every {@link CanvasBg}, and the canonical list rather than a copy of it.
    *
    * This group is a readout as much as a control: the active button is
-   * `effective()` and the starred one is `recommended()`. A value missing here
-   * therefore cannot be *shown* either — a variant declaring it leaves the
-   * whole group with nothing active and the star with nowhere to sit. That is
-   * what a shorter list bought when `transparent` was left out of it, so the
-   * list is now the type's own.
+   * `effective()` and the recommended one carries the `is-rec` edge. A value
+   * missing here therefore cannot be *shown* either — a variant declaring it
+   * leaves the whole group with nothing active and the recommendation with
+   * nowhere to sit. That is what a shorter list bought when `transparent` was
+   * left out of it, so the list is now the type's own.
    *
    * `checker` and `transparent` do paint the same checkerboard here, which is
    * why they carry titles: the difference between them is what a capture does,

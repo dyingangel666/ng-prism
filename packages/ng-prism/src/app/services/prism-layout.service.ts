@@ -11,7 +11,6 @@ export class PrismLayoutService {
   readonly sidebarWidth = signal(280);
   readonly panelHeight = signal(300);
   readonly panelWidth = signal(320);
-  readonly templatePopoverVisible = signal(false);
 
   constructor() {
     this.loadFromStorage();
@@ -35,14 +34,6 @@ export class PrismLayoutService {
   toggleOrientation(): void {
     this.addonsOrientation.update((v) => (v === 'bottom' ? 'right' : 'bottom'));
     this.saveToStorage();
-  }
-
-  toggleTemplatePopover(): void {
-    this.templatePopoverVisible.update((v) => !v);
-  }
-
-  closeTemplatePopover(): void {
-    this.templatePopoverVisible.set(false);
   }
 
   setSidebarWidth(px: number): void {

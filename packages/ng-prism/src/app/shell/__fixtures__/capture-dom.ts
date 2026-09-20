@@ -124,7 +124,25 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
   const shell = host.querySelector('.prism-shell');
   const stage = host.querySelector('.prism-canvas-stage');
   const demoWrap = host.querySelector('.demo-wrap');
-  if (!shell || !stage || !demoWrap) throw new Error('canvas markup not found');
+  const canvasWrap = host.querySelector('.prism-canvas-wrap');
+  if (!shell || !stage || !demoWrap || !canvasWrap) {
+    throw new Error('canvas markup not found');
+  }
+
+  // The canvas tool rail, which the composed template does not carry: it is
+  // declared inside `prism-canvas-toolbar`, and only the renderer's template is
+  // spliced in above. Its host is `display: contents`, so the rail is a child
+  // of `.prism-canvas-wrap` in layout terms — precisely the position capture
+  // mode's structural rule exists to catch, and precisely the position a rail
+  // moved into the renderer or the stage would lose. Added at that level rather
+  // than under a `prism-canvas-toolbar` element so the level-by-level walk in
+  // `capture-layout.browser.spec.ts` asserts the rail itself: jsdom computes no
+  // inherited `display`, so an element nested one level deeper would be visited
+  // by nothing and prove nothing.
+  const toolrail = document.createElement('div');
+  toolrail.className = 'prism-toolrail';
+  canvasWrap.appendChild(toolrail);
+
   // `data-bg` is a binding, so the markup carries no value. Setting the one
   // the variant resolved to is exactly what the renderer does at runtime.
   stage.setAttribute('data-bg', bg);

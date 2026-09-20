@@ -241,11 +241,14 @@ import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.
       background: var(--prism-primary);
     }
 
+    /* One row, not two: the canvas tools no longer occupy a band above the
+       stage, they float over it from a rail absolutely positioned against
+       this element. The position: relative below is what anchors it. */
     .prism-canvas-wrap {
       flex: 1;
       min-height: 0;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-rows: minmax(0, 1fr);
       background: var(--prism-bg-surface);
       overflow: hidden;
       position: relative;
