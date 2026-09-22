@@ -252,7 +252,7 @@ The import specifier `prism-manifest/<prism-project>` is resolved via a wildcard
 }
 ```
 
-The schematic adds both the path mapping and a workspace-wide `ng-prism-cache/` entry in `.gitignore` automatically. Background: [ADR 006](../adr/006-manifest-cache-dir.md).
+The schematic adds both the path mapping and a workspace-wide `ng-prism-cache/` entry in `.gitignore` automatically.
 
 **5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above.
 
