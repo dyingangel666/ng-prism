@@ -1,4 +1,4 @@
-import type { NgPrismPlugin } from '@ng-prism/core/plugin';
+import type { NgPrismPlugin, PanelDefinition } from '@ng-prism/core/plugin';
 import {
   FIGMA_PLUGIN_CONFIG,
   type FigmaPluginOptions,
@@ -18,30 +18,35 @@ const hasVariantFigmaMeta = (comp: {
   true;
 
 export function figmaPlugin(options: FigmaPluginOptions = {}): NgPrismPlugin {
+  const panels: PanelDefinition[] = [
+    {
+      id: 'figma',
+      label: 'Figma',
+      icon: 'figma',
+      component: FigmaPanelComponent,
+      position: 'bottom',
+      isVisible: hasFigmaMeta,
+      keepAlive: true,
+    },
+  ];
+
+  if (options.designDiff === true) {
+    panels.push({
+      id: 'figma-diff',
+      label: 'Design Diff',
+      icon: 'copy',
+      loadComponent: () =>
+        import('./diff/figma-design-diff-panel.component.js').then(
+          (m) => m.FigmaDesignDiffPanelComponent
+        ),
+      position: 'bottom',
+      providers: [{ provide: FIGMA_PLUGIN_CONFIG, useValue: options }],
+      isVisible: hasVariantFigmaMeta,
+    });
+  }
+
   return {
     name: '@ng-prism/plugin-figma',
-    panels: [
-      {
-        id: 'figma',
-        label: 'Figma',
-        icon: 'figma',
-        component: FigmaPanelComponent,
-        position: 'bottom',
-        isVisible: hasFigmaMeta,
-        keepAlive: true,
-      },
-      {
-        id: 'figma-diff',
-        label: 'Design Diff',
-        icon: 'copy',
-        loadComponent: () =>
-          import('./diff/figma-design-diff-panel.component.js').then(
-            (m) => m.FigmaDesignDiffPanelComponent
-          ),
-        position: 'bottom',
-        providers: [{ provide: FIGMA_PLUGIN_CONFIG, useValue: options }],
-        isVisible: hasVariantFigmaMeta,
-      },
-    ],
+    panels,
   };
 }
