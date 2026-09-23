@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/prism_cover.png" alt="ng-prism — Angular components, refracted" width="100%" />
+  <img src="docs/prism_cover_3.png" alt="ng-prism — Angular components, refracted" width="100%" />
 </p>
 
 # ng-prism
