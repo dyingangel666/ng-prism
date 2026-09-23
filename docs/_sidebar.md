@@ -57,8 +57,3 @@
   - [Canvas State](architecture/canvas-state.md)
   - [Build Pipeline](architecture/pipeline.md)
   - [Plugin Hooks](architecture/plugin-hooks.md)
-
-- **Architecture Decision Records**
-  - [005 — Plugin Schematics](adr/005-plugin-schematics.md)
-  - [006 — Manifest Cache Dir](adr/006-manifest-cache-dir.md)
-  - [007 — Tools Leave the Layout](adr/007-tools-leave-the-layout.md)

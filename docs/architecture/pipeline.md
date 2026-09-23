@@ -76,7 +76,7 @@ When the file must be written, it is first written to `prism-manifest.ts.tmp` th
 
 ### Manifest Output Location
 
-Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/ng-prism-cache/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `ng-prism-cache/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst). Hintergrund siehe [ADR 006](../adr/006-manifest-cache-dir.md).
+Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/ng-prism-cache/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `ng-prism-cache/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst).
 
 ## PrismPipelineState — Scanner Reuse Across Rebuilds
 
