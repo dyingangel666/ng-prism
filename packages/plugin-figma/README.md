@@ -6,6 +6,8 @@ Figma design embed panel for [@ng-prism/core](https://github.com/dyingangel666/n
 
 Uses Figma's official embed endpoint — no API token required. Works with any publicly shared Figma file.
 
+An optional **Design Diff** panel compares the rendered component against the Figma node pixel by pixel. It is opt-in and needs a Figma access token — see [`figmaPlugin()`](#figmaplugin) below.
+
 ## Installation
 
 ```bash
@@ -14,10 +16,10 @@ npm install @ng-prism/plugin-figma
 
 ### Peer Dependencies
 
-| Package | Version |
-|---|---|
+| Package          | Version    |
+| ---------------- | ---------- |
 | `@ng-prism/core` | `>=21.0.0` |
-| `@angular/core` | `>=20.0.0` |
+| `@angular/core`  | `>=20.0.0` |
 
 ## Usage
 
@@ -73,7 +75,7 @@ Any publicly shared Figma URL works:
 
 ## How it works
 
-The plugin registers a single panel (`FigmaPanelComponent`) that:
+By default the plugin registers a single panel (`FigmaPanelComponent`) that:
 
 1. Reads `meta.figma` from the active component's `@Showcase` config
 2. Constructs a Figma embed URL: `https://www.figma.com/embed?embed_host=ng-prism&url=<encoded-url>`
@@ -86,17 +88,34 @@ at config-load time in Node.js.
 
 ## API
 
-### `figmaPlugin()`
+### `figmaPlugin(options?)`
 
-Factory function that returns an `NgPrismPlugin`. Zero-config — no arguments needed.
+Factory function that returns an `NgPrismPlugin`. Zero-config by default — called without
+arguments it registers the Figma embed panel and nothing else.
 
 ```typescript
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 const plugin = figmaPlugin();
 // plugin.name === '@ng-prism/plugin-figma'
-// plugin.panels === [{ id: 'figma', label: 'Figma', loadComponent: () => ... }]
+// plugin.panels === [{ id: 'figma', label: 'Figma', component: FigmaPanelComponent, ... }]
 ```
+
+#### Options
+
+| Option        | Type      | Default | Description                                                                                                 |
+| ------------- | --------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `designDiff`  | `boolean` | `false` | Registers the Design Diff panel. Without it, no Design Diff tab appears.                                    |
+| `accessToken` | `string`  | —       | Figma personal access token used to fetch node images via the REST API. Only read by the Design Diff panel. |
+
+```typescript
+figmaPlugin({ designDiff: true, accessToken: process.env['FIGMA_TOKEN'] });
+// plugin.panels === [{ id: 'figma', ... }, { id: 'figma-diff', label: 'Design Diff', ... }]
+```
+
+`accessToken` alone does not enable the panel — the two options are independent, so a token
+in your config never surfaces a tab you did not ask for. Enabling `designDiff` without a token
+registers the panel, but it reports a missing token when you run a diff.
 
 ### `FigmaPanelComponent`
 

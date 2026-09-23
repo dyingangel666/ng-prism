@@ -8,9 +8,9 @@ describe('figmaPlugin', () => {
     expect(plugin.name).toBe('@ng-prism/plugin-figma');
   });
 
-  it('should register two panels', () => {
+  it('should register only the embed panel by default', () => {
     const plugin = figmaPlugin();
-    expect(plugin.panels).toHaveLength(2);
+    expect(plugin.panels?.map((p) => p.id)).toEqual(['figma']);
   });
 
   it('should define the figma embed panel with correct properties', () => {
@@ -22,8 +22,26 @@ describe('figmaPlugin', () => {
     expect(panel.component).toBe(FigmaPanelComponent);
   });
 
+  it('should not register the design diff panel for an access token alone', () => {
+    const plugin = figmaPlugin({ accessToken: 'test-token' });
+    expect(plugin.panels?.map((p) => p.id)).toEqual(['figma']);
+  });
+
+  it('should not register the design diff panel when explicitly disabled', () => {
+    const plugin = figmaPlugin({
+      accessToken: 'test-token',
+      designDiff: false,
+    });
+    expect(plugin.panels?.map((p) => p.id)).toEqual(['figma']);
+  });
+
+  it('should register the design diff panel when opted in', () => {
+    const plugin = figmaPlugin({ designDiff: true });
+    expect(plugin.panels?.map((p) => p.id)).toEqual(['figma', 'figma-diff']);
+  });
+
   it('should define the design diff panel with lazy loading', () => {
-    const plugin = figmaPlugin();
+    const plugin = figmaPlugin({ designDiff: true });
     const panel = plugin.panels![1];
     expect(panel.id).toBe('figma-diff');
     expect(panel.label).toBe('Design Diff');
@@ -32,10 +50,10 @@ describe('figmaPlugin', () => {
   });
 
   it('should provide FIGMA_PLUGIN_CONFIG with the given options', () => {
-    const plugin = figmaPlugin({ accessToken: 'test-token' });
+    const plugin = figmaPlugin({ accessToken: 'test-token', designDiff: true });
     const diffPanel = plugin.panels![1];
     const provider = diffPanel.providers?.find(
-      (p: any) => p.provide === FIGMA_PLUGIN_CONFIG,
+      (p: any) => p.provide === FIGMA_PLUGIN_CONFIG
     ) as any;
     expect(provider).toBeDefined();
     expect(provider.useValue.accessToken).toBe('test-token');

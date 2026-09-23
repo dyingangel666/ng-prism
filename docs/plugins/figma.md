@@ -2,8 +2,8 @@
 
 `@ng-prism/plugin-figma` brings your Figma designs into ng-prism with **two complementary panels**:
 
-- **Figma Embed** — live, interactive iframe of the design
-- **Design Diff** — pixel-by-pixel comparison between your rendered component and the Figma node (side-by-side, overlay, diff-only)
+- **Figma Embed** — live, interactive iframe of the design. Registered by default.
+- **Design Diff** — pixel-by-pixel comparison between your rendered component and the Figma node (side-by-side, overlay, diff-only). **Opt-in** via `figmaPlugin({ designDiff: true })`.
 
 ## Install
 
@@ -11,7 +11,7 @@
 ng add @ng-prism/plugin-figma
 ```
 
-This installs the package and registers `figmaPlugin()` in your `ng-prism.config.ts` automatically. To install manually: `npm install @ng-prism/plugin-figma`.
+This installs the package and registers `figmaPlugin()` in your `ng-prism.config.ts` automatically — that gives you the Embed panel. See [Configuration](#configuration) to additionally enable the Design Diff panel. To install manually: `npm install @ng-prism/plugin-figma`.
 
 The Design Diff feature additionally needs `html2canvas` and `pixelmatch` (declared as **optional** peer dependencies):
 
@@ -31,7 +31,9 @@ import { figmaPlugin } from '@ng-prism/plugin-figma';
 export default defineConfig({
   plugins: [
     figmaPlugin({
-      // Optional. Only needed for the Design Diff panel.
+      // Opt in to the Design Diff panel. Omit it and only the Embed panel is registered.
+      designDiff: true,
+      // Required by the Design Diff panel to fetch node images.
       accessToken: process.env['FIGMA_TOKEN'],
     }),
   ],
@@ -40,9 +42,10 @@ export default defineConfig({
 
 ### Options
 
-| Option        | Type     | Required for     | Description                                                             |
-| ------------- | -------- | ---------------- | ----------------------------------------------------------------------- |
-| `accessToken` | `string` | Design Diff only | Personal access token used to fetch node images via the Figma REST API. |
+| Option        | Type      | Default | Description                                                                                                                       |
+| ------------- | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `designDiff`  | `boolean` | `false` | Registers the Design Diff panel. Without it the plugin contributes the Embed panel only, and no Design Diff tab appears anywhere. |
+| `accessToken` | `string`  | —       | Personal access token used to fetch node images via the Figma REST API. Only read by the Design Diff panel.                       |
 
 ### Getting a Figma access token
 
@@ -52,7 +55,7 @@ export default defineConfig({
 
 > **Never commit a Figma access token to a public repository.** Read it from an environment variable (or your CI secret store) and inject it at build time. The token only needs to be available in the local dev/build environment — ng-prism does not ship it to the runtime bundle.
 
-If `accessToken` is omitted, the Embed panel still works; the Design Diff panel will show an "Access Token fehlt" hint when triggered.
+The two options are independent: `designDiff` decides whether the panel exists, `accessToken` decides whether it can run. Setting `accessToken` alone does **not** register the panel; setting `designDiff: true` without a token registers it, but it shows an "Access Token fehlt" hint when triggered. For most setups the Embed panel alone is enough — enable the diff only when you actually want to compare pixels.
 
 ## Linking components to Figma nodes
 
@@ -126,7 +129,7 @@ The panel registers itself with `keepAlive: true`, so the iframe survives tab sw
 
 The Design Diff panel renders the component into a canvas (via `html2canvas`), fetches the corresponding Figma node as a PNG (via the Figma REST API), and computes a pixel-by-pixel diff (via `pixelmatch`).
 
-The panel is visible whenever **any variant** has a `meta.figma` URL — the diff always targets the currently active variant.
+The panel has to be enabled with `figmaPlugin({ designDiff: true })`. Once enabled, it is visible whenever **any variant** has a `meta.figma` URL — the diff always targets the currently active variant.
 
 ### Workflow
 
@@ -162,7 +165,7 @@ Click **↺ Erneut** in the toolbar to re-run after editing the component or ref
 
 | Status               | What it means                                                                                                                             |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `Access Token fehlt` | `figmaPlugin({ accessToken })` is not configured.                                                                                         |
+| `Access Token fehlt` | The panel is enabled via `designDiff: true`, but no `accessToken` was passed to `figmaPlugin()`.                                          |
 | `Kein Figma-Node …`  | The active variant has no `meta.figma` URL.                                                                                               |
 | `Figma API Fehler`   | The Figma REST API rejected the request. Common causes: invalid token, missing file scope, file/node not accessible to the token's owner. |
 
