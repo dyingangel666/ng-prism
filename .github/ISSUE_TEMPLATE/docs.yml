@@ -1,0 +1,41 @@
+name: Documentation Issue
+description: Something in the docs is wrong, missing, or misleading
+title: 'docs: '
+labels: ['documentation', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For small fixes — typos, broken links, a stale code sample — a pull
+        request against `docs/` is usually faster than an issue. Both are
+        welcome.
+
+  - type: input
+    id: page
+    attributes:
+      label: Which page?
+      description: URL on the docs site, or the file path under `docs/`.
+      placeholder: 'https://dyingangel666.github.io/ng-prism/#/guide/configuration'
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem is it?
+      options:
+        - 'Wrong — the documented behaviour does not match the code'
+        - 'Missing — something is not documented at all'
+        - 'Unclear — documented, but hard to follow'
+        - 'Outdated — describes an older version'
+        - 'Broken link, typo, or formatting'
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What should it say instead?
+      description: Quote the passage if it helps, and describe what you expected to find.
+    validations:
+      required: true

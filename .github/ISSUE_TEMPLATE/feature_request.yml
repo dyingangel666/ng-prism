@@ -1,0 +1,80 @@
+name: Feature Request
+description: Propose a new capability or a change in behaviour
+title: 'feat: '
+labels: ['enhancement', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ng-prism aims to stay lightweight. The strongest proposals start from a
+        concrete problem you hit while showcasing real components — not from a
+        feature another tool happens to have.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation, not the solution. What are you doing today, and where does it hurt?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: If you have one in mind, sketch the API. Decorator options, config keys, plugin hooks — whatever fits.
+      render: typescript
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including workarounds that already work today, and why they fall short.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Where should this live?
+      description: Anything component-specific or tool-specific usually belongs in a plugin rather than in core.
+      options:
+        - Core (`@ng-prism/core`)
+        - An existing official plugin
+        - A new plugin
+        - Builder / schematics
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Would this be a breaking change?
+      options:
+        - 'No — purely additive'
+        - 'Yes — changes existing behaviour or API'
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contribute
+    attributes:
+      label: Would you be willing to implement this?
+      options:
+        - 'Yes, with guidance on where to start'
+        - 'Yes, I already know the codebase'
+        - 'No, but I am happy to test it'
+        - 'No'
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched existing issues and discussions and this is not a duplicate.
+          required: true

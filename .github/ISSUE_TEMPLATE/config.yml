@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://dyingangel666.github.io/ng-prism/
+    about: Guides, API reference, plugin docs, and architecture notes.
+  - name: Live Demo
+    url: https://dyingangel666.github.io/ng-prism/demo/
+    about: See ng-prism running with every official plugin enabled.
+  - name: Contributing Guide
+    url: https://github.com/dyingangel666/ng-prism/blob/main/CONTRIBUTING.md
+    about: Development setup, the test-workspace workflow, and PR guidelines.
+  - name: Report a Security Vulnerability
+    url: https://github.com/dyingangel666/ng-prism/security/advisories/new
+    about: Please report vulnerabilities privately — never as a public issue.

@@ -20,7 +20,7 @@ Thank you for your interest in contributing to ng-prism! This guide will help yo
 
 ## Code of Conduct
 
-By participating in this project, you agree to maintain a respectful and inclusive environment. Be kind, constructive, and professional in all interactions.
+This project adheres to the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it. Be kind, constructive, and professional in all interactions — and expect direct, detailed reviews of your code, which is a different thing entirely.
 
 ## Getting Started
 
@@ -422,7 +422,9 @@ For feature requests, please describe:
 
 ### Where to Report
 
-Open an issue on the [GitHub repository](https://github.com/nicobrinkkemper/ng-prism/issues).
+Open an issue on the [GitHub repository](https://github.com/dyingangel666/ng-prism/issues). The issue forms for bugs, feature requests, and documentation problems ask for exactly the information listed above.
+
+Suspected security vulnerabilities do **not** belong in public issues — see [SECURITY.md](SECURITY.md) for the private reporting channel.
 
 ---
 

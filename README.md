@@ -159,7 +159,7 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, the test workspace workflow, and PR guidelines.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup, the test workspace workflow, and PR guidelines. Participation is governed by our [Code of Conduct](./CODE_OF_CONDUCT.md), and security issues have their own [private reporting channel](./SECURITY.md).
 
 ## License
 
