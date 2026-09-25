@@ -10,7 +10,7 @@ Lightweight, Angular-native component showcase tool. Annotate components with `@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-**[Live Demo](https://dyingangel666.github.io/ng-prism/demo/)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
+**[Live Demo](https://dyingangel666.github.io/ng-prism/demo/?component=ButtonComponent)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
 
 ## Features
 

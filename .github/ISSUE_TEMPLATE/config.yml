@@ -4,8 +4,8 @@ contact_links:
     url: https://dyingangel666.github.io/ng-prism/
     about: Guides, API reference, plugin docs, and architecture notes.
   - name: Live Demo
-    url: https://dyingangel666.github.io/ng-prism/demo/
-    about: See ng-prism running with every official plugin enabled.
+    url: https://dyingangel666.github.io/ng-prism/demo/?component=ButtonComponent
+    about: Opens on the Button component — variants, live controls, and every official plugin enabled.
   - name: Contributing Guide
     url: https://github.com/dyingangel666/ng-prism/blob/main/CONTRIBUTING.md
     about: Development setup, the test-workspace workflow, and PR guidelines.

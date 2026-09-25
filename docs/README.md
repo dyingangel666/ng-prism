@@ -2,7 +2,7 @@
 
 A lightweight, Angular-native component showcase tool. Annotate your components directly with a `@Showcase` decorator — no separate story files, no parallel file tree to maintain.
 
-> **[See it in action — Live Demo](/ng-prism/demo/ ':ignore :target=_blank')** — a component
+> **[See it in action — Live Demo](/ng-prism/demo/?component=ButtonComponent ':ignore :target=_blank')** — a component
 > library with all six official plugins enabled, plus free-form component pages.
 
 ## Project Status

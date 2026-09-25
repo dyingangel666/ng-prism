@@ -1,4 +1,4 @@
-- **[Live Demo](/ng-prism/demo/ ':ignore :target=_blank')**
+- **[Live Demo](/ng-prism/demo/?component=ButtonComponent ':ignore :target=_blank')**
 
 - **Getting Started**
 
