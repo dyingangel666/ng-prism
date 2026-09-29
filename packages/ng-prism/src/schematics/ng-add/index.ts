@@ -5,7 +5,10 @@ import {
   type Tree,
   SchematicsException,
 } from '@angular-devkit/schematics';
-import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks';
+// `@angular-devkit/schematics` has no `exports` map, so its subpaths must name
+// a file — Node's ESM resolver does not honour the legacy `tasks/package.json`
+// `main` field the way CommonJS `require()` does. See issue #32.
+import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks/index.js';
 import { addTsConfigPath } from '../utils/tsconfig-paths.js';
 import type { NgAddSchemaOptions } from './schema.js';
 
@@ -21,10 +24,113 @@ interface WorkspaceSchema {
   [key: string]: unknown;
 }
 
+interface NxJsonSchema {
+  workspaceLayout?: { appsDir?: string; libsDir?: string };
+}
+
+interface PackageJsonSchema {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+}
+
+const ANGULAR_BUILD = '@angular/build';
+const BUILD_ANGULAR = '@angular-devkit/build-angular';
+
+function readJsonIfPresent<T>(tree: Tree, path: string): T | undefined {
+  const buffer = tree.read(path);
+  if (!buffer) return undefined;
+  try {
+    return JSON.parse(buffer.toString('utf-8')) as T;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Angular CLI workspaces install `@angular-devkit/build-angular`; Nx and newer
+ * Angular workspaces install `@angular/build`. Presence in node_modules is not a
+ * usable signal — `@angular-devkit/build-angular` depends on `@angular/build`
+ * itself — so only a direct entry in package.json counts.
+ */
+function resolveAppBuilder(tree: Tree): string {
+  const pkg = readJsonIfPresent<PackageJsonSchema>(tree, 'package.json');
+  const declared = { ...pkg?.dependencies, ...pkg?.devDependencies };
+  return declared[ANGULAR_BUILD] ? ANGULAR_BUILD : BUILD_ANGULAR;
+}
+
+/** The root tsconfig that carries workspace-wide path mappings. */
+function resolveRootTsConfig(tree: Tree): string | undefined {
+  if (tree.exists('tsconfig.base.json')) return 'tsconfig.base.json';
+  if (tree.exists('tsconfig.json')) return 'tsconfig.json';
+  return undefined;
+}
+
+function dirHasContent(tree: Tree, path: string): boolean {
+  const dir = tree.getDir(path);
+  return dir.subfiles.length > 0 || dir.subdirs.length > 0;
+}
+
+/**
+ * Angular CLI keeps every project under `projects/`. Nx lets the workspace
+ * choose, so mirror the layout that is already there rather than assuming one.
+ */
+function resolvePrismRoot(
+  tree: Tree,
+  libraryRoot: string,
+  prismProjectName: string
+): string {
+  const nxJson = readJsonIfPresent<NxJsonSchema>(tree, 'nx.json');
+  const appsDir = nxJson?.workspaceLayout?.appsDir;
+  if (appsDir) return `${appsDir}/${prismProjectName}`;
+
+  if (tree.exists('nx.json') && dirHasContent(tree, 'apps')) {
+    return `apps/${prismProjectName}`;
+  }
+
+  const separator = libraryRoot.lastIndexOf('/');
+  const parent = separator > 0 ? libraryRoot.slice(0, separator) : 'projects';
+  return `${parent}/${prismProjectName}`;
+}
+
+/** `../` repeated once per path segment, so generated tsconfigs reach the root. */
+function relativePrefix(root: string): string {
+  return '../'.repeat(root.split('/').filter(Boolean).length);
+}
+
+/**
+ * Resolves the library's public entry file. Angular CLI libraries use
+ * `src/public-api.ts`, Nx libraries use `src/index.ts`, and either can override
+ * it via `ng-package.json`.
+ */
+function resolveLibraryBarrel(tree: Tree, project: WorkspaceProject): string {
+  const root = project.root ?? '';
+  const sourceRoot = project.sourceRoot ?? `${root}/src`;
+
+  if (root) {
+    const ngPackage = readJsonIfPresent<{ lib?: { entryFile?: string } }>(
+      tree,
+      `${root}/ng-package.json`
+    );
+    if (ngPackage?.lib?.entryFile) return `${root}/${ngPackage.lib.entryFile}`;
+  }
+
+  for (const candidate of ['public-api.ts', 'index.ts']) {
+    if (tree.exists(`${sourceRoot}/${candidate}`)) {
+      return `${sourceRoot}/${candidate}`;
+    }
+  }
+
+  return `${sourceRoot}/public-api.ts`;
+}
+
 function readWorkspace(tree: Tree): WorkspaceSchema {
   const buffer = tree.read('angular.json');
   if (!buffer) {
-    throw new SchematicsException('Could not find angular.json');
+    throw new SchematicsException(
+      'Could not find angular.json. Run this from an Angular workspace root, or ' +
+        'in an Nx workspace via `nx g @ng-prism/core:ng-add --project=<library>` — ' +
+        'Nx supplies the workspace configuration the schematic reads.'
+    );
   }
   return JSON.parse(buffer.toString('utf-8')) as WorkspaceSchema;
 }
@@ -45,8 +151,14 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
     }
 
     const prismProjectName = `${options.project}-prism`;
-    const prismRoot = `projects/${prismProjectName}`;
+    const prismRoot = resolvePrismRoot(
+      tree,
+      project.root ?? '',
+      prismProjectName
+    );
     const prismSrc = `${prismRoot}/src`;
+    const toRoot = relativePrefix(prismRoot);
+    const appBuilder = resolveAppBuilder(tree);
 
     const zoneless = options.zoneless === true;
     const hotConst =
@@ -117,16 +229,16 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
     const tsconfigAppPath = `${prismRoot}/tsconfig.app.json`;
     if (!tree.exists(tsconfigAppPath)) {
       const tsconfigApp = {
-        extends: '../../tsconfig.json',
+        extends: `${toRoot}${resolveRootTsConfig(tree) ?? 'tsconfig.json'}`,
         compilerOptions: {
-          outDir: '../../out-tsc/app',
-          rootDir: '../..',
+          outDir: `${toRoot}out-tsc/app`,
+          rootDir: toRoot.slice(0, -1),
           types: [],
         },
         files: ['src/main.ts'],
         include: [
           'src/**/*.d.ts',
-          `../../ng-prism-cache/${prismProjectName}/**/*.ts`,
+          `${toRoot}ng-prism-cache/${prismProjectName}/**/*.ts`,
         ],
       };
       tree.create(tsconfigAppPath, JSON.stringify(tsconfigApp, null, 2) + '\n');
@@ -141,7 +253,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         sourceRoot: prismSrc,
         architect: {
           build: {
-            builder: '@angular-devkit/build-angular:application',
+            builder: `${appBuilder}:application`,
             options: {
               outputPath: {
                 base: `dist/${prismProjectName}`,
@@ -170,7 +282,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
             defaultConfiguration: 'production',
           },
           serve: {
-            builder: '@angular-devkit/build-angular:dev-server',
+            builder: `${appBuilder}:dev-server`,
             options: {
               buildTarget: `${prismProjectName}:build:development`,
               port,
@@ -240,18 +352,17 @@ function addBuilderTargets(options: NgAddSchemaOptions): Rule {
 
 function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
   return (tree: Tree, _context: SchematicContext) => {
-    const tsConfigPath = 'tsconfig.json';
-    if (!tree.read(tsConfigPath)) return tree;
+    const tsConfigPath = resolveRootTsConfig(tree);
+    if (!tsConfigPath) return tree;
 
     const workspace = readWorkspace(tree);
     const project = workspace.projects[options.project];
-    const sourceRoot = project.sourceRoot ?? `${project.root}/src`;
 
     addTsConfigPath(tree, tsConfigPath, 'ng-prism.config', [
       './ng-prism.config.ts',
     ]);
     addTsConfigPath(tree, tsConfigPath, options.project, [
-      `./${sourceRoot}/public-api.ts`,
+      `./${resolveLibraryBarrel(tree, project)}`,
     ]);
     addTsConfigPath(tree, tsConfigPath, 'prism-manifest/*', [
       './ng-prism-cache/*/prism-manifest.ts',

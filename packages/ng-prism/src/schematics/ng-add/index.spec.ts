@@ -744,3 +744,340 @@ describe('ng-add schematic', () => {
     expect(mainTsAfterSecond).toBe(mainTsAfterFirst);
   });
 });
+
+/**
+ * Nx never puts an `angular.json` on disk, but its `wrapAngularDevkitSchematic`
+ * bridge synthesizes one into the schematic `Tree` from the project graph and
+ * translates writes back into per-project `project.json` files. So the Tree a
+ * schematic sees in Nx still has `angular.json` — what differs is everything
+ * around it: the layout, `tsconfig.base.json`, and the installed builder.
+ */
+function createNxTree(
+  options: {
+    withAppsDir?: boolean;
+    workspaceLayout?: Record<string, string>;
+    angularBuild?: boolean;
+  } = {}
+): Tree {
+  const { withAppsDir = true, workspaceLayout, angularBuild = true } = options;
+  const tree = Tree.empty();
+
+  tree.create(
+    'angular.json',
+    JSON.stringify(
+      {
+        version: 1,
+        projects: {
+          button: {
+            projectType: 'library',
+            root: 'libs/button',
+            sourceRoot: 'libs/button/src',
+            architect: {
+              build: { builder: '@nx/angular:package', options: {} },
+            },
+          },
+        },
+      },
+      null,
+      2
+    )
+  );
+
+  tree.create(
+    'nx.json',
+    JSON.stringify(workspaceLayout ? { workspaceLayout } : {}, null, 2)
+  );
+
+  tree.create(
+    'tsconfig.base.json',
+    JSON.stringify(
+      { compilerOptions: { paths: { button: ['libs/button/src/index.ts'] } } },
+      null,
+      2
+    )
+  );
+
+  tree.create(
+    'package.json',
+    JSON.stringify(
+      {
+        name: 'nxws',
+        devDependencies: {
+          nx: '22.7.8',
+          ...(angularBuild ? { '@angular/build': '21.2.14' } : {}),
+          ...(angularBuild
+            ? {}
+            : { '@angular-devkit/build-angular': '21.2.14' }),
+        },
+      },
+      null,
+      2
+    )
+  );
+
+  tree.create('libs/button/src/index.ts', 'export {};\n');
+
+  if (withAppsDir) {
+    tree.create('apps/demo/project.json', JSON.stringify({ name: 'demo' }));
+  }
+
+  return tree;
+}
+
+describe('ng-add schematic — Nx workspaces', () => {
+  it('should place the showcase app under apps/ when that layout exists', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const files = [] as string[];
+    result.visit((path) => files.push(path));
+    expect(files).toContain('/apps/button-prism/src/main.ts');
+    expect(files).not.toContain('/projects/button-prism/src/main.ts');
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<string, Record<string, unknown>>;
+    };
+    expect(workspace.projects['button-prism']['root']).toBe(
+      'apps/button-prism'
+    );
+    expect(workspace.projects['button-prism']['sourceRoot']).toBe(
+      'apps/button-prism/src'
+    );
+  });
+
+  it('should honour workspaceLayout.appsDir from nx.json', async () => {
+    const tree = createNxTree({
+      withAppsDir: false,
+      workspaceLayout: { appsDir: 'packages/apps' },
+    });
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const files = [] as string[];
+    result.visit((path) => files.push(path));
+    expect(files).toContain('/packages/apps/button-prism/src/main.ts');
+  });
+
+  it('should fall back to the library parent directory when there is no apps dir', async () => {
+    const tree = createNxTree({ withAppsDir: false });
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const files = [] as string[];
+    result.visit((path) => files.push(path));
+    expect(files).toContain('/libs/button-prism/src/main.ts');
+  });
+
+  it('should use @angular/build executors when it is a direct dependency', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<
+        string,
+        { architect: Record<string, Record<string, unknown>> }
+      >;
+    };
+    const architect = workspace.projects['button-prism'].architect;
+    expect(architect['build']['builder']).toBe('@angular/build:application');
+    expect(architect['serve']['builder']).toBe('@angular/build:dev-server');
+  });
+
+  it('should write path mappings to tsconfig.base.json, not tsconfig.json', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const base = readJson(result, '/tsconfig.base.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(base.compilerOptions?.paths?.['ng-prism.config']).toEqual([
+      './ng-prism.config.ts',
+    ]);
+    expect(base.compilerOptions?.paths?.['prism-manifest/*']).toEqual([
+      './ng-prism-cache/*/prism-manifest.ts',
+    ]);
+    expect(result.exists('/tsconfig.json')).toBe(false);
+  });
+
+  it('should leave the existing Nx library path mapping untouched', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const base = readJson(result, '/tsconfig.base.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(base.compilerOptions?.paths?.['button']).toEqual([
+      'libs/button/src/index.ts',
+    ]);
+  });
+
+  it('should extend tsconfig.base.json from the generated tsconfig.app.json', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const tsconfigApp = JSON.parse(
+      result.read('/apps/button-prism/tsconfig.app.json')!.toString('utf-8')
+    ) as {
+      extends: string;
+      compilerOptions: { outDir: string; rootDir: string };
+      include: string[];
+    };
+    expect(tsconfigApp.extends).toBe('../../tsconfig.base.json');
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
+    expect(tsconfigApp.include).toContain(
+      '../../ng-prism-cache/button-prism/**/*.ts'
+    );
+  });
+
+  it('should compute the relative prefix from a nested app directory', async () => {
+    const tree = createNxTree({
+      withAppsDir: false,
+      workspaceLayout: { appsDir: 'packages/apps' },
+    });
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const tsconfigApp = JSON.parse(
+      result
+        .read('/packages/apps/button-prism/tsconfig.app.json')!
+        .toString('utf-8')
+    ) as {
+      extends: string;
+      compilerOptions: { outDir: string; rootDir: string };
+      include: string[];
+    };
+    expect(tsconfigApp.extends).toBe('../../../tsconfig.base.json');
+    expect(tsconfigApp.compilerOptions.rootDir).toBe('../../..');
+    expect(tsconfigApp.compilerOptions.outDir).toBe('../../../out-tsc/app');
+    expect(tsconfigApp.include).toContain(
+      '../../../ng-prism-cache/button-prism/**/*.ts'
+    );
+  });
+
+  it('should keep writing architect entries for the Nx bridge to translate', async () => {
+    const tree = createNxTree();
+
+    const result = await runSchematic({ project: 'button' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<
+        string,
+        { architect: Record<string, Record<string, unknown>> }
+      >;
+    };
+    const architect = workspace.projects['button'].architect;
+    expect(architect['prism']['builder']).toBe('@ng-prism/core:serve');
+    expect(architect['prism-build']['builder']).toBe('@ng-prism/core:build');
+    const opts = architect['prism']['options'] as Record<string, unknown>;
+    expect(opts['entryPoint']).toBe('libs/button');
+    expect(opts['prismProject']).toBe('button-prism');
+  });
+});
+
+describe('ng-add schematic — application builder resolution', () => {
+  it('should use @angular-devkit/build-angular when @angular/build is not a direct dependency', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create(
+      'package.json',
+      JSON.stringify({
+        name: 'cli-ws',
+        devDependencies: { '@angular-devkit/build-angular': '21.2.14' },
+      })
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<
+        string,
+        { architect: Record<string, Record<string, unknown>> }
+      >;
+    };
+    const architect = workspace.projects['my-lib-prism'].architect;
+    expect(architect['build']['builder']).toBe(
+      '@angular-devkit/build-angular:application'
+    );
+    expect(architect['serve']['builder']).toBe(
+      '@angular-devkit/build-angular:dev-server'
+    );
+  });
+
+  it('should prefer @angular/build when both are direct dependencies', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create(
+      'package.json',
+      JSON.stringify({
+        name: 'cli-ws',
+        devDependencies: {
+          '@angular/build': '21.2.14',
+          '@angular-devkit/build-angular': '21.2.14',
+        },
+      })
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const workspace = readJson(result, '/angular.json') as {
+      projects: Record<
+        string,
+        { architect: Record<string, Record<string, unknown>> }
+      >;
+    };
+    expect(
+      workspace.projects['my-lib-prism'].architect['build']['builder']
+    ).toBe('@angular/build:application');
+  });
+});
+
+describe('ng-add schematic — library barrel resolution', () => {
+  it('should read the barrel from ng-package.json when no mapping exists yet', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create(
+      'projects/my-lib/ng-package.json',
+      JSON.stringify({ lib: { entryFile: 'src/my-entry.ts' } })
+    );
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfig = readJson(result, '/tsconfig.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
+      './projects/my-lib/src/my-entry.ts',
+    ]);
+  });
+
+  it('should probe for src/index.ts when there is no ng-package.json', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('projects/my-lib/src/index.ts', 'export {};\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfig = readJson(result, '/tsconfig.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
+      './projects/my-lib/src/index.ts',
+    ]);
+  });
+
+  it('should prefer an existing public-api.ts over index.ts', async () => {
+    const tree = createTree(defaultLibProject());
+    tree.create('projects/my-lib/src/index.ts', 'export {};\n');
+    tree.create('projects/my-lib/src/public-api.ts', 'export {};\n');
+
+    const result = await runSchematic({ project: 'my-lib' }, tree);
+
+    const tsConfig = readJson(result, '/tsconfig.json') as {
+      compilerOptions?: { paths?: Record<string, string[]> };
+    };
+    expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual([
+      './projects/my-lib/src/public-api.ts',
+    ]);
+  });
+});
