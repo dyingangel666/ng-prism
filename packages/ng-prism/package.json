@@ -92,6 +92,7 @@
     }
   },
   "dependencies": {
+    "axe-core": "^4.11.1",
     "chokidar": "^5.0.0",
     "tslib": "^2.3.0"
   },

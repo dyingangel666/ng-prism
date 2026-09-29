@@ -154,7 +154,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
                 'node_modules/highlight.js/styles/base16/solarized-dark.min.css',
               ],
               polyfills: zoneless ? [] : ['zone.js'],
-              allowedCommonJsDependencies: ['highlight.js'],
+              allowedCommonJsDependencies: ['highlight.js', 'axe-core'],
               preserveSymlinks: true,
             },
             configurations: {

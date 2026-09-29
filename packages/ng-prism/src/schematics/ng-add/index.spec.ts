@@ -213,6 +213,7 @@ describe('ng-add schematic', () => {
     ]);
     expect(buildOptions['allowedCommonJsDependencies']).toEqual([
       'highlight.js',
+      'axe-core',
     ]);
   });
 

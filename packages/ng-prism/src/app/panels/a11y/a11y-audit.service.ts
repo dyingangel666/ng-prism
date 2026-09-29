@@ -1,4 +1,10 @@
-import { computed, DestroyRef, inject, Injectable, signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  Injectable,
+  signal,
+} from '@angular/core';
 import type { AxeResults, RunOptions } from 'axe-core';
 import type { A11yCoreConfig, A11yScoreResult } from './a11y.types.js';
 
@@ -22,14 +28,34 @@ export function calculateScore(results: AxeResults): A11yScoreResult {
   };
 }
 
-export async function runCoreAudit(element: Element, config?: A11yCoreConfig): Promise<AxeResults> {
-  const axe = await import('axe-core');
+/**
+ * axe-core is a dependency of `@ng-prism/core` and loaded lazily, so a failure
+ * here means the chunk could not be fetched — not that anything is missing.
+ */
+async function loadAxe() {
+  try {
+    return await import('axe-core');
+  } catch (cause) {
+    throw new Error(
+      'Could not load axe-core, so the accessibility audit is unavailable. It ships with @ng-prism/core — check that the install is intact and the chunk is reachable.',
+      { cause }
+    );
+  }
+}
+
+export async function runCoreAudit(
+  element: Element,
+  config?: A11yCoreConfig
+): Promise<AxeResults> {
+  const axe = await loadAxe();
 
   const options: RunOptions = {};
   if (config?.rules) {
     const keys = Object.keys(config.rules);
     if (keys.length > 0) {
-      options.rules = Object.fromEntries(keys.map((id) => [id, config.rules![id]]));
+      options.rules = Object.fromEntries(
+        keys.map((id) => [id, config.rules![id]])
+      );
     }
   }
 
@@ -57,7 +83,11 @@ export class A11yAuditService {
     });
   }
 
-  scheduleAudit(element: Element, config?: A11yCoreConfig, debounceMs = 500): void {
+  scheduleAudit(
+    element: Element,
+    config?: A11yCoreConfig,
+    debounceMs = 500
+  ): void {
     if (this.destroyed) return;
     if (this.timer) clearTimeout(this.timer);
     this.running.set(true);
@@ -74,7 +104,7 @@ export class A11yAuditService {
           if (this.destroyed) return;
           this.error.set(err instanceof Error ? err.message : String(err));
           this.running.set(false);
-        },
+        }
       );
     }, debounceMs);
   }
