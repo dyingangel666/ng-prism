@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+import { VIEWPORT_SNAPS } from '../../shared/viewport.type.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 
@@ -33,9 +34,12 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
          put while those are resized, and sit on top of running text in the API
          view where it has no business being. -->
     <div class="prism-toolrail" [class.has-rulers]="canvas.rulers()">
-      <span class="prism-toolrail__zoom"
-        >{{ Math.round(canvas.zoom() * 100) }}%</span
-      >
+      <span class="prism-toolrail__zoom">
+        {{ Math.round(canvas.zoom() * 100) }}% @if (canvas.viewportWidth() !==
+        null) {
+        <span class="prism-toolrail__vp">{{ canvas.viewportWidth() }}</span>
+        }
+      </span>
 
       <button
         type="button"
@@ -59,6 +63,18 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
         [attr.aria-pressed]="canvas.rulers()"
       >
         <prism-icon name="move" [size]="14" />
+      </button>
+
+      <button
+        type="button"
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.viewportWidth() !== null"
+        (click)="canvas.toggleViewport()"
+        title="Toggle viewport width"
+        aria-label="Toggle viewport width"
+        [attr.aria-pressed]="canvas.viewportWidth() !== null"
+      >
+        <prism-icon name="ruler-dimension" [size]="14" />
       </button>
 
       <button
@@ -121,6 +137,26 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
         </button>
         }
       </div>
+
+      <span class="prism-toolmenu__lbl">Width</span>
+      <div class="prism-toolmenu__row">
+        <button
+          type="button"
+          [class.is-on]="canvas.viewportWidth() === null"
+          (click)="canvas.setViewportWidth(null)"
+        >
+          Auto
+        </button>
+        @for (w of viewports; track w) {
+        <button
+          type="button"
+          [class.is-on]="canvas.viewportWidth() === w"
+          (click)="canvas.setViewportWidth(w)"
+        >
+          {{ w }}
+        </button>
+        }
+      </div>
     </div>
   `,
   styles: `
@@ -167,6 +203,14 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       font-size: 9px;
       color: var(--prism-text-ghost);
       text-align: center;
+    }
+
+    /* The one number on this rail that is not a percentage, so it takes the
+       measurement colour the theme already reserves for rulers and guides
+       rather than a second neutral that would read as a second zoom. */
+    .prism-toolrail__vp {
+      display: block;
+      color: var(--prism-measure);
     }
 
     .prism-toolrail__btn {
@@ -306,6 +350,14 @@ export class PrismCanvasToolbarComponent {
     { value: 1.5, label: '150%' },
     { value: 2, label: '200%' },
   ];
+
+  /**
+   * The named widths, offered exactly the way the zoom chooser is.
+   *
+   * Plain numbers and no device names: this tool narrows a box and simulates
+   * nothing, so calling 390 "iPhone" would promise a fidelity it does not have.
+   */
+  protected readonly viewports = VIEWPORT_SNAPS;
 
   protected capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
