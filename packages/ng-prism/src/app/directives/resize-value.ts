@@ -12,10 +12,12 @@
  * Where a drag lands.
  *
  * `scale` maps pointer movement onto the value. `1` is a panel edge, where a
- * pixel of travel is a pixel of size. `2` and `-2` are the viewport grips,
- * where the box is centred and therefore grows at both edges at once — so one
- * edge moving by `d` is a width change of `2d`, and the sign says which edge is
- * being held.
+ * pixel of travel is a pixel of size. The viewport grips pass `2 / zoom` and
+ * `-2 / zoom`: the centred box contributes the `2`, since holding one edge
+ * changes the width at both, and the stage's `transform: scale(var(--zoom))`
+ * contributes the division, since a pointer moving `dx` across the *painted*
+ * box has to change the CSS width by `2·dx / zoom` to keep the grip under the
+ * cursor — the sign says which edge is being held.
  */
 export function resizeValue(
   startValue: number,
@@ -30,10 +32,11 @@ export function resizeValue(
 /**
  * How far one arrow key moves the value.
  *
- * Only the sign of `scale` carries over. A drag on a centred box covers twice
- * the distance it travels, but an arrow key is a nudge with an intended size,
- * and doubling it would make the keyboard coarser than the mouse on exactly the
- * control where precision is the point.
+ * Only the sign of `scale` carries over. A drag on a centred box changes the
+ * width by a multiple of the distance it travels — `2 / zoom` for the viewport
+ * grips — but an arrow key is a nudge with an intended size, and scaling it to
+ * match would make the keyboard coarser than the mouse on exactly the control
+ * where precision is the point.
  */
 export function resizeStep(scale: number, step = 10): number {
   return scale < 0 ? -step : step;

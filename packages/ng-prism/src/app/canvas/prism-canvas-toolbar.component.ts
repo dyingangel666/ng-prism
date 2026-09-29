@@ -47,7 +47,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       <span class="prism-toolrail__zoom">
         {{ Math.round(canvas.zoom() * 100) }}% @if (canvas.viewportWidth() !==
         null) {
-        <span class="prism-toolrail__vp">{{ canvas.viewportWidth() }}</span>
+        <span class="prism-toolrail__vp">{{ canvas.viewportWidth() }}px</span>
         }
       </span>
 
@@ -91,8 +91,8 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
         type="button"
         class="prism-toolrail__btn"
         popovertarget="prism-tools"
-        title="Canvas and zoom"
-        aria-label="Canvas and zoom"
+        title="Canvas, zoom and width"
+        aria-label="Canvas, zoom and width"
       >
         <prism-icon name="sliders-horizontal" [size]="14" />
       </button>
@@ -119,7 +119,7 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       id="prism-tools"
       class="prism-toolmenu"
       role="dialog"
-      aria-label="Canvas and zoom"
+      aria-label="Canvas, zoom and width"
     >
       <span class="prism-toolmenu__lbl">Canvas</span>
       <div class="prism-toolmenu__row">

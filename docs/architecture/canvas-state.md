@@ -37,7 +37,7 @@ The override auto-clears whenever the active variant or component changes, so na
 the browser. The state is a single nullable number rather than a device list: the question the tool
 answers is _where does this break_, not _how does it look on a particular phone_. Presets (320, 390,
 480, 640, 768, 1024) are named values of that number, and a drag rests on one when it comes within
-8px.
+8px. A drag is clamped to between 240 and 1600, regardless of preset.
 
 ### Container queries respond; media queries do not
 
@@ -62,7 +62,8 @@ panel you are looking at — not how the canvas is set up.
 Capture mode never restores a persisted width, so a run always starts unconstrained and no viewport
 from an earlier session can leak into a baseline. The grips and the dimension line sit inside the
 renderer's `@if (!capture.active())` block, alongside the crosshair, the rulers and the background
-pill.
+pill. Capture mode also never _writes_ the width back to storage — `PrismCanvasService.save()` is a
+no-op while capture is active — so a capture run cannot corrupt the user's stored preference either.
 
 ## UI Affordances
 
@@ -71,3 +72,4 @@ pill.
 - **Tools menu — active state** — the active background button binds to `effective()` and carries the filled `is-on` state. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`). The recommended and active buttons can be the same one.
 - **Dimension line** — the constrained width, centred at the top of the stage in `--prism-measure`. It is the third resident of the overlay band (pill left, dimension centre, rail right) and reads the same `--prism-canvas-overlay-top` as the others, so enabling rulers moves all three together.
 - **Edge grips** — one at each edge of the constrained area, running on `prismResizer` with `scale` `-2 / zoom` and `2 / zoom`. `.demo-wrap` is centred and scaled by the canvas zoom, so an edge moving by `d` changes the width by `2d / zoom`, which keeps the grip under the cursor at any zoom level. Both grips are keyboard-reachable, step the width by 10px, and expose `aria-valuenow`, `aria-valuemin` and `aria-valuemax` for accessibility.
+- **Rail width readout** — a second line under the zoom percentage on the floating toolrail, shown only while the viewport constraint is on. It renders the active width with a `px` suffix (`390px`), since a bare number directly under a `100%` line would read ambiguously.

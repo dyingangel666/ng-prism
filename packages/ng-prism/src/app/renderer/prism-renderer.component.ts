@@ -58,7 +58,7 @@ import { parseContentToNodes } from './projectable-content.js';
       [attr.data-bg]="variantBg.effective()"
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
       [attr.data-viewport]="canvasService.viewportWidth() !== null ? '' : null"
-      [style.--vp-w.px]="canvasService.viewportWidth()"
+      [style.--prism-vp-w.px]="canvasService.viewportWidth()"
       [style.--zoom]="canvasService.zoom()"
     >
       @if (!capture.active()) {
@@ -79,7 +79,7 @@ import { parseContentToNodes } from './projectable-content.js';
         class="vp-grip"
         prismResizer
         axis="x"
-        [scale]="-2 / canvasService.zoom()"
+        [scale]="-2 / (canvasService.zoom() || 1)"
         [min]="VIEWPORT_MIN"
         [max]="VIEWPORT_MAX"
         [value]="canvasService.viewportWidth()!"
@@ -93,7 +93,7 @@ import { parseContentToNodes } from './projectable-content.js';
         class="vp-grip vp-grip--end"
         prismResizer
         axis="x"
-        [scale]="2 / canvasService.zoom()"
+        [scale]="2 / (canvasService.zoom() || 1)"
         [min]="VIEWPORT_MIN"
         [max]="VIEWPORT_MAX"
         [value]="canvasService.viewportWidth()!"
@@ -211,7 +211,7 @@ import { parseContentToNodes } from './projectable-content.js';
         max-width: 800px;
       }
 
-      /* max-width: none rather than min(800px, var(--vp-w)): an explicitly
+      /* max-width: none rather than min(800px, var(--prism-vp-w)): an explicitly
          requested width beats a layout default, and min() would silently cap a
          1024 viewport at 800 on any component declaring canvasLayout:
          'stretch'.
@@ -226,7 +226,7 @@ import { parseContentToNodes } from './projectable-content.js';
          cannot: they read the real browser viewport. */
       .demo-wrap[data-viewport] {
         display: block;
-        width: var(--vp-w);
+        width: var(--prism-vp-w);
         max-width: none;
         container-type: inline-size;
       }
@@ -234,13 +234,13 @@ import { parseContentToNodes } from './projectable-content.js';
       /* Both grips derive their position arithmetically, because .demo-wrap is
          centred by the stage's own flexbox and then scaled in place by
          transform: scale(var(--zoom)): the transform preserves that centre, so
-         each edge sits half the *painted* width — --vp-w times --zoom — away
+         each edge sits half the *painted* width — --prism-vp-w times --zoom — away
          from the middle. No measurement, no ResizeObserver, and nothing to
          fall out of step when either the width or the zoom changes.
 
          The grip's own [scale] input (in the template) undoes the same factor
          in the other direction: a pointer that has moved dx across the painted
-         box must change --vp-w by dx / zoom for the grip to stay under the
+         box must change --prism-vp-w by dx / zoom for the grip to stay under the
          cursor, so the directive multiplier is 2 / zoom on the right grip and
          -2 / zoom on the left, not the flat ±2 a permanent zoom of 1 would
          need. */
@@ -250,14 +250,14 @@ import { parseContentToNodes } from './projectable-content.js';
         bottom: 0;
         z-index: 4;
         width: 9px;
-        left: calc(50% - var(--vp-w) * var(--zoom, 1) / 2 - 13px);
+        left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
         display: grid;
         place-items: center;
         background: transparent;
       }
       .vp-grip--end {
         left: auto;
-        right: calc(50% - var(--vp-w) * var(--zoom, 1) / 2 - 13px);
+        right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
       }
       .vp-grip::before {
         content: '';

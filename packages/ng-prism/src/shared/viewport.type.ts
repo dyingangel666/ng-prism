@@ -29,4 +29,4 @@ export const VIEWPORT_SNAP_TOLERANCE = 8;
  */
 export const VIEWPORT_SNAPS: readonly number[] = [
   320, 390, 480, 640, 768, 1024,
-] as const;
+];

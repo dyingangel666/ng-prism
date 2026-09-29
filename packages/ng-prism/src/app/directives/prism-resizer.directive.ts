@@ -22,9 +22,11 @@ export class PrismResizerDirective {
   /**
    * Pointer travel to value, as a multiplier.
    *
-   * `1` (the default) is a panel or sidebar edge. The viewport grips pass `2`
-   * and `-2`: their box is centred, so holding one edge changes the width at
-   * both. Existing call sites do not pass it and are unaffected.
+   * `1` (the default) is a panel or sidebar edge. The viewport grips pass
+   * `2 / zoom` and `-2 / zoom`: their box is centred, so holding one edge
+   * changes the width at both (the `2`), and the stage scales that box by
+   * `--zoom`, so the multiplier has to divide it back out to keep the grip
+   * under the cursor. Existing call sites do not pass it and are unaffected.
    */
   readonly scale = input(1);
 
