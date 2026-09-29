@@ -10,12 +10,16 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
  * it.
  *
  * The six entries were never one kind of control, and the split follows that
- * rather than the topic: guides, rulers and the viewport constraint are toggles
- * you flip constantly while working, so each gets its own button on the rail —
- * the viewport toggle sits with the other two for exactly that reason, not
- * because it is simple but because it is frequent; canvas background, zoom and
- * the specific viewport width are choosers you set once, so they move behind a
- * menu; the template is a view rather than a setting and keeps its own button.
+ * rather than the topic: guides and rulers are toggles you flip constantly
+ * while working, so they toggle at their own button; canvas background and zoom
+ * are choosers you set once, so they move behind a menu; the template is a view
+ * rather than a setting and keeps its own button. The viewport is the sixth
+ * entry, and like zoom it does not stay on one side of that split — zoom
+ * already surfaces as a chooser in the menu and a readout on the rail, and the
+ * viewport surfaces the same way, as a toggle on the rail because switching the
+ * constraint on and off is something you do constantly, and a width chooser in
+ * the menu because the specific width is something you set once you have
+ * decided to constrain at all.
  *
  * Two numbers live on the rail as readouts, not one: the zoom percentage and
  * the active viewport width are both things you read far more often than you
