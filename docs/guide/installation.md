@@ -275,10 +275,11 @@ See [Plugin Overview](plugins/overview.md) for details on what each plugin provi
 
 ## Peer Dependencies
 
-Some features require additional peer dependencies:
+Nothing has to be installed by hand:
 
-| Package    | Required for                    |
-| ---------- | ------------------------------- |
-| `axe-core` | Built-in accessibility auditing |
+| Package                           | Provided by                               |
+| --------------------------------- | ----------------------------------------- |
+| `axe-core`                        | ships as a dependency of `@ng-prism/core` |
+| `highlight.js`, `ngx-highlightjs` | installed by `ng add @ng-prism/core`      |
 
-> **Note:** `highlight.js` and `ngx-highlightjs` are installed automatically by `ng add @ng-prism/core` — no manual step needed.
+`axe-core` powers the built-in [accessibility panel](guide/accessibility.md) and is loaded lazily, so it costs nothing until you open that panel.
