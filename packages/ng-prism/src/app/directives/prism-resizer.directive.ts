@@ -1,4 +1,5 @@
 import { Directive, ElementRef, inject, input, output } from '@angular/core';
+import { resizeStep, resizeValue } from './resize-value.js';
 
 @Directive({
   selector: '[prismResizer]',
@@ -17,6 +18,16 @@ export class PrismResizerDirective {
   readonly min = input(200);
   readonly max = input(600);
   readonly value = input(0);
+
+  /**
+   * Pointer travel to value, as a multiplier.
+   *
+   * `1` (the default) is a panel or sidebar edge. The viewport grips pass `2`
+   * and `-2`: their box is centred, so holding one edge changes the width at
+   * both. Existing call sites do not pass it and are unaffected.
+   */
+  readonly scale = input(1);
+
   readonly valueChange = output<number>();
 
   private readonly el = inject(ElementRef<HTMLElement>);
@@ -31,8 +42,9 @@ export class PrismResizerDirective {
     const onMove = (ev: MouseEvent) => {
       const delta =
         this.axis() === 'x' ? ev.clientX - startPos : startPos - ev.clientY;
-      const next = Math.max(this.min(), Math.min(this.max(), startVal + delta));
-      this.valueChange.emit(next);
+      this.valueChange.emit(
+        resizeValue(startVal, delta, this.scale(), this.min(), this.max())
+      );
     };
 
     const onUp = () => {
@@ -46,7 +58,7 @@ export class PrismResizerDirective {
   }
 
   protected onKeyDown(e: KeyboardEvent): void {
-    const step = 10;
+    const step = resizeStep(this.scale());
     const current = this.value();
     let next: number | null = null;
 
