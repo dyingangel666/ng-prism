@@ -231,18 +231,14 @@ This requires your audit script to be able to _not_ fail: write the report befor
 
 > Note that `&&` chains in an npm script have the same problem as sequential CI steps: `build && audit && build` stops at the first non-zero exit.
 
-## Peer Dependency
+## Dependencies
 
-`axe-core` must be installed in your workspace:
+`axe-core` ships as a dependency of `@ng-prism/core`, so there is nothing to install. It is loaded lazily — the audit engine is only fetched when you open the A11y panel, so it costs nothing in a styleguide you never audit.
 
-```bash
-npm install axe-core
-```
-
-Add it to `allowedCommonJsDependencies` in your prism app's `angular.json` build options to suppress the CommonJS warning:
+The `ng add` schematic already lists it in `allowedCommonJsDependencies` for the generated showcase app. If you set the app up by hand, add it yourself to silence the CommonJS optimization-bailout warning, since axe-core ships as UMD:
 
 ```json
-"allowedCommonJsDependencies": ["axe-core"]
+"allowedCommonJsDependencies": ["highlight.js", "axe-core"]
 ```
 
 ## How It Works
