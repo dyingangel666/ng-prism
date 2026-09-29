@@ -35,6 +35,9 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
 import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
+import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
+import { snapViewportWidth } from '../canvas/viewport-snap.js';
+import { VIEWPORT_MAX, VIEWPORT_MIN } from '../../shared/viewport.type.js';
 import { buildKnownInputs } from './known-inputs.js';
 import { resolveOverlay } from './overlay-resolver.js';
 import { parseContentToNodes } from './projectable-content.js';
@@ -47,12 +50,15 @@ import { parseContentToNodes } from './projectable-content.js';
     PrismCanvasRulersComponent,
     PrismCanvasBgPillComponent,
     NgComponentOutlet,
+    PrismResizerDirective,
   ],
   template: `
     <div
       class="prism-canvas-stage"
       [attr.data-bg]="variantBg.effective()"
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
+      [attr.data-viewport]="canvasService.viewportWidth() !== null ? '' : null"
+      [style.--vp-w.px]="canvasService.viewportWidth()"
     >
       @if (!capture.active()) {
       <div
@@ -61,13 +67,45 @@ import { parseContentToNodes } from './projectable-content.js';
       ></div>
       <prism-canvas-rulers />
       <prism-canvas-bg-pill />
-      }
+      @if (canvasService.viewportWidth() !== null) {
+      <!-- Grips and the dimension line are siblings of .demo-wrap, never
+           children of it: .demo-wrap is what plugin-visual-regression
+           screenshots, and anything inside it composites into every baseline.
+           They sit inside the capture guard for the same reason the rulers and
+           the pill do. -->
+      <span class="vp-dim">{{ canvasService.viewportWidth() }} px</span>
+      <div
+        class="vp-grip"
+        prismResizer
+        axis="x"
+        [scale]="-2"
+        [min]="VIEWPORT_MIN"
+        [max]="VIEWPORT_MAX"
+        [value]="canvasService.viewportWidth()!"
+        (valueChange)="onViewportResize($event)"
+        aria-label="Viewport width, left edge"
+      ></div>
+      <div
+        class="vp-grip vp-grip--end"
+        prismResizer
+        axis="x"
+        [scale]="2"
+        [min]="VIEWPORT_MIN"
+        [max]="VIEWPORT_MAX"
+        [value]="canvasService.viewportWidth()!"
+        (valueChange)="onViewportResize($event)"
+        aria-label="Viewport width, right edge"
+      ></div>
+      } }
 
       <div
         class="demo-wrap"
         [style.--zoom]="canvasService.zoom()"
         [attr.data-prism-rendered]="renderedKey()"
         [attr.data-canvas-layout]="canvasLayout()"
+        [attr.data-viewport]="
+          canvasService.viewportWidth() !== null ? '' : null
+        "
       >
         <ng-container #outlet />
         @if (activeOverlay()) {
@@ -165,6 +203,82 @@ import { parseContentToNodes } from './projectable-content.js';
         width: 100%;
         max-width: 800px;
       }
+
+      /* max-width: none rather than min(800px, var(--vp-w)): an explicitly
+         requested width beats a layout default, and min() would silently cap a
+         1024 viewport at 800 on any component declaring canvasLayout:
+         'stretch'.
+
+         container-type is confined to this rule, and that confinement is
+         load-bearing. It implies contain: inline-size, which on the width:auto
+         inline-block .demo-wrap is at rest would decouple its width from its
+         contents — collapsing the box and shifting every baseline in
+         test-workspace/vrt/baseline without a component having changed. Here
+         the width is explicit, so containment costs nothing and is what makes
+         a component's own @container rules respond. Media queries do not and
+         cannot: they read the real browser viewport. */
+      .demo-wrap[data-viewport] {
+        display: block;
+        width: var(--vp-w);
+        max-width: none;
+        container-type: inline-size;
+      }
+
+      /* Both grips derive their position arithmetically, because .demo-wrap is
+         centred by the stage's own flexbox: each edge is exactly half the
+         viewport width from the middle. No measurement, no ResizeObserver, and
+         nothing to fall out of step when the width changes. */
+      .vp-grip {
+        position: absolute;
+        top: var(--prism-canvas-overlay-top, 12px);
+        bottom: 0;
+        z-index: 4;
+        width: 9px;
+        left: calc(50% - var(--vp-w) / 2 - 13px);
+        display: grid;
+        place-items: center;
+        background: transparent;
+      }
+      .vp-grip--end {
+        left: auto;
+        right: calc(50% - var(--vp-w) / 2 - 13px);
+      }
+      .vp-grip::before {
+        content: '';
+        width: 3px;
+        height: 34px;
+        border-radius: 2px;
+        background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
+        transition: background var(--dur-fast);
+      }
+      .vp-grip:hover::before,
+      .vp-grip.active::before,
+      .vp-grip:focus-visible::before {
+        background: var(--prism-measure);
+      }
+      .vp-grip:focus-visible {
+        outline: 2px solid var(--prism-primary);
+        outline-offset: -2px;
+      }
+
+      /* The third resident of the overlay band: pill left, dimension centre,
+         rail right. It reads the same --prism-canvas-overlay-top the other two
+         do, so switching rulers on moves all three together. */
+      .vp-dim {
+        position: absolute;
+        top: var(--prism-canvas-overlay-top, 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 4;
+        padding: 1px 8px;
+        border-radius: var(--radius-xs);
+        background: color-mix(in srgb, var(--prism-measure) 14%, transparent);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        color: var(--prism-measure);
+        pointer-events: none;
+        white-space: nowrap;
+      }
     `,
     CANVAS_BG_STYLES,
   ],
@@ -175,6 +289,21 @@ export class PrismRendererComponent {
   protected readonly canvasService = inject(PrismCanvasService);
   protected readonly capture = inject(PrismCaptureService);
   protected readonly variantBg = inject(PrismVariantBgService);
+  protected readonly VIEWPORT_MIN = VIEWPORT_MIN;
+  protected readonly VIEWPORT_MAX = VIEWPORT_MAX;
+
+  /**
+   * A drag on either grip, rested on a preset if it came close enough.
+   *
+   * The snapping lives here and not in `PrismResizerDirective` on purpose: the
+   * directive also drives the sidebar and the panel, where there is nothing to
+   * snap to, and a generic control that knows about viewport presets would be
+   * the wrong shape.
+   */
+  protected onViewportResize(width: number): void {
+    this.canvasService.setViewportWidth(snapViewportWidth(width));
+  }
+
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);
