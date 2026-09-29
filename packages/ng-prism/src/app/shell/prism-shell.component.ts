@@ -154,6 +154,20 @@ import { nextViewId } from '../view-tab-bar/next-view-id.js';
     .prism-shell {
       height: 100vh;
       display: grid;
+      /* Declared for its minimum, not for its size. An implicit grid track is
+         auto, and an auto track's minimum is the min-content width of what sits
+         in it -- here the whole body, sidebar and resizer and main together. The
+         track therefore grows to whatever the widest panel demands and the
+         overflow: hidden below clips the remainder, instead of the viewport ever
+         getting a chance to reflow. Measured at a 500px viewport the track stood
+         at 763px and held the canvas at 415px however far the window was dragged
+         in, so responsive behaviour inside a showcased component was impossible
+         to reach.
+         The rows stay bare because min-height: 0 is already spelled out on every
+         level below them. The inline axis had no such counterpart anywhere, and
+         the levels below zero their own minimum through overflow: hidden, which
+         is why this one track is the only place that needs saying. */
+      grid-template-columns: minmax(0, 1fr);
       grid-template-rows: var(--band-header) 1fr;
       background: var(--prism-void);
       font-family: var(--font-sans, var(--prism-font-sans));
