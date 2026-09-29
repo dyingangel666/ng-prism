@@ -9,13 +9,19 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
  * The canvas tools, as a rail floating over the canvas instead of a band above
  * it.
  *
- * The five entries were never one kind of control, and the split follows that
- * rather than the topic: guides and rulers are toggles you flip constantly
- * while measuring, so they toggle at their own button; canvas background and
- * zoom are choosers you set once, so they move behind a menu; the template is a
- * view rather than a setting and keeps its own button. The zoom *value* stays
- * on the rail as a readout — it is the one number here you read far more often
- * than you set.
+ * The six entries were never one kind of control, and the split follows that
+ * rather than the topic: guides, rulers and the viewport constraint are toggles
+ * you flip constantly while working, so each gets its own button on the rail —
+ * the viewport toggle sits with the other two for exactly that reason, not
+ * because it is simple but because it is frequent; canvas background, zoom and
+ * the specific viewport width are choosers you set once, so they move behind a
+ * menu; the template is a view rather than a setting and keeps its own button.
+ *
+ * Two numbers live on the rail as readouts, not one: the zoom percentage and
+ * the active viewport width are both things you read far more often than you
+ * set. They differ in permanence, not in kind — the zoom percentage never
+ * leaves, but the width is only there once the toggle above has switched the
+ * constraint on, so it takes a second line rather than a fixed one.
  *
  * The host deliberately generates no box. The rail has to be a direct child of
  * `.prism-canvas-wrap` that does not contain the stage, because that is exactly
@@ -100,9 +106,10 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
       </button>
     </div>
 
-    <!-- Only the two choosers. The toggles stay outside: you flip guides and
-         rulers constantly while measuring, and a toggle two clicks deep is the
-         classic mistake. What you only ever set may live in a menu. -->
+    <!-- Only the three choosers. The toggles stay outside: you flip guides,
+         rulers and the viewport constraint constantly while working, and a
+         toggle two clicks deep is the classic mistake. What you only ever
+         set may live in a menu. -->
     <div
       popover
       id="prism-tools"
