@@ -67,7 +67,9 @@ export class PrismLayoutService {
             if (typeof d['sidebarWidth'] === 'number') this.sidebarWidth.set(Math.max(160, Math.min(600, d['sidebarWidth'])));
             if (typeof d['panelHeight'] === 'number') this.panelHeight.set(Math.max(100, Math.min(600, d['panelHeight'])));
             if (typeof d['panelWidth'] === 'number') this.panelWidth.set(Math.max(200, Math.min(600, d['panelWidth'])));
-        } catch {}
+        } catch {
+            // Malformed JSON or no storage access: keep the field defaults.
+        }
     }
 
     private saveToStorage(): void {

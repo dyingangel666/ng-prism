@@ -102,7 +102,9 @@ export class PrismCanvasService {
                 this.lastViewportWidth = w;
                 this.viewportWidth.set(w);
             }
-        } catch {}
+        } catch {
+            // Malformed JSON or no storage access: keep the field defaults.
+        }
     }
 
     private save(): void {
@@ -118,6 +120,9 @@ export class PrismCanvasService {
                     viewportWidth: this.viewportWidth()
                 })
             );
-        } catch {}
+        } catch {
+            // Storage may be full or disabled (e.g. private browsing); the
+            // canvas state just stays unpersisted for this session.
+        }
     }
 }

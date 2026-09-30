@@ -70,7 +70,9 @@ export class PrismThemeService {
             const stored = localStorage.getItem(STORAGE_KEY);
 
             if (stored === 'light') return 'light';
-        } catch {}
+        } catch {
+            // No storage access: fall through to the default theme below.
+        }
         return 'dark';
     }
 }

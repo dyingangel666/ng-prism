@@ -196,6 +196,9 @@ export class PrismSidebarComponent {
     private saveCollapsed(set: Set<string>): void {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
-        } catch {}
+        } catch {
+            // Storage may be full or disabled (e.g. private browsing); the
+            // collapsed set just stays unpersisted for this session.
+        }
     }
 }
