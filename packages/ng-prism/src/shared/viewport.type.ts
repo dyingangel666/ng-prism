@@ -38,3 +38,19 @@ export const VIEWPORT_SNAP_TOLERANCE = 8;
 export const VIEWPORT_SNAPS: readonly number[] = [
   320, 390, 480, 640, 768, 1024,
 ];
+
+/**
+ * `width` brought inside the legal range and onto a whole pixel.
+ *
+ * Lives beside the bounds it enforces rather than next to the canvas's
+ * snapping: the clamp is the service's business — it is what keeps a stored
+ * or programmatic width legal — and a service reaching into the canvas UI
+ * folder for arithmetic over these two constants was the wrong direction.
+ *
+ * Rounded rather than truncated: the value is read back out as a label on the
+ * canvas, and `389.6 px` under a drag reads as a rendering fault rather than as
+ * the sub-pixel arithmetic it is.
+ */
+export function clampViewportWidth(width: number): number {
+  return Math.round(Math.max(VIEWPORT_MIN, Math.min(VIEWPORT_MAX, width)));
+}

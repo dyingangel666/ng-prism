@@ -1,9 +1,10 @@
 import {
+  clampViewportWidth,
   VIEWPORT_MAX,
   VIEWPORT_MIN,
   VIEWPORT_SNAPS,
 } from '../../shared/viewport.type.js';
-import { clampViewportWidth, snapViewportWidth } from './viewport-snap.js';
+import { snapViewportWidth } from './viewport-snap.js';
 
 describe('clampViewportWidth', () => {
   it('should hold a width that is already in range', () => {

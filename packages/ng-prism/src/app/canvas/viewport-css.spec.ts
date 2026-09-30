@@ -29,15 +29,28 @@ function withoutComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, '');
 }
 
+/**
+ * `src` with every run of whitespace collapsed to a single space.
+ *
+ * Every assertion below runs through this. Matching raw source made the guards
+ * fail on a Prettier reflow rather than on a behaviour change — and this repo
+ * runs `nx format:write` before every commit, so a declaration crossing the
+ * print width would have broken tests that nothing about the CSS had changed.
+ */
+function flat(src: string): string {
+  return src.replace(/\s+/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')');
+}
+
 /** The declarations inside the block a selector opens. Comments are stripped
- *  first, so this can only ever match a real CSS rule. */
+ *  first, so this can only ever match a real CSS rule. Whitespace is flattened
+ *  so a reflow cannot fail an assertion. */
 function block(selector: string): string {
   const src = withoutComments(readFileSync(RENDERER, 'utf-8'));
   const start = src.indexOf(selector);
   if (start === -1) throw new Error(`selector not found: ${selector}`);
   const open = src.indexOf('{', start);
   const close = src.indexOf('}', open);
-  return src.slice(open + 1, close);
+  return flat(src.slice(open + 1, close));
 }
 
 /**
@@ -55,7 +68,7 @@ function openingTag(marker: string): string {
   if (markerPos === -1) throw new Error(`marker not found: ${marker}`);
   const tagStart = src.lastIndexOf('<', markerPos);
   const tagEnd = src.indexOf('>', markerPos);
-  return src.slice(tagStart, tagEnd + 1);
+  return flat(src.slice(tagStart, tagEnd + 1));
 }
 
 describe('viewport CSS invariants', () => {
@@ -65,12 +78,18 @@ describe('viewport CSS invariants', () => {
     // file, but the grips would then read an unset --prism-vp-w, their calc() would
     // fall back to auto, and both would silently collapse to the stage centre.
     const stageTag = openingTag('class="prism-canvas-stage"');
-    expect(stageTag).toContain(
-      '[style.--prism-vp-w.px]="canvasService.viewportWidth()"'
-    );
+    expect(stageTag).toContain('[style.--prism-vp-w.px]=');
+
+    // And it reads the capture-aware computed, never the service signal
+    // directly. Binding the raw signal is what left capture mode safe only by
+    // reachability argument: a capture run recorded at a constrained width
+    // would have had no visible chrome to reveal it.
+    expect(stageTag).toContain('[style.--prism-vp-w.px]="viewportWidth()"');
+    expect(stageTag).not.toContain('canvasService.viewportWidth()');
 
     const demoWrapTag = openingTag('class="demo-wrap"');
     expect(demoWrapTag).not.toContain('--prism-vp-w');
+    expect(demoWrapTag).not.toContain('canvasService.viewportWidth()');
   });
 
   it('confines container-type to the constrained state', () => {
@@ -122,15 +141,27 @@ describe('viewport CSS invariants', () => {
     }
   });
 
-  it('never measures the DOM to position the grips', () => {
-    // Scoped to the component's class body, not a CSS declaration block: a JS
-    // API like `getBoundingClientRect` can only ever appear there, never
-    // inside a `block()` result, which is why the same check used to live —
-    // uselessly — in the test above. This is the scope where it can fire.
-    const src = readFileSync(RENDERER, 'utf-8');
-    const classStart = src.indexOf('export class PrismRendererComponent');
-    if (classStart === -1) throw new Error('class body not found');
-    expect(src.slice(classStart)).not.toContain('getBoundingClientRect');
+  it('never measures the DOM to answer a viewport drag', () => {
+    // Scoped to the one method a drag runs through, not to the whole class.
+    // A file-wide ban was the first attempt and it was over-broad in both
+    // directions: it sat inside a CSS `block()` result where a JS API can
+    // never appear, and once moved to the class body it would have failed for
+    // any future renderer feature that legitimately measures something
+    // unrelated to the grips. The claim worth holding is narrower — the grips
+    // are positioned by arithmetic over --prism-vp-w and --zoom (asserted
+    // above), and the drag that feeds them reads no layout.
+    const src = withoutComments(readFileSync(RENDERER, 'utf-8'));
+    const at = src.indexOf('protected onViewportResize(');
+    if (at === -1) throw new Error('onViewportResize not found');
+    const body = src.slice(at, src.indexOf('\n  }', at));
+    for (const api of [
+      'getBoundingClientRect',
+      'offsetWidth',
+      'clientWidth',
+      'getComputedStyle',
+    ]) {
+      expect(body).not.toContain(api);
+    }
   });
 
   it("binds --zoom on the stage, which the grips' calc() and .demo-wrap both depend on", () => {
@@ -153,7 +184,7 @@ describe('viewport CSS invariants', () => {
     // switched on. Centring at the container touches nothing inside it.
     const constrained = block('.demo-wrap[data-viewport] {');
     expect(constrained).toContain('display: grid');
-    expect(constrained).toContain('justify-items: center');
+    expect(constrained).toMatch(/justify-items:\s*safe center/);
     expect(constrained).not.toContain('text-align');
   });
 
@@ -171,7 +202,7 @@ describe('viewport CSS invariants', () => {
     // each rule separately because they are written separately — a grouped
     // selector would make `block()` ambiguous for whichever of the two it
     // named last, which is how this test first failed.
-    const handle = block('.vp-grip::before {');
+    const handle = block('.vp-grip__bar {');
     expect(handle).toContain('grid-area: 1 / 1');
     expect(line).toContain('grid-area: 1 / 1');
   });
@@ -219,5 +250,25 @@ describe('viewport CSS invariants', () => {
     // and the far grip has to use the same offset in the other direction
     const end = block('.vp-grip--end {');
     expect(end).toContain(`/ 2 - ${offset![1]}px)`);
+  });
+
+  it('keeps the guide line out of the hit test', () => {
+    // The grip element is the guide line's full-height track, running from the
+    // overlay band to the bottom of the stage at z-index 4 — straight over
+    // prism-canvas-bg-pill at z-index 2. Hit-testable, it made part of the
+    // pill's Reset button unreachable whenever a viewport was on. Only the bar
+    // takes pointer events back.
+    expect(block('.vp-grip {')).toContain('pointer-events: none');
+    expect(block('.vp-grip__bar {')).toContain('pointer-events: auto');
+  });
+
+  it('leaves the hit box larger than the mark it draws', () => {
+    // content-box sizing plus background-clip is what paints a 3px bar inside
+    // a 9px target: drop either and the grip becomes as thin to hit as it
+    // looks.
+    const bar = block('.vp-grip__bar {');
+    expect(bar).toContain('box-sizing: content-box');
+    expect(bar).toContain('background-clip: content-box');
+    expect(bar).toMatch(/padding:\s*\d+px \d+px/);
   });
 });

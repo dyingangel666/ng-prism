@@ -1,20 +1,7 @@
 import {
-  VIEWPORT_MAX,
-  VIEWPORT_MIN,
   VIEWPORT_SNAP_TOLERANCE,
   VIEWPORT_SNAPS,
 } from '../../shared/viewport.type.js';
-
-/**
- * `width` brought inside the legal range and onto a whole pixel.
- *
- * Rounded rather than truncated: the value is read back out as a label on the
- * canvas, and `389.6 px` under a drag reads as a rendering fault rather than as
- * the sub-pixel arithmetic it is.
- */
-export function clampViewportWidth(width: number): number {
-  return Math.round(Math.max(VIEWPORT_MIN, Math.min(VIEWPORT_MAX, width)));
-}
 
 /**
  * `width`, pulled onto the nearest preset it comes within `tolerance` of.

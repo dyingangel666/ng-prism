@@ -1,7 +1,9 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
-import { VIEWPORT_DEFAULT } from '../../shared/viewport.type.js';
-import { clampViewportWidth } from '../canvas/viewport-snap.js';
+import {
+  clampViewportWidth,
+  VIEWPORT_DEFAULT,
+} from '../../shared/viewport.type.js';
 import { PrismCaptureService } from './prism-capture.service.js';
 
 export type { CanvasBg };

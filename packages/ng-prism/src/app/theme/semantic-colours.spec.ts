@@ -305,7 +305,7 @@ describe('semantic colours', () => {
       (_l, colour, ground) => {
         // The handle is an interactive control and the dimension rule carries
         // the measurement, so both are WCAG 1.4.11 non-text contrast at 3:1.
-        const handle = alphaInRule('.vp-grip::before {');
+        const handle = alphaInRule('.vp-grip__bar {');
         const rule = alphaInRule('.vp-dim__rule {');
         expect(
           contrast(atAlpha(colour, ground, handle), ground)

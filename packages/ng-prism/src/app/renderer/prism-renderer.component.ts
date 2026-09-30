@@ -57,8 +57,8 @@ import { parseContentToNodes } from './projectable-content.js';
       class="prism-canvas-stage"
       [attr.data-bg]="variantBg.effective()"
       [attr.data-rulers]="canvasService.rulers() ? '' : null"
-      [attr.data-viewport]="canvasService.viewportWidth() !== null ? '' : null"
-      [style.--prism-vp-w.px]="canvasService.viewportWidth()"
+      [attr.data-viewport]="viewportWidth() !== null ? '' : null"
+      [style.--prism-vp-w.px]="viewportWidth()"
       [style.--zoom]="canvasService.zoom()"
     >
       @if (!capture.active()) {
@@ -68,7 +68,7 @@ import { parseContentToNodes } from './projectable-content.js';
       ></div>
       <prism-canvas-rulers />
       <prism-canvas-bg-pill />
-      @if (canvasService.viewportWidth() !== null) {
+      @if (viewportWidth() !== null) {
       <!-- Grips and the dimension line are siblings of .demo-wrap, never
            children of it: .demo-wrap is what plugin-visual-regression
            screenshots, and anything inside it composites into every baseline.
@@ -76,7 +76,7 @@ import { parseContentToNodes } from './projectable-content.js';
            the pill do. -->
       <span class="vp-dim">
         <span class="vp-dim__rule"></span>
-        <span class="vp-dim__v">{{ canvasService.viewportWidth() }} px</span>
+        <span class="vp-dim__v">{{ viewportWidth() }} px</span>
         <span class="vp-dim__rule"></span>
       </span>
       <div
@@ -86,13 +86,15 @@ import { parseContentToNodes } from './projectable-content.js';
         [scale]="-2 / (canvasService.zoom() || 1)"
         [min]="VIEWPORT_MIN"
         [max]="VIEWPORT_MAX"
-        [value]="canvasService.viewportWidth()!"
+        [value]="viewportWidth()!"
         (valueChange)="onViewportResize($event)"
         aria-label="Viewport width, left edge"
-        [attr.aria-valuenow]="canvasService.viewportWidth()"
+        [attr.aria-valuenow]="viewportWidth()"
         [attr.aria-valuemin]="VIEWPORT_MIN"
         [attr.aria-valuemax]="VIEWPORT_MAX"
-      ></div>
+      >
+        <span class="vp-grip__bar"></span>
+      </div>
       <div
         class="vp-grip vp-grip--end"
         prismResizer
@@ -100,13 +102,15 @@ import { parseContentToNodes } from './projectable-content.js';
         [scale]="2 / (canvasService.zoom() || 1)"
         [min]="VIEWPORT_MIN"
         [max]="VIEWPORT_MAX"
-        [value]="canvasService.viewportWidth()!"
+        [value]="viewportWidth()!"
         (valueChange)="onViewportResize($event)"
         aria-label="Viewport width, right edge"
-        [attr.aria-valuenow]="canvasService.viewportWidth()"
+        [attr.aria-valuenow]="viewportWidth()"
         [attr.aria-valuemin]="VIEWPORT_MIN"
         [attr.aria-valuemax]="VIEWPORT_MAX"
-      ></div>
+      >
+        <span class="vp-grip__bar"></span>
+      </div>
       } }
 
       <div
@@ -114,9 +118,7 @@ import { parseContentToNodes } from './projectable-content.js';
         [style.--zoom]="canvasService.zoom()"
         [attr.data-prism-rendered]="renderedKey()"
         [attr.data-canvas-layout]="canvasLayout()"
-        [attr.data-viewport]="
-          canvasService.viewportWidth() !== null ? '' : null
-        "
+        [attr.data-viewport]="viewportWidth() !== null ? '' : null"
       >
         <ng-container #outlet />
         @if (activeOverlay()) {
@@ -248,7 +250,14 @@ import { parseContentToNodes } from './projectable-content.js';
          whole viewport. */
       .demo-wrap[data-viewport] {
         display: grid;
-        justify-items: center;
+        /* safe center, not bare center. Centring is right while the specimen
+           fits and wrong the moment it does not: bare centring spills an
+           over-wide specimen equally past both edges, where a real viewport of
+           that width clips at zero and scrolls in one direction. The safe
+           keyword falls back to start exactly when the item overflows, which
+           is the browser making a case distinction CSS cannot otherwise
+           express. */
+        justify-items: safe center;
         /* flex: none, and it is load-bearing. The stage is a flex container
            and this is its only item, so the default flex-shrink: 1 lets the
            box render narrower than the width just asked for whenever the
@@ -286,33 +295,43 @@ import { parseContentToNodes } from './projectable-content.js';
         left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
         display: grid;
         background: transparent;
+        /* The element is the guide line's full-height track and nothing else
+           may be clickable about it. It runs from the overlay band to the
+           bottom of the stage at z-index 4, straight over prism-canvas-bg-pill
+           at z-index 2, so leaving it hit-testable made part of the pill's
+           Reset button unreachable whenever a viewport was on. Only the bar
+           below takes pointer events back. */
+        pointer-events: none;
       }
       .vp-grip--end {
         left: auto;
         right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
       }
 
-      /* Handle and guide line occupy the same grid cell — hence the identical
-         grid-area: 1 / 1 in both — so the line runs the full height of the
-         stage while the handle stays centred on it. Written out per rule
-         rather than grouped into a shared selector on purpose: the guards in
-         viewport-css.spec.ts slice a rule by searching for the text that opens
-         it, and grouping the two pseudo-elements into one selector makes that
-         search ambiguous for whichever of them it names last. Each rule reads
-         completely here, and each is addressable there.
+      /* The part you grab, and the only part of the grip that takes pointer
+         events back. It shares the guide line's grid cell — hence the matching
+         grid-area — and is raised above it so the 1px rule does not paint a
+         seam down the middle of the 3px bar.
 
-         The handle is the part you grab, raised above the line so the 1px rule
-         does not paint a seam down the middle of the 3px bar. */
-      .vp-grip::before {
-        content: '';
+         The padding is the hit box and the background is the bar: content-box
+         sizing plus background-clip: content-box paints 3x34 while leaving
+         9x44 clickable, so the target is comfortable without the mark growing
+         to match. It is still narrow for WCAG 2.5.8, which the Width chooser
+         in the tools menu answers — the same widths are reachable there, and
+         both grips take Home/End and the arrow keys. */
+      .vp-grip__bar {
         grid-area: 1 / 1;
         justify-self: center;
-        z-index: 1;
         align-self: center;
+        z-index: 1;
+        pointer-events: auto;
+        box-sizing: content-box;
         width: 3px;
         height: 34px;
+        padding: 5px 3px;
         border-radius: 2px;
         background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
+        background-clip: content-box;
         transition: background var(--dur-fast);
       }
 
@@ -335,14 +354,21 @@ import { parseContentToNodes } from './projectable-content.js';
       .vp-grip:focus-visible::after {
         background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
       }
-      .vp-grip:hover::before,
-      .vp-grip.active::before,
-      .vp-grip:focus-visible::before {
+      .vp-grip:hover .vp-grip__bar,
+      .vp-grip.active .vp-grip__bar,
+      .vp-grip:focus-visible .vp-grip__bar {
         background: var(--prism-measure);
+        background-clip: content-box;
       }
+      /* The ring goes on the bar, not on the host: the host is the full-height
+         track, and outlining that would draw a rule the length of the stage
+         for a control 34px tall. */
       .vp-grip:focus-visible {
+        outline: none;
+      }
+      .vp-grip:focus-visible .vp-grip__bar {
         outline: 2px solid var(--prism-primary);
-        outline-offset: -2px;
+        outline-offset: 1px;
       }
 
       /* The third resident of the overlay band: pill left, dimension centre,
@@ -412,6 +438,23 @@ export class PrismRendererComponent {
   protected readonly canvasService = inject(PrismCanvasService);
   protected readonly capture = inject(PrismCaptureService);
   protected readonly variantBg = inject(PrismVariantBgService);
+  /**
+   * The width the canvas is actually constrained to, `null` for unconstrained.
+   *
+   * Every viewport binding reads this rather than the service directly, so
+   * capture mode cannot be constrained by any route. Previously only the grips
+   * and the dimension line sat behind the capture guard while the attributes
+   * that change `.demo-wrap`'s box did not — safe in practice, because capture
+   * never restores a persisted width and every setter is suppressed, but safe
+   * by reachability argument rather than by construction. A future caller of
+   * `setViewportWidth` during a capture run would have recorded every
+   * visual-regression baseline at the constrained width with no visible chrome
+   * to reveal it. One computed makes the guarantee structural.
+   */
+  protected readonly viewportWidth = computed(() =>
+    this.capture.active() ? null : this.canvasService.viewportWidth()
+  );
+
   protected readonly VIEWPORT_MIN = VIEWPORT_MIN;
   protected readonly VIEWPORT_MAX = VIEWPORT_MAX;
 
