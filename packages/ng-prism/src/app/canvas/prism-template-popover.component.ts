@@ -9,7 +9,7 @@ function esc(s: string): string {
 }
 
 function tokenizeXml(code: string): string {
-    const re = /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
+    const re = /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<["\n/>=]+|[/=])/g;
     let out = '';
     let m: RegExpExecArray | null;
 
