@@ -74,7 +74,11 @@ import { parseContentToNodes } from './projectable-content.js';
            screenshots, and anything inside it composites into every baseline.
            They sit inside the capture guard for the same reason the rulers and
            the pill do. -->
-      <span class="vp-dim">{{ canvasService.viewportWidth() }} px</span>
+      <span class="vp-dim">
+        <span class="vp-dim__rule"></span>
+        <span class="vp-dim__v">{{ canvasService.viewportWidth() }} px</span>
+        <span class="vp-dim__rule"></span>
+      </span>
       <div
         class="vp-grip"
         prismResizer
@@ -223,9 +227,28 @@ import { parseContentToNodes } from './projectable-content.js';
          test-workspace/vrt/baseline without a component having changed. Here
          the width is explicit, so containment costs nothing and is what makes
          a component's own @container rules respond. Media queries do not and
-         cannot: they read the real browser viewport. */
+         cannot: they read the real browser viewport.
+
+         grid + justify-items: center, and not text-align: center, which is the
+         obvious way to centre an inline-level child and the wrong one. The
+         showcase component is created through ViewContainerRef, so its host
+         element carries none of this component's _ngcontent attribute and no
+         scoped rule here can reach it to undo an inherited value. text-align
+         would therefore leak all the way into the specimen and silently
+         re-align its own text the moment the viewport is switched on — a
+         canvas that lies about what it is showing. Centring at the container
+         instead touches nothing inside.
+
+         Shrinking is not a side effect of that choice, it is the resting
+         behaviour preserved: at rest .demo-wrap is an inline-block that
+         already shrink-wraps its child, so a block-level specimen sizes to its
+         content here exactly as it does with the constraint off. The implicit
+         auto column still fills the declared width, so a component that asks
+         for width: 100% — the canvasLayout: 'stretch' case — keeps getting the
+         whole viewport. */
       .demo-wrap[data-viewport] {
-        display: block;
+        display: grid;
+        justify-items: center;
         width: var(--prism-vp-w);
         max-width: none;
         container-type: inline-size;
@@ -252,20 +275,55 @@ import { parseContentToNodes } from './projectable-content.js';
         width: 9px;
         left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
         display: grid;
-        place-items: center;
         background: transparent;
       }
       .vp-grip--end {
         left: auto;
         right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
       }
+
+      /* Handle and guide line occupy the same grid cell — hence the identical
+         grid-area: 1 / 1 in both — so the line runs the full height of the
+         stage while the handle stays centred on it. Written out per rule
+         rather than grouped into a shared selector on purpose: the guards in
+         viewport-css.spec.ts slice a rule by searching for the text that opens
+         it, and grouping the two pseudo-elements into one selector makes that
+         search ambiguous for whichever of them it names last. Each rule reads
+         completely here, and each is addressable there.
+
+         The handle is the part you grab, raised above the line so the 1px rule
+         does not paint a seam down the middle of the 3px bar. */
       .vp-grip::before {
         content: '';
+        grid-area: 1 / 1;
+        justify-self: center;
+        z-index: 1;
+        align-self: center;
         width: 3px;
         height: 34px;
         border-radius: 2px;
         background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
         transition: background var(--dur-fast);
+      }
+
+      /* The edge itself, carried the whole height of the stage. Without it a
+         grip is a floating nub that says where you may pull but not what it is
+         pulling: the line is what makes the constrained region legible as a
+         region rather than as two loose handles. Faint on purpose — it crosses
+         the specimen, so it has to stay readable as chrome. */
+      .vp-grip::after {
+        content: '';
+        grid-area: 1 / 1;
+        justify-self: center;
+        align-self: stretch;
+        width: 1px;
+        background: color-mix(in srgb, var(--prism-measure) 26%, transparent);
+        transition: background var(--dur-fast);
+      }
+      .vp-grip:hover::after,
+      .vp-grip.active::after,
+      .vp-grip:focus-visible::after {
+        background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
       }
       .vp-grip:hover::before,
       .vp-grip.active::before,
@@ -279,20 +337,59 @@ import { parseContentToNodes } from './projectable-content.js';
 
       /* The third resident of the overlay band: pill left, dimension centre,
          rail right. It reads the same --prism-canvas-overlay-top the other two
-         do, so switching rulers on moves all three together. */
+         do, so switching rulers on moves all three together.
+
+         Spans the painted width rather than sitting in the middle of it as a
+         badge, and carries the same --prism-vp-w * --zoom the grips do so the
+         three stay locked together. A badge states a number; a dimension line
+         states which distance the number measures, and that is the whole
+         claim this overlay makes. */
       .vp-dim {
         position: absolute;
         top: var(--prism-canvas-overlay-top, 12px);
         left: 50%;
+        width: calc(var(--prism-vp-w) * var(--zoom, 1));
         transform: translateX(-50%);
         z-index: 4;
-        padding: 1px 8px;
-        border-radius: var(--radius-xs);
-        background: color-mix(in srgb, var(--prism-measure) 14%, transparent);
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        pointer-events: none;
+      }
+
+      /* Two halves with the value in the gap, rather than one rule behind it:
+         a line running under the digits would need a background plate to stay
+         readable, and the plate is the badge this replaced. */
+      .vp-dim__rule {
+        position: relative;
+        flex: 1;
+        height: 1px;
+        background: color-mix(in srgb, var(--prism-measure) 45%, transparent);
+      }
+
+      /* The end ticks. They are what make the rule read as a measurement of
+         the span between them instead of as a divider laid across the canvas,
+         and they mark the two edges the grips can be dragged to. */
+      .vp-dim__rule::before {
+        content: '';
+        position: absolute;
+        top: -3px;
+        width: 1px;
+        height: 7px;
+        background: color-mix(in srgb, var(--prism-measure) 70%, transparent);
+      }
+      .vp-dim__rule:first-child::before {
+        left: 0;
+      }
+      .vp-dim__rule:last-child::before {
+        right: 0;
+      }
+
+      .vp-dim__v {
+        flex: none;
         font-family: var(--font-mono);
         font-size: 9px;
         color: var(--prism-measure);
-        pointer-events: none;
         white-space: nowrap;
       }
     `,

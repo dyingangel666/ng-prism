@@ -39,6 +39,21 @@ answers is _where does this break_, not _how does it look on a particular phone_
 480, 640, 768, 1024) are named values of that number, and a drag rests on one when it comes within
 8px. A drag is clamped to between 240 and 1600, regardless of preset.
 
+### The specimen is centred at the container
+
+While constrained, `.demo-wrap` is a grid with `justify-items: center`, so a specimen narrower than
+the viewport sits in the middle of it rather than against its left edge. Sizing is unchanged by
+this: a block-level specimen shrink-wraps here exactly as it already does at rest inside the
+`inline-block` wrapper, and one that asks for `width: 100%` — the `canvasLayout: 'stretch'` case —
+still receives the whole viewport.
+
+Centring at the container rather than with `text-align: center` is deliberate. The specimen is
+created through `ViewContainerRef`, so its host element carries none of the renderer's
+`_ngcontent` attribute and no scoped rule there can reach it to undo an inherited value. A
+`text-align` set on the wrapper would leak the whole way into the specimen and silently re-align
+its own text whenever the viewport was switched on, which would make the canvas misrepresent what
+it is showing.
+
 ### Container queries respond; media queries do not
 
 A width constraint narrows a box. It does not change what `@media (max-width: …)` sees — that reads
@@ -70,6 +85,6 @@ no-op while capture is active — so a capture run cannot corrupt the user's sto
 - **Tools menu — recommendation marker** — the recommended background's button in the **Canvas** group carries a tinted border (driven by `recommended()`), rather than a separate glyph. Title attribute: `Recommended background for this variant`. Passive, always visible while a recommendation is active.
 - **Canvas pill** — `Recommended: <bg> [Reset]` appears in the top-left of the canvas only when `isDeviating()` is true (actionable; the button clears the override and returns to the recommendation).
 - **Tools menu — active state** — the active background button binds to `effective()` and carries the filled `is-on` state. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`). The recommended and active buttons can be the same one.
-- **Dimension line** — the constrained width, centred at the top of the stage in `--prism-measure`. It is the third resident of the overlay band (pill left, dimension centre, rail right) and reads the same `--prism-canvas-overlay-top` as the others, so enabling rulers moves all three together.
-- **Edge grips** — one at each edge of the constrained area, running on `prismResizer` with `scale` `-2 / zoom` and `2 / zoom`. `.demo-wrap` is centred and scaled by the canvas zoom, so an edge moving by `d` changes the width by `2d / zoom`, which keeps the grip under the cursor at any zoom level. Both grips are keyboard-reachable, step the width by 10px, and expose `aria-valuenow`, `aria-valuemin` and `aria-valuemax` for accessibility.
+- **Dimension line** — a horizontal rule spanning the painted width at the top of the stage, in `--prism-measure`, with the value set into a gap at its centre and a short vertical tick at each end. The ticks are what make it read as a measurement of the span between them rather than as a divider laid across the canvas, and they mark the two edges the grips can be dragged to. It is the third resident of the overlay band (pill left, dimension centre, rail right) and reads the same `--prism-canvas-overlay-top` as the others, so enabling rulers moves all three together. Its width carries the same `--prism-vp-w * --zoom` product the grips use, so the three stay locked together.
+- **Edge grips** — one at each edge of the constrained area, each a handle sitting on a faint 1px guide line that runs the full height of the stage. The line is what makes the constrained region legible as a region rather than as two loose handles; it crosses the specimen, so it stays deliberately faint and brightens with the handle on hover, drag and focus. The grips run on `prismResizer` with `scale` `-2 / zoom` and `2 / zoom`: `.demo-wrap` is centred and scaled by the canvas zoom, so an edge moving by `d` changes the width by `2d / zoom`, which keeps the grip under the cursor at any zoom level. Both are keyboard-reachable, step the width by 10px, and expose `aria-valuenow`, `aria-valuemin` and `aria-valuemax` for accessibility.
 - **Rail width readout** — a second line under the zoom percentage on the floating toolrail, shown only while the viewport constraint is on. It renders the active width with a `px` suffix (`390px`), since a bare number directly under a `100%` line would read ambiguously.

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
- * The four CSS invariants the viewport constraint rests on.
+ * The CSS invariants the viewport constraint rests on.
  *
  * None of them can be asserted against a rendered DOM: this package's specs run
  * under jsdom, which resolves no `var()`, and `PrismRendererComponent` uses
@@ -10,7 +10,7 @@ import { join } from 'node:path';
  * So they are asserted against the stylesheet text, the way
  * `canvas-overlay-offsets.spec.ts` asserts the overlay offsets.
  *
- * Each of the four fails silently if it breaks — a wrong `container-type`
+ * Every one of them fails silently if it breaks — a wrong `container-type`
  * moves every visual-regression baseline while the canvas still looks right, a
  * grip that reads a custom property nobody publishes simply sits at the centre
  * of the stage, and one that ignores zoom cuts through the middle of the very
@@ -141,5 +141,54 @@ describe('viewport CSS invariants', () => {
     // fallback of 1 if this binding were ever removed.
     const stageTag = openingTag('class="prism-canvas-stage"');
     expect(stageTag).toContain('[style.--zoom]="canvasService.zoom()"');
+  });
+
+  it('centres the specimen at the container, never with text-align', () => {
+    // text-align: center is the obvious way to centre an inline-level child
+    // here and the wrong one. The specimen is created through
+    // ViewContainerRef, so its host element carries none of the renderer's
+    // _ngcontent attribute and no scoped rule in that file can reach it to
+    // undo an inherited value — text-align would leak all the way in and
+    // silently re-align the specimen's own text whenever the viewport is
+    // switched on. Centring at the container touches nothing inside it.
+    const constrained = block('.demo-wrap[data-viewport] {');
+    expect(constrained).toContain('display: grid');
+    expect(constrained).toContain('justify-items: center');
+    expect(constrained).not.toContain('text-align');
+  });
+
+  it('gives each grip a guide line that spans the stage', () => {
+    // The handle alone says where you may pull but not what is being pulled.
+    // align-self: stretch is what carries the line the full height; a fixed
+    // height here would turn it back into a second nub.
+    const line = block('.vp-grip::after {');
+    expect(line).toContain('align-self: stretch');
+    expect(line).toContain('width: 1px');
+    expect(line).toContain('--prism-measure');
+
+    // Both pseudo-elements must sit in the same grid cell, or grid's default
+    // auto-flow stacks the handle above the line instead of on it. Asserted on
+    // each rule separately because they are written separately — a grouped
+    // selector would make `block()` ambiguous for whichever of the two it
+    // named last, which is how this test first failed.
+    const handle = block('.vp-grip::before {');
+    expect(handle).toContain('grid-area: 1 / 1');
+    expect(line).toContain('grid-area: 1 / 1');
+  });
+
+  it('spans the dimension line across the painted width', () => {
+    // Locked to the same --prism-vp-w * --zoom product the grips use: the rule
+    // measures the distance between them, so a dimension line on a different
+    // factor would draw a measurement of something that is not there.
+    const dim = block('.vp-dim {');
+    expect(dim).toMatch(
+      /width:\s*calc\(var\(--prism-vp-w\)\s*\*\s*var\(--zoom, 1\)\)/
+    );
+
+    // The end ticks are what make it read as a measurement of the span rather
+    // than as a divider laid across the canvas.
+    const tick = block('.vp-dim__rule::before {');
+    expect(tick).toContain('height: 7px');
+    expect(tick).toContain('width: 1px');
   });
 });
