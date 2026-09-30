@@ -32,6 +32,13 @@
             "options": {
                 "targetName": "test"
             }
+        },
+        {
+            "plugin": "@nx/eslint/plugin",
+            "options": {
+                "targetName": "lint",
+                "extensions": ["ts", "html"]
+            }
         }
     ],
     "release": {
