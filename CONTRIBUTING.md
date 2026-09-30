@@ -240,17 +240,24 @@ npm run check:fix   # eslint --fix, then nx format:write, then stylelint --fix
 Then commit the fixes. `check:fix` (like `lint:fix`) runs a single pass and does
 not loop to a fixed point — re-run it if it reports remaining findings after a
 fix, and fall back to `npm run check` to confirm the tree is actually clean
-before pushing.
+before pushing. This is deliberate, not an oversight: both are manual,
+re-runnable commands where you see the output and can just run them again. The
+one place where a leftover finding would actually cause harm — the pre-commit
+hook — does loop: `lint-staged` routes staged files through
+`scripts/fix-until-stable.mjs`, which reruns a tool until the file stops
+changing (or gives up after 5 passes, a sign of misconfiguration rather than a
+reason to raise the limit), because a commit follows immediately afterward and
+there is no second chance to notice a leftover finding.
 
 ### Linting and formatting
 
 Three tools with clearly separated responsibilities:
 
-| File type              | Formatted by                        | Linted by                                                      |
-| ---------------------- | ----------------------------------- | -------------------------------------------------------------- |
-| `.ts`, `.html`         | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
-| `.css`                 | Prettier                            | Stylelint                                                      |
-| `.json`, `.md`, `.yml` | Prettier                            | —                                                              |
+| File type                                     | Formatted by                        | Linted by                                                      |
+| --------------------------------------------- | ----------------------------------- | -------------------------------------------------------------- |
+| `.ts`, `.html`                                | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
+| `.css`                                        | Prettier                            | Stylelint                                                      |
+| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | —                                                              |
 
 Prettier does not run separately for TypeScript and HTML — it runs as an
 ESLint rule via `eslint-plugin-prettier`. One `eslint --fix` therefore handles
@@ -265,9 +272,14 @@ A pre-commit hook runs the three tools on staged files, and a pre-push hook
 lints every package — Nx serves the unchanged ones from cache, so this costs
 little more than linting only what changed, and it cannot pick the wrong base.
 
-Editor setup: VS Code picks up `.vscode/settings.json` automatically — install
-the recommended extensions when prompted. For WebStorm and IntelliJ, enable
-these three manually (they are per-machine settings and not in the repo):
+Editor setup: VS Code picks up `.vscode/settings.json` automatically — it is
+tracked in git on purpose, via a negation rule in `.gitignore` (`.vscode/*` is
+ignored, then `!.vscode/settings.json` un-ignores this one file). Install the
+recommended extensions when prompted.
+
+WebStorm and IntelliJ have no equivalent: `/.idea` is gitignored wholesale, so
+none of its settings can travel with the repo. Enable these three manually, on
+each machine:
 
 - **ESLint** — Languages & Frameworks → JavaScript → Code Quality Tools →
   ESLint: "Automatic ESLint configuration", check "Run eslint --fix on save",
@@ -277,8 +289,15 @@ these three manually (they are per-machine settings and not in the repo):
 - **Stylelint** — Languages & Frameworks → Style Sheets → Stylelint: check "Run
   stylelint --fix on save", pattern `**/*.css`
 
-Note the patterns do not overlap: ESLint owns `ts` and `html`, Prettier owns
-the rest.
+The patterns overlap on one file type: Prettier's pattern includes `.css`,
+which Stylelint also owns, so WebStorm runs both on save for the same file.
+That overlap is accepted, not fixed — WebStorm has no way to order its
+fix-on-save actions, so nothing here can guarantee Prettier runs before
+Stylelint the way `check:fix` does. It is tolerable because the IDE's
+fix-on-save is convenience, not the guarantee: the pre-commit hook is, and it
+always runs Prettier before Stylelint on staged `.css` files (see the
+`lint-staged` config in `package.json`), regardless of what already happened
+on save.
 
 The repository has been reformatted wholesale three times during the linting
 rollout. To keep `git blame` useful, tell git to skip those commits:
