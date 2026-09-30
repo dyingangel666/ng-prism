@@ -34,10 +34,11 @@
         "*.{ts,html}": [
             "node scripts/fix-until-stable.mjs eslint"
         ],
-        "*.{json,css,md,yml,js,mjs,cjs}": [
+        "*.{json,md,yml,js,mjs,cjs}": [
             "prettier --write --ignore-unknown"
         ],
         "*.css": [
+            "prettier --write --ignore-unknown",
             "node scripts/fix-until-stable.mjs stylelint"
         ]
     },
