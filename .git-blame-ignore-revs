@@ -7,3 +7,6 @@ c320d559556f1b14e09caf2b0ee6a3bda109630b
 
 # style: apply eslint autofix
 8f95d65029ff83f02efac794a5ec8a4e610f4a95
+
+# style: apply stylelint autofix
+dcbd0ab21287dd3526d26ced16d83fbe4a2ec247
