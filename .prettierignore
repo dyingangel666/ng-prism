@@ -1,15 +1,19 @@
 # Compiled output. Per-package, therefore `**/`, not root-anchored: `nx
 # build` writes to packages/*/dist, and Jest writes coverage to
 # packages/*/test-output/jest/coverage. Same distinction eslint.config.mjs's
-# ignores block makes (dist/tmp/out-tsc/coverage there too), applied here for
+# ignores block makes (dist/out-tsc/coverage there too), applied here for
 # the same reason.
 **/dist
-**/tmp
 **/out-tsc
 
 # Nx — only ever created at the workspace root, so root-anchored is correct.
 /.nx/cache
 /.nx/workspace-data
+
+# Verdaccio's local registry storage — package.json's `local-registry`
+# target writes to tmp/local-registry/storage, a root-only path, unlike
+# dist/out-tsc/coverage above.
+/tmp
 
 # Generiert
 **/plugin-registry.ts
