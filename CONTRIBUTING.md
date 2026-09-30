@@ -47,7 +47,7 @@ npm install
 #### 2. Verify the core builds and tests
 
 ```bash
-npm run check       # Format + lint + style + test + build + typecheck for all packages
+npm run check       # Format + declared-deps check + style + lint + test + build + typecheck for all packages
 ```
 
 This is the same gate CI runs (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
@@ -228,7 +228,7 @@ Use a descriptive branch name with a prefix:
 Before opening a PR, run the same checks CI runs on GitHub:
 
 ```bash
-npm run check       # nx format:check + stylelint + lint + test + build + typecheck for all packages
+npm run check       # nx format:check + check-declared-deps + stylelint + lint + test + build + typecheck for all packages
 ```
 
 If `check` fails on formatting, lint, or style, auto-fix what can be auto-fixed with:
@@ -257,7 +257,17 @@ Three tools with clearly separated responsibilities:
 | --------------------------------------------- | ----------------------------------- | -------------------------------------------------------------- |
 | `.ts`, `.html`                                | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
 | `.css`                                        | Prettier                            | Stylelint                                                      |
-| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | —                                                              |
+| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | — (except `scripts/**/*.mjs`*)                                 |
+
+\* `scripts/**/*.mjs` is linted too — plain `eslint:recommended`, no Angular or
+`@stylistic` rules, since it's Node code with no browser or Angular surface.
+Nothing infers a `lint` target for the workspace root automatically (Nx only
+does that for a root project with a standalone `src`/`lib`), so it runs from
+an explicit `lint` target declared on `ng-prism-workspace` in `package.json`'s
+`nx.targets`, scoped to `eslint scripts jest.config.ts` — which is also how
+`jest.config.ts` itself ends up linted. `nx run-many -t lint` picks it up like
+any other project's `lint` target, so `npm run lint`, `npm run check`, and CI
+all reach it.
 
 Prettier does not run separately for TypeScript and HTML — it runs as an
 ESLint rule via `eslint-plugin-prettier`. One `eslint --fix` therefore handles
@@ -269,8 +279,9 @@ Stylelint** — `stylelint-config-recess-order` reorders properties, and Prettie
 would otherwise touch the result again. `npm run check:fix` does this for you.
 
 A pre-commit hook runs the three tools on staged files, and a pre-push hook
-lints every package — Nx serves the unchanged ones from cache, so this costs
-little more than linting only what changed, and it cannot pick the wrong base.
+lints every package plus the workspace root (`scripts/` and `jest.config.ts`,
+see above) — Nx serves the unchanged ones from cache, so this costs little
+more than linting only what changed, and it cannot pick the wrong base.
 
 Editor setup: VS Code picks up `.vscode/settings.json` automatically — it is
 tracked in git on purpose, via a negation rule in `.gitignore` (`.vscode/*` is
