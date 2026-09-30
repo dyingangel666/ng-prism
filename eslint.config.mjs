@@ -158,7 +158,19 @@ export default [
         rules: {
             '@angular-eslint/prefer-on-push-component-change-detection': 'off',
             '@typescript-eslint/no-empty-function': 'off',
-            'unused-imports/no-unused-vars': 'off'
+            'unused-imports/no-unused-vars': 'off',
+
+            // A couple of specs spy on a built-in module (e.g.
+            // `jest.spyOn(require('node:fs'), 'readFileSync')`) to observe
+            // calls the source file under test makes. That needs the exact
+            // module object Node's require cache hands out; the source
+            // files import the same built-in via static ESM `import`, which
+            // after SWC's transform is a distinct object, so spying on it
+            // does not see those calls (verified: swapping the require()
+            // for a static import makes the spy-based assertion fail). No
+            // static import reaches the live, requireable object here, so
+            // require() stays.
+            '@typescript-eslint/no-require-imports': 'off'
         }
     },
 
