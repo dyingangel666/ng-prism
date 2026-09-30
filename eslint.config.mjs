@@ -163,17 +163,37 @@ export default [
         }
     },
 
-    // ──── Fixtures, Mocks und Specs ────
+    // ──── Fixtures und Mocks ────
     //
     // Die Fixtures unter __fixtures__ sind Eingabedaten für den Scanner, keine
     // Produktivkomponenten: sie tragen absichtlich fremde Selektoren wie
-    // my-button oder lib-button, weil genau das getestet wird.
+    // my-button oder lib-button, weil genau das getestet wird. Ein
+    // ungenutzter Parameter oder eine ungenutzte lokale Variable gehört zum
+    // Zweck dieser Dateien (sie deklarieren eine Form, die niemand liest),
+    // daher bleibt no-unused-vars hier komplett aus — anders als in Specs
+    // (siehe unten), wo derselbe Befund ein echter Defekt wäre.
     {
-        files: ['**/__fixtures__/**/*.ts', '**/__mocks__/**/*.ts', '**/*.spec.ts'],
+        files: ['**/__fixtures__/**/*.ts', '**/__mocks__/**/*.ts'],
         rules: {
             '@angular-eslint/prefer-on-push-component-change-detection': 'off',
             '@typescript-eslint/no-empty-function': 'off',
-            'unused-imports/no-unused-vars': 'off',
+            'unused-imports/no-unused-vars': 'off'
+        }
+    },
+
+    // ──── Specs ────
+    //
+    // Specs sind gewöhnlicher Code, der zufällig etwas testet: eine
+    // ungenutzte lokale Variable oder ein ungenutzter Parameter ohne
+    // `_`-Präfix ist hier genauso ein Defekt wie überall sonst, daher KEIN
+    // pauschales `unused-imports/no-unused-vars: 'off'` wie bei den
+    // Fixtures/Mocks oben — die allgemeine Regel samt `_`-Konvention greift
+    // unverändert.
+    {
+        files: ['**/*.spec.ts'],
+        rules: {
+            '@angular-eslint/prefer-on-push-component-change-detection': 'off',
+            '@typescript-eslint/no-empty-function': 'off',
 
             // A couple of specs spy on a built-in module (e.g.
             // `jest.spyOn(require('node:fs'), 'readFileSync')`) to observe
