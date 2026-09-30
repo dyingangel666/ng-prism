@@ -1,0 +1,8 @@
+dist
+tmp
+out-tsc
+node_modules
+coverage
+.nx
+ng-prism-cache
+test-workspace
