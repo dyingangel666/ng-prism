@@ -1,41 +1,51 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import angular from 'angular-eslint';
 import tseslint from 'typescript-eslint';
 import stylistic from '@stylistic/eslint-plugin';
 import unusedImports from 'eslint-plugin-unused-imports';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
+import importPlugin from 'eslint-plugin-import';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
     {
+        // Jeder Eintrag ist bewusst entweder root-verankert (nur
+        // <workspaceRoot>/<name>) oder mit `**/` auf beliebige Tiefe
+        // ausgelegt — je nachdem, wo das jeweils generierte Verzeichnis
+        // tatsächlich entsteht. Ein bloßer Name ohne `**/` matcht in
+        // ESLints Flat-Config-Ignores NUR die Wurzel, anders als in
+        // .gitignore: `nx build` schreibt z.B. nach packages/*/dist,
+        // Jest nach packages/*/test-output/jest/coverage — beides bräche
+        // ohne `**/` durch.
         ignores: [
-            'dist',
-            'tmp',
+            // Generierte Build-/Test-Artefakte: pro Package, daher `**/`.
+            '**/dist',
+            '**/tmp',
             '**/out-tsc',
-            'node_modules',
-            'coverage',
+            '**/node_modules',
+            '**/coverage',
+
+            // Einzelne, feste Verzeichnisse am Workspace-Root — es gibt
+            // keinen Mechanismus, der sie pro Package anlegt, daher
+            // bewusst root-verankert ohne `**/`.
             '.nx',
             '.claude',
             '.superpowers',
             '.posts',
+            // Immer `join(workspaceRoot, 'ng-prism-cache')` (siehe
+            // builder/shared/prism-pipeline.ts) — nie pro Package.
             'ng-prism-cache',
             'test-workspace',
             'docs',
+
             '**/plugin-registry.ts',
             '**/.DS_Store'
         ]
     },
 
     // ──── TypeScript ────
-    ...compat.extends('eslint:recommended', 'plugin:import/recommended', 'plugin:prettier/recommended').map((config) => ({ ...config, files: ['**/*.ts'] })),
+    { ...js.configs.recommended, files: ['**/*.ts'] },
+    { ...importPlugin.flatConfigs.recommended, files: ['**/*.ts'] },
+    { ...prettierRecommended, files: ['**/*.ts'] },
     ...tseslint.configs.recommended.map((config) => ({ ...config, files: ['**/*.ts'] })),
     ...angular.configs.tsRecommended.map((config) => ({
         ...config,
@@ -152,10 +162,7 @@ export default [
         ...config,
         files: ['packages/**/*.html']
     })),
-    ...compat.extends('plugin:prettier/recommended').map((config) => ({
-        ...config,
-        files: ['packages/**/*.html']
-    })),
+    { ...prettierRecommended, files: ['packages/**/*.html'] },
     {
         files: ['packages/**/*.html'],
         rules: {
