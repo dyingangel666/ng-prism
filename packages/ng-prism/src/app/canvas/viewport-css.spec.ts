@@ -206,11 +206,14 @@ describe('viewport CSS invariants', () => {
 
     it('gives each grip a guide line that spans the stage', () => {
         // The handle alone says where you may pull but not what is being pulled.
-        // align-self: stretch is what carries the line the full height; a fixed
-        // height here would turn it back into a second nub.
+        // place-self: stretch center carries the line the full height (the
+        // align-self half) while keeping it centred in the shared grid cell
+        // (the justify-self half, folded into the same shorthand by stylelint's
+        // redundant-longhand rule); a fixed height here would turn it back into
+        // a second nub.
         const line = block('.vp-grip::after {');
 
-        expect(line).toContain('align-self: stretch');
+        expect(line).toContain('place-self: stretch center');
         expect(line).toContain('width: 1px');
         expect(line).toContain('--prism-measure');
 

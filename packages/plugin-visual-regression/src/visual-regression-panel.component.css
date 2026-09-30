@@ -126,9 +126,6 @@
 
 .vrt__row:hover {
     border-color: var(--prism-border-strong);
-}
-
-.vrt__row:hover {
     border-left-color: var(--tone-color, var(--prism-border-strong));
 }
 

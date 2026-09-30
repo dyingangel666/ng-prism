@@ -28,7 +28,7 @@
     border: 1px solid var(--prism-border);
     border-radius: 999px;
     backdrop-filter: blur(8px);
-    animation: fadeIn var(--dur-base) ease-out;
+    animation: fade-in var(--dur-base) ease-out;
 }
 
 .label {
@@ -53,7 +53,7 @@
     background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
     from {
         opacity: 0;
         transform: translateY(-4px);
