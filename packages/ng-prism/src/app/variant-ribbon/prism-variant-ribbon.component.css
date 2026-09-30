@@ -1,0 +1,111 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+}
+
+.variant-ribbon {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-5);
+  background: var(--prism-bg);
+  border-bottom: 1px solid var(--prism-border);
+  height: var(--band-rail);
+}
+
+.variant-ribbon-tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.variant-ribbon-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.v-tab {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--prism-text-muted);
+  white-space: nowrap;
+  transition: color var(--dur-fast);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+/* Colour as position, not assignment: each tab shows the slice of one
+   broken spectrum that corresponds to where it sits in the sequence. Nine
+   arbitrary hues used to say nothing at all; this says "you are here". */
+.v-tab::after {
+  content: '';
+  position: absolute;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--prism-spectrum);
+  background-size: calc(var(--n) * 100%) 100%;
+  background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-default);
+}
+.v-tab:hover {
+  color: var(--prism-text-2);
+}
+.v-tab--active {
+  color: var(--prism-text);
+}
+.v-tab--active::after {
+  opacity: 1;
+}
+.v-tab:hover::after {
+  opacity: 0.4;
+}
+
+.variant-ribbon-right {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+  margin-left: 12px;
+  border-left: 1px solid var(--prism-border);
+  height: 24px;
+}
+
+.tool-btn {
+  height: 24px;
+  width: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  color: var(--prism-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+.tool-btn:hover:not(:disabled) {
+  color: var(--prism-text);
+  background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+}
+.tool-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--prism-primary);
+  outline-offset: 2px;
+}

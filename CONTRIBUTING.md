@@ -274,6 +274,12 @@ Push your branch and open a PR against `main`. See [Pull Request Process](#pull-
 - Use Signal-based APIs: `input()`, `output()`, `signal()`, `computed()`
 - Do **not** use legacy `@Input()` / `@Output()` decorators
 - Use `inject()` instead of constructor injection
+- Keep template and styles in sibling files — `templateUrl: './x.component.html'`
+  and `styleUrl: './x.component.css'`, never inline `template:` or `styles:`
+- Stylesheets under `packages/` are plain **`.css`**, not `.scss`. These packages
+  are built with bare `ngc`, which has no style preprocessor: it inlines a
+  referenced file verbatim, so SCSS syntax would reach the browser unchanged and
+  be silently dropped.
 
 ### General
 

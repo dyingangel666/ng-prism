@@ -47,8 +47,8 @@ export function resolveIcon(name: string): string | undefined {
   selector: 'prism-icon',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: ``,
-  styles: `:host { display: inline-flex; align-items: center; justify-content: center; }`,
+  templateUrl: './prism-icon.component.html',
+  styleUrl: './prism-icon.component.css',
 })
 export class PrismIconComponent {
   readonly name = input.required<string>();

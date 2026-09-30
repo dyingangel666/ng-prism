@@ -1,0 +1,32 @@
+<div
+  class="prism-canvas-stage"
+  [attr.data-bg]="variantBg.effective()"
+  [attr.data-rulers]="canvasService.rulers() ? '' : null"
+>
+  @if (!capture.active()) {
+  <div
+    class="stage-crosshair"
+    [class.visible]="canvasService.guides()"
+  ></div>
+  <prism-canvas-rulers />
+  <prism-canvas-bg-pill />
+  }
+
+  <div
+    class="demo-wrap"
+    [style.--zoom]="canvasService.zoom()"
+    [attr.data-prism-rendered]="renderedKey()"
+    [attr.data-canvas-layout]="canvasLayout()"
+  >
+    <ng-container #outlet />
+    @if (activeOverlay()) {
+    <ng-container
+      *ngComponentOutlet="
+        activeOverlay()!;
+        inputs: overlayInputs;
+        injector: overlayInjector()
+      "
+    />
+    }
+  </div>
+</div>

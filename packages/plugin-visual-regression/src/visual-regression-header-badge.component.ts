@@ -16,17 +16,7 @@ type Variant = 'ok' | 'warn' | 'danger';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismMetricBadgeComponent],
-  template: `
-    @if (data(); as d) {
-    <prism-metric-badge
-      icon="camera"
-      label="Library visual regression"
-      [value]="d.score + '%'"
-      [variant]="d.variant"
-      [title]="d.title"
-    />
-    }
-  `,
+  templateUrl: './visual-regression-header-badge.component.html',
 })
 export class VisualRegressionHeaderBadgeComponent {
   private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);

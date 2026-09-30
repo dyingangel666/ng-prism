@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.prism-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-4);
+  padding: var(--sp-6);
+  align-content: start;
+}

@@ -17,28 +17,8 @@ import { PrismPanelService } from '../services/prism-panel.service.js';
   selector: 'prism-view-panel-host',
   standalone: true,
   imports: [NgComponentOutlet],
-  template: `
-    <div class="prism-view-panel-host">
-      @if (resolvedComponent()) {
-      <ng-container
-        *ngComponentOutlet="
-          resolvedComponent();
-          inputs: panelInputs();
-          injector: activeInjector()
-        "
-      />
-      }
-    </div>
-  `,
-  styles: `
-    .prism-view-panel-host {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: auto;
-      background: var(--prism-bg-elevated);
-    }
-  `,
+  templateUrl: './prism-view-panel-host.component.html',
+  styleUrl: './prism-view-panel-host.component.css',
 })
 export class PrismViewPanelHostComponent implements OnDestroy {
   private readonly nav = inject(PrismNavigationService);

@@ -19,26 +19,8 @@ import { PrismOverviewCellComponent } from './prism-overview-cell.component.js';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismOverviewCellComponent],
-  template: `
-    @if (activeComponent(); as component) {
-    <div class="prism-overview" role="list">
-      @for (_ of variants(); track $index) {
-      <prism-overview-cell [component]="component" [index]="$index" />
-      }
-    </div>
-    }
-  `,
-  styles: `
-    :host { display: block; }
-
-    .prism-overview {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: var(--sp-4);
-      padding: var(--sp-6);
-      align-content: start;
-    }
-  `,
+  templateUrl: './prism-overview.component.html',
+  styleUrl: './prism-overview.component.css',
 })
 export class PrismOverviewComponent {
   /** Input name fixed by `prism-view-panel-host`, which feeds every view panel. */

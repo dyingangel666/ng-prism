@@ -33,70 +33,8 @@ import {
   selector: 'prism-vrt-summary',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div class="vrt-sum">
-      <div class="vrt-sum__bar" role="img" [attr.aria-label]="barLabel()">
-        @for (segment of segments(); track segment.key) {
-        <div
-          class="vrt-sum__seg"
-          [attr.data-tone]="segment.tone"
-          [style.flex-grow]="segment.count"
-          [title]="segment.label + ': ' + segment.count"
-        ></div>
-        }
-      </div>
-
-      @if (maxDiff(); as max) {
-      <div class="vrt-sum__line">
-        <span class="vrt-sum__stat">
-          max <b [attr.data-tone]="max.tone">{{ max.value }}</b>
-        </span>
-      </div>
-      }
-    </div>
-  `,
-  styles: `
-    :host { display: block; }
-
-    .vrt-sum__bar {
-      display: flex;
-      gap: 1px;
-      height: 6px;
-      border-radius: 3px;
-      overflow: hidden;
-      background: var(--prism-input-bg);
-    }
-    /* flex-basis 0 so a slice's width comes from its count alone — with the
-       default of auto an empty div still claims its content box and every
-       segment would render the same width. */
-    .vrt-sum__seg {
-      flex-basis: 0;
-      background: var(--tone-color, var(--prism-text-muted));
-      transition: flex-grow var(--dur-slow) var(--ease-default);
-    }
-
-    .vrt-sum__line {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-      margin-top: 9px;
-      font-family: var(--font-mono);
-      font-size: var(--fs-sm);
-      color: var(--prism-text-muted);
-    }
-    .vrt-sum__stat { white-space: nowrap; }
-    .vrt-sum__line b {
-      font-weight: 700;
-      color: var(--tone-color, var(--prism-text));
-    }
-
-    [data-tone='success'] { --tone-color: var(--prism-success); }
-    [data-tone='danger'] { --tone-color: var(--prism-danger); }
-    [data-tone='warn'] { --tone-color: var(--prism-warn); }
-    [data-tone='neutral'] { --tone-color: var(--prism-primary); }
-    [data-tone='muted'] { --tone-color: var(--prism-text-muted); }
-  `,
+  templateUrl: './vrt-summary.component.html',
+  styleUrl: './vrt-summary.component.css',
 })
 export class VrtSummaryComponent {
   readonly summary = input.required<VrtSummary>();

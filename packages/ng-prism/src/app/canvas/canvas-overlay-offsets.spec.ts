@@ -19,8 +19,8 @@ import { join } from 'node:path';
  * with the rail at the no-rulers offset, switching rulers on slides the ruler
  * band underneath the buttons.
  */
-const RENDERER = join(__dirname, '../renderer/prism-renderer.component.ts');
-const TOOLBAR = join(__dirname, 'prism-canvas-toolbar.component.ts');
+const RENDERER = join(__dirname, '../renderer/prism-renderer.component.css');
+const TOOLBAR = join(__dirname, 'prism-canvas-toolbar.component.css');
 
 /** The two overlay offsets declared inside the block a selector opens. */
 function offsets(file: string, selector: string): Record<string, string> {
@@ -81,7 +81,7 @@ describe('canvas overlay offsets', () => {
    */
   it('the rail and the background pill claim opposite corners', () => {
     const pill = readFileSync(
-      join(__dirname, 'prism-canvas-bg-pill.component.ts'),
+      join(__dirname, 'prism-canvas-bg-pill.component.css'),
       'utf-8'
     );
     const rail = readFileSync(TOOLBAR, 'utf-8');

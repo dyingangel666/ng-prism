@@ -11,53 +11,8 @@ import type { MetricVariant } from './head-metrics.js';
   selector: 'prism-stat',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <div
-      class="stat"
-      [class.stat--ok]="variant() === 'ok'"
-      [class.stat--warn]="variant() === 'warn'"
-      [class.stat--danger]="variant() === 'danger'"
-    >
-      <span class="stat__dot" aria-hidden="true"></span>
-      <span class="stat__lbl">{{ label() }}</span>
-      <span class="stat__val">{{ value() }}</span>
-    </div>
-  `,
-  styles: `
-    .stat {
-      display: flex;
-      align-items: center;
-      gap: var(--sp-3);
-      padding: var(--sp-2) var(--sp-3);
-      border-radius: var(--radius-xs);
-      font-size: var(--fs-md);
-      color: var(--prism-text-2);
-    }
-    .stat__dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: transparent;
-      flex: none;
-    }
-    .stat__lbl { white-space: nowrap; }
-    .stat__val {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
-      color: var(--prism-text);
-    }
-    /* Four states, four treatments. "ok" earns the nominal green, and "none"
-       deliberately does not: a metric with no data has nothing to report, and
-       colouring it green would claim a clean result the tool never measured.
-       That is the one distinction worth keeping grey. */
-    .stat--ok .stat__dot { background: var(--prism-mark-nominal); }
-    .stat--ok .stat__val { color: var(--prism-mark-nominal); }
-    .stat--warn .stat__dot { background: var(--prism-mark-attention); }
-    .stat--warn .stat__val { color: var(--prism-mark-attention); }
-    .stat--danger .stat__dot { background: var(--prism-mark-critical); }
-    .stat--danger .stat__val { color: var(--prism-mark-critical); }
-  `,
+  templateUrl: './prism-stat.component.html',
+  styleUrl: './prism-stat.component.css',
 })
 export class PrismStatComponent {
   readonly label = input.required<string>();

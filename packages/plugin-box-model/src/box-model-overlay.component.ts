@@ -32,66 +32,8 @@ interface BoxStyles {
   selector: 'prism-box-model-overlay',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (boxStyles(); as styles) {
-      <div class="prism-bm__box prism-bm__box--margin" [style.left]="styles.margin.left" [style.top]="styles.margin.top" [style.width]="styles.margin.width" [style.height]="styles.margin.height">
-        @if (labelMargin('top')) { <span class="prism-bm__label prism-bm__label--top">{{ labelMargin('top') }}</span> }
-        @if (labelMargin('right')) { <span class="prism-bm__label prism-bm__label--right">{{ labelMargin('right') }}</span> }
-        @if (labelMargin('bottom')) { <span class="prism-bm__label prism-bm__label--bottom">{{ labelMargin('bottom') }}</span> }
-        @if (labelMargin('left')) { <span class="prism-bm__label prism-bm__label--left">{{ labelMargin('left') }}</span> }
-      </div>
-      <div class="prism-bm__box prism-bm__box--border" [style.left]="styles.border.left" [style.top]="styles.border.top" [style.width]="styles.border.width" [style.height]="styles.border.height"></div>
-      <div class="prism-bm__box prism-bm__box--padding" [style.left]="styles.padding.left" [style.top]="styles.padding.top" [style.width]="styles.padding.width" [style.height]="styles.padding.height">
-        @if (labelPadding('top')) { <span class="prism-bm__label prism-bm__label--top">{{ labelPadding('top') }}</span> }
-        @if (labelPadding('right')) { <span class="prism-bm__label prism-bm__label--right">{{ labelPadding('right') }}</span> }
-        @if (labelPadding('bottom')) { <span class="prism-bm__label prism-bm__label--bottom">{{ labelPadding('bottom') }}</span> }
-        @if (labelPadding('left')) { <span class="prism-bm__label prism-bm__label--left">{{ labelPadding('left') }}</span> }
-      </div>
-      <div class="prism-bm__box prism-bm__box--content" [style.left]="styles.content.left" [style.top]="styles.content.top" [style.width]="styles.content.width" [style.height]="styles.content.height">
-        <span class="prism-bm__size">{{ contentSize() }}</span>
-      </div>
-    }
-  `,
-  styles: `
-    :host {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .prism-bm__box {
-      position: absolute;
-      box-sizing: border-box;
-    }
-    .prism-bm__box--margin  { background: rgba(245, 158, 11, 0.2); outline: 1px solid rgba(245, 158, 11, 0.5); }
-    .prism-bm__box--border  { background: rgba(234, 179, 8, 0.3); }
-    .prism-bm__box--padding { background: rgba(16, 185, 129, 0.2); outline: 1px solid rgba(16, 185, 129, 0.4); }
-    .prism-bm__box--content { background: rgba(59, 130, 246, 0.25); display: flex; align-items: center; justify-content: center; }
-    .prism-bm__label {
-      position: absolute;
-      font-size: 10px;
-      font-family: monospace;
-      color: #1f2937;
-      background: rgba(255,255,255,0.8);
-      padding: 0 3px;
-      border-radius: 2px;
-      white-space: nowrap;
-      line-height: 1.4;
-    }
-    .prism-bm__label--top    { top: 2px; left: 50%; transform: translateX(-50%); }
-    .prism-bm__label--bottom { bottom: 2px; left: 50%; transform: translateX(-50%); }
-    .prism-bm__label--left   { left: 2px; top: 50%; transform: translateY(-50%); }
-    .prism-bm__label--right  { right: 2px; top: 50%; transform: translateY(-50%); }
-    .prism-bm__size {
-      font-size: 11px;
-      font-family: monospace;
-      color: #1e3a5f;
-      background: rgba(255,255,255,0.85);
-      padding: 1px 5px;
-      border-radius: 3px;
-      white-space: nowrap;
-    }
-  `,
+  templateUrl: './box-model-overlay.component.html',
+  styleUrl: './box-model-overlay.component.css',
 })
 export class BoxModelOverlayComponent {
   private readonly el = inject(ElementRef<HTMLElement>);
@@ -136,8 +78,12 @@ export class BoxModelOverlayComponent {
       content: {
         left: `${bLeft + border.left + padding.left}px`,
         top: `${bTop + border.top + padding.top}px`,
-        width: `${bW - border.left - border.right - padding.left - padding.right}px`,
-        height: `${bH - border.top - border.bottom - padding.top - padding.bottom}px`,
+        width: `${
+          bW - border.left - border.right - padding.left - padding.right
+        }px`,
+        height: `${
+          bH - border.top - border.bottom - padding.top - padding.bottom
+        }px`,
       },
     };
   });
@@ -146,8 +92,12 @@ export class BoxModelOverlayComponent {
     const bm = this.stateService.hoveredBoxModel();
     if (!bm) return '';
     const { content, border, padding } = bm;
-    const w = Math.round(content.width - border.left - border.right - padding.left - padding.right);
-    const h = Math.round(content.height - border.top - border.bottom - padding.top - padding.bottom);
+    const w = Math.round(
+      content.width - border.left - border.right - padding.left - padding.right
+    );
+    const h = Math.round(
+      content.height - border.top - border.bottom - padding.top - padding.bottom
+    );
     return `${w} × ${h}`;
   });
 

@@ -1,0 +1,78 @@
+<div class="prism-perf-panel">
+  <div class="prism-subtabs">
+    <button
+      class="prism-st-tab"
+      [class.prism-st-tab--active]="activeTab() === 'bundle'"
+      (click)="activeTab.set('bundle')"
+    >
+      Bundle
+    </button>
+    <button
+      class="prism-st-tab"
+      [class.prism-st-tab--active]="activeTab() === 'render'"
+      (click)="activeTab.set('render')"
+    >
+      Render
+    </button>
+    <button
+      class="prism-st-tab"
+      [class.prism-st-tab--active]="activeTab() === 'memory'"
+      (click)="activeTab.set('memory')"
+    >
+      Memory
+    </button>
+    <div class="prism-subtabs-actions">
+      @if (activeTab() === 'render') {
+        @if (renderService.isRecording()) {
+          <button class="prism-tool-btn" (click)="renderService.stopRecording()">
+            &#9208; Pause
+          </button>
+        } @else {
+          <button class="prism-tool-btn" (click)="renderService.startRecording()">
+            &#9654; Profile
+          </button>
+        }
+        <button class="prism-tool-btn" (click)="renderService.clear()">
+          &#10005; Clear
+        </button>
+        @if (renderService.isRecording()) {
+          <span class="prism-perf-status">
+            <span class="prism-perf-status-dot"></span> live &middot;
+            {{ renderService.sampleCount() }} samples
+          </span>
+        }
+      }
+      @if (activeTab() === 'memory') {
+        <button class="prism-tool-btn" (click)="captureMemorySnapshots()">
+          &#9654; Snapshot
+        </button>
+        <button class="prism-tool-btn" (click)="memoryService.clear()">
+          &#10005; Clear
+        </button>
+      }
+      @if (renderService.cdRunCount() > 0) {
+        <span class="prism-perf-cd-badge">
+          {{ renderService.cdRunCount() }} CD runs
+        </span>
+      }
+    </div>
+  </div>
+
+  <div class="prism-perf-content">
+    @switch (activeTab()) { @case ('bundle') {
+    <perf-bundle-section
+      [metrics]="bundleMetrics()"
+      [warnKb]="thresholds.bundleWarnKb"
+      [critKb]="thresholds.bundleCritKb"
+    />
+    } @case ('render') {
+    <perf-render-section
+      [renderService]="renderService"
+      [warnMs]="thresholds.renderWarnMs"
+      [critMs]="thresholds.renderCritMs"
+    />
+    } @case ('memory') {
+    <perf-memory-section [memoryService]="memoryService" />
+    } }
+  </div>
+</div>

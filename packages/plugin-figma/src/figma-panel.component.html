@@ -1,0 +1,9 @@
+@if (figmaUrl()) {
+<iframe #iframe class="prism-figma-panel__iframe" allowfullscreen></iframe>
+} @else {
+<div class="prism-figma-panel__empty">
+  No Figma design linked. Add
+  <code>meta: {{ '{' }} figma: 'https://...' {{ '}' }}</code> to
+  &#64;Showcase.
+</div>
+}

@@ -19,14 +19,20 @@ import { join } from 'node:path';
  * scoped to where a rename or a duplicate would actually happen.
  */
 const TEMPLATES = [
-  'component-head/prism-head-info.component.ts',
-  'component-head/prism-head-gauge.component.ts',
-  'canvas/prism-canvas-toolbar.component.ts',
-  'canvas/prism-template-popover.component.ts',
+  'component-head/prism-head-info.component',
+  'component-head/prism-head-gauge.component',
+  'canvas/prism-canvas-toolbar.component',
+  'canvas/prism-template-popover.component',
 ];
 
-function read(relative: string): string {
-  return readFileSync(join(__dirname, relative), 'utf-8');
+/** The markup of a component, named without its extension. */
+function readTemplate(stem: string): string {
+  return readFileSync(join(__dirname, `${stem}.html`), 'utf-8');
+}
+
+/** The stylesheet of a component, named without its extension. */
+function readStyles(stem: string): string {
+  return readFileSync(join(__dirname, `${stem}.css`), 'utf-8');
 }
 
 function popoverTargets(src: string): string[] {
@@ -45,7 +51,7 @@ function popoverIds(src: string): Set<string> {
 }
 
 const declaredByFile = new Map(
-  TEMPLATES.map((relative) => [relative, popoverIds(read(relative))])
+  TEMPLATES.map((stem) => [stem, popoverIds(readTemplate(stem))])
 );
 const declaredUnion = new Set(
   [...declaredByFile.values()].flatMap((ids) => [...ids])
@@ -54,9 +60,8 @@ const declaredUnion = new Set(
 describe('popover wiring', () => {
   it.each(TEMPLATES)(
     '%s targets only popovers declared somewhere in the package',
-    (relative) => {
-      const src = read(relative);
-      const targets = popoverTargets(src);
+    (stem) => {
+      const targets = popoverTargets(readTemplate(stem));
       expect(targets.length).toBeGreaterThan(0);
       for (const target of targets) {
         expect(declaredUnion).toContain(target);
@@ -66,10 +71,10 @@ describe('popover wiring', () => {
 
   it('gives every popover a unique id across the package', () => {
     const seen = new Map<string, string>();
-    for (const [relative, ids] of declaredByFile) {
+    for (const [stem, ids] of declaredByFile) {
       for (const id of ids) {
         expect(seen.has(id)).toBe(false);
-        seen.set(id, relative);
+        seen.set(id, stem);
       }
     }
   });
@@ -104,23 +109,20 @@ describe('popover wiring', () => {
     return end === -1 ? null : src.slice(start, end);
   };
 
-  it.each(TEMPLATES)(
-    '%s keeps display off every popover base rule',
-    (relative) => {
-      const src = read(relative);
-      const classes = popoverClasses(src);
-      expect(classes.length).toBeGreaterThan(0);
+  it.each(TEMPLATES)('%s keeps display off every popover base rule', (stem) => {
+    const classes = popoverClasses(readTemplate(stem));
+    expect(classes.length).toBeGreaterThan(0);
 
-      for (const cls of classes) {
-        const block = baseBlock(src, cls);
-        if (block === null) continue;
-        // The base rule must stay silent about display. A popover that needs a
-        // layout other than the element's default states it on
-        // `.<cls>:popover-open`, which only matches while the popover is open
-        // and therefore cannot pin it there. A popover that is happy with the
-        // default — a plain block for a div — needs no display rule at all.
-        expect(block).not.toMatch(/\bdisplay\s*:/);
-      }
+    const styles = readStyles(stem);
+    for (const cls of classes) {
+      const block = baseBlock(styles, cls);
+      if (block === null) continue;
+      // The base rule must stay silent about display. A popover that needs a
+      // layout other than the element's default states it on
+      // `.<cls>:popover-open`, which only matches while the popover is open
+      // and therefore cannot pin it there. A popover that is happy with the
+      // default — a plain block for a div — needs no display rule at all.
+      expect(block).not.toMatch(/\bdisplay\s*:/);
     }
-  );
+  });
 });

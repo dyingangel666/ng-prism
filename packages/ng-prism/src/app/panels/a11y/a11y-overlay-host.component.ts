@@ -22,58 +22,8 @@ interface Bounds {
   selector: 'prism-a11y-overlay-host',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (bounds(); as b) {
-    <div
-      class="a11y-mark outline"
-      [style.top.px]="b.top"
-      [style.left.px]="b.left"
-      [style.width.px]="b.width"
-      [style.height.px]="b.height"
-    ></div>
-    @if (roleLabel()) {
-    <div
-      class="a11y-mark"
-      [style.top.px]="b.top - 22"
-      [style.left.px]="b.left - 2"
-    >
-      <span class="tag">{{ roleLabel() }}</span>
-    </div>
-    } @if (tabLabel()) {
-    <div
-      class="a11y-mark kb"
-      [style.top.px]="b.top + b.height + 4"
-      [style.left.px]="b.left + b.width + 2"
-      style="transform: translateX(-100%)"
-    >
-      <span class="tag">{{ tabLabel() }}</span>
-    </div>
-    } }
-  `,
-  styles: `
-    :host { display: contents; }
-    .a11y-mark {
-      position: absolute;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .outline {
-      border: 2px solid rgba(59, 130, 246, 0.95);
-      border-radius: 4px;
-      background: rgba(59, 130, 246, 0.08);
-    }
-    .tag {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(17, 24, 39, 0.92);
-      color: var(--prism-text-light, #fff);
-      font: 11px/1.4 var(--font-mono);
-      white-space: nowrap;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-    }
-    .kb .tag { background: rgba(5, 150, 105, 0.95); }
-  `,
+  templateUrl: './a11y-overlay-host.component.html',
+  styleUrl: './a11y-overlay-host.component.css',
 })
 export class A11yOverlayHostComponent {
   readonly rendererService = input.required<PrismRendererService>();

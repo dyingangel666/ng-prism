@@ -1,0 +1,64 @@
+:host {
+  display: inline;
+  font-family: var(--prism-font-mono, monospace);
+  font-size: 12px;
+}
+.json-expandable {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.json-expandable:hover .json-summary {
+  opacity: 0.8;
+}
+.json-chevron {
+  color: var(--prism-text-muted);
+  font-size: 10px;
+  width: 10px;
+  flex-shrink: 0;
+}
+.json-summary {
+  color: var(--prism-text-muted);
+}
+.json-children {
+  display: block;
+  padding-left: 16px;
+  border-left: 1px solid var(--prism-border);
+  margin: 2px 0;
+}
+.json-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 1px 0;
+}
+.json-key {
+  color: var(--prism-text-muted);
+}
+.json-index {
+  color: var(--prism-text-muted);
+  font-style: italic;
+}
+.json-colon {
+  color: var(--prism-text-muted);
+}
+.json-brace {
+  color: var(--prism-text-muted);
+}
+.json-string {
+  color: var(--prism-code-attr);
+}
+.json-number {
+  color: var(--prism-warn);
+}
+.json-boolean {
+  color: var(--prism-primary);
+}
+.json-null,
+.json-undefined {
+  color: var(--prism-text-muted);
+  font-style: italic;
+}
