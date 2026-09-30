@@ -1,6 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
+import { VIEWPORT_SNAPS } from '../../shared/viewport.type.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 
@@ -8,13 +9,23 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
  * The canvas tools, as a rail floating over the canvas instead of a band above
  * it.
  *
- * The five entries were never one kind of control, and the split follows that
+ * The six entries were never one kind of control, and the split follows that
  * rather than the topic: guides and rulers are toggles you flip constantly
- * while measuring, so they toggle at their own button; canvas background and
- * zoom are choosers you set once, so they move behind a menu; the template is a
- * view rather than a setting and keeps its own button. The zoom *value* stays
- * on the rail as a readout — it is the one number here you read far more often
- * than you set.
+ * while working, so they toggle at their own button; canvas background and zoom
+ * are choosers you set once, so they move behind a menu; the template is a view
+ * rather than a setting and keeps its own button. The viewport is the sixth
+ * entry, and like zoom it does not stay on one side of that split — zoom
+ * already surfaces as a chooser in the menu and a readout on the rail, and the
+ * viewport surfaces the same way, as a toggle on the rail because switching the
+ * constraint on and off is something you do constantly, and a width chooser in
+ * the menu because the specific width is something you set once you have
+ * decided to constrain at all.
+ *
+ * Two numbers live on the rail as readouts, not one: the zoom percentage and
+ * the active viewport width are both things you read far more often than you
+ * set. They differ in permanence, not in kind — the zoom percentage never
+ * leaves, but the width is only there once the toggle above has switched the
+ * constraint on, so it takes a second line rather than a fixed one.
  *
  * The host deliberately generates no box. The rail has to be a direct child of
  * `.prism-canvas-wrap` that does not contain the stage, because that is exactly
@@ -88,6 +99,14 @@ export class PrismCanvasToolbarComponent {
     { value: 1.5, label: '150%' },
     { value: 2, label: '200%' },
   ];
+
+  /**
+   * The named widths, offered exactly the way the zoom chooser is.
+   *
+   * Plain numbers and no device names: this tool narrows a box and simulates
+   * nothing, so calling 390 "iPhone" would promise a fidelity it does not have.
+   */
+  protected readonly viewports = VIEWPORT_SNAPS;
 
   protected capitalize(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);

@@ -45,6 +45,14 @@
   text-align: center;
 }
 
+/* The one number on this rail that is not a percentage, so it takes the
+   measurement colour the theme already reserves for rulers and guides
+   rather than a second neutral that would read as a second zoom. */
+.prism-toolrail__vp {
+  display: block;
+  color: var(--prism-measure);
+}
+
 .prism-toolrail__btn {
   display: grid;
   place-items: center;

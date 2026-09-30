@@ -35,6 +35,9 @@ import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
 import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
+import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
+import { snapViewportWidth } from '../canvas/viewport-snap.js';
+import { VIEWPORT_MAX, VIEWPORT_MIN } from '../../shared/viewport.type.js';
 import { buildKnownInputs } from './known-inputs.js';
 import { resolveOverlay } from './overlay-resolver.js';
 import { parseContentToNodes } from './projectable-content.js';
@@ -47,6 +50,7 @@ import { parseContentToNodes } from './projectable-content.js';
     PrismCanvasRulersComponent,
     PrismCanvasBgPillComponent,
     NgComponentOutlet,
+    PrismResizerDirective,
   ],
   templateUrl: './prism-renderer.component.html',
   styleUrl: './prism-renderer.component.css',
@@ -58,6 +62,39 @@ export class PrismRendererComponent {
   protected readonly canvasService = inject(PrismCanvasService);
   protected readonly capture = inject(PrismCaptureService);
   protected readonly variantBg = inject(PrismVariantBgService);
+
+  /**
+   * The width the canvas is actually constrained to, `null` for unconstrained.
+   *
+   * Every viewport binding reads this rather than the service directly, so
+   * capture mode cannot be constrained by any route. Previously only the grips
+   * and the dimension line sat behind the capture guard while the attributes
+   * that change `.demo-wrap`'s box did not — safe in practice, because capture
+   * never restores a persisted width and every setter is suppressed, but safe
+   * by reachability argument rather than by construction. A future caller of
+   * `setViewportWidth` during a capture run would have recorded every
+   * visual-regression baseline at the constrained width with no visible chrome
+   * to reveal it. One computed makes the guarantee structural.
+   */
+  protected readonly viewportWidth = computed(() =>
+    this.capture.active() ? null : this.canvasService.viewportWidth()
+  );
+
+  protected readonly VIEWPORT_MIN = VIEWPORT_MIN;
+  protected readonly VIEWPORT_MAX = VIEWPORT_MAX;
+
+  /**
+   * A drag on either grip, rested on a preset if it came close enough.
+   *
+   * The snapping lives here and not in `PrismResizerDirective` on purpose: the
+   * directive also drives the sidebar and the panel, where there is nothing to
+   * snap to, and a generic control that knows about viewport presets would be
+   * the wrong shape.
+   */
+  protected onViewportResize(width: number): void {
+    this.canvasService.setViewportWidth(snapViewportWidth(width));
+  }
+
   private readonly eventLogService = inject(PrismEventLogService);
   private readonly manifestService = inject(PrismManifestService);
   private readonly injector = inject(Injector);

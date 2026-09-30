@@ -1,4 +1,11 @@
-import { PRISM_DARK_THEME, PRISM_LIGHT_THEME } from './prism-default-theme.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
+import {
+  PRISM_BASE_TOKENS,
+  PRISM_DARK_THEME,
+  PRISM_LIGHT_THEME,
+} from './prism-default-theme.js';
 
 /**
  * The semantic colours have to be legible, and warning has to be tellable from
@@ -140,5 +147,195 @@ describe('semantic colours', () => {
     )
   )('%s separates in lightness, not only hue', (_label, theme, a, b) => {
     expect(lightnessGap(theme[a], theme[b])).toBeGreaterThanOrEqual(14);
+  });
+
+  /**
+   * The measurement colour has to hold on the ground it is actually drawn on.
+   *
+   * `--prism-measure` carries the viewport grips, their guide lines and the
+   * dimension line, and it is the one colour on the canvas whose ground is not
+   * a theme surface. Two of the six canvas backgrounds are absolute: `light`
+   * stays near-white while the app runs the dark theme, and `dark` stays
+   * near-black while it runs the light one. So the theme's own value is only
+   * ever half the story, and the half that was wrong — measured on the value
+   * this replaced, the dark theme's cyan reached 1.81:1 on the light
+   * background, which is an overlay you cannot see.
+   *
+   * canvas-bg.styles.ts answers that by re-pointing the token on those two
+   * backgrounds. The literals there cannot import from this file, so this is
+   * what stops the two copies drifting apart: each pair is checked against the
+   * ground it is meant for, at the alpha the faintest load-bearing layer
+   * actually uses.
+   */
+  describe('--prism-measure', () => {
+    /**
+     * The grounds, read from the theme rather than copied.
+     *
+     * The same argument as `overrideFor` below: a literal here would make this
+     * file agree with itself and with nothing else, and a change to
+     * `--prism-stage` would leave the suite green while measuring a surface
+     * that no longer exists. The two absolute grounds are theme tokens too —
+     * they are the values `canvas-bg.styles.ts` falls back to.
+     */
+    const ABSOLUTE_LIGHT = PRISM_BASE_TOKENS['--prism-void-light'];
+    const ABSOLUTE_DARK = PRISM_BASE_TOKENS['--prism-void-dark'];
+
+    /**
+     * The override each absolute background declares, read out of the
+     * stylesheet rather than copied here.
+     *
+     * Copying the literal would make this file agree with itself and with
+     * nothing else: the pair could drift to any other colour that still passed
+     * the contrast floors below and no test would notice. Reading the real
+     * declaration is what turns these into a guard on canvas-bg.styles.ts.
+     */
+    const overrideFor = (bg: 'light' | 'dark'): string => {
+      const rule = CANVAS_BG_STYLES.slice(
+        CANVAS_BG_STYLES.indexOf(`[data-bg="${bg}"]`)
+      );
+      const found = /--prism-measure:\s*(#[0-9a-f]{6})/i.exec(
+        rule.slice(0, rule.indexOf('}'))
+      );
+      if (!found)
+        throw new Error(`[data-bg="${bg}"] declares no --prism-measure`);
+      return found[1];
+    };
+
+    const ON_LIGHT_GROUND = overrideFor('light');
+    const ON_DARK_GROUND = overrideFor('dark');
+
+    /** `color-mix(... N%, transparent)` composited over an opaque ground. */
+    const atAlpha = (fg: string, bg: string, alpha: number): string => {
+      const [fr, fg_, fb] = rgb(fg);
+      const [br, bg_, bb] = rgb(bg);
+      const ch = (f: number, b: number) =>
+        Math.round(f * alpha + b * (1 - alpha))
+          .toString(16)
+          .padStart(2, '0');
+      return `#${ch(fr, br)}${ch(fg_, bg_)}${ch(fb, bb)}`;
+    };
+
+    /**
+     * Every ground the measurement colour is ever painted on.
+     *
+     * Read from the theme, not copied. A literal here would make this file
+     * agree with itself and with nothing else — change `--prism-stage` and the
+     * suite would stay green while measuring a surface that no longer exists.
+     */
+    const GROUNDS = [
+      [
+        'dark theme stage',
+        PRISM_DARK_THEME['--prism-measure'],
+        PRISM_DARK_THEME['--prism-stage'],
+      ],
+      [
+        'light theme stage',
+        PRISM_LIGHT_THEME['--prism-measure'],
+        PRISM_LIGHT_THEME['--prism-stage'],
+      ],
+      ['bg:dark, any theme', ON_DARK_GROUND, ABSOLUTE_DARK],
+      ['bg:light, any theme', ON_LIGHT_GROUND, ABSOLUTE_LIGHT],
+    ] as const;
+
+    /**
+     * The alphas the renderer actually paints this colour at.
+     *
+     * Extracted from the stylesheet rather than listed here, because listing
+     * them is how the first version of this test went wrong: it checked the
+     * solid colour and the end ticks — the two layers that passed — while the
+     * guide line, the dimension rule and the grip handle all sat under the 3:1
+     * floor on both light grounds, and nothing failed. Whatever the renderer
+     * paints is what gets measured now.
+     */
+    const paintedAlphas = (): number[] => {
+      const src = readFileSync(
+        join(__dirname, '../renderer/prism-renderer.component.css'),
+        'utf-8'
+      );
+      const found = [...src.matchAll(/var\(--prism-measure\)\s+(\d+)%/g)].map(
+        (m) => Number(m[1]) / 100
+      );
+      if (found.length === 0)
+        throw new Error('no --prism-measure layers found');
+      return [...new Set(found)].sort((a, b) => a - b);
+    };
+
+    /** The alpha inside one named rule, so a control can be held to its own floor. */
+    const alphaInRule = (selector: string): number => {
+      const src = readFileSync(
+        join(__dirname, '../renderer/prism-renderer.component.css'),
+        'utf-8'
+      ).replace(/\/\*[\s\S]*?\*\//g, '');
+      const at = src.indexOf(selector);
+      if (at === -1) throw new Error(`rule not found: ${selector}`);
+      const body = src.slice(at, src.indexOf('}', at));
+      const found = /var\(--prism-measure\)\s+(\d+)%/.exec(body);
+      if (!found) throw new Error(`${selector} paints no --prism-measure`);
+      return Number(found[1]) / 100;
+    };
+
+    it.each(GROUNDS)(
+      '%s reads the solid value at 9px',
+      (_l, colour, ground) => {
+        // The readout is 9px monospace — AA's 4.5:1 for body text is the right
+        // floor, not the 3:1 that large text or a bare UI edge would take.
+        expect(contrast(colour, ground)).toBeGreaterThanOrEqual(4.5);
+      }
+    );
+
+    it.each(GROUNDS)(
+      '%s keeps every painted layer visible',
+      (_l, colour, ground) => {
+        const failing = Object.fromEntries(
+          paintedAlphas()
+            .map((a) => [
+              `${Math.round(a * 100)}%`,
+              Number(contrast(atAlpha(colour, ground, a), ground).toFixed(2)),
+            ])
+            .filter(([, ratio]) => (ratio as number) < 2.5)
+        );
+        // 2.5 is the floor for chrome that only has to be seen. The two layers
+        // that have to be *operated* or *read* are held higher, below.
+        expect(failing).toEqual({});
+      }
+    );
+
+    it.each(GROUNDS)(
+      '%s holds the grip handle and the rule at 3:1',
+      (_l, colour, ground) => {
+        // The handle is an interactive control and the dimension rule carries
+        // the measurement, so both are WCAG 1.4.11 non-text contrast at 3:1.
+        const handle = alphaInRule('.vp-grip__bar {');
+        const rule = alphaInRule('.vp-dim__rule {');
+        expect(
+          contrast(atAlpha(colour, ground, handle), ground)
+        ).toBeGreaterThanOrEqual(3);
+        expect(
+          contrast(atAlpha(colour, ground, rule), ground)
+        ).toBeGreaterThanOrEqual(3);
+      }
+    );
+
+    it('declares the same colour on an absolute ground as the matching theme', () => {
+      // The overrides exist to hold one theme's value steady when the other
+      // theme's ground is on screen — so they ARE the theme values, and the
+      // point of the override is only which one applies where. Drift between
+      // the two copies would show up as a viewport overlay that changes colour
+      // when a component declares a background, which reads as a rendering
+      // fault rather than as the two-source bug it is.
+      expect(ON_DARK_GROUND).toBe(PRISM_DARK_THEME['--prism-measure']);
+      expect(ON_LIGHT_GROUND).toBe(PRISM_LIGHT_THEME['--prism-measure']);
+    });
+
+    it('stays tellable from the primary accent in both themes', () => {
+      // Measurement is its own signal. If it drifts far enough toward the
+      // brand violet, a grip starts reading as a primary control rather than
+      // as chrome that happens to be draggable.
+      for (const theme of [PRISM_DARK_THEME, PRISM_LIGHT_THEME]) {
+        expect(
+          deltaE(theme['--prism-measure'], theme['--prism-primary'])
+        ).toBeGreaterThanOrEqual(30);
+      }
+    });
   });
 });
