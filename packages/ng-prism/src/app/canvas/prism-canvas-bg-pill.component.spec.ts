@@ -1,3 +1,6 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { ɵresolveComponentResources as resolveComponentResources } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { CanvasBg } from '../../shared/canvas-bg.type.js';
@@ -26,6 +29,28 @@ describe('PrismCanvasBgPillComponent', () => {
   let nav: PrismNavigationService;
   let manifestService: PrismManifestService;
   let bgService: PrismVariantBgService;
+
+  /**
+   * Load `templateUrl` and `styleUrl` off disk before TestBed sees the class.
+   *
+   * These specs are transpiled by SWC, so nothing runs the Angular compiler
+   * over them and the component is compiled JIT — which fetches external
+   * resources through a network call this environment does not provide.
+   *
+   * `TestBed.compileComponents()` cannot do it: putting the component in
+   * `imports` makes `configureTestingModule` read its definition to decide
+   * whether it is standalone, and reading the definition is what throws while
+   * the resources are still pending. The resolution has to happen before
+   * TestBed touches the class at all, which is what this hook is for — it is
+   * the same function `compileComponents()` calls internally, and the one the
+   * runtime error names. Angular exports it ɵ-prefixed; there is no
+   * unprefixed equivalent.
+   */
+  beforeAll(async () => {
+    await resolveComponentResources((url) =>
+      readFile(join(__dirname, url), 'utf8')
+    );
+  });
 
   beforeEach(() => {
     TestBed.resetTestingModule();

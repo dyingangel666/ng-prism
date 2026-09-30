@@ -4,3 +4,13 @@
 /.nx/cache
 /.nx/workspace-data
 /test-workspace/coverage
+
+# Angular component templates.
+#
+# Prettier 2 predates Angular's built-in control flow: it parses `@if` / `@for`
+# / `@switch` as ordinary text and reflows the blocks into flat runs, which
+# turns a nested template into something markedly harder to read than what the
+# author wrote. Formatting them badly is worse than not formatting them, so
+# they stay as authored until the workspace moves to Prettier 3, which
+# understands the syntax.
+*.component.html

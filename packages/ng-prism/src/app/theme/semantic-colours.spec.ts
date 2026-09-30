@@ -249,7 +249,7 @@ describe('semantic colours', () => {
      */
     const paintedAlphas = (): number[] => {
       const src = readFileSync(
-        join(__dirname, '../renderer/prism-renderer.component.ts'),
+        join(__dirname, '../renderer/prism-renderer.component.css'),
         'utf-8'
       );
       const found = [...src.matchAll(/var\(--prism-measure\)\s+(\d+)%/g)].map(
@@ -263,7 +263,7 @@ describe('semantic colours', () => {
     /** The alpha inside one named rule, so a control can be held to its own floor. */
     const alphaInRule = (selector: string): number => {
       const src = readFileSync(
-        join(__dirname, '../renderer/prism-renderer.component.ts'),
+        join(__dirname, '../renderer/prism-renderer.component.css'),
         'utf-8'
       ).replace(/\/\*[\s\S]*?\*\//g, '');
       const at = src.indexOf(selector);

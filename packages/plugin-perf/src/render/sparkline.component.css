@@ -1,0 +1,42 @@
+.prism-perf-sparkline-wrap {
+  position: relative;
+}
+.prism-perf-sparkline-svg {
+  width: 100%;
+  height: 52px;
+}
+
+.sparkline-gradient-start {
+  stop-color: var(--prism-primary);
+  stop-opacity: 0.35;
+}
+.sparkline-gradient-end {
+  stop-color: var(--prism-primary);
+  stop-opacity: 0;
+}
+
+.sparkline-warn-line {
+  stroke: var(--prism-warn);
+  stroke-width: 0.8;
+  stroke-dasharray: 4 4;
+  opacity: 0.4;
+}
+.sparkline-warn-text {
+  fill: var(--prism-warn);
+  opacity: 0.5;
+}
+
+.sparkline-line {
+  stroke: var(--prism-primary);
+}
+.sparkline-peak {
+  fill: var(--prism-warn);
+}
+.sparkline-current {
+  fill: var(--prism-primary);
+}
+.sparkline-current-pulse {
+  fill: none;
+  stroke: var(--prism-primary);
+  opacity: 0.4;
+}

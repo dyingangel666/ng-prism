@@ -1,0 +1,95 @@
+<div class="diff-panel">
+  @switch (state().status) {
+    @case ('error-no-token') {
+      <div class="diff-panel__empty">
+        <p class="diff-panel__empty-title">Access Token fehlt</p>
+        <p class="diff-panel__empty-hint">
+          Konfiguriere <code>figmaPlugin(&#123; accessToken: '...' &#125;)</code> in deiner
+          <code>ng-prism.config.ts</code>.
+        </p>
+      </div>
+    }
+    @case ('error-no-node') {
+      <div class="diff-panel__empty">
+        <p class="diff-panel__empty-title">Kein Figma-Node für diese Variante</p>
+        <p class="diff-panel__empty-hint">
+          Füge <code>meta: &#123; figma: '…?node-id=12-34' &#125;</code> zur aktiven Variante hinzu.
+        </p>
+      </div>
+    }
+    @case ('error-api') {
+      <div class="diff-panel__empty diff-panel__empty--error">
+        <p class="diff-panel__empty-title">Figma API Fehler</p>
+        <p class="diff-panel__empty-hint">{{ errorMessage() }}</p>
+      </div>
+    }
+    @case ('idle') {
+      <div class="diff-panel__idle">
+        <button class="diff-panel__run-btn" (click)="runDiff()">
+          ▶ Design Diff ausführen
+        </button>
+      </div>
+    }
+    @case ('loading') {
+      <div class="diff-panel__loading">
+        <span class="diff-panel__spinner"></span>
+        <span>Lade Screenshots…</span>
+      </div>
+    }
+    @case ('done') {
+      <div class="diff-panel__result">
+        <div class="diff-panel__toolbar">
+          <div class="diff-panel__modes">
+            @for (m of modes; track m.value) {
+              <button
+                class="diff-panel__mode-btn"
+                [class.diff-panel__mode-btn--active]="activeMode() === m.value"
+                (click)="activeMode.set(m.value)"
+              >{{ m.label }}</button>
+            }
+          </div>
+          <span class="diff-panel__stats">
+            {{ similarity() }}% match &middot; {{ doneResult()!.diffPixels.toLocaleString() }} px diff
+          </span>
+          <button class="diff-panel__run-btn diff-panel__run-btn--sm" (click)="runDiff()">
+            ↺ Erneut
+          </button>
+        </div>
+        <div class="diff-panel__canvas-area">
+          @if (activeMode() === 'side-by-side') {
+            <div class="diff-panel__split">
+              <div class="diff-panel__split-side">
+                <span class="diff-panel__split-label">ng-prism</span>
+                <img [src]="doneResult()!.componentDataUrl" alt="Component screenshot" />
+              </div>
+              <div class="diff-panel__split-side">
+                <span class="diff-panel__split-label">Figma</span>
+                <img [src]="doneResult()!.figmaDataUrl" alt="Figma design" />
+              </div>
+            </div>
+          }
+          @if (activeMode() === 'overlay') {
+            <div class="diff-panel__overlay-wrap">
+              <img class="diff-panel__overlay-base" [src]="doneResult()!.componentDataUrl" alt="Component" />
+              <img
+                class="diff-panel__overlay-top"
+                [src]="doneResult()!.figmaDataUrl"
+                [style.opacity]="overlayOpacity() / 100"
+                alt="Figma overlay"
+              />
+            </div>
+            <input
+              class="diff-panel__opacity-slider"
+              type="range" min="0" max="100"
+              [value]="overlayOpacity()"
+              (input)="overlayOpacity.set(+$any($event.target).value)"
+            />
+          }
+          @if (activeMode() === 'diff-only') {
+            <img [src]="doneResult()!.diffDataUrl" alt="Pixel diff" />
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

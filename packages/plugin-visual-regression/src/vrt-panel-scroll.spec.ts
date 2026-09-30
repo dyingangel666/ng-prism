@@ -4,26 +4,17 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const PANEL_SOURCE = join(__dirname, 'visual-regression-panel.component.ts');
-
 /**
- * The `template:` or `styles:` template literal of a component source file.
- *
- * Read from source rather than from a rendered component: the panel declares
- * `input()`, and initializer-based APIs do not survive this workspace's JIT
- * test compilation — the specs go through SWC, so nothing runs the Angular
- * compiler over them. Neither literal can contain a backtick of its own (one
- * would end the literal and the file would not compile), so the scan between
- * the two backticks after the key is exact.
+ * The panel's markup and stylesheet, read from the files the component points
+ * at rather than from a rendered component: the panel declares `input()`, and
+ * initializer-based APIs do not survive this workspace's JIT test compilation —
+ * the specs go through SWC, so nothing runs the Angular compiler over them.
  */
-function literal(source: string, key: 'template' | 'styles'): string {
-  const keyAt = source.indexOf(`${key}: \``);
-  if (keyAt === -1) throw new Error(`no ${key} literal in component source`);
-  const open = source.indexOf('`', keyAt);
-  const close = source.indexOf('`', open + 1);
-  if (close === -1) throw new Error(`unterminated ${key} literal`);
-  return source.slice(open + 1, close);
-}
+const PANEL_TEMPLATE = join(
+  __dirname,
+  'visual-regression-panel.component.html'
+);
+const PANEL_STYLES = join(__dirname, 'visual-regression-panel.component.css');
 
 /**
  * The panel's own markup and stylesheet, mounted for real.
@@ -33,10 +24,8 @@ function literal(source: string, key: 'template' | 'styles'): string {
  * declarations in the cascade where the test can read them.
  */
 function mountPanel(): { host: HTMLElement } {
-  const source = readFileSync(PANEL_SOURCE, 'utf8');
-
   const style = document.createElement('style');
-  style.textContent = literal(source, 'styles').replace(
+  style.textContent = readFileSync(PANEL_STYLES, 'utf8').replace(
     /:host\b/g,
     '.vrt-host'
   );
@@ -46,7 +35,7 @@ function mountPanel(): { host: HTMLElement } {
   host.className = 'vrt-host';
   // The template's outermost element is wrapped in `@if` blocks, which parse
   // as text around it; the elements themselves still nest correctly.
-  host.innerHTML = literal(source, 'template');
+  host.innerHTML = readFileSync(PANEL_TEMPLATE, 'utf8');
   document.body.appendChild(host);
   return { host };
 }

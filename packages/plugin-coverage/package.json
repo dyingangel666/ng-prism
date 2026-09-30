@@ -35,7 +35,8 @@
   ],
   "peerDependencies": {
     "@angular/core": ">=20.0.0",
-    "@ng-prism/core": "^22.2.1-0"
+    "@ng-prism/core": "^22.2.1-0",
+    "@angular-devkit/schematics": ">=20.0.0"
   },
   "devDependencies": {
     "@ng-prism/core": "*"

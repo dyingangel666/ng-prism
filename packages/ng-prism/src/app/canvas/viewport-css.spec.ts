@@ -7,7 +7,8 @@ import { join } from 'node:path';
  * None of them can be asserted against a rendered DOM: this package's specs run
  * under jsdom, which resolves no `var()`, and `PrismRendererComponent` uses
  * `viewChild.required`, which JIT cannot instantiate from SWC-compiled sources.
- * So they are asserted against the stylesheet text, the way
+ * So they are asserted against the source text — the stylesheet, the template or
+ * the class, whichever carries the claim — the way
  * `canvas-overlay-offsets.spec.ts` asserts the overlay offsets.
  *
  * Every one of them fails silently if it breaks — a wrong `container-type`
@@ -16,7 +17,23 @@ import { join } from 'node:path';
  * of the stage, and one that ignores zoom cuts through the middle of the very
  * component it is supposed to bound.
  */
-const RENDERER = join(__dirname, '../renderer/prism-renderer.component.ts');
+/*
+ * Three files, not one: the renderer keeps its template and styles beside it
+ * rather than inline, so each assertion below has to read the file that
+ * actually carries what it claims. Pointing all three at one path is how this
+ * breaks — a `block()` against the template finds no CSS rule and throws
+ * `selector not found`, which reads like a deleted rule rather than a wrong
+ * path.
+ */
+const RENDERER_CSS = join(
+  __dirname,
+  '../renderer/prism-renderer.component.css'
+);
+const RENDERER_HTML = join(
+  __dirname,
+  '../renderer/prism-renderer.component.html'
+);
+const RENDERER_TS = join(__dirname, '../renderer/prism-renderer.component.ts');
 
 /**
  * `src` with every block comment removed.
@@ -45,7 +62,7 @@ function flat(src: string): string {
  *  first, so this can only ever match a real CSS rule. Whitespace is flattened
  *  so a reflow cannot fail an assertion. */
 function block(selector: string): string {
-  const src = withoutComments(readFileSync(RENDERER, 'utf-8'));
+  const src = withoutComments(readFileSync(RENDERER_CSS, 'utf-8'));
   const start = src.indexOf(selector);
   if (start === -1) throw new Error(`selector not found: ${selector}`);
   const open = src.indexOf('{', start);
@@ -63,7 +80,7 @@ function block(selector: string): string {
  * on catching (see the first test below).
  */
 function openingTag(marker: string): string {
-  const src = readFileSync(RENDERER, 'utf-8');
+  const src = readFileSync(RENDERER_HTML, 'utf-8');
   const markerPos = src.indexOf(marker);
   if (markerPos === -1) throw new Error(`marker not found: ${marker}`);
   const tagStart = src.lastIndexOf('<', markerPos);
@@ -115,7 +132,7 @@ describe('viewport CSS invariants', () => {
     // Reordering the two would silently cap every canvasLayout: 'stretch'
     // component at 800px again while the canvas still looked correct at
     // narrower widths, and no other assertion here would notice.
-    const src = withoutComments(readFileSync(RENDERER, 'utf-8'));
+    const src = withoutComments(readFileSync(RENDERER_CSS, 'utf-8'));
     expect(src.indexOf('.demo-wrap[data-viewport] {')).toBeGreaterThan(
       src.indexOf(".demo-wrap[data-canvas-layout='stretch'] {")
     );
@@ -150,7 +167,7 @@ describe('viewport CSS invariants', () => {
     // unrelated to the grips. The claim worth holding is narrower — the grips
     // are positioned by arithmetic over --prism-vp-w and --zoom (asserted
     // above), and the drag that feeds them reads no layout.
-    const src = withoutComments(readFileSync(RENDERER, 'utf-8'));
+    const src = withoutComments(readFileSync(RENDERER_TS, 'utf-8'));
     const at = src.indexOf('protected onViewportResize(');
     if (at === -1) throw new Error('onViewportResize not found');
     const body = src.slice(at, src.indexOf('\n  }', at));

@@ -20,17 +20,7 @@ type Variant = 'ok' | 'warn' | 'danger';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismMetricBadgeComponent],
-  template: `
-    @if (data(); as d) {
-    <prism-metric-badge
-      icon="accessibility"
-      label="Library accessibility score"
-      [value]="d.score + '%'"
-      [variant]="d.variant"
-      [title]="d.title"
-    />
-    }
-  `,
+  templateUrl: './a11y-header-badge.component.html',
 })
 export class A11yHeaderBadgeComponent {
   private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);

@@ -1,0 +1,79 @@
+<div
+  class="prism-canvas-stage"
+  [attr.data-bg]="variantBg.effective()"
+  [attr.data-rulers]="canvasService.rulers() ? '' : null"
+  [attr.data-viewport]="viewportWidth() !== null ? '' : null"
+  [style.--prism-vp-w.px]="viewportWidth()"
+  [style.--zoom]="canvasService.zoom()"
+>
+  @if (!capture.active()) {
+  <div
+    class="stage-crosshair"
+    [class.visible]="canvasService.guides()"
+  ></div>
+  <prism-canvas-rulers />
+  <prism-canvas-bg-pill />
+  @if (viewportWidth() !== null) {
+  <!-- Grips and the dimension line are siblings of .demo-wrap, never
+       children of it: .demo-wrap is what plugin-visual-regression
+       screenshots, and anything inside it composites into every baseline.
+       They sit inside the capture guard for the same reason the rulers and
+       the pill do. -->
+  <span class="vp-dim">
+    <span class="vp-dim__rule"></span>
+    <span class="vp-dim__v">{{ viewportWidth() }} px</span>
+    <span class="vp-dim__rule"></span>
+  </span>
+  <div
+    class="vp-grip"
+    prismResizer
+    axis="x"
+    [scale]="-2 / (canvasService.zoom() || 1)"
+    [min]="VIEWPORT_MIN"
+    [max]="VIEWPORT_MAX"
+    [value]="viewportWidth()!"
+    (valueChange)="onViewportResize($event)"
+    aria-label="Viewport width, left edge"
+    [attr.aria-valuenow]="viewportWidth()"
+    [attr.aria-valuemin]="VIEWPORT_MIN"
+    [attr.aria-valuemax]="VIEWPORT_MAX"
+  >
+    <span class="vp-grip__bar"></span>
+  </div>
+  <div
+    class="vp-grip vp-grip--end"
+    prismResizer
+    axis="x"
+    [scale]="2 / (canvasService.zoom() || 1)"
+    [min]="VIEWPORT_MIN"
+    [max]="VIEWPORT_MAX"
+    [value]="viewportWidth()!"
+    (valueChange)="onViewportResize($event)"
+    aria-label="Viewport width, right edge"
+    [attr.aria-valuenow]="viewportWidth()"
+    [attr.aria-valuemin]="VIEWPORT_MIN"
+    [attr.aria-valuemax]="VIEWPORT_MAX"
+  >
+    <span class="vp-grip__bar"></span>
+  </div>
+  } }
+
+  <div
+    class="demo-wrap"
+    [style.--zoom]="canvasService.zoom()"
+    [attr.data-prism-rendered]="renderedKey()"
+    [attr.data-canvas-layout]="canvasLayout()"
+    [attr.data-viewport]="viewportWidth() !== null ? '' : null"
+  >
+    <ng-container #outlet />
+    @if (activeOverlay()) {
+    <ng-container
+      *ngComponentOutlet="
+        activeOverlay()!;
+        inputs: overlayInputs;
+        injector: overlayInjector()
+      "
+    />
+    }
+  </div>
+</div>

@@ -1,0 +1,81 @@
+@switch (type()) {
+  @case ('object') {
+    @if (entries().length === 0) {
+      <span class="json-brace">{{ '{}' }}</span>
+    } @else {
+      <span class="json-expandable" (click)="toggle()">
+        <span class="json-chevron">{{ expanded() ? '▾' : '▸' }}</span>
+        @if (!expanded()) {
+          <span class="json-summary">{{ summary() }}</span>
+        }
+      </span>
+      @if (expanded()) {
+        @if (depth() >= maxDepth) {
+          <span class="json-summary">…</span>
+        } @else {
+          <span class="json-brace">{{ '{' }}</span>
+          <div class="json-children">
+            @for (entry of entries(); track entry.key) {
+              <div class="json-row">
+                <span class="json-key">{{ entry.key }}</span>
+                <span class="json-colon">:&nbsp;</span>
+                <ng-container
+                  [ngComponentOutlet]="self"
+                  [ngComponentOutletInputs]="{ value: entry.value, depth: depth() + 1 }"
+                />
+              </div>
+            }
+          </div>
+          <span class="json-brace">{{ '}' }}</span>
+        }
+      }
+    }
+  }
+  @case ('array') {
+    @if (items().length === 0) {
+      <span class="json-brace">[]</span>
+    } @else {
+      <span class="json-expandable" (click)="toggle()">
+        <span class="json-chevron">{{ expanded() ? '▾' : '▸' }}</span>
+        @if (!expanded()) {
+          <span class="json-summary">{{ summary() }}</span>
+        }
+      </span>
+      @if (expanded()) {
+        @if (depth() >= maxDepth) {
+          <span class="json-summary">…</span>
+        } @else {
+          <span class="json-brace">[</span>
+          <div class="json-children">
+            @for (item of items(); track $index) {
+              <div class="json-row">
+                <span class="json-index">{{ $index }}</span>
+                <span class="json-colon">:&nbsp;</span>
+                <ng-container
+                  [ngComponentOutlet]="self"
+                  [ngComponentOutletInputs]="{ value: item, depth: depth() + 1 }"
+                />
+              </div>
+            }
+          </div>
+          <span class="json-brace">]</span>
+        }
+      }
+    }
+  }
+  @case ('string') {
+    <span class="json-string">"{{ value() }}"</span>
+  }
+  @case ('number') {
+    <span class="json-number">{{ value() }}</span>
+  }
+  @case ('boolean') {
+    <span class="json-boolean">{{ value() }}</span>
+  }
+  @case ('null') {
+    <span class="json-null">null</span>
+  }
+  @case ('undefined') {
+    <span class="json-undefined">undefined</span>
+  }
+}

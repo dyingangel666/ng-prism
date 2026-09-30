@@ -15,17 +15,7 @@ import type { CoverageManifestMeta } from './coverage.types.js';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [PrismMetricBadgeComponent],
-  template: `
-    @if (data(); as d) {
-    <prism-metric-badge
-      icon="shield-check"
-      label="Library coverage"
-      [value]="d.score + '%'"
-      [variant]="d.variant"
-      [title]="d.title"
-    />
-    }
-  `,
+  templateUrl: './coverage-header-badge.component.html',
 })
 export class CoverageHeaderBadgeComponent {
   private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);

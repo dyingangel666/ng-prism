@@ -15,53 +15,16 @@ const R = 20;
   selector: 'prism-canvas-rulers',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (canvas.rulers()) {
-    <div class="ruler-wrap">
-      <canvas #rulerTop class="ruler ruler--top"></canvas>
-      <canvas #rulerLeft class="ruler ruler--left"></canvas>
-      <div class="ruler-corner"></div>
-    </div>
-    }
-  `,
-  styles: `
-    :host { display: contents; }
-
-    .ruler-wrap {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 4;
-      overflow: hidden;
-    }
-
-    .ruler { position: absolute; }
-    .ruler--top {
-      top: 0;
-      left: ${R}px;
-      right: 0;
-      height: ${R}px;
-    }
-    .ruler--left {
-      top: ${R}px;
-      left: 0;
-      bottom: 0;
-      width: ${R}px;
-    }
-    .ruler-corner {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: ${R}px;
-      height: ${R}px;
-      background: var(--prism-bg);
-      border-right: 1px solid var(--prism-border);
-      border-bottom: 1px solid var(--prism-border);
-      z-index: 1;
-    }
-  `,
+  // The gutter width reaches the stylesheet as a custom property instead of
+  // being written there a second time. R sizes the ruler canvases in paintH and
+  // paintV, so a literal in the CSS would be a copy that has to be kept in step.
+  host: { '[style.--prism-ruler-size]': 'rulerSize' },
+  templateUrl: './prism-canvas-rulers.component.html',
+  styleUrl: './prism-canvas-rulers.component.css',
 })
 export class PrismCanvasRulersComponent {
+  protected readonly rulerSize = `${R}px`;
+
   protected readonly canvas = inject(PrismCanvasService);
   private readonly themeService = inject(PrismThemeService);
 
