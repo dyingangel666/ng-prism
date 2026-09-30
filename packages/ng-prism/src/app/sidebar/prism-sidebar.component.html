@@ -1,0 +1,129 @@
+<nav class="prism-sidebar">
+  <div class="sb-filter">
+    <prism-icon name="search" [size]="12" />
+    <input
+      #filterInput
+      placeholder="Filter components…"
+      [value]="searchService.query()"
+      (input)="searchService.search($any($event.target).value)"
+    />
+    <kbd>/</kbd>
+  </div>
+
+  <div class="sb-scroll">
+    @if (pageCategories().length > 0) {
+    <div class="sb-pinned">
+      <div class="sb-pinned-head">
+        <span class="sb-pinned-head-l">
+          <prism-icon name="pin" [size]="10" class="sb-pinned-pin" />
+          Pages
+        </span>
+        <span>{{ totalPages() }}</span>
+      </div>
+      @for (cat of pageCategories(); track cat.name) {
+      <div
+        class="sb-group"
+        [class.sb-group--collapsed]="isCollapsed('page:' + cat.name)"
+      >
+        <button
+          class="sb-group-head"
+          (click)="toggleCollapse('page:' + cat.name)"
+          [attr.aria-expanded]="!isCollapsed('page:' + cat.name)"
+        >
+          <prism-icon name="chevron-down" [size]="10" />
+          <span class="sb-group-chip"></span>
+          {{ cat.name }}
+        </button>
+        @if (!isCollapsed('page:' + cat.name)) {
+        <div class="sb-group-body">
+          @for (item of cat.items; track itemKey(item)) {
+          <button
+            class="sb-item"
+            [class.sb-item--active]="isActive(item)"
+            (click)="onSelect(item)"
+          >
+            <span class="sb-item-name">{{ itemLabel(item) }}</span>
+          </button>
+          }
+        </div>
+        }
+      </div>
+      }
+    </div>
+    } @for (section of componentSections(); track section.name) {
+    <div class="sb-section-head">
+      <span class="sb-section-head-l">
+        <prism-icon
+          [name]="section.icon"
+          [size]="10"
+          class="sb-section-icon"
+        />
+        {{ section.name }}
+      </span>
+      <span>{{ section.totalCount }}</span>
+    </div>
+    @for (cat of section.categories; track cat.name) {
+    <div
+      class="sb-group"
+      [class.sb-group--collapsed]="
+        isCollapsed('sec:' + section.name + ':' + cat.name)
+      "
+    >
+      <button
+        class="sb-group-head"
+        (click)="toggleCollapse('sec:' + section.name + ':' + cat.name)"
+        [attr.aria-expanded]="
+          !isCollapsed('sec:' + section.name + ':' + cat.name)
+        "
+      >
+        <prism-icon name="chevron-down" [size]="10" />
+        <span class="sb-group-chip"></span>
+        {{ cat.name }}
+        <span
+          class="sb-group-count"
+          [class.sb-group-count--warn]="cat.rollup.variant === 'warn'"
+          [class.sb-group-count--danger]="cat.rollup.variant === 'danger'"
+          [attr.title]="
+            cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+          "
+          [attr.aria-label]="
+            cat.rollup.problems ? rollupTooltip(cat.rollup) : null
+          "
+        >
+          @if (cat.rollup.problems) { {{ cat.rollup.problems }}/{{
+            cat.items.length
+          }}
+          } @else { {{ cat.items.length }} }
+        </span>
+      </button>
+      @if (!isCollapsed('sec:' + section.name + ':' + cat.name)) {
+      <div class="sb-group-body">
+        @for (row of cat.items; track itemKey(row.item)) {
+        <button
+          class="sb-item"
+          [class.sb-item--active]="isActive(row.item)"
+          [class.sb-item--deprecated]="
+            itemStatus(row.item) === 'deprecated'
+          "
+          [attr.title]="itemTooltip(row.item, row.decorations)"
+          (click)="onSelect(row.item)"
+        >
+          <prism-icon [name]="row.icon" [size]="12" class="sb-item-icon" />
+          <span class="sb-item-name">{{ itemLabel(row.item) }}</span>
+          <span class="sb-item-health">
+            @for (mark of row.decorations?.marks ?? []; track mark.id) {
+            <prism-icon
+              [name]="mark.icon"
+              [size]="11"
+              [class]="'sb-health sb-health--' + mark.variant"
+            />
+            }
+          </span>
+        </button>
+        }
+      </div>
+      }
+    </div>
+    } }
+  </div>
+</nav>

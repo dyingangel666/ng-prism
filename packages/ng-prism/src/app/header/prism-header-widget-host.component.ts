@@ -16,14 +16,8 @@ const lazyCache = new Map<string, Type<unknown>>();
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgComponentOutlet],
-  template: `
-    @if (resolved(); as comp) {
-    <ng-container *ngComponentOutlet="comp" />
-    }
-  `,
-  styles: `
-    :host { display: contents; }
-  `,
+  templateUrl: './prism-header-widget-host.component.html',
+  styleUrl: './prism-header-widget-host.component.css',
 })
 export class PrismHeaderWidgetHostComponent {
   readonly widget = input.required<HeaderWidgetDefinition>();

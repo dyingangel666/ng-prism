@@ -24,66 +24,8 @@ interface SrBadgePosition {
   selector: 'prism-a11y-sr-overlay',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    @if (showOverlay()) { @for (badge of badges(); track badge.index) { @if
-    (badge.isActive) {
-    <div
-      class="prism-a11y-sr-ov__focus"
-      [style.left.px]="badge.x"
-      [style.top.px]="badge.y"
-      [style.width.px]="badge.width"
-      [style.height.px]="badge.height"
-    ></div>
-    }
-    <div
-      class="prism-a11y-sr-ov__badge"
-      [class.prism-a11y-sr-ov__badge--active]="badge.isActive"
-      [style.left.px]="badge.x - 10"
-      [style.top.px]="badge.y - 10"
-    >
-      {{ badge.index }}
-    </div>
-    } }
-  `,
-  styles: `
-    :host {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 100;
-      overflow: hidden;
-    }
-
-    .prism-a11y-sr-ov__focus {
-      position: absolute;
-      border: 2px solid var(--prism-primary);
-      border-radius: 4px;
-      background: rgba(167, 139, 250, 0.08);
-      box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.12);
-    }
-
-    .prism-a11y-sr-ov__badge {
-      position: absolute;
-      height: 18px;
-      padding: 0 5px;
-      min-width: 18px;
-      background: var(--prism-primary);
-      color: white;
-      border-radius: 9px;
-      font-size: 9px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 0 1.5px white, 0 2px 4px rgba(0, 0, 0, 0.25);
-      font-family: var(--prism-font-sans, system-ui, sans-serif);
-    }
-
-    .prism-a11y-sr-ov__badge--active {
-      background: var(--prism-primary-from);
-      box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(124, 58, 237, 0.4);
-    }
-  `,
+  templateUrl: './a11y-sr-overlay.component.html',
+  styleUrl: './a11y-sr-overlay.component.css',
 })
 export class A11ySrOverlayComponent {
   private readonly perspective = inject(A11yPerspectiveService);

@@ -1,0 +1,9 @@
+@if (data(); as d) {
+<prism-metric-badge
+  icon="accessibility"
+  label="Library accessibility score"
+  [value]="d.score + '%'"
+  [variant]="d.variant"
+  [title]="d.title"
+/>
+}

@@ -1,0 +1,28 @@
+.ctl-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ctl-pill {
+  height: 26px;
+  padding: 0 10px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  border: 1px solid var(--prism-border);
+  border-radius: 4px;
+  color: var(--prism-text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+  font-family: var(--font-sans);
+}
+.ctl-pill:hover {
+  color: var(--prism-text);
+  border-color: var(--prism-border-strong);
+}
+.ctl-pill--active {
+  background: color-mix(in srgb, var(--prism-primary) 15%, transparent);
+  color: var(--prism-primary);
+  border-color: color-mix(in srgb, var(--prism-primary) 40%, transparent);
+  font-weight: 600;
+}

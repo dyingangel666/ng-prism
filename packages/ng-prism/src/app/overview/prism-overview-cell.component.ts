@@ -37,64 +37,9 @@ import { computeVariantState } from '../services/prism-renderer.service.js';
     role: 'listitem',
     '[attr.data-wide]': "isWide() ? '' : null",
   },
-  template: `
-    <div class="cell__stage" [attr.data-bg]="bg()">
-      <div class="cell__mount"><ng-container #outlet /></div>
-    </div>
-    <span class="cell__caption">{{ caption() }}</span>
-  `,
-  styles: [
-    `
-      :host {
-        display: flex;
-        flex-direction: column;
-        gap: var(--sp-2);
-        min-width: 0;
-      }
-      /* A stretch variant has no intrinsic width to compare against its
-         neighbours, so it takes the row rather than a column. */
-      :host([data-wide]) {
-        grid-column: 1 / -1;
-      }
-
-      .cell__stage {
-        flex: 1;
-        min-height: 120px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: var(--sp-5);
-        border-radius: var(--radius-sm);
-        background-color: var(--prism-stage);
-        outline: 1px solid var(--prism-stage-edge);
-        outline-offset: -1px;
-        overflow: hidden;
-      }
-
-      .cell__mount {
-        display: inline-block;
-        max-width: 100%;
-      }
-      :host([data-wide]) .cell__mount {
-        display: block;
-        width: 100%;
-      }
-
-      /* The caption sits below the frame, not on it. Inside, it would have to
-         invert against every background the cell can paint — and gaining a new
-         contrast rule per CanvasBg value is exactly the cost the sheet exists
-         to avoid. */
-      .cell__caption {
-        font-family: var(--prism-font-mono);
-        font-size: var(--fs-xs);
-        color: var(--prism-text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    `,
-    CANVAS_BG_STYLES,
-  ],
+  templateUrl: './prism-overview-cell.component.html',
+  styleUrl: './prism-overview-cell.component.css',
+  styles: [CANVAS_BG_STYLES],
 })
 export class PrismOverviewCellComponent {
   readonly component = input.required<RuntimeComponent>();

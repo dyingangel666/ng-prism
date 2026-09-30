@@ -2,39 +2,18 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CANVAS_BG_STYLES } from '../../canvas/canvas-bg.styles.js';
 
-const SHELL_SOURCE = join(__dirname, '..', 'prism-shell.component.ts');
-const RENDERER_SOURCE = join(
-  __dirname,
-  '..',
-  '..',
-  'renderer',
-  'prism-renderer.component.ts'
-);
+const SHELL_DIR = join(__dirname, '..');
+const RENDERER_DIR = join(__dirname, '..', '..', 'renderer');
 
-/**
- * The `template:` or `styles:` template literal of a component source file.
- *
- * A plain scan between the two backticks that follow the key. Neither literal
- * can contain a backtick of its own — one would terminate the literal and the
- * file would not compile — so there is nothing subtler to get right here.
- *
- * `styles` may be a single literal (`styles: \`…\``) or, as of the renderer's
- * shared `[data-bg]` rules, an array whose first element is the literal
- * (`styles: [\n    \`…\`,`). Anchoring on the key alone rather than on the key
- * plus an immediately-following backtick covers both — but either way this
- * returns only *one* element. When `styles` is an array, the caller is
- * responsible for composing whatever else belongs in it; see
- * `renderCanvasChain`, which appends `CANVAS_BG_STYLES` itself rather than
- * expecting this function to find it by scanning text.
- */
-export function literal(source: string, key: 'template' | 'styles'): string {
-  const keyAt = source.indexOf(`${key}:`);
-  if (keyAt === -1) throw new Error(`no ${key} literal in component source`);
-  const open = source.indexOf('`', keyAt);
-  const close = source.indexOf('`', open + 1);
-  if (close === -1) throw new Error(`unterminated ${key} literal`);
-  return source.slice(open + 1, close);
-}
+const SHELL_SOURCE = join(SHELL_DIR, 'prism-shell.component.ts');
+const SHELL_TEMPLATE = join(SHELL_DIR, 'prism-shell.component.html');
+const SHELL_STYLES = join(SHELL_DIR, 'prism-shell.component.css');
+
+const RENDERER_SOURCE = join(RENDERER_DIR, 'prism-renderer.component.ts');
+const RENDERER_TEMPLATE = join(RENDERER_DIR, 'prism-renderer.component.html');
+const RENDERER_STYLES = join(RENDERER_DIR, 'prism-renderer.component.css');
+
+const read = (file: string): string => readFileSync(file, 'utf8');
 
 /**
  * `<prism-foo />` written out as `<prism-foo></prism-foo>`.
@@ -102,13 +81,13 @@ export interface CaptureDom {
  * produces.
  */
 export function renderCanvasChain(bg = 'transparent'): CaptureDom {
-  const shellSource = readFileSync(SHELL_SOURCE, 'utf8');
-  const rendererSource = readFileSync(RENDERER_SOURCE, 'utf8');
+  const shellSource = read(SHELL_SOURCE);
+  const rendererSource = read(RENDERER_SOURCE);
 
   const composed = expandSelfClosing(
-    literal(shellSource, 'template').replace(
+    read(SHELL_TEMPLATE).replace(
       '<prism-renderer />',
-      `<prism-renderer>${literal(rendererSource, 'template')}</prism-renderer>`
+      `<prism-renderer>${read(RENDERER_TEMPLATE)}</prism-renderer>`
     )
   );
   if (!composed.includes('demo-wrap')) {
@@ -130,22 +109,22 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     );
   }
 
-  // CANVAS_BG_STYLES is imported rather than parsed out of the renderer
-  // source: it is a plain exported string with no Angular compilation
-  // involved, so importing it cannot drift out of step with the array the
-  // way a second positional `literal()` scan could. It is not run through
-  // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute
-  // selectors with no `:host` in them, so that rewrite has nothing to do.
-  // Placed directly after the renderer's own base literal, mirroring its
-  // position as the last entry of the real `styles` array: `.prism-canvas-
-  // stage` and `[data-bg="light"]` are equal specificity either way — a
-  // class selector and an attribute selector both weigh (0,1,0) — so source
-  // order is what decides here too, exactly as in the component.
+  // CANVAS_BG_STYLES is imported rather than read out of a file: it is a plain
+  // exported string with no Angular compilation involved, so importing it
+  // cannot drift out of step with the component. It is not run through
+  // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute selectors
+  // with no `:host` in them, so that rewrite has nothing to do.
+  // Placed directly after the renderer's own stylesheet, mirroring its
+  // position as the last entry of the real `styles` array — and ngc emits
+  // `styleUrl` content ahead of inline `styles`, so that is the order the
+  // component ships. `.prism-canvas-stage` and `[data-bg="light"]` are equal
+  // specificity either way — a class selector and an attribute selector both
+  // weigh (0,1,0) — so source order is what decides here too.
   const style = document.createElement('style');
   style.textContent = [
-    scopeHost(literal(rendererSource, 'styles'), selectorOf(rendererSource)),
+    scopeHost(read(RENDERER_STYLES), selectorOf(rendererSource)),
     CANVAS_BG_STYLES,
-    scopeHost(literal(shellSource, 'styles'), selectorOf(shellSource)),
+    scopeHost(read(SHELL_STYLES), selectorOf(shellSource)),
   ].join('\n');
   document.head.appendChild(style);
 
