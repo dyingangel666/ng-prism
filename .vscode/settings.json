@@ -6,6 +6,7 @@
     },
     "eslint.validate": ["typescript", "html"],
     "stylelint.validate": ["css"],
+    "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
     "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
     "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
     "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
