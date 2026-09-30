@@ -302,7 +302,7 @@ import { parseContentToNodes } from './projectable-content.js';
         width: 3px;
         height: 34px;
         border-radius: 2px;
-        background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 60%, transparent);
         transition: background var(--dur-fast);
       }
 
@@ -317,7 +317,7 @@ import { parseContentToNodes } from './projectable-content.js';
         justify-self: center;
         align-self: stretch;
         width: 1px;
-        background: color-mix(in srgb, var(--prism-measure) 26%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 30%, transparent);
         transition: background var(--dur-fast);
       }
       .vp-grip:hover::after,
@@ -364,7 +364,7 @@ import { parseContentToNodes } from './projectable-content.js';
         position: relative;
         flex: 1;
         height: 1px;
-        background: color-mix(in srgb, var(--prism-measure) 45%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
       }
 
       /* The end ticks. They are what make the rule read as a measurement of
@@ -376,7 +376,7 @@ import { parseContentToNodes } from './projectable-content.js';
         top: -3px;
         width: 1px;
         height: 7px;
-        background: color-mix(in srgb, var(--prism-measure) 70%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
       }
       .vp-dim__rule:first-child::before {
         left: 0;

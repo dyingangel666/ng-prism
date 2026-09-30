@@ -97,7 +97,7 @@ describe('PrismCanvasService', () => {
     it('should clamp a width outside the legal range', () => {
       const service = createService();
       service.setViewportWidth(10);
-      expect(service.viewportWidth()).toBe(240);
+      expect(service.viewportWidth()).toBe(100);
     });
 
     it('should clear the constraint when set to null', () => {

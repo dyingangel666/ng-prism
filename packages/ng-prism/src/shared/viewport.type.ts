@@ -8,8 +8,16 @@
  * real browser viewport; only `@container` rules respond.
  */
 
-/** Narrower than this and the stage shows a scrollbar, not a component. */
-export const VIEWPORT_MIN = 240;
+/**
+ * The narrowest the constraint will go.
+ *
+ * Below any real device on purpose. The presets cover the widths people design
+ * against; this floor is for the other half of the job — dragging past where a
+ * layout still works to find the point at which it gives up. A floor set to the
+ * narrowest real phone would put that point out of reach on exactly the
+ * components most worth checking.
+ */
+export const VIEWPORT_MIN = 100;
 
 /** Wide enough for a desktop breakpoint, short of the point where the stage scrolls on any realistic screen. */
 export const VIEWPORT_MAX = 1600;

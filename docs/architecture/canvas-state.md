@@ -37,7 +37,8 @@ The override auto-clears whenever the active variant or component changes, so na
 the browser. The state is a single nullable number rather than a device list: the question the tool
 answers is _where does this break_, not _how does it look on a particular phone_. Presets (320, 390,
 480, 640, 768, 1024) are named values of that number, and a drag rests on one when it comes within
-8px. A drag is clamped to between 240 and 1600, regardless of preset.
+8px. A drag is clamped to between 100 and 1600, regardless of preset — the floor sits well below any
+real device because finding where a layout gives up is half of what the tool is for.
 
 ### The specimen is centred at the container
 
