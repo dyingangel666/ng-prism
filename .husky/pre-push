@@ -1,0 +1,12 @@
+# Die schnelle Hälfte: nur Lint. Builds und Tests bleiben draußen — CI fährt
+# sie auf dem Pull Request, und ein Hook, der einen Push minutenlang aufhält,
+# ist einer, an dem man mit --no-verify vorbeigeht.
+#
+# run-many, nicht affected: nx.json setzt keine defaultBase, also fiele
+# affected auf main zurück — und main liegt sieben Commits hinter
+# release/22.3.0, gegen das hier gearbeitet wird. Ein explizites
+# --base=origin/main scheitert zusätzlich auf jeder Maschine, die den Remote
+# gerade nicht gefetcht hat. run-many hat keine Basis, gegen die es falsch
+# liegen könnte, und ist dank Nx-Cache kaum teurer: unveränderte Packages
+# werden nicht neu gelintet.
+npx nx run-many -t lint
