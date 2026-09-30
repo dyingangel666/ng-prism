@@ -8,35 +8,37 @@
     width: 20px;
     height: 20px;
     padding: 0;
-    border: 0;
-    border-radius: var(--radius-xs);
-    background: transparent;
+    anchor-name: --prism-head-info;
     color: var(--prism-text-ghost);
     cursor: pointer;
-    anchor-name: --prism-head-info;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-xs);
 }
+
 .info-btn:hover {
     color: var(--prism-text-2);
 }
+
 .info-btn:focus-visible {
     outline: 2px solid var(--prism-primary);
     outline-offset: 1px;
 }
 
 .info-card {
-    margin: 0;
-    padding: var(--sp-4);
+    inset: auto;
     width: 320px;
     max-width: calc(100vw - var(--sp-6));
+    padding: var(--sp-4);
+    margin: 0;
+    position-area: block-end span-inline-end;
+    position-anchor: --prism-head-info;
+    position-try-fallbacks: flip-block, flip-inline;
+    color: var(--prism-text-2);
+    background: var(--prism-bg-elevated);
     border: 1px solid var(--prism-border-strong);
     border-radius: var(--radius-md);
-    background: var(--prism-bg-elevated);
-    color: var(--prism-text-2);
-    box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
-    position-anchor: --prism-head-info;
-    position-area: block-end span-inline-end;
-    position-try-fallbacks: flip-block, flip-inline;
-    inset: auto;
+    box-shadow: 0 8px 28px -10px rgb(0 0 0 / 45%);
 }
 
 .info-card__selector {
@@ -46,11 +48,13 @@
     color: var(--prism-primary);
     user-select: all;
 }
+
 .info-card__desc {
     margin: var(--sp-3) 0 0;
     font-size: var(--fs-lg);
     line-height: 1.55;
 }
+
 /* A plain fact about the component, not a measurement — it sits here with
    the selector and the tags rather than in the gauge, whose numbers all
    answer "did this pass its threshold". A count cannot. */
@@ -59,16 +63,18 @@
     font-size: var(--fs-md);
     color: var(--prism-text-muted);
 }
+
 .info-card__tags {
-    margin-top: var(--sp-4);
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-2);
+    margin-top: var(--sp-4);
 }
+
 .info-card__tag {
     padding: 1px var(--sp-3);
     font-size: var(--fs-xs);
-    border-radius: var(--radius-xs);
-    border: 1px solid var(--prism-border);
     color: var(--prism-text-muted);
+    border: 1px solid var(--prism-border);
+    border-radius: var(--radius-xs);
 }

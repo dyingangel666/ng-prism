@@ -13,6 +13,6 @@
     align-items: center;
     justify-content: center;
     min-height: 100px;
-    color: var(--prism-text-muted);
     font-size: 13px;
+    color: var(--prism-text-muted);
 }

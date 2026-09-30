@@ -5,11 +5,12 @@
 
 .json-overlay {
     position: relative;
+    overflow: hidden;
     border: 1px solid var(--prism-border);
     border-radius: var(--radius-sm);
-    overflow: hidden;
     transition: border-color var(--dur-fast);
 }
+
 .json-overlay:focus-within {
     border-color: var(--prism-primary);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--prism-primary) 30%, transparent);
@@ -17,20 +18,21 @@
 
 .json-pre,
 .json-input {
-    margin: 0;
     padding: 4px 8px;
+    margin: 0;
     font-family: var(--font-mono);
     font-size: 12px;
     line-height: 1.4;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     tab-size: 2;
+    white-space: pre-wrap;
 }
 
 .json-pre {
     min-height: 56px;
     pointer-events: none;
 }
+
 .json-pre code {
     font-family: inherit;
 }
@@ -38,15 +40,19 @@
 :host ::ng-deep .jh-key {
     color: var(--prism-code-attr);
 }
+
 :host ::ng-deep .jh-string {
     color: var(--prism-code-str);
 }
+
 :host ::ng-deep .jh-number {
     color: var(--prism-warn);
 }
+
 :host ::ng-deep .jh-bool {
     color: var(--prism-primary);
 }
+
 :host ::ng-deep .jh-null {
     color: var(--prism-text-ghost);
 }
@@ -54,26 +60,28 @@
 .json-input {
     position: absolute;
     inset: 0;
+    box-sizing: border-box;
     width: 100%;
     height: 100%;
-    background: transparent;
+    overflow: auto;
     color: transparent;
     caret-color: var(--prism-text);
-    border: none;
     resize: none;
-    overflow: auto;
-    box-sizing: border-box;
+    background: transparent;
+    border: none;
 }
+
 .json-input:focus {
     outline: none;
 }
+
 .json-input::selection {
-    background: rgba(99, 102, 241, 0.3);
+    background: rgb(99 102 241 / 30%);
 }
 
 .json-error {
-    font-size: 11px;
-    color: var(--prism-danger);
     display: block;
     margin-top: 2px;
+    font-size: 11px;
+    color: var(--prism-danger);
 }

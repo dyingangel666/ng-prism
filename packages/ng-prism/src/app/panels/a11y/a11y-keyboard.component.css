@@ -9,22 +9,22 @@
     align-items: center;
     justify-content: center;
     min-height: 100px;
-    color: var(--prism-text-muted);
     font-size: 13px;
+    color: var(--prism-text-muted);
 }
 
 .kb-body {
-    padding: 16px 20px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    padding: 16px 20px;
 }
 
 .kb-row {
     display: grid;
     grid-template-columns: 110px 1fr auto;
-    align-items: center;
     gap: 12px;
+    align-items: center;
     padding: 9px 14px;
     background: var(--prism-bg-surface);
     border: 1px solid var(--prism-border);
@@ -35,14 +35,15 @@
     display: flex;
     gap: 4px;
 }
+
 .kb-keys kbd {
+    padding: 1px 5px;
     font-family: var(--font-mono);
     font-size: 10.5px;
-    padding: 1px 5px;
-    border-radius: 4px;
+    color: var(--prism-text-muted);
     background: var(--prism-input-bg);
     border: 1px solid var(--prism-border);
-    color: var(--prism-text-muted);
+    border-radius: 4px;
 }
 
 .kb-desc {
@@ -51,10 +52,10 @@
 }
 
 .kb-tgt {
+    padding: 2px 7px;
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--prism-primary);
-    padding: 2px 7px;
     background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
     border-radius: var(--radius-xs);
 }

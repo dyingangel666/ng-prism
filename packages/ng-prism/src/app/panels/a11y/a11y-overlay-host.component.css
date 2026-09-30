@@ -1,26 +1,30 @@
 :host {
     display: contents;
 }
+
 .a11y-mark {
     position: absolute;
-    pointer-events: none;
     z-index: 1;
+    pointer-events: none;
 }
+
 .outline {
-    border: 2px solid rgba(59, 130, 246, 0.95);
+    background: rgb(59 130 246 / 8%);
+    border: 2px solid rgb(59 130 246 / 95%);
     border-radius: 4px;
-    background: rgba(59, 130, 246, 0.08);
 }
+
 .tag {
     display: inline-block;
     padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(17, 24, 39, 0.92);
-    color: var(--prism-text-light, #fff);
     font: 11px/1.4 var(--font-mono);
+    color: var(--prism-text-light, #fff);
     white-space: nowrap;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    background: rgb(17 24 39 / 92%);
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 35%);
 }
+
 .kb .tag {
-    background: rgba(5, 150, 105, 0.95);
+    background: rgb(5 150 105 / 95%);
 }

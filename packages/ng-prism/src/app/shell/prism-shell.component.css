@@ -4,8 +4,9 @@
 }
 
 .prism-shell {
-    height: 100vh;
     display: grid;
+    grid-template-rows: var(--band-header) 1fr;
+
     /* Declared for its minimum, not for its size. An implicit grid track is
      auto, and an auto track's minimum is the min-content width of what sits
      in it -- here the whole body, sidebar and resizer and main together. The
@@ -20,11 +21,11 @@
      the levels below zero their own minimum through overflow: hidden, which
      is why this one track is the only place that needs saying. */
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--band-header) 1fr;
-    background: var(--prism-void);
+    height: 100vh;
+    overflow: hidden;
     font-family: var(--font-sans, var(--prism-font-sans));
     color: var(--prism-text);
-    overflow: hidden;
+    background: var(--prism-void);
 }
 
 .prism-body {
@@ -32,17 +33,18 @@
     grid-template-columns: var(--sw, 264px) 4px 1fr;
     min-height: 0;
 }
+
 .prism-body--no-sidebar {
     grid-template-columns: 1fr;
 }
 
 .prism-sidebar-wrap {
-    background: var(--prism-bg);
-    border-right: 1px solid var(--prism-border);
     display: flex;
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
+    background: var(--prism-bg);
+    border-right: 1px solid var(--prism-border);
 }
 
 .prism-sidebar-wrap prism-sidebar {
@@ -51,34 +53,38 @@
 }
 
 .prism-sidebar-foot {
-    border-top: 1px solid var(--prism-border);
+    display: flex;
+    gap: 8px;
+    align-items: center;
     padding: 10px 14px;
     font-size: 11px;
     color: var(--prism-text-ghost);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    border-top: 1px solid var(--prism-border);
 }
+
 .prism-sidebar-foot__logo {
-    width: 16px;
     flex-shrink: 0;
+    width: 16px;
 }
+
 .prism-sidebar-foot__link {
     color: var(--prism-text-ghost);
     text-decoration: none;
     transition: color var(--dur-fast);
 }
+
 .prism-sidebar-foot__link:hover {
     color: var(--prism-text-2);
 }
 
 .prism-resizer-col {
+    position: relative;
+    z-index: 5;
     width: 4px;
     background: transparent;
     transition: background var(--dur-fast) var(--ease-default);
-    position: relative;
-    z-index: 5;
 }
+
 .prism-resizer-col:hover,
 .prism-resizer-col.active {
     background: var(--prism-primary);
@@ -88,18 +94,19 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    background: var(--prism-void);
     overflow: hidden;
+    background: var(--prism-void);
 }
 
 .prism-resizer-row {
+    position: relative;
+    z-index: 5;
     flex-shrink: 0;
     height: 4px;
     background: transparent;
     transition: background var(--dur-fast) var(--ease-default);
-    position: relative;
-    z-index: 5;
 }
+
 .prism-resizer-row:hover,
 .prism-resizer-row.active {
     background: var(--prism-primary);
@@ -109,14 +116,15 @@
    stage, they float over it from a rail absolutely positioned against
    this element. The position: relative below is what anchors it. */
 .prism-canvas-wrap {
-    flex: 1;
-    min-height: 0;
-    display: grid;
-    grid-template-rows: minmax(0, 1fr);
-    background: var(--prism-bg-surface);
-    overflow: hidden;
     position: relative;
+    display: grid;
+    flex: 1;
+    grid-template-rows: minmax(0, 1fr);
+    min-height: 0;
+    overflow: hidden;
+    background: var(--prism-bg-surface);
 }
+
 .prism-main__canvas {
     flex: 1;
     min-height: 0;
@@ -124,32 +132,35 @@
 }
 
 .prism-main__panel {
-    height: var(--ph, 260px);
     flex-shrink: 0;
-    overflow: hidden;
+    height: var(--ph, 260px);
     min-height: 0;
+    overflow: hidden;
 }
 
 .prism-shell__empty {
     display: flex;
     flex-direction: column;
+    grid-row: 1 / -1;
+    gap: 8px;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    grid-row: 1 / -1;
 }
+
 .prism-shell__empty-icon {
     width: 48px;
     height: 48px;
-    color: var(--prism-text-ghost);
     margin-bottom: 8px;
+    color: var(--prism-text-ghost);
 }
+
 .prism-shell__empty-text {
     margin: 0;
     font-size: var(--fs-xl);
     font-weight: 500;
     color: var(--prism-text-muted);
 }
+
 .prism-shell__empty-hint {
     margin: 0;
     font-size: var(--fs-lg);

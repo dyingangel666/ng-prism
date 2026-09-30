@@ -7,6 +7,7 @@
     width: 128px;
     height: 128px;
 }
+
 :host-context(.compact) .score-ring,
 :host([style*='width:18px']) .score-ring {
     width: 100%;
@@ -14,24 +15,28 @@
 }
 
 .score-ring svg {
-    transform: rotate(-90deg);
     width: 100%;
     height: 100%;
+    transform: rotate(-90deg);
 }
 
 .score-ring circle {
     fill: none;
     stroke-width: 10;
 }
+
 .track {
     stroke: var(--prism-input-bg);
 }
+
 .gradient-start {
     stop-color: var(--prism-primary);
 }
+
 .gradient-end {
     stop-color: var(--prism-accent);
 }
+
 .fill {
     stroke-linecap: round;
     transition: stroke-dashoffset 0.5s ease;
@@ -42,22 +47,23 @@
     inset: 0;
     display: flex;
     flex-direction: column;
+    gap: 0;
     align-items: center;
     justify-content: center;
-    gap: 0;
 }
+
 .score-num {
+    font-family: var(--font-mono);
     font-size: 30px;
     font-weight: 700;
+    color: transparent;
     letter-spacing: -0.02em;
     background: linear-gradient(135deg, var(--prism-primary), var(--prism-accent));
-    -webkit-background-clip: text;
     background-clip: text;
-    color: transparent;
-    font-family: var(--font-mono);
 }
+
 .score-max {
     font-size: 11px;
-    color: var(--prism-text-ghost);
     font-weight: 500;
+    color: var(--prism-text-ghost);
 }

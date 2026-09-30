@@ -3,26 +3,29 @@
     width: 100%;
     height: 100%;
 }
+
 .prism-figma-panel__iframe {
     width: 100%;
     height: 100%;
     min-height: 400px;
     border: none;
 }
+
 .prism-figma-panel__empty {
     display: flex;
     align-items: center;
     justify-content: center;
     height: 100%;
     min-height: 200px;
-    color: var(--prism-text-muted);
     font-size: 14px;
+    color: var(--prism-text-muted);
 }
+
 .prism-figma-panel__empty code {
-    font-family: var(--font-mono);
-    background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
-    color: var(--prism-primary);
     padding: 2px 6px;
-    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
     font-size: var(--fs-lg);
+    color: var(--prism-primary);
+    background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+    border-radius: var(--radius-xs);
 }

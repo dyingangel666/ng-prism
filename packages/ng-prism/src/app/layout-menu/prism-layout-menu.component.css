@@ -8,21 +8,22 @@
     justify-content: center;
     width: 30px;
     height: 30px;
-    border: 1px solid var(--prism-border);
-    border-radius: var(--prism-radius-sm);
-    background: transparent;
     color: var(--prism-text-muted);
     cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--prism-border);
+    border-radius: var(--prism-radius-sm);
     transition:
         border-color 0.15s,
         color 0.15s,
         background 0.15s;
 }
+
 .layout-menu__trigger:hover,
 .layout-menu__trigger--active {
-    border-color: var(--prism-border-strong);
     color: var(--prism-text);
     background: var(--prism-bg-surface);
+    border-color: var(--prism-border-strong);
 }
 
 .layout-menu__backdrop {
@@ -37,58 +38,60 @@
     right: 0;
     z-index: 50;
     min-width: 240px;
+    padding: 4px;
     background: var(--prism-bg-elevated);
     border: 1px solid var(--prism-border-strong);
     border-radius: var(--prism-radius);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    padding: 4px;
+    box-shadow: 0 8px 32px rgb(0 0 0 / 40%);
 }
 
 .layout-menu__item {
     display: flex;
-    align-items: center;
     gap: 8px;
+    align-items: center;
     width: 100%;
     padding: 7px 10px;
-    border: none;
-    background: none;
-    color: var(--prism-text);
     font-family: var(--prism-font-sans);
     font-size: 13px;
-    cursor: pointer;
-    border-radius: var(--prism-radius-sm);
+    color: var(--prism-text);
     text-align: left;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: var(--prism-radius-sm);
     transition: background 0.1s;
 }
+
 .layout-menu__item:hover {
     background: var(--prism-bg-surface);
 }
 
 .layout-menu__check {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     width: 16px;
     height: 16px;
+    color: transparent;
     border: 1px solid var(--prism-border-strong);
     border-radius: 3px;
-    flex-shrink: 0;
-    color: transparent;
 }
+
 .layout-menu__check--on {
+    color: white;
     background: var(--prism-primary);
     border-color: var(--prism-primary);
-    color: white;
 }
 
 .layout-menu__icon {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     width: 16px;
     height: 16px;
     color: var(--prism-text-muted);
-    flex-shrink: 0;
 }
 
 .layout-menu__label {
@@ -100,18 +103,19 @@
     gap: 2px;
     opacity: 0.6;
 }
+
 kbd {
+    padding: 1px 4px;
     font-family: var(--prism-font-sans);
     font-size: 11px;
-    padding: 1px 4px;
+    color: var(--prism-text-muted);
+    background: var(--prism-bg-surface);
     border: 1px solid var(--prism-border-strong);
     border-radius: 3px;
-    background: var(--prism-bg-surface);
-    color: var(--prism-text-muted);
 }
 
 .layout-menu__divider {
     height: 1px;
-    background: var(--prism-border);
     margin: 4px 0;
+    background: var(--prism-border);
 }

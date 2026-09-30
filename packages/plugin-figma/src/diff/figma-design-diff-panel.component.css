@@ -1,7 +1,7 @@
 .diff-panel {
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
     font-family: var(--prism-font-sans);
     font-size: 13px;
     color: var(--prism-text-1);
@@ -11,23 +11,25 @@
 .diff-panel__empty {
     display: flex;
     flex-direction: column;
+    gap: 8px;
     align-items: center;
     justify-content: center;
     height: 100%;
-    gap: 8px;
     padding: 24px;
     text-align: center;
 }
 
 .diff-panel__empty-title {
+    margin: 0;
     font-weight: 500;
     color: var(--prism-text-1);
-    margin: 0;
 }
+
 .diff-panel__empty-hint {
-    color: var(--prism-text-muted);
     margin: 0;
+    color: var(--prism-text-muted);
 }
+
 .diff-panel__empty--error .diff-panel__empty-title {
     color: #ef4444;
 }
@@ -41,9 +43,9 @@
 
 .diff-panel__loading {
     display: flex;
+    gap: 10px;
     align-items: center;
     justify-content: center;
-    gap: 10px;
     height: 100%;
     color: var(--prism-text-muted);
 }
@@ -65,18 +67,19 @@
 
 .diff-panel__run-btn {
     padding: 8px 16px;
-    background: var(--prism-primary);
+    font-family: var(--prism-font-sans);
+    font-size: 13px;
     color: #fff;
+    cursor: pointer;
+    background: var(--prism-primary);
     border: none;
     border-radius: 6px;
-    font-size: 13px;
-    font-family: var(--prism-font-sans);
-    cursor: pointer;
 }
 
 .diff-panel__run-btn:hover {
     opacity: 0.9;
 }
+
 .diff-panel__run-btn--sm {
     padding: 5px 10px;
     font-size: 12px;
@@ -90,11 +93,11 @@
 
 .diff-panel__toolbar {
     display: flex;
-    align-items: center;
+    flex-shrink: 0;
     gap: 12px;
+    align-items: center;
     padding: 8px 12px;
     border-bottom: 1px solid var(--prism-border);
-    flex-shrink: 0;
 }
 
 .diff-panel__modes {
@@ -104,34 +107,34 @@
 
 .diff-panel__mode-btn {
     padding: 4px 10px;
-    border: 1px solid var(--prism-border);
-    background: none;
-    font-size: 12px;
     font-family: var(--prism-font-sans);
+    font-size: 12px;
     color: var(--prism-text-muted);
     cursor: pointer;
+    background: none;
+    border: 1px solid var(--prism-border);
     border-radius: 4px;
 }
 
 .diff-panel__mode-btn--active {
-    background: var(--prism-primary);
     color: #fff;
+    background: var(--prism-primary);
     border-color: var(--prism-primary);
 }
 
 .diff-panel__stats {
     margin-left: auto;
-    color: var(--prism-text-muted);
     font-variant-numeric: tabular-nums;
+    color: var(--prism-text-muted);
 }
 
 .diff-panel__canvas-area {
-    flex: 1;
-    overflow: auto;
-    padding: 16px;
     display: flex;
+    flex: 1;
     align-items: flex-start;
     justify-content: center;
+    padding: 16px;
+    overflow: auto;
 }
 
 .diff-panel__split {
@@ -141,8 +144,8 @@
 }
 
 .diff-panel__split-side {
-    flex: 1;
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 6px;
 }

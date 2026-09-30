@@ -1,19 +1,18 @@
 :host {
     display: block;
-    min-height: 0;
     flex: 1;
+    min-height: 0;
 }
 
 .prism-canvas-stage {
     position: relative;
-    overflow: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px;
-    min-height: 200px;
     height: 100%;
-    background-color: var(--prism-stage);
+    min-height: 200px;
+    padding: 32px;
+    overflow: auto;
 
     /* The edge is outline + shadow, never border and never extra padding.
    plugin-visual-regression screenshots .demo-wrap, which is centred in
@@ -28,13 +27,16 @@
    to none, which is only safe because neither is load-bearing here. */
     outline: 1px solid var(--prism-stage-edge);
     outline-offset: -1px;
+    background-color: var(--prism-stage);
     box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.1),
-        0 8px 24px -12px rgba(0, 0, 0, 0.18);
+        0 1px 3px rgb(0 0 0 / 10%),
+        0 8px 24px -12px rgb(0 0 0 / 18%);
     transition: filter var(--dur-base);
+
     --prism-canvas-overlay-top: 12px;
     --prism-canvas-overlay-inline: 20px;
 }
+
 .prism-canvas-stage[data-rulers] {
     --prism-canvas-overlay-top: 28px;
     --prism-canvas-overlay-inline: 28px;
@@ -47,21 +49,25 @@
     opacity: 0;
     transition: opacity var(--dur-base);
 }
+
 .stage-crosshair.visible {
     opacity: 1;
 }
+
 .stage-crosshair::before,
 .stage-crosshair::after {
-    content: '';
     position: absolute;
+    content: '';
     background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
 }
+
 .stage-crosshair::before {
-    left: 0;
-    right: 0;
     top: 50%;
+    right: 0;
+    left: 0;
     height: 1px;
 }
+
 .stage-crosshair::after {
     top: 0;
     bottom: 0;
@@ -75,6 +81,7 @@
     transform: scale(var(--zoom, 1));
     transition: transform 0.18s;
 }
+
 .demo-wrap[data-canvas-layout='stretch'] {
     display: block;
     width: 100%;
@@ -114,14 +121,7 @@
    whole viewport. */
 .demo-wrap[data-viewport] {
     display: grid;
-    /* safe center, not bare center. Centring is right while the specimen
-     fits and wrong the moment it does not: bare centring spills an
-     over-wide specimen equally past both edges, where a real viewport of
-     that width clips at zero and scrolls in one direction. The safe
-     keyword falls back to start exactly when the item overflows, which
-     is the browser making a case distinction CSS cannot otherwise
-     express. */
-    justify-items: safe center;
+
     /* flex: none, and it is load-bearing. The stage is a flex container
      and this is its only item, so the default flex-shrink: 1 lets the
      box render narrower than the width just asked for whenever the
@@ -132,6 +132,15 @@
      specimen answers whatever the canvas happened to allow. The stage
      is overflow: auto, so refusing to shrink scrolls instead. */
     flex: none;
+
+    /* safe center, not bare center. Centring is right while the specimen
+     fits and wrong the moment it does not: bare centring spills an
+     over-wide specimen equally past both edges, where a real viewport of
+     that width clips at zero and scrolls in one direction. The safe
+     keyword falls back to start exactly when the item overflows, which
+     is the browser making a case distinction CSS cannot otherwise
+     express. */
+    justify-items: safe center;
     width: var(--prism-vp-w);
     max-width: none;
     container-type: inline-size;
@@ -154,11 +163,11 @@
     position: absolute;
     top: var(--prism-canvas-overlay-top, 12px);
     bottom: 0;
-    z-index: 4;
-    width: 9px;
     left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
+    z-index: 4;
     display: grid;
-    background: transparent;
+    width: 9px;
+
     /* The element is the guide line's full-height track and nothing else
      may be clickable about it. It runs from the overlay band to the
      bottom of the stage at z-index 4, straight over prism-canvas-bg-pill
@@ -166,10 +175,12 @@
      Reset button unreachable whenever a viewport was on. Only the bar
      below takes pointer events back. */
     pointer-events: none;
+    background: transparent;
 }
+
 .vp-grip--end {
-    left: auto;
     right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
+    left: auto;
 }
 
 /* The part you grab, and the only part of the grip that takes pointer
@@ -184,18 +195,17 @@
    in the tools menu answers — the same widths are reachable there, and
    both grips take Home/End and the arrow keys. */
 .vp-grip__bar {
-    grid-area: 1 / 1;
-    justify-self: center;
-    align-self: center;
     z-index: 1;
-    pointer-events: auto;
     box-sizing: content-box;
+    grid-area: 1 / 1;
+    place-self: center center;
     width: 3px;
     height: 34px;
     padding: 5px 3px;
-    border-radius: 2px;
+    pointer-events: auto;
     background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
     background-clip: content-box;
+    border-radius: 2px;
     transition: background var(--dur-fast);
 }
 
@@ -205,31 +215,34 @@
    region rather than as two loose handles. Faint on purpose — it crosses
    the specimen, so it has to stay readable as chrome. */
 .vp-grip::after {
-    content: '';
     grid-area: 1 / 1;
-    justify-self: center;
-    align-self: stretch;
+    place-self: stretch center;
     width: 1px;
+    content: '';
     background: color-mix(in srgb, var(--prism-measure) 75%, transparent);
     transition: background var(--dur-fast);
 }
+
 .vp-grip:hover::after,
 .vp-grip.active::after,
 .vp-grip:focus-visible::after {
     background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
 }
+
 .vp-grip:hover .vp-grip__bar,
 .vp-grip.active .vp-grip__bar,
 .vp-grip:focus-visible .vp-grip__bar {
     background: var(--prism-measure);
     background-clip: content-box;
 }
+
 /* The ring goes on the bar, not on the host: the host is the full-height
    track, and outlining that would draw a rule the length of the stage
    for a control 34px tall. */
 .vp-grip:focus-visible {
     outline: none;
 }
+
 .vp-grip:focus-visible .vp-grip__bar {
     outline: 2px solid var(--prism-primary);
     outline-offset: 1px;
@@ -248,13 +261,13 @@
     position: absolute;
     top: var(--prism-canvas-overlay-top, 12px);
     left: 50%;
-    width: calc(var(--prism-vp-w) * var(--zoom, 1));
-    transform: translateX(-50%);
     z-index: 4;
     display: flex;
-    align-items: center;
     gap: var(--sp-3);
+    align-items: center;
+    width: calc(var(--prism-vp-w) * var(--zoom, 1));
     pointer-events: none;
+    transform: translateX(-50%);
 }
 
 /* Two halves with the value in the gap, rather than one rule behind it:
@@ -271,16 +284,18 @@
    the span between them instead of as a divider laid across the canvas,
    and they mark the two edges the grips can be dragged to. */
 .vp-dim__rule::before {
-    content: '';
     position: absolute;
     top: -3px;
     width: 1px;
     height: 7px;
+    content: '';
     background: color-mix(in srgb, var(--prism-measure) 90%, transparent);
 }
+
 .vp-dim__rule:first-child::before {
     left: 0;
 }
+
 .vp-dim__rule:last-child::before {
     right: 0;
 }
