@@ -47,7 +47,7 @@ npm install
 #### 2. Verify the core builds and tests
 
 ```bash
-npm run check       # Format check + test + build + typecheck for all packages
+npm run check       # Format + lint + style + test + build + typecheck for all packages
 ```
 
 This is the same gate CI runs (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
@@ -228,16 +228,62 @@ Use a descriptive branch name with a prefix:
 Before opening a PR, run the same checks CI runs on GitHub:
 
 ```bash
-npm run check       # nx format:check + test + build + typecheck for all packages
+npm run check       # nx format:check + stylelint + lint + test + build + typecheck for all packages
 ```
 
-If `format:check` fails, auto-fix with:
+If `check` fails on formatting, lint, or style, auto-fix what can be auto-fixed with:
 
 ```bash
-npm run check:fix   # nx format:write — rewrites mis-formatted files in place
+npm run check:fix   # eslint --fix, then nx format:write, then stylelint --fix
 ```
 
-Then commit the formatting fixes.
+Then commit the fixes. `check:fix` (like `lint:fix`) runs a single pass and does
+not loop to a fixed point — re-run it if it reports remaining findings after a
+fix, and fall back to `npm run check` to confirm the tree is actually clean
+before pushing.
+
+### Linting and formatting
+
+Three tools with clearly separated responsibilities:
+
+| File type              | Formatted by                        | Linted by                                                      |
+| ---------------------- | ----------------------------------- | -------------------------------------------------------------- |
+| `.ts`, `.html`         | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
+| `.css`                 | Prettier                            | Stylelint                                                      |
+| `.json`, `.md`, `.yml` | Prettier                            | —                                                              |
+
+Prettier does not run separately for TypeScript and HTML — it runs as an
+ESLint rule via `eslint-plugin-prettier`. One `eslint --fix` therefore handles
+formatting and rules in a single pass, and no two tools rewrite the same file
+one after another.
+
+When a fix pass is needed, the order is always **ESLint, then Prettier, then
+Stylelint** — `stylelint-config-recess-order` reorders properties, and Prettier
+would otherwise touch the result again. `npm run check:fix` does this for you.
+
+A pre-commit hook runs the three tools on staged files, and a pre-push hook
+lints every package — Nx serves the unchanged ones from cache, so this costs
+little more than linting only what changed, and it cannot pick the wrong base.
+
+Editor setup: VS Code picks up `.vscode/settings.json` automatically — install
+the recommended extensions when prompted. For WebStorm and IntelliJ, enable
+these three manually (they are per-machine settings and not in the repo):
+
+- **ESLint** — Languages & Frameworks → JavaScript → Code Quality Tools →
+  ESLint: "Automatic ESLint configuration", check "Run eslint --fix on save",
+  pattern `**/*.{ts,html}`
+- **Prettier** — Languages & Frameworks → JavaScript → Prettier: check "Run on
+  save", pattern `**/*.{json,css,md,yml,js,cjs,mjs}`
+- **Stylelint** — Languages & Frameworks → Style Sheets → Stylelint: check "Run
+  stylelint --fix on save", pattern `**/*.css`
+
+Note the patterns do not overlap: ESLint owns `ts` and `html`, Prettier owns
+the rest.
+
+The repository has been reformatted wholesale three times during the linting
+rollout. To keep `git blame` useful, tell git to skip those commits:
+
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 For fast iteration on a single package during development, run targets directly:
 
