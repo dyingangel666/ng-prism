@@ -37,20 +37,23 @@ export default [
             'test-workspace',
             'docs',
 
-            // CommonJS/Node-Tooling-Konfiguration und -Skripte: ESLint läuft
-            // hier ohnehin nur über `**/*.ts`- und `**/*.html`-Blöcke, trifft
-            // also für `.cjs`/`.js`/`.mjs`-Dateien nie eine Regel — bislang
-            // ein Zufallszustand statt einer Entscheidung (ein
-            // `/* eslint-disable */` in jest.config.cjs wurde beim Autofix in
-            // Task 3 kommentarlos entfernt, weil es wirkungslos war). Eine
-            // eigene Node-Regelmenge dafür (Rule-Set + `languageOptions` für
-            // CommonJS-Globals) ist für diesen gesamten Plan bewusst nicht
-            // vorgesehen; bis das explizit gewollt ist, werden diese Dateien
-            // ignoriert statt stillschweigend ungeprüft mitgeführt.
+            // Generiertes/unveränderliches CommonJS-Tooling: ESLint lief
+            // hier ohnehin nie über `**/*.ts`/`**/*.html` hinaus, traf also
+            // nie eine Regel — bislang ein Zufallszustand statt einer
+            // Entscheidung (ein `/* eslint-disable */` in jest.config.cjs
+            // wurde beim Autofix in Task 3 kommentarlos entfernt, weil es
+            // wirkungslos war). jest.preset.js und die sieben
+            // jest.config.cjs sind von Nx erzeugtes Boilerplate mit fester
+            // Form; eine eigene Node-Regelmenge dafür brächte nichts, was
+            // ein erneuter Nx-Generatorlauf nicht wieder verwerfen würde.
+            // eslint.config.mjs ist die Lint-Konfiguration selbst.
+            // scripts/check-declared-deps.mjs ist davon bewusst
+            // ausgenommen (siehe eigener `files`-Block unten): es ist
+            // echte, handgeschriebene Logik, kein generiertes Boilerplate,
+            // und läuft in `npm run check` und CI.
             'jest.preset.js',
             '**/jest.config.cjs',
             'eslint.config.mjs',
-            'scripts/check-declared-deps.mjs',
 
             '**/plugin-registry.ts',
             '**/.DS_Store'
@@ -206,6 +209,28 @@ export default [
             // static import reaches the live, requireable object here, so
             // require() stays.
             '@typescript-eslint/no-require-imports': 'off'
+        }
+    },
+
+    // ──── Node-Skripte ────
+    //
+    // scripts/ ist reines, handgeschriebenes ESM ohne jede Berührung mit
+    // Angular oder dem Browser — anders als builder/, wo Node- und
+    // Browser-Code im selben Verzeichnis nebeneinander liegen und eine
+    // Verzeichnis-Override deshalb in beide Richtungen falsch läge (daher
+    // bleibt eine Node-Kontext-Override dort bewusst außerhalb dieses
+    // Plans). scripts/ hat dieses Problem nicht, bekommt also eine echte,
+    // kleine Regelmenge statt eines Ignores.
+    {
+        ...js.configs.recommended,
+        files: ['scripts/**/*.mjs'],
+        languageOptions: {
+            sourceType: 'module',
+            ecmaVersion: 'latest',
+            globals: {
+                process: 'readonly',
+                console: 'readonly'
+            }
         }
     },
 
