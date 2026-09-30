@@ -1,8 +1,8 @@
 import { ApplicationRef, Injector, runInInjectionContext } from '@angular/core';
 import type { RuntimeManifest } from '../plugin/plugin.types.js';
-import { PRISM_MANIFEST } from './tokens/prism-tokens.js';
-import { PrismManifestService } from './services/prism-manifest.service.js';
 import { enablePrismHmr } from './hmr.js';
+import { PrismManifestService } from './services/prism-manifest.service.js';
+import { PRISM_MANIFEST } from './tokens/prism-tokens.js';
 
 function setup(initial: RuntimeManifest): { service: PrismManifestService; appRef: ApplicationRef } {
     const injector = Injector.create({
@@ -10,6 +10,7 @@ function setup(initial: RuntimeManifest): { service: PrismManifestService; appRe
     });
     const service = runInInjectionContext(injector, () => new PrismManifestService());
     const appRef = { injector: { get: () => service } } as unknown as ApplicationRef;
+
     return { service, appRef };
 }
 

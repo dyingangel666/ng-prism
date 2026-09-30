@@ -1,6 +1,6 @@
 import type { Type } from '@angular/core';
-import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { ShowcaseConfig } from '../../decorator/showcase.types.js';
+import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import { showsOverview } from './overview-visibility.js';
 
 function makeComp(config: Partial<ShowcaseConfig> = {}): RuntimeComponent {
@@ -28,6 +28,7 @@ describe('showsOverview', () => {
 
     it('is false for a single variant — one cell says nothing', () => {
         const comp = makeComp({ variants: [{ name: 'Default' }] });
+
         expect(showsOverview(comp)).toBe(false);
     });
 
@@ -35,6 +36,7 @@ describe('showsOverview', () => {
         const comp = makeComp({
             variants: [{ name: 'Primary' }, { name: 'Secondary' }]
         });
+
         expect(showsOverview(comp)).toBe(true);
     });
 
@@ -43,6 +45,7 @@ describe('showsOverview', () => {
             renderPage: 'Button Patterns',
             variants: [{ name: 'Primary' }, { name: 'Secondary' }]
         });
+
         expect(showsOverview(comp)).toBe(false);
     });
 });

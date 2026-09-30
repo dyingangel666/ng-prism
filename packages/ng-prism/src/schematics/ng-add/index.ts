@@ -1,4 +1,4 @@
-import { chain, type Rule, type SchematicContext, type Tree, SchematicsException } from '@angular-devkit/schematics';
+import { chain, type Rule, type SchematicContext, SchematicsException, type Tree } from '@angular-devkit/schematics';
 // `@angular-devkit/schematics` has no `exports` map, so its subpaths must name
 // a file — Node's ESM resolver does not honour the legacy `tasks/package.json`
 // `main` field the way CommonJS `require()` does. See issue #32.
@@ -32,6 +32,7 @@ const BUILD_ANGULAR = '@angular-devkit/build-angular';
 
 function readJsonIfPresent<T>(tree: Tree, path: string): T | undefined {
     const buffer = tree.read(path);
+
     if (!buffer) return undefined;
     try {
         return JSON.parse(buffer.toString('utf-8')) as T;
@@ -49,6 +50,7 @@ function readJsonIfPresent<T>(tree: Tree, path: string): T | undefined {
 function resolveAppBuilder(tree: Tree): string {
     const pkg = readJsonIfPresent<PackageJsonSchema>(tree, 'package.json');
     const declared = { ...pkg?.dependencies, ...pkg?.devDependencies };
+
     return declared[ANGULAR_BUILD] ? ANGULAR_BUILD : BUILD_ANGULAR;
 }
 
@@ -61,6 +63,7 @@ function resolveRootTsConfig(tree: Tree): string | undefined {
 
 function dirHasContent(tree: Tree, path: string): boolean {
     const dir = tree.getDir(path);
+
     return dir.subfiles.length > 0 || dir.subdirs.length > 0;
 }
 
@@ -71,6 +74,7 @@ function dirHasContent(tree: Tree, path: string): boolean {
 function resolvePrismRoot(tree: Tree, libraryRoot: string, prismProjectName: string): string {
     const nxJson = readJsonIfPresent<NxJsonSchema>(tree, 'nx.json');
     const appsDir = nxJson?.workspaceLayout?.appsDir;
+
     if (appsDir) return `${appsDir}/${prismProjectName}`;
 
     if (tree.exists('nx.json') && dirHasContent(tree, 'apps')) {
@@ -79,6 +83,7 @@ function resolvePrismRoot(tree: Tree, libraryRoot: string, prismProjectName: str
 
     const separator = libraryRoot.lastIndexOf('/');
     const parent = separator > 0 ? libraryRoot.slice(0, separator) : 'projects';
+
     return `${parent}/${prismProjectName}`;
 }
 
@@ -98,6 +103,7 @@ function resolveLibraryBarrel(tree: Tree, project: WorkspaceProject): string {
 
     if (root) {
         const ngPackage = readJsonIfPresent<{ lib?: { entryFile?: string } }>(tree, `${root}/ng-package.json`);
+
         if (ngPackage?.lib?.entryFile) return `${root}/${ngPackage.lib.entryFile}`;
     }
 
@@ -112,6 +118,7 @@ function resolveLibraryBarrel(tree: Tree, project: WorkspaceProject): string {
 
 function readWorkspace(tree: Tree): WorkspaceSchema {
     const buffer = tree.read('angular.json');
+
     if (!buffer) {
         throw new SchematicsException(
             'Could not find angular.json. Run this from an Angular workspace root, or ' +
@@ -188,6 +195,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
         }
 
         const indexHtmlPath = `${prismSrc}/index.html`;
+
         if (!tree.exists(indexHtmlPath)) {
             const indexHtml = [
                 '<!DOCTYPE html>',
@@ -204,10 +212,12 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
                 '</html>',
                 ''
             ].join('\n');
+
             tree.create(indexHtmlPath, indexHtml);
         }
 
         const tsconfigAppPath = `${prismRoot}/tsconfig.app.json`;
+
         if (!tree.exists(tsconfigAppPath)) {
             const tsconfigApp = {
                 extends: `${toRoot}${resolveRootTsConfig(tree) ?? 'tsconfig.json'}`,
@@ -219,6 +229,7 @@ function addPrismAppProject(options: NgAddSchemaOptions): Rule {
                 files: ['src/main.ts'],
                 include: ['src/**/*.d.ts', `${toRoot}ng-prism-cache/${prismProjectName}/**/*.ts`]
             };
+
             tree.create(tsconfigAppPath, JSON.stringify(tsconfigApp, null, 2) + '\n');
         }
 
@@ -328,6 +339,7 @@ function addBuilderTargets(options: NgAddSchemaOptions): Rule {
 function addTsConfigPaths(options: NgAddSchemaOptions): Rule {
     return (tree: Tree, _context: SchematicContext) => {
         const tsConfigPath = resolveRootTsConfig(tree);
+
         if (!tsConfigPath) return tree;
 
         const workspace = readWorkspace(tree);
@@ -366,17 +378,21 @@ function addRuntimePeerDeps(): Rule {
     return (tree: Tree, context: SchematicContext) => {
         const pkgPath = 'package.json';
         const buffer = tree.read(pkgPath);
+
         if (!buffer) return tree;
 
         const pkg = JSON.parse(buffer.toString('utf-8')) as {
             dependencies?: Record<string, string>;
             devDependencies?: Record<string, string>;
         };
+
         pkg.devDependencies ??= {};
 
         let changed = false;
+
         for (const [name, version] of Object.entries(RUNTIME_PEER_DEPS)) {
             const alreadyPresent = pkg.devDependencies[name] || pkg.dependencies?.[name];
+
             if (!alreadyPresent) {
                 pkg.devDependencies[name] = version;
                 changed = true;
@@ -414,8 +430,10 @@ function addNgPrismGitignoreEntry(): Rule {
         const gitignorePath = '.gitignore';
 
         const buffer = tree.read(gitignorePath);
+
         if (buffer) {
             const content = buffer.toString('utf-8');
+
             if (content.split('\n').some((line) => line.trim() === entry)) return tree;
             tree.overwrite(gitignorePath, content.trimEnd() + '\n' + entry + '\n');
         } else {
@@ -430,15 +448,18 @@ function addStripShowcaseScript(options: NgAddSchemaOptions): Rule {
     return (tree: Tree) => {
         const pkgPath = 'package.json';
         const buffer = tree.read(pkgPath);
+
         if (!buffer) return tree;
 
         const pkg = JSON.parse(buffer.toString('utf-8')) as {
             scripts?: Record<string, string>;
             [key: string]: unknown;
         };
+
         if (!pkg.scripts) pkg.scripts = {};
 
         const scriptName = 'strip-showcase';
+
         if (pkg.scripts[scriptName]) return tree;
 
         pkg.scripts[scriptName] = `ng-prism-strip dist/${options.project}`;

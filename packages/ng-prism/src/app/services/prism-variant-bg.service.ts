@@ -15,6 +15,7 @@ export class PrismVariantBgService {
 
     readonly recommended = computed<CanvasBg | null>(() => {
         const comp = this.navigation.activeComponent();
+
         if (!comp) return null;
         return declaredVariantBg(comp.meta.showcaseConfig, this.renderer.activeVariantIndex());
     });
@@ -60,6 +61,7 @@ export class PrismVariantBgService {
     readonly isDeviating = computed<boolean>(() => {
         const override = this._override();
         const recommended = this.recommended();
+
         return override !== null && recommended !== null && override !== recommended;
     });
 

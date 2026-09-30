@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import type { PrismRendererHooks } from '@ng-prism/core/plugin';
 
 export interface HeapSnapshot {
@@ -27,6 +27,7 @@ export class PerfMemoryService implements PrismRendererHooks {
     readonly delta = computed(() => {
         const before = this.beforeCreate();
         const after = this.afterCreate();
+
         if (!before || !after) return null;
         return after.bytes - before.bytes;
     });
@@ -34,12 +35,14 @@ export class PerfMemoryService implements PrismRendererHooks {
     readonly residual = computed(() => {
         const before = this.beforeCreate();
         const destroy = this.afterDestroy();
+
         if (!before || !destroy) return null;
         return destroy.bytes - before.bytes;
     });
 
     readonly leakStatus = computed<'ok' | 'warn' | 'unknown'>(() => {
         const residualMb = this.residual();
+
         if (residualMb === null) return 'unknown';
         return residualMb / (1024 * 1024) >= 0.5 ? 'warn' : 'ok';
     });
@@ -63,6 +66,7 @@ export class PerfMemoryService implements PrismRendererHooks {
     takeSnapshot(label: string): void {
         if (!this.available()) return;
         const mem = (performance as unknown as { memory: { usedJSHeapSize: number } }).memory;
+
         this.snapshots.update((arr) => [...arr.filter((s) => s.label !== label), { label, bytes: mem.usedJSHeapSize, timestamp: Date.now() }]);
     }
 

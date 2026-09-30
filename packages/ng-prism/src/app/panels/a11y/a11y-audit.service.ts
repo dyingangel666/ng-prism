@@ -41,8 +41,10 @@ export async function runCoreAudit(element: Element, config?: A11yCoreConfig): P
     const axe = await loadAxe();
 
     const options: RunOptions = {};
+
     if (config?.rules) {
         const keys = Object.keys(config.rules);
+
         if (keys.length > 0) {
             options.rules = Object.fromEntries(keys.map((id) => [id, config.rules![id]]));
         }
@@ -59,6 +61,7 @@ export class A11yAuditService {
 
     readonly scoreResult = computed(() => {
         const r = this.results();
+
         return r ? calculateScore(r) : null;
     });
 

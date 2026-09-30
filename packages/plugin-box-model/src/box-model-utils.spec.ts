@@ -45,6 +45,7 @@ describe('getBoxModel', () => {
     it('returns the content DOMRect from getBoundingClientRect', () => {
         const el = makeElement({ width: 200, height: 80 });
         const result = getBoxModel(el);
+
         expect(result.content.width).toBe(200);
         expect(result.content.height).toBe(80);
     });
@@ -60,6 +61,7 @@ describe('getBoxModel', () => {
             }
         );
         const result = getBoxModel(el);
+
         expect(result.padding).toEqual({ top: 10, right: 20, bottom: 10, left: 20 });
     });
 
@@ -74,6 +76,7 @@ describe('getBoxModel', () => {
             }
         );
         const result = getBoxModel(el);
+
         expect(result.border).toEqual({ top: 2, right: 4, bottom: 2, left: 4 });
     });
 
@@ -88,6 +91,7 @@ describe('getBoxModel', () => {
             }
         );
         const result = getBoxModel(el);
+
         expect(result.margin).toEqual({ top: 16, right: 8, bottom: 16, left: 8 });
     });
 
@@ -110,6 +114,7 @@ describe('getBoxModel', () => {
             }
         );
         const result = getBoxModel(el);
+
         expect(result.padding).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
         expect(result.border).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
         expect(result.margin).toEqual({ top: 0, right: 0, bottom: 0, left: 0 });
@@ -118,6 +123,7 @@ describe('getBoxModel', () => {
     it('returns the element reference', () => {
         const el = makeElement();
         const result = getBoxModel(el);
+
         expect(result.element).toBe(el);
     });
 });

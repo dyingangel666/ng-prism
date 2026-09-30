@@ -11,9 +11,11 @@ export class PrismSearchService {
     readonly filteredComponents = computed(() => {
         const q = this.query().toLowerCase().trim();
         const all = this.manifestService.components();
+
         if (!q) return all;
         return all.filter((comp) => {
             const config = comp.meta.showcaseConfig;
+
             return (
                 config.title.toLowerCase().includes(q) ||
                 (config.category?.toLowerCase().includes(q) ?? false) ||
@@ -25,6 +27,7 @@ export class PrismSearchService {
     readonly filteredPages = computed<StyleguidePage[]>(() => {
         const q = this.query().toLowerCase().trim();
         const all = this.manifestService.pages();
+
         if (!q) return all;
         return all.filter((page) => page.title.toLowerCase().includes(q) || (page.category?.toLowerCase().includes(q) ?? false));
     });

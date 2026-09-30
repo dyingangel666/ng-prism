@@ -20,30 +20,37 @@ function toSerializable(value: unknown, seen: Set<object>): unknown {
     if (value === null) return null;
 
     const type = typeof value;
+
     if (type === 'string' || type === 'boolean') return value;
     if (type === 'number') return Number.isFinite(value) ? value : undefined;
     if (type !== 'object') return undefined;
 
     const object = value as object;
+
     if (seen.has(object)) return undefined;
 
     if (Array.isArray(object)) {
         seen.add(object);
         const items = object.map((item) => {
             const serialized = toSerializable(item, seen);
+
             return serialized === undefined ? null : serialized;
         });
+
         seen.delete(object);
         return items;
     }
 
     const proto = Object.getPrototypeOf(object) as object | null;
+
     if (proto !== Object.prototype && proto !== null) return undefined;
 
     seen.add(object);
     const result: Record<string, unknown> = {};
+
     for (const [key, item] of Object.entries(object)) {
         const serialized = toSerializable(item, seen);
+
         if (serialized !== undefined) result[key] = serialized;
     }
     seen.delete(object);
@@ -54,6 +61,7 @@ function toSerializable(value: unknown, seen: Set<object>): unknown {
 export function serializableMeta(meta: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
     if (!meta) return undefined;
     const serialized = toSerializable(meta, new Set()) as Record<string, unknown> | undefined;
+
     if (!serialized || Object.keys(serialized).length === 0) return undefined;
     return serialized;
 }
@@ -81,6 +89,7 @@ export function buildDiscoveryManifest(manifest: RuntimeManifest): DiscoveryMani
                 ? declared.map((variant, index) => {
                       const meta = serializableMeta(variant.meta);
                       const bg = resolveVariantBg(showcaseConfig, index);
+
                       return meta ? { name: variant.name, index, bg, meta } : { name: variant.name, index, bg };
                   })
                 : [
@@ -97,6 +106,7 @@ export function buildDiscoveryManifest(manifest: RuntimeManifest): DiscoveryMani
                 title: showcaseConfig.title,
                 variants
             };
+
             if (meta) discovered.meta = meta;
             return discovered;
         }),

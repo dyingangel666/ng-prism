@@ -1,5 +1,5 @@
-import type { CoverageSummary, CoverageThresholds } from './coverage.types.js';
 import { avgThreshold, deriveCoverageSummary } from './coverage-summary.js';
+import type { CoverageThresholds } from './coverage.types.js';
 
 const T: CoverageThresholds = {
     lines: 80,

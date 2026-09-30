@@ -21,6 +21,7 @@ const SLASH = '/'.charCodeAt(0);
  */
 function withoutTrailingSlashes(base: string): string {
     let end = base.length;
+
     while (end > 0 && base.charCodeAt(end - 1) === SLASH) end--;
     return base.slice(0, end);
 }
@@ -43,5 +44,6 @@ export function resolveAssetUrl(baseUrl: string, path: string | undefined): stri
     if (!baseUrl) return path;
 
     const base = withoutTrailingSlashes(baseUrl);
+
     return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
 }

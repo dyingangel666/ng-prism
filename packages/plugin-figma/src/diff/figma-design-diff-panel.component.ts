@@ -29,25 +29,30 @@ export class FigmaDesignDiffPanelComponent {
 
     protected readonly doneResult = computed<DiffResult | null>(() => {
         const s = this.state();
+
         return s.status === 'done' ? s.result : null;
     });
 
     protected readonly similarity = computed(() => {
         const r = this.doneResult();
+
         return r ? r.similarity.toFixed(1) : '0';
     });
 
     protected readonly errorMessage = computed(() => {
         const s = this.state();
+
         return s.status === 'error-api' ? s.message : '';
     });
 
     protected readonly activeVariantMeta = computed(() => {
         const comp = this.nav.activeComponent();
+
         if (!comp) return null;
         const variants = comp.meta.showcaseConfig.variants;
         const idx = this.renderer.activeVariantIndex();
         const variantFigma = variants?.[idx]?.meta?.['figma'];
+
         if (variantFigma !== undefined) return parseFigmaMeta(variantFigma);
         return parseFigmaMeta(comp.meta.showcaseConfig.meta?.['figma']);
     });
@@ -59,12 +64,14 @@ export class FigmaDesignDiffPanelComponent {
         }
 
         const meta = this.activeVariantMeta();
+
         if (!meta) {
             this.state.set({ status: 'error-no-node' });
             return;
         }
 
         const fileKey = extractFileKey(meta.url);
+
         if (!fileKey) {
             this.state.set({ status: 'error-api', message: 'Ungültige Figma-URL' });
             return;
@@ -86,6 +93,7 @@ export class FigmaDesignDiffPanelComponent {
             const [componentCanvas, figmaBlob] = await Promise.all([captureDomElement(element), fetchFigmaImage(fileKey, nodeId, this.config.accessToken!)]);
 
             const result = await computeDesignDiff(componentCanvas, figmaBlob);
+
             this.state.set({ status: 'done', result });
         } catch (err) {
             this.state.set({

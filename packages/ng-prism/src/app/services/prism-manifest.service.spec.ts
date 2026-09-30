@@ -24,6 +24,7 @@ function setup(manifest: RuntimeManifest): PrismManifestService {
     const injector = Injector.create({
         providers: [{ provide: PRISM_MANIFEST, useValue: manifest }]
     });
+
     return runInInjectionContext(injector, () => new PrismManifestService());
 }
 
@@ -31,6 +32,7 @@ describe('PrismManifestService', () => {
     it('should expose components from manifest', () => {
         const comps = [createComponent(), createComponent({ className: 'Other' })];
         const service = setup({ components: comps });
+
         expect(service.components()).toEqual(comps);
     });
 
@@ -38,11 +40,13 @@ describe('PrismManifestService', () => {
         const service = setup({
             components: [createComponent({ category: 'Forms' }), createComponent({ category: 'Layout' }), createComponent({ category: 'Forms' })]
         });
+
         expect(service.categories()).toEqual(['Forms', 'Layout']);
     });
 
     it('should use "Uncategorized" for components without category', () => {
         const service = setup({ components: [createComponent()] });
+
         expect(service.categories()).toEqual(['Uncategorized']);
     });
 
@@ -53,12 +57,14 @@ describe('PrismManifestService', () => {
         const service = setup({ components: [a, b, c] });
 
         const grouped = service.groupedByCategory();
+
         expect(grouped.get('A')).toEqual([a, b]);
         expect(grouped.get('B')).toEqual([c]);
     });
 
     it('should handle empty manifest', () => {
         const service = setup({ components: [] });
+
         expect(service.components()).toEqual([]);
         expect(service.categories()).toEqual([]);
         expect(service.groupedByCategory().size).toBe(0);
@@ -67,6 +73,7 @@ describe('PrismManifestService', () => {
     it('should expose manifest as a readonly signal', () => {
         const comps = [createComponent()];
         const service = setup({ components: comps });
+
         expect(service.manifest()).toEqual({ components: comps });
     });
 
@@ -81,6 +88,7 @@ describe('PrismManifestService', () => {
 
     it('should update categories computed when updateManifest is called', () => {
         const service = setup({ components: [createComponent({ category: 'Forms' })] });
+
         expect(service.categories()).toEqual(['Forms']);
 
         service.updateManifest({
@@ -94,15 +102,18 @@ describe('PrismManifestService', () => {
         const service = setup({ components: [createComponent({ category: 'A', className: 'A1' })] });
 
         const newComp = createComponent({ category: 'B', className: 'B1' });
+
         service.updateManifest({ components: [newComp] });
 
         const grouped = service.groupedByCategory();
+
         expect(grouped.get('B')).toEqual([newComp]);
         expect(grouped.has('A')).toBe(false);
     });
 
     it('should update pages when updateManifest is called', () => {
         const service = setup({ components: [] });
+
         expect(service.pages()).toEqual([]);
 
         service.updateManifest({

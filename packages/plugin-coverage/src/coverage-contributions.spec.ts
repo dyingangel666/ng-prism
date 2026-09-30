@@ -1,5 +1,5 @@
 import type { RuntimeComponent } from '@ng-prism/core/plugin';
-import { coverageBadge, COVERAGE_NAVIGATION_DECORATION } from './coverage-contributions.js';
+import { COVERAGE_NAVIGATION_DECORATION, coverageBadge } from './coverage-contributions.js';
 
 function component(meta: Record<string, unknown> | null = null): RuntimeComponent {
     return {

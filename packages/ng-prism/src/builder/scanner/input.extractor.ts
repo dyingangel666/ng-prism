@@ -12,14 +12,17 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
         if (!ts.isPropertyDeclaration(member)) continue;
 
         const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+
         if (!name) continue;
 
         const inputDecorator = findDecorator(member, 'Input');
+
         if (inputDecorator) {
             const required = isDecoratorInputRequired(inputDecorator);
             const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveDecoratorInputType(member, checker);
+
             inputs.push({
                 name,
                 type,
@@ -33,11 +36,13 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
         }
 
         const signalCall = getInputSignalCall(member);
+
         if (signalCall) {
             const required = isSignalInputRequired(signalCall);
             const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateExpression(signalCall.arguments[0]) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
+
             inputs.push({
                 name,
                 type,
@@ -63,17 +68,21 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
         if (!ts.isPropertyDeclaration(member)) continue;
 
         const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+
         if (!name) continue;
 
         const outputDecorator = findDecorator(member, 'Output');
+
         if (outputDecorator) {
             const doc = getJsDocComment(member, checker);
+
             outputs.push({ name, ...(doc && { doc }) });
             continue;
         }
 
         if (isOutputSignal(member)) {
             const doc = getJsDocComment(member, checker);
+
             outputs.push({ name, ...(doc && { doc }) });
         }
     }
@@ -83,6 +92,7 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
 
 function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression | null {
     const init = member.initializer;
+
     if (!init || !ts.isCallExpression(init)) return null;
 
     const expr = init.expression;
@@ -104,13 +114,16 @@ function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression |
 
 function isSignalInputRequired(callExpr: ts.CallExpression): boolean {
     const expr = callExpr.expression;
+
     return ts.isPropertyAccessExpression(expr) && ts.isIdentifier(expr.name) && expr.name.text === 'required';
 }
 
 function isOutputSignal(member: ts.PropertyDeclaration): boolean {
     const init = member.initializer;
+
     if (!init || !ts.isCallExpression(init)) return false;
     const expr = init.expression;
+
     return ts.isIdentifier(expr) && expr.text === 'output';
 }
 
@@ -118,11 +131,13 @@ function resolveSignalInputType(callExpr: ts.CallExpression, checker: ts.TypeChe
     if (callExpr.typeArguments && callExpr.typeArguments.length > 0) {
         const typeNode = callExpr.typeArguments[0];
         const resolved = checker.getTypeFromTypeNode(typeNode);
+
         return mapType(resolved, checker, normalizeTypeText(typeNode.getText()));
     }
 
     if (callExpr.arguments.length > 0) {
         const argType = checker.getTypeAtLocation(callExpr.arguments[0]);
+
         return mapType(argType, checker);
     }
 
@@ -131,6 +146,7 @@ function resolveSignalInputType(callExpr: ts.CallExpression, checker: ts.TypeChe
 
 function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
     const arg = getDecoratorArgument(decorator);
+
     if (!arg || !ts.isObjectLiteralExpression(arg)) return false;
 
     for (const prop of arg.properties) {
@@ -144,6 +160,7 @@ function isDecoratorInputRequired(decorator: ts.Decorator): boolean {
 function resolveDecoratorInputType(member: ts.PropertyDeclaration, checker: ts.TypeChecker): { type: InputMeta['type']; values?: string[]; rawType: string } {
     const tsType = checker.getTypeAtLocation(member);
     const declaredText = member.type ? normalizeTypeText(member.type.getText()) : undefined;
+
     return mapType(tsType, checker, declaredText);
 }
 
@@ -158,6 +175,7 @@ function getRawTypeLabel(tsType: ts.Type, checker: ts.TypeChecker): string {
 
     if (tsType.isUnion()) {
         const meaningful = tsType.types.filter((t) => !(t.flags & ts.TypeFlags.Undefined) && !(t.flags & ts.TypeFlags.Null));
+
         if (meaningful.length === 0) return checker.typeToString(tsType);
         if (meaningful.every((t) => t.flags & ts.TypeFlags.BooleanLiteral)) return 'boolean';
         if (meaningful.length === 1) return checker.typeToString(meaningful[0]);
@@ -186,6 +204,7 @@ function mapType(tsType: ts.Type, checker: ts.TypeChecker, rawTypeOverride?: str
 
         if (filtered.every((t) => t.isStringLiteral())) {
             const values = filtered.map((t) => (t as ts.StringLiteralType).value);
+
             return { type: 'union', values, rawType };
         }
 

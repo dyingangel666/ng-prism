@@ -17,6 +17,7 @@ export class RenderSectionComponent {
 
     readonly initialClass = computed(() => {
         const v = this.renderService().initialRender();
+
         if (v === null) return '';
         if (v >= this.critMs()) return 'crit';
         if (v >= this.warnMs()) return 'warn';

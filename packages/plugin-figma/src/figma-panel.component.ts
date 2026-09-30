@@ -15,8 +15,10 @@ export class FigmaPanelComponent {
 
     protected readonly figmaUrl = computed(() => {
         const comp = this.activeComponent() as any;
+
         if (!comp) return null;
         const url = comp.meta?.showcaseConfig?.meta?.['figma'];
+
         return typeof url === 'string' ? url : null;
     });
 
@@ -24,6 +26,7 @@ export class FigmaPanelComponent {
         effect(() => {
             const url = this.figmaUrl();
             const el = this.iframe()?.nativeElement;
+
             if (el && url) {
                 this.renderer.setAttribute(el, 'src', `https://www.figma.com/embed?embed_host=ng-prism&url=${encodeURIComponent(url)}`);
             }

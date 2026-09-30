@@ -1,11 +1,11 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import type { ControlDefinition, InputMeta, RuntimeComponent } from '../../../plugin/plugin.types.js';
 import { BooleanControlComponent } from '../../controls/boolean-control.component.js';
 import { JsonControlComponent } from '../../controls/json-control.component.js';
 import { NumberControlComponent } from '../../controls/number-control.component.js';
 import { StringControlComponent } from '../../controls/string-control.component.js';
 import { UnionControlComponent } from '../../controls/union-control.component.js';
-import type { ControlDefinition, InputMeta, RuntimeComponent } from '../../../plugin/plugin.types.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';

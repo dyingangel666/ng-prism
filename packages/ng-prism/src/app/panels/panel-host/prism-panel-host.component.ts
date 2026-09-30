@@ -1,16 +1,16 @@
 import { NgComponentOutlet } from '@angular/common';
-import { Component, computed, effect, EnvironmentInjector, inject, signal, type Type, ChangeDetectionStrategy, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, EnvironmentInjector, inject, signal, type Type, untracked } from '@angular/core';
+import type { NgPrismConfig, PanelDefinition, RuntimeManifest } from '../../../plugin/plugin.types.js';
 import { PrismIconComponent } from '../../icons/prism-icon.component.js';
-import { BUILTIN_PANELS } from '../builtin-panels.js';
-import { A11yAuditService } from '../a11y/a11y-audit.service.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
-import { resolveA11yThresholds } from '../a11y/a11y-thresholds.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../../tokens/prism-tokens.js';
+import { A11yAuditService } from '../a11y/a11y-audit.service.js';
+import { resolveA11yThresholds } from '../a11y/a11y-thresholds.js';
 import type { A11yCoreConfig, A11yManifestMeta } from '../a11y/a11y.types.js';
-import type { NgPrismConfig, PanelDefinition, RuntimeManifest } from '../../../plugin/plugin.types.js';
+import { BUILTIN_PANELS } from '../builtin-panels.js';
 import { resolvePanelBadge } from './panel-badge.js';
 
 type RenderedPanelEntry = {
@@ -45,6 +45,7 @@ export class PrismPanelHostComponent {
      */
     private readonly a11yThresholds = computed(() => {
         const meta = this.manifest.meta?.['a11y'] as A11yManifestMeta | undefined;
+
         return resolveA11yThresholds({
             ...meta?.thresholds,
             ...this.config.a11y?.thresholds
@@ -53,6 +54,7 @@ export class PrismPanelHostComponent {
 
     private readonly inputCount = computed(() => {
         const comp = this.nav.activeComponent();
+
         return comp?.meta.inputs.length ?? 0;
     });
 
@@ -69,6 +71,7 @@ export class PrismPanelHostComponent {
     protected readonly allPanels = computed(() => {
         const comp = this.nav.activeComponent();
         const panels = [...this.builtInPanels.filter((p) => p.placement !== 'view'), ...this.pluginService.addonPanels()];
+
         if (!comp) return panels;
         return panels.filter((p) => !p.isVisible || p.isVisible(comp));
     });
@@ -86,6 +89,7 @@ export class PrismPanelHostComponent {
         effect(() => {
             const element = this.rendererService.renderedElement();
             const comp = this.nav.activeComponent() as any;
+
             this.rendererService.inputValues();
             this.rendererService.activeVariantIndex();
 
@@ -95,6 +99,7 @@ export class PrismPanelHostComponent {
             }
 
             const a11yConfig: A11yCoreConfig | undefined = comp.meta?.showcaseConfig?.meta?.['a11y'];
+
             if (a11yConfig?.disable === true) {
                 this.auditService.clear();
                 return;
@@ -109,6 +114,7 @@ export class PrismPanelHostComponent {
 
             untracked(() => {
                 const panel = panels.find((p) => p.id === activeId) ?? null;
+
                 if (panel) {
                     this.ensurePanelLoaded(panel);
                 }
@@ -127,6 +133,7 @@ export class PrismPanelHostComponent {
 
         if (panel.loadComponent) {
             const cached = this.lazyCache.get(panel.id);
+
             if (cached) {
                 this.addRenderedPanel(panel, cached);
                 return;
@@ -142,6 +149,7 @@ export class PrismPanelHostComponent {
 
     private addRenderedPanel(panel: PanelDefinition, component: Type<unknown>): void {
         const next = new Map(this.renderedPanels());
+
         next.set(panel.id, {
             id: panel.id,
             component,
@@ -153,14 +161,17 @@ export class PrismPanelHostComponent {
 
     private pruneRenderedPanels(visiblePanels: PanelDefinition[], activeId: string | null): void {
         const current = this.renderedPanels();
+
         if (current.size === 0) return;
 
         const visibleIds = new Set(visiblePanels.map((p) => p.id));
         const next = new Map(current);
         let changed = false;
+
         for (const [id, entry] of current) {
             const isVisible = visibleIds.has(id);
             const isActive = id === activeId;
+
             if (!isVisible || (!isActive && !entry.keepAlive)) {
                 next.delete(id);
                 changed = true;

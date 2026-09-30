@@ -1,5 +1,5 @@
 import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { join, extname } from 'node:path';
+import { extname, join } from 'node:path';
 import { stripShowcaseDecorators } from './showcase-strip.transformer.js';
 
 export interface StripResult {
@@ -18,6 +18,7 @@ export async function stripShowcaseFromDirectory(dir: string): Promise<StripResu
     for (const file of files) {
         const source = await readFile(file, 'utf-8');
         const result = stripShowcaseDecorators(source, file);
+
         if (result !== source) {
             await writeFile(file, result, 'utf-8');
             strippedFiles++;

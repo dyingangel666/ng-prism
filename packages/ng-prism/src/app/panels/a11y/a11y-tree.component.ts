@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { A11yTreeService } from './a11y-tree.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
+import { A11yTreeService } from './a11y-tree.service.js';
 import type { A11yNode } from './a11y.types.js';
 
 @Component({
@@ -21,6 +21,7 @@ export class A11yTreeNodeComponent {
     constructor() {
         effect(() => {
             const el = this.node().element;
+
             untracked(() => {
                 if (this.lastElement !== el) {
                     this.lastElement = el;
@@ -32,6 +33,7 @@ export class A11yTreeNodeComponent {
 
     protected readonly stateEntries = computed(() => {
         const states = this.node().states;
+
         return Object.entries(states)
             .filter(([key]) => key !== 'hidden')
             .map(([key, value]) => ({
@@ -61,8 +63,10 @@ export class A11yTreeComponent {
 
     protected readonly tree = computed(() => {
         const root = this.rendererService.renderedElement();
+
         if (!root) return null;
         const doc = (root as HTMLElement).ownerDocument;
+
         return this.treeService.buildTree(root, doc ? (id) => doc.getElementById(id) : undefined);
     });
 }

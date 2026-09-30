@@ -22,6 +22,7 @@ function componentMeta(component: RuntimeComponent): CoverageData | null {
  */
 export function coverageBadge(component: RuntimeComponent): PanelBadge | null {
     const meta = componentMeta(component);
+
     if (!meta?.found) return null;
 
     const variant = meta.summary?.variant ?? (meta.thresholds ? deriveCoverageSummary(meta.score, meta.thresholds).variant : 'default');
@@ -35,6 +36,7 @@ export const COVERAGE_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
     order: 30,
     badge: (component) => {
         const meta = componentMeta(component);
+
         if (!meta?.found || !meta.summary) return null;
         if (meta.summary.variant === 'ok') return null;
         return { variant: meta.summary.variant, label: meta.summary.label };

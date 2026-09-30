@@ -1,5 +1,5 @@
-import { Component, ChangeDetectionStrategy, input, effect, ElementRef, inject } from '@angular/core';
-import { ICONS, ICON_NAMES } from './icon-registry.js';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input } from '@angular/core';
+import { ICON_NAMES, ICONS } from './icon-registry.js';
 
 // Re-exported for existing consumers of this module. The registry itself
 // lives in `icon-registry.js` — a dependency-free module — so a plugin barrel
@@ -25,6 +25,7 @@ const warnedIcons = new Set<string>();
  */
 export function resolveIcon(name: string): string | undefined {
     const content = ICONS[name];
+
     if (content === undefined && !warnedIcons.has(name)) {
         warnedIcons.add(name);
         console.warn(`[ng-prism] Unknown icon "${name}" — rendering an empty glyph. Available: ${ICON_NAMES.join(', ')}.`);
@@ -55,6 +56,7 @@ export class PrismIconComponent {
             host.innerHTML = '';
 
             const svg = document.createElementNS(SVG_NS, 'svg');
+
             svg.setAttribute('width', String(iconSize));
             svg.setAttribute('height', String(iconSize));
             svg.setAttribute('viewBox', '0 0 24 24');
@@ -65,6 +67,7 @@ export class PrismIconComponent {
             svg.setAttribute('stroke-linejoin', 'round');
 
             const temp = document.createElementNS(SVG_NS, 'svg');
+
             temp.innerHTML = content;
             while (temp.firstChild) {
                 svg.appendChild(temp.firstChild);

@@ -58,11 +58,13 @@ describe('reviewBadge', () => {
 
     it('counts only what is waiting on a person', () => {
         const badge = reviewBadge(withVariants('changed', ...Array<VrtStatus>(14).fill('unchanged')));
+
         expect(badge).toEqual({ text: '1', variant: 'danger' });
     });
 
     it('counts every kind of open item, not just the changed ones', () => {
         const badge = reviewBadge(withVariants('changed', 'new', 'size-mismatch'));
+
         expect(badge?.text).toBe('3');
     });
 

@@ -8,11 +8,13 @@ export function parseHostString(host: string): ParsedHost | null {
     const trimmed = host.trim();
 
     const open = trimmed.match(/^<\s*([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)\s*\/?\s*>$/);
+
     if (open) {
         return { tag: open[1], attrs: open[2].trim() };
     }
 
     const wrapped = trimmed.match(/^<\s*([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)\s*>([\s\S]*?)<\/\s*\1\s*>$/);
+
     if (wrapped) {
         return {
             tag: wrapped[1],

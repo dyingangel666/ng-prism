@@ -1,6 +1,6 @@
-import chokidar from 'chokidar';
-import { dirname } from 'path';
 import { statSync } from 'fs';
+import { dirname } from 'path';
+import chokidar from 'chokidar';
 
 export interface ChangeHandlerOptions {
     onRebuild: () => Promise<void>;
@@ -93,11 +93,13 @@ export function startWatcher(options: StartWatcherOptions): WatcherHandle {
         }
     })();
     const watchPaths: string[] = [isDir ? entryPoint : dirname(entryPoint)];
+
     if (configFile) {
         watchPaths.push(configFile);
     }
 
     const ignorePatterns: (string | RegExp)[] = [/(?:^|[/\\])(?:node_modules|\.git)[/\\]/];
+
     if (ignorePaths) {
         ignorePatterns.push(...ignorePaths);
     }

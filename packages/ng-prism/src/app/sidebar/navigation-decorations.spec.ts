@@ -28,6 +28,7 @@ function def(id: string, icon: string, order: number, hits: Record<string, 'warn
         order,
         badge: (c) => {
             const variant = hits[c.meta.className];
+
             return variant ? { variant, label: `${id}: ${variant}` } : null;
         }
     };
@@ -38,6 +39,7 @@ describe('resolveNavigationDecorations', () => {
         const builtin = def('a11y', 'accessibility', 10, {});
         const plugin = def('coverage', 'shield-check', 30, {});
         const result = resolveNavigationDecorations([builtin], [plugin]);
+
         expect(result.map((d) => d.id)).toEqual(['a11y', 'coverage']);
     });
 
@@ -45,6 +47,7 @@ describe('resolveNavigationDecorations', () => {
         const late = def('coverage', 'shield-check', 30, {});
         const early = def('a11y', 'accessibility', 10, {});
         const result = resolveNavigationDecorations([], [late, early]);
+
         expect(result.map((d) => d.id)).toEqual(['a11y', 'coverage']);
     });
 
@@ -56,6 +59,7 @@ describe('resolveNavigationDecorations', () => {
             badge: () => null
         };
         const result = resolveNavigationDecorations([], [ordered, unordered]);
+
         expect(result.map((d) => d.id)).toEqual(['other', 'coverage']);
     });
 
@@ -63,6 +67,7 @@ describe('resolveNavigationDecorations', () => {
         const builtin = def('a11y', 'accessibility', 10, {});
         const impostor = def('a11y', 'box', 5, {});
         const result = resolveNavigationDecorations([builtin], [impostor]);
+
         expect(result).toHaveLength(1);
         expect(result[0].icon).toBe('accessibility');
     });
@@ -86,11 +91,13 @@ describe('decorateItem', () => {
             kind: 'page',
             data: { type: 'custom', title: 'Intro', data: {} }
         };
+
         expect(decorateItem(page, defs)).toBeNull();
     });
 
     it('collects one mark per firing source, in definition order', () => {
         const result = decorateItem(item('Dialog'), defs);
+
         expect(result?.marks.map((m) => m.icon)).toEqual(['accessibility', 'camera', 'shield-check']);
     });
 
@@ -111,6 +118,7 @@ describe('decorateItem', () => {
         // one item would collide.
         const clashingDefs = [def('a11y', 'camera', 10, { Dialog: 'danger' }), def('vrt', 'camera', 20, { Dialog: 'warn' })];
         const result = decorateItem(item('Dialog'), clashingDefs);
+
         expect(result?.marks.map((m) => m.id)).toEqual(['a11y', 'vrt']);
         expect(new Set(result?.marks.map((m) => m.id)).size).toBe(2);
     });
@@ -128,6 +136,7 @@ describe('rollupCategory', () => {
 
     it('counts items with a mark, not the marks themselves', () => {
         const decorations = decorationsFor(['Dialog', 'Table', 'Button']);
+
         expect(rollupCategory(decorations).problems).toBe(2);
     });
 

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal } from '@angular/core';
+import { PrismRendererService } from '../../services/prism-renderer.service.js';
 import { A11yKeyboardService } from './a11y-keyboard.service.js';
 import { A11yPanelStateService } from './a11y-panel-state.service.js';
-import { PrismRendererService } from '../../services/prism-renderer.service.js';
 
 export interface BadgePosition {
     index: number;
@@ -33,6 +33,7 @@ export class A11yKeyboardOverlayComponent {
     constructor() {
         effect(() => {
             const root = this.rendererService.renderedElement();
+
             this.rendererService.inputValues();
             this.rendererService.activeVariantIndex();
             const isKeyboard = this.panelState.activeTab() === 'keyboard';
@@ -52,6 +53,7 @@ export class A11yKeyboardOverlayComponent {
 
     private computeBadges(root: Element): void {
         const canvas = this.elementRef.nativeElement.closest('.prism-canvas-stage') as HTMLElement | null;
+
         if (!canvas) return;
 
         const doc = (root as HTMLElement).ownerDocument;
@@ -63,6 +65,7 @@ export class A11yKeyboardOverlayComponent {
 
         const positions: BadgePosition[] = items.map((item) => {
             const elRect = (item.element as HTMLElement).getBoundingClientRect();
+
             return {
                 index: item.index,
                 name: item.name,

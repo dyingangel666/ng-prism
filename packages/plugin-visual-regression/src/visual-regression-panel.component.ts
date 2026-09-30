@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
-import { VrtCompareComponent } from './vrt-compare.component.js';
-import { VrtSummaryComponent } from './vrt-summary.component.js';
-import { defaultExpandedGroups, formatPercent, groupRows, STATUS_LABEL, STATUS_TONE, summarize, type VrtGroupKey } from './vrt-summarize.js';
 import type { VrtComponentMeta, VrtVariantResult } from './visual-regression.types.js';
+import { VrtCompareComponent } from './vrt-compare.component.js';
+import { defaultExpandedGroups, formatPercent, groupRows, STATUS_LABEL, STATUS_TONE, summarize, type VrtGroupKey } from './vrt-summarize.js';
+import { VrtSummaryComponent } from './vrt-summary.component.js';
 
 @Component({
     selector: 'prism-visual-regression-panel',
@@ -21,6 +21,7 @@ export class VisualRegressionPanelComponent {
         const comp = this.activeComponent() as {
             meta?: { showcaseConfig?: { meta?: Record<string, unknown> } };
         } | null;
+
         return (comp?.meta?.showcaseConfig?.meta?.['visualRegression'] as VrtComponentMeta | undefined) ?? null;
     });
 
@@ -62,14 +63,17 @@ export class VisualRegressionPanelComponent {
 
     protected toggleGroup(key: VrtGroupKey): void {
         const next = new Set(this.expandedGroups());
+
         if (!next.delete(key)) next.add(key);
         this.expanded.set(next);
     }
 
     protected readonly selected = computed<VrtVariantResult | null>(() => {
         const rows = this.rows();
+
         if (!rows.length) return null;
         const key = this.selectedKey();
+
         // Default to the first variant that actually changed — that is what someone
         // opening this panel came to look at.
         return rows.find((r) => r.key === key)?.variant ?? rows.find((r) => r.variant.status === 'changed')?.variant ?? rows[0].variant;

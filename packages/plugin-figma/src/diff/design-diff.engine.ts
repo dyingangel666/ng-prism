@@ -8,6 +8,7 @@ export async function computeDesignDiff(componentCanvas: HTMLCanvasElement, figm
     const figmaCanvas = await blobToCanvas(figmaBlob, w, h);
 
     const diffCanvas = document.createElement('canvas');
+
     diffCanvas.width = w;
     diffCanvas.height = h;
 
@@ -39,8 +40,10 @@ function blobToCanvas(blob: Blob, width: number, height: number): Promise<HTMLCa
     return new Promise((resolve, reject) => {
         const url = URL.createObjectURL(blob);
         const img = new Image();
+
         img.onload = () => {
             const canvas = document.createElement('canvas');
+
             canvas.width = width;
             canvas.height = height;
             canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);

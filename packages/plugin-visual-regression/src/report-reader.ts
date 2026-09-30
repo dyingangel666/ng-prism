@@ -14,9 +14,11 @@ function loadReport(reportPath: string): VrtReport | null {
     try {
         const mtime = statSync(reportPath).mtimeMs;
         const cached = cache.get(reportPath);
+
         if (cached && cached.mtime === mtime) return cached.data;
 
         const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as VrtReport;
+
         cache.set(reportPath, { mtime, data: parsed });
         return parsed;
     } catch {
@@ -47,6 +49,7 @@ function loadReport(reportPath: string): VrtReport | null {
  */
 export function readVariantsForComponent(reportPath: string, className: string): VrtVariantResult[] {
     const entries: unknown = loadReport(reportPath)?.byVariant;
+
     if (!Array.isArray(entries)) return [];
 
     return entries
@@ -61,6 +64,7 @@ export function readVariantsForComponent(reportPath: string, className: string):
 
 function warnUnknownStatus(reportPath: string, entry: VrtVariantResult): void {
     const status = String(entry.status);
+
     if (warnedStatuses.has(status)) return;
     warnedStatuses.add(status);
     console.warn(
@@ -72,6 +76,7 @@ function warnUnknownStatus(reportPath: string, entry: VrtVariantResult): void {
 
 export function readTotals(reportPath: string): VrtTotals | null {
     const total: unknown = loadReport(reportPath)?.total;
+
     return isRecord(total) ? (total as unknown as VrtTotals) : null;
 }
 

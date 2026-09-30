@@ -22,10 +22,12 @@ function loadSummary(coveragePath: string): IstanbulSummary | null {
     try {
         const mtime = statSync(coveragePath).mtimeMs;
         const cached = cache.get(coveragePath);
+
         if (cached && cached.mtime === mtime) return cached.data;
 
         const raw = readFileSync(coveragePath, 'utf-8');
         const parsed = JSON.parse(raw) as IstanbulSummary;
+
         cache.set(coveragePath, { mtime, data: parsed });
         return parsed;
     } catch {
@@ -39,17 +41,20 @@ function findEntry(summary: IstanbulSummary, componentPath: string): string | un
 
     for (const key of keys) {
         const normalizedKey = normalizePath(key);
+
         if (normalizedKey === normalizedComponent) return key;
     }
 
     for (const key of keys) {
         const normalizedKey = normalizePath(key);
+
         if (normalizedKey.endsWith(normalizedComponent) || normalizedComponent.endsWith(normalizedKey)) {
             return key;
         }
     }
 
     const componentSuffix = normalizedComponent.split('/').slice(-3).join('/');
+
     for (const key of keys) {
         if (normalizePath(key).endsWith(componentSuffix)) return key;
     }
@@ -59,9 +64,11 @@ function findEntry(summary: IstanbulSummary, componentPath: string): string | un
 
 export function readCoverageForFile(coveragePath: string, componentFilePath: string): CoverageData {
     const summary = loadSummary(coveragePath);
+
     if (!summary) return { ...EMPTY_COVERAGE };
 
     const entryKey = findEntry(summary, componentFilePath);
+
     if (!entryKey) return { ...EMPTY_COVERAGE };
 
     const entry = summary[entryKey];
@@ -79,9 +86,11 @@ export function readCoverageForFile(coveragePath: string, componentFilePath: str
 
 export function readTotalCoverage(coveragePath: string): CoverageData {
     const summary = loadSummary(coveragePath);
+
     if (!summary) return { ...EMPTY_COVERAGE };
 
     const total = summary['total'];
+
     if (!total) return { ...EMPTY_COVERAGE };
 
     const score = Math.round((total.statements.pct + total.branches.pct + total.functions.pct + total.lines.pct) / 4);

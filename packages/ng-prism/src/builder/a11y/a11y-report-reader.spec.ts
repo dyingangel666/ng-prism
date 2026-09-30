@@ -1,17 +1,17 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { A11Y_UNLIMITED, resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
+import type { A11yReport, A11yScoreResult } from '../../app/panels/a11y/a11y.types.js';
 import {
     checkA11yThresholds,
     clearA11yReportCache,
-    loadA11yReport,
-    readA11yMeta,
     deriveA11ySummary,
+    loadA11yReport,
     readA11yForComponent,
-    readA11yForComponents
+    readA11yForComponents,
+    readA11yMeta
 } from './a11y-report-reader.js';
-import { A11Y_UNLIMITED, resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
-import type { A11yReport, A11yScoreResult } from '../../app/panels/a11y/a11y.types.js';
 
 function makeReport(overrides?: Partial<A11yReport['total']>): A11yReport {
     return {
@@ -55,16 +55,20 @@ describe('a11y-report-reader', () => {
         it('reads and parses an existing report', () => {
             writeFileSync(reportPath, JSON.stringify(makeReport()), 'utf-8');
             const result = loadA11yReport(reportPath);
+
             expect(result?.total.score).toBe(92);
         });
 
         it('caches by mtime', () => {
             const fs = require('node:fs');
+
             writeFileSync(reportPath, JSON.stringify(makeReport()), 'utf-8');
             const spy = jest.spyOn(fs, 'readFileSync');
+
             loadA11yReport(reportPath);
             loadA11yReport(reportPath);
             const matchingCalls = spy.mock.calls.filter((c) => typeof c[0] === 'string' && (c[0] as string).includes('a11y-report'));
+
             expect(matchingCalls).toHaveLength(1);
             spy.mockRestore();
         });
@@ -74,6 +78,7 @@ describe('a11y-report-reader', () => {
         it('combines report.total with resolved thresholds', () => {
             writeFileSync(reportPath, JSON.stringify(makeReport()), 'utf-8');
             const meta = readA11yMeta(reportPath, { score: 90 });
+
             expect(meta?.total.score).toBe(92);
             expect(meta?.thresholds.score).toBe(90);
             expect(meta?.thresholds.critical).toBe(0); // default
@@ -95,6 +100,7 @@ describe('a11y-report-reader', () => {
                     moderate: A11Y_UNLIMITED
                 }
             };
+
             expect(checkA11yThresholds(meta)).toEqual([]);
         });
 
@@ -109,6 +115,7 @@ describe('a11y-report-reader', () => {
                 }
             };
             const violations = checkA11yThresholds(meta);
+
             expect(violations).toEqual([{ metric: 'score', actual: 70, threshold: 80 }]);
         });
 
@@ -123,6 +130,7 @@ describe('a11y-report-reader', () => {
                 }
             };
             const violations = checkA11yThresholds(meta);
+
             expect(violations.map((v) => v.metric).sort()).toEqual(['critical', 'serious']);
         });
 
@@ -136,6 +144,7 @@ describe('a11y-report-reader', () => {
                     moderate: A11Y_UNLIMITED
                 }
             };
+
             expect(checkA11yThresholds(meta)).toEqual([]);
         });
 
@@ -145,6 +154,7 @@ describe('a11y-report-reader', () => {
                 thresholds: { score: 80, critical: 0, serious: 0, moderate: 2 }
             };
             const violations = checkA11yThresholds(meta);
+
             expect(violations).toEqual([{ metric: 'moderate', actual: 3, threshold: 2 }]);
         });
     });
@@ -184,6 +194,7 @@ describe('a11y-report-reader', () => {
                 ButtonComponent: entry({ score: 50, violations: 2, critical: 2 })
             });
             const result = readA11yForComponent(reportPath, 'ButtonComponent', thresholds);
+
             expect(result?.found).toBe(true);
             expect(result?.score.critical).toBe(2);
             expect(result?.summary?.variant).toBe('danger');
@@ -231,23 +242,27 @@ describe('deriveA11ySummary', () => {
 
     it('is danger for a critical violation', () => {
         const result = deriveA11ySummary(score({ critical: 2 }), thresholds);
+
         expect(result.variant).toBe('danger');
         expect(result.label).toContain('2 critical');
     });
 
     it('is danger for a serious violation', () => {
         const result = deriveA11ySummary(score({ serious: 1 }), thresholds);
+
         expect(result.variant).toBe('danger');
         expect(result.label).toContain('1 serious');
     });
 
     it('names both counts when both are over', () => {
         const result = deriveA11ySummary(score({ critical: 1, serious: 3 }), thresholds);
+
         expect(result.label).toBe('A11y: 1 critical, 3 serious');
     });
 
     it('is warn for a score below the threshold', () => {
         const result = deriveA11ySummary(score({ score: 60 }), thresholds);
+
         expect(result.variant).toBe('warn');
         expect(result.label).toBe('A11y score 60');
     });
@@ -258,6 +273,7 @@ describe('deriveA11ySummary', () => {
 
     it('never fires on moderate with the unlimited default', () => {
         const result = deriveA11ySummary(score({ moderate: 999 }), thresholds);
+
         expect(result.variant).toBe('ok');
     });
 
@@ -267,6 +283,7 @@ describe('deriveA11ySummary', () => {
         // stays empty and a naive label would read "A11y: ".
         const negativeThresholds = resolveA11yThresholds({ critical: -1 });
         const result = deriveA11ySummary(score({}), negativeThresholds);
+
         expect(result.variant).toBe('danger');
         expect(result.label).toBe('A11y score 100');
     });

@@ -45,6 +45,7 @@ export class PrismOverviewCellComponent {
     protected readonly caption = computed(() => {
         const variant = this.component().meta.showcaseConfig.variants?.[this.index()];
         const number = String(this.index() + 1).padStart(2, '0');
+
         // Defensive, not reachable today: `Variant.name` is required
         // (decorator/showcase.types.ts) and `prism-overview` only ever creates a
         // cell for an index it just read out of that same `variants` array. A
@@ -56,6 +57,7 @@ export class PrismOverviewCellComponent {
     protected readonly isWide = computed(() => {
         const config = this.component().meta.showcaseConfig;
         const variant = config.variants?.[this.index()];
+
         return (variant?.canvasLayout ?? config.canvasLayout ?? 'fit') === 'stretch';
     });
 
@@ -63,6 +65,7 @@ export class PrismOverviewCellComponent {
         effect(() => {
             const component = this.component();
             const index = this.index();
+
             untracked(() => this.mount(component, index));
         });
 
@@ -97,6 +100,7 @@ export class PrismOverviewCellComponent {
             });
 
             const knownInputs = buildKnownInputs(component);
+
             for (const [key, value] of Object.entries(values)) {
                 if (!knownInputs.has(key)) continue;
                 ref.setInput(key, value);

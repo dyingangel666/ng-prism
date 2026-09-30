@@ -6,6 +6,7 @@ export function jsDocPlugin(): NgPrismPlugin {
         name: '@ng-prism/plugin-jsdoc',
         async onComponentScanned(component) {
             const jsdoc = extractJsDocData(component.filePath, component.className);
+
             if (!jsdoc) return;
             return {
                 ...component,

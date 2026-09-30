@@ -1,8 +1,8 @@
-import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
+import { type Builder, type BuilderContext, type BuilderOutput, createBuilder } from '@angular-devkit/architect';
 import type { json } from '@angular-devkit/core';
-import type { BuildBuilderSchema } from './schema.js';
-import { runPrismPipeline, createPipelineState, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
+import { createPipelineState, type PrismPipelineOptions, runPrismPipeline } from '../shared/prism-pipeline.js';
 import { resolveCacheDir } from '../shared/resolve-cache-dir.js';
+import type { BuildBuilderSchema } from './schema.js';
 
 async function createBuildBuilder(options: BuildBuilderSchema, context: BuilderContext): Promise<BuilderOutput> {
     const cacheDir = resolveCacheDir(options.cacheDir, context.workspaceRoot);
@@ -26,4 +26,5 @@ async function createBuildBuilder(options: BuildBuilderSchema, context: BuilderC
 }
 
 const builder: Builder<BuildBuilderSchema & json.JsonObject> = createBuilder<BuildBuilderSchema>(createBuildBuilder);
+
 export default builder;

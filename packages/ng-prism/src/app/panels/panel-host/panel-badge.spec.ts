@@ -1,8 +1,8 @@
 import type { PanelDefinition, RuntimeComponent } from '../../../plugin/plugin.types.js';
-import { resolvePanelBadge, type PanelBadgeContext } from './panel-badge.js';
-import { DEFAULT_A11Y_THRESHOLDS } from '../a11y/a11y-thresholds.js';
 import { deriveA11ySummary } from '../a11y/a11y-summary.js';
+import { DEFAULT_A11Y_THRESHOLDS } from '../a11y/a11y-thresholds.js';
 import type { A11yScoreResult } from '../a11y/a11y.types.js';
+import { type PanelBadgeContext, resolvePanelBadge } from './panel-badge.js';
 
 const EMPTY_CONTEXT: PanelBadgeContext = {
     inputCount: 0,
@@ -37,6 +37,7 @@ describe('resolvePanelBadge', () => {
             text: '3',
             variant: 'danger' as const
         }));
+
         expect(resolvePanelBadge(own, COMPONENT, EMPTY_CONTEXT)).toEqual({
             text: '3',
             variant: 'danger'
@@ -49,6 +50,7 @@ describe('resolvePanelBadge', () => {
             seen.push(component);
             return null;
         });
+
         resolvePanelBadge(own, COMPONENT, EMPTY_CONTEXT);
         expect(seen).toEqual([COMPONENT]);
     });
@@ -71,6 +73,7 @@ describe('resolvePanelBadge', () => {
             ...EMPTY_CONTEXT,
             a11yResult: auditResult({ score: 42 })
         });
+
         expect(badge).toEqual({ text: 'AA', variant: 'ok' });
     });
 
@@ -80,6 +83,7 @@ describe('resolvePanelBadge', () => {
             called = true;
             return { text: '1' };
         });
+
         expect(resolvePanelBadge(own, null, EMPTY_CONTEXT)).toBeNull();
         expect(called).toBe(false);
     });
@@ -122,6 +126,7 @@ describe('resolvePanelBadge', () => {
         // The concrete disagreement the shared derivation removes: 85 was 'warn'
         // on the old hardcoded 90/70 scale and 'ok' against a configured 80.
         const thresholds = { ...DEFAULT_A11Y_THRESHOLDS, score: 80 };
+
         expect(
             resolvePanelBadge(panel('a11y'), COMPONENT, {
                 ...EMPTY_CONTEXT,

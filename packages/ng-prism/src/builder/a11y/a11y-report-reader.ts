@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
-import type { A11yComponentMeta, A11yManifestMeta, A11yReport, A11yThresholds } from '../../app/panels/a11y/a11y.types.js';
-import { resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
 import { deriveA11ySummary } from '../../app/panels/a11y/a11y-summary.js';
+import { resolveA11yThresholds } from '../../app/panels/a11y/a11y-thresholds.js';
+import type { A11yComponentMeta, A11yManifestMeta, A11yReport, A11yThresholds } from '../../app/panels/a11y/a11y.types.js';
 
 // Re-exported so the builder side keeps one import surface for the a11y
 // report. The derivation itself lives in `app/` because the panel tab grades
@@ -16,10 +16,12 @@ export function loadA11yReport(reportPath: string): A11yReport | null {
     try {
         const mtime = statSync(reportPath).mtimeMs;
         const cached = cache.get(reportPath);
+
         if (cached && cached.mtime === mtime) return cached.data;
 
         const raw = readFileSync(reportPath, 'utf-8');
         const parsed = JSON.parse(raw) as A11yReport;
+
         cache.set(reportPath, { mtime, data: parsed });
         return parsed;
     } catch {
@@ -29,6 +31,7 @@ export function loadA11yReport(reportPath: string): A11yReport | null {
 
 export function readA11yMeta(reportPath: string, thresholdsInput?: Partial<A11yThresholds>): A11yManifestMeta | null {
     const report = loadA11yReport(reportPath);
+
     if (!report?.total) return null;
 
     return {
@@ -49,6 +52,7 @@ export function readA11yMeta(reportPath: string, thresholdsInput?: Partial<A11yT
 export function readA11yForComponents(reportPath: string, thresholds: A11yThresholds): Map<string, A11yComponentMeta> {
     const components = loadA11yReport(reportPath)?.components;
     const byClassName = new Map<string, A11yComponentMeta>();
+
     if (!components) return byClassName;
 
     for (const [className, score] of Object.entries(components)) {
@@ -65,6 +69,7 @@ export function readA11yForComponents(reportPath: string, thresholds: A11yThresh
 /** The per-component entry of the report, or null when there is none. */
 export function readA11yForComponent(reportPath: string, className: string, thresholds: A11yThresholds): A11yComponentMeta | null {
     const score = loadA11yReport(reportPath)?.components?.[className];
+
     if (!score) return null;
 
     return { found: true, score, summary: deriveA11ySummary(score, thresholds) };

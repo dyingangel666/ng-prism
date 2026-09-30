@@ -14,6 +14,7 @@ const FOCUSABLE_SELECTOR = [
 
 function getTabindex(element: Element): number {
     const attr = element.getAttribute('tabindex');
+
     if (attr === null) return 0;
     return parseInt(attr, 10);
 }
@@ -54,6 +55,7 @@ export class A11yKeyboardService {
 
 function extractFocusableStates(element: Element): string[] {
     const states: string[] = [];
+
     if (element.getAttribute('aria-required') === 'true' || element.hasAttribute('required')) {
         states.push('required');
     }
@@ -61,9 +63,11 @@ function extractFocusableStates(element: Element): string[] {
         states.push('disabled');
     }
     const checked = element.getAttribute('aria-checked');
+
     if (checked === 'true') states.push('checked');
     if (checked === 'false') states.push('unchecked');
     const expanded = element.getAttribute('aria-expanded');
+
     if (expanded === 'true') states.push('expanded');
     if (expanded === 'false') states.push('collapsed');
     return states;

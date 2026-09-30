@@ -1,12 +1,12 @@
-import { Component, computed, inject, signal, viewChild, ElementRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, HostListener, inject, signal, viewChild } from '@angular/core';
+import type { ComponentStatus } from '../../decorator/showcase.types.js';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { BUILTIN_NAVIGATION_DECORATIONS } from '../panels/builtin-navigation-decorations.js';
 import type { NavigationItem } from '../services/navigation-item.types.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
-import type { ComponentStatus } from '../../decorator/showcase.types.js';
-import { decorateItem, lifecycleIcon, resolveNavigationDecorations, rollupCategory, type CategoryRollup, type ItemDecorations } from './navigation-decorations.js';
+import { type CategoryRollup, decorateItem, type ItemDecorations, lifecycleIcon, resolveNavigationDecorations, rollupCategory } from './navigation-decorations.js';
 
 const STORAGE_KEY = 'ng-prism-sidebar-collapsed';
 
@@ -57,6 +57,7 @@ export class PrismSidebarComponent {
     protected onGlobalKey(e: KeyboardEvent): void {
         if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey) return;
         const tag = (e.target as HTMLElement).tagName;
+
         if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return;
         e.preventDefault();
         this.filterInput()?.nativeElement.focus();
@@ -71,9 +72,11 @@ export class PrismSidebarComponent {
     protected readonly pageCategories = computed<SidebarCategory[]>(() => {
         const pages = this.searchService.filteredPages();
         const catMap = new Map<string, NavigationItem[]>();
+
         for (const page of pages) {
             const cat = page.category ?? 'Docs';
             const list = catMap.get(cat) ?? [];
+
             list.push({ kind: 'page', data: page });
             catMap.set(cat, list);
         }
@@ -85,6 +88,7 @@ export class PrismSidebarComponent {
 
     protected readonly componentSections = computed(() => {
         const defs = this.decorations();
+
         return this.navigationService.sectionTree().map((section) => ({
             name: section.name,
             icon: sectionIcon(section.name),
@@ -95,6 +99,7 @@ export class PrismSidebarComponent {
                     icon: lifecycleIcon(this.itemStatus(item)),
                     decorations: decorateItem(item, defs)
                 }));
+
                 return {
                     name: cat.name,
                     rollup: rollupCategory(items.map((row) => row.decorations)),
@@ -111,6 +116,7 @@ export class PrismSidebarComponent {
     protected toggleCollapse(key: string): void {
         this.collapsedSet.update((prev) => {
             const next = new Set(prev);
+
             if (next.has(key)) next.delete(key);
             else next.add(key);
             this.saveCollapsed(next);
@@ -145,12 +151,14 @@ export class PrismSidebarComponent {
      */
     protected rollupTooltip(rollup: CategoryRollup): string {
         const noun = rollup.problems === 1 ? 'component needs' : 'components need';
+
         return `${rollup.problems} ${noun} review`;
     }
 
     protected itemTooltip(item: NavigationItem, decorations: ItemDecorations | null): string | null {
         const status = this.itemStatus(item);
         const lines: string[] = [];
+
         if (status === 'wip') lines.push('Work in progress');
         if (status === 'deprecated') lines.push('Deprecated / Legacy');
         if (decorations) lines.push(decorations.tooltip);
@@ -159,6 +167,7 @@ export class PrismSidebarComponent {
 
     protected isActive(item: NavigationItem): boolean {
         const active = this.navigationService.activeItem();
+
         if (!active || active.kind !== item.kind) return false;
         if (item.kind === 'component') {
             return item.data.meta.className === (active as typeof item).data.meta.className;
@@ -177,6 +186,7 @@ export class PrismSidebarComponent {
     private loadCollapsed(): Set<string> {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
+
             return stored ? new Set(JSON.parse(stored)) : new Set();
         } catch {
             return new Set();

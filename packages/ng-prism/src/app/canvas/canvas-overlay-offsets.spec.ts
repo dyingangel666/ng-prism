@@ -26,12 +26,14 @@ const TOOLBAR = join(__dirname, 'prism-canvas-toolbar.component.css');
 function offsets(file: string, selector: string): Record<string, string> {
     const src = readFileSync(file, 'utf-8');
     const start = src.indexOf(selector);
+
     if (start === -1) throw new Error(`selector not found: ${selector}`);
     const open = src.indexOf('{', start);
     const close = src.indexOf('}', open);
     const block = src.slice(open, close);
 
     const found: Record<string, string> = {};
+
     for (const m of block.matchAll(/(--prism-canvas-overlay-(?:top|inline))\s*:\s*([^;]+);/g)) {
         found[m[1]] = m[2].trim();
     }
@@ -90,6 +92,7 @@ describe('canvas overlay offsets', () => {
         // it and the fallback in var() is what actually applies with rulers off.
         for (const [name, value] of Object.entries(base)) {
             const prop = name.endsWith('top') ? 'top' : 'right';
+
             expect(src).toMatch(new RegExp(`${prop}:\\s*var\\(${name},\\s*${value}\\)`));
         }
     });

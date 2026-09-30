@@ -286,6 +286,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('class HighlightDirective__PrismHost');
         expect(source).toContain('@Component');
         expect(source).toContain('imports: [HighlightDirective]');
@@ -296,6 +297,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('appHighlight');
         expect(source).toContain('<span');
         expect(source).toContain('class="demo-text"');
@@ -306,6 +308,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('[highlightColor]="highlightColor()"');
     });
 
@@ -314,6 +317,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('(highlighted)="highlighted.emit($event)"');
     });
 
@@ -322,6 +326,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('highlightColor = input');
     });
 
@@ -330,6 +335,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('__prismContent__ = input("")');
     });
 
@@ -338,6 +344,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('type: HighlightDirective__PrismHost,');
         expect(source).not.toContain('type: HighlightDirective,');
     });
@@ -347,6 +354,7 @@ describe('directive wrapper generation', () => {
             components: [TOOLTIP_WITH_HOST_COMPONENT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('imports: [TooltipDirective, ButtonComponent]');
         expect(source).toContain("ButtonComponent } from 'my-lib';");
         expect(source).toContain('<my-button');
@@ -359,6 +367,7 @@ describe('directive wrapper generation', () => {
             components: [BUTTON, HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('type: ButtonComponent,');
         expect(source).toContain('type: HighlightDirective__PrismHost,');
         expect(source).toContain('class HighlightDirective__PrismHost');
@@ -369,6 +378,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain("import { Component, input, output } from '@angular/core';");
     });
 
@@ -377,6 +387,7 @@ describe('directive wrapper generation', () => {
             components: [BUTTON],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).not.toContain("from '@angular/core'");
     });
 
@@ -385,6 +396,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('isDirective: true');
     });
 
@@ -393,6 +405,7 @@ describe('directive wrapper generation', () => {
             components: [HIGHLIGHT],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('host:');
     });
 
@@ -401,6 +414,7 @@ describe('directive wrapper generation', () => {
             components: [THEMED_DIRECTIVE],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain("theme = input<'light' | 'dark'>(\"light\")");
     });
 
@@ -409,6 +423,7 @@ describe('directive wrapper generation', () => {
             components: [THEMED_DIRECTIVE],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('label = input.required<string>()');
     });
 
@@ -417,6 +432,7 @@ describe('directive wrapper generation', () => {
             components: [THEMED_DIRECTIVE],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('size = input(16)');
     });
 
@@ -437,6 +453,7 @@ describe('directive wrapper generation', () => {
             components: [directive],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain("theme = input<'light' | 'dark'>(\"light\")");
     });
 
@@ -456,6 +473,7 @@ describe('directive wrapper generation', () => {
             components: [directive],
             libraryImportPath: 'my-lib'
         });
+
         expect(source).toContain('label = input("Hello")');
         expect(source).not.toContain('input<');
     });

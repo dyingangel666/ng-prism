@@ -1,5 +1,4 @@
-import { Tree } from '@angular-devkit/schematics';
-import { callRule, SchematicContext } from '@angular-devkit/schematics';
+import { callRule, SchematicContext, Tree } from '@angular-devkit/schematics';
 import { parse as parseJsonc } from 'jsonc-parser';
 import { firstValueFrom } from 'rxjs';
 import { ngAdd } from './index.js';
@@ -11,6 +10,7 @@ function createTree(projects: Record<string, unknown> = {}): Tree {
         version: 1,
         projects
     };
+
     tree.create('angular.json', JSON.stringify(angularJson, null, 2));
     tree.create('tsconfig.json', '{}');
     return tree;
@@ -34,6 +34,7 @@ function defaultLibProject() {
 
 function readJson(tree: Tree, path: string): Record<string, unknown> {
     const buffer = tree.read(path);
+
     return JSON.parse(buffer!.toString('utf-8'));
 }
 
@@ -53,6 +54,7 @@ const mockContext = {
 
 async function runSchematic(options: { project: string; port?: number; zoneless?: boolean }, tree: Tree): Promise<Tree> {
     const rule = ngAdd(options);
+
     return firstValueFrom(callRule(rule, tree, mockContext));
 }
 
@@ -63,6 +65,7 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const files = [] as string[];
+
         result.visit((path) => files.push(path));
         expect(files).toContain('/projects/my-lib-prism/src/main.ts');
     });
@@ -73,6 +76,7 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).toContain("import { bootstrapApplication } from '@angular/platform-browser'");
         expect(mainTs).toContain("import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core'");
         expect(mainTs).toContain("import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'");
@@ -91,6 +95,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, Record<string, unknown>>;
         };
         const prismProject = workspace.projects['my-lib-prism'];
+
         expect(prismProject).toBeDefined();
         expect(prismProject['projectType']).toBe('application');
         expect(prismProject['root']).toBe('projects/my-lib-prism');
@@ -106,9 +111,11 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const prismTarget = workspace.projects['my-lib'].architect['prism'];
+
         expect(prismTarget).toBeDefined();
         expect(prismTarget['builder']).toBe('@ng-prism/core:serve');
         const opts = prismTarget['options'] as Record<string, unknown>;
+
         expect(opts['entryPoint']).toBe('projects/my-lib');
         expect(opts['prismProject']).toBe('my-lib-prism');
         expect(opts['libraryProject']).toBe('my-lib');
@@ -124,14 +131,17 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const buildTarget = workspace.projects['my-lib'].architect['prism-build'];
+
         expect(buildTarget).toBeDefined();
         expect(buildTarget['builder']).toBe('@ng-prism/core:build');
         const opts = buildTarget['options'] as Record<string, unknown>;
+
         expect(opts['entryPoint']).toBe('projects/my-lib');
         expect(opts['outputPath']).toBe('dist/my-lib-prism');
 
         const prismAppBuild = workspace.projects['my-lib-prism'].architect['build'];
         const prismOpts = prismAppBuild['options'] as Record<string, unknown>;
+
         expect(prismOpts['outputPath']).toEqual({
             base: 'dist/my-lib-prism',
             browser: ''
@@ -144,15 +154,18 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const files = [] as string[];
+
         result.visit((path) => files.push(path));
         expect(files).toContain('/ng-prism.config.ts');
         const content = result.read('/ng-prism.config.ts')!.toString('utf-8');
+
         expect(content).toContain("import { defineConfig } from '@ng-prism/core/config'");
         expect(content).toContain('defineConfig({ plugins: [] })');
     });
 
     it('should not overwrite existing ng-prism.config.ts', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('ng-prism.config.ts', 'existing config');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -167,6 +180,7 @@ describe('ng-add schematic', () => {
 
         expect(result.exists('/projects/my-lib-prism/src/index.html')).toBe(true);
         const indexHtml = result.read('/projects/my-lib-prism/src/index.html')!.toString('utf-8');
+
         expect(indexHtml).toContain('<prism-shell>');
     });
 
@@ -179,6 +193,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
         };
         const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
+
         expect(buildOptions['index']).toBe('projects/my-lib-prism/src/index.html');
         expect(buildOptions['polyfills']).toEqual(['zone.js']);
         expect(buildOptions['styles']).toEqual(['node_modules/highlight.js/styles/base16/solarized-dark.min.css']);
@@ -228,6 +243,7 @@ describe('ng-add schematic', () => {
         const tsConfig = readJson(result, '/tsconfig.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual(['./ng-prism.config.ts']);
         expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual(['./projects/my-lib/src/public-api.ts']);
         expect(tsConfig.compilerOptions?.paths?.['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
@@ -240,28 +256,33 @@ describe('ng-add schematic', () => {
 
         expect(result.exists('/.gitignore')).toBe(true);
         const gitignore = result.read('/.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('ng-prism-cache/');
     });
 
     it('should append ng-prism-cache/ to an existing .gitignore without duplicating', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('.gitignore', 'node_modules\ndist\n');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const gitignore = result.read('/.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('node_modules');
         expect(gitignore).toContain('ng-prism-cache/');
     });
 
     it('should not duplicate ng-prism-cache/ entry in .gitignore', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('.gitignore', 'ng-prism-cache/\n');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const gitignore = result.read('/.gitignore')!.toString('utf-8');
         const matches = gitignore.match(/ng-prism-cache\//g);
+
         expect(matches).toHaveLength(1);
     });
 
@@ -274,6 +295,7 @@ describe('ng-add schematic', () => {
             compilerOptions: { rootDir?: string };
             include: string[];
         };
+
         expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
         expect(tsconfigApp.include).toContain('src/**/*.d.ts');
         expect(tsconfigApp.include).toContain('../../ng-prism-cache/my-lib-prism/**/*.ts');
@@ -281,6 +303,7 @@ describe('ng-add schematic', () => {
 
     it('should not overwrite existing main.ts', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib-prism/src/main.ts', 'custom main');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -290,6 +313,7 @@ describe('ng-add schematic', () => {
 
     it('should not overwrite existing index.html', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib-prism/src/index.html', 'custom html');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -299,6 +323,7 @@ describe('ng-add schematic', () => {
 
     it('should not overwrite existing tsconfig.app.json', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib-prism/tsconfig.app.json', 'custom tsconfig');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -308,6 +333,7 @@ describe('ng-add schematic', () => {
 
     it('should handle tsconfig.json with comments (JSONC)', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.overwrite('tsconfig.json', '/* To learn more about this file see: https://angular.dev */\n{\n  "compilerOptions": {}\n}\n');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -315,6 +341,7 @@ describe('ng-add schematic', () => {
         const tsConfig = parseJsonc(result.read('/tsconfig.json')!.toString('utf-8')) as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(tsConfig.compilerOptions?.paths?.['ng-prism.config']).toEqual(['./ng-prism.config.ts']);
     });
 
@@ -332,11 +359,13 @@ describe('ng-add schematic', () => {
             '}',
             ''
         ].join('\n');
+
         tree.overwrite('tsconfig.json', original);
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const written = result.read('/tsconfig.json')!.toString('utf-8');
+
         expect(written).toContain('/* To learn more about this file see: https://angular.dev */');
         expect(written).toContain('// important: strict mode');
         expect(written).toContain('// angular standalone projects');
@@ -353,6 +382,7 @@ describe('ng-add schematic', () => {
 
     it('should add strip-showcase script to package.json', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('package.json', JSON.stringify({ name: 'my-workspace', scripts: {} }, null, 2));
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -360,11 +390,13 @@ describe('ng-add schematic', () => {
         const pkg = readJson(result, '/package.json') as {
             scripts: Record<string, string>;
         };
+
         expect(pkg.scripts['strip-showcase']).toBe('ng-prism-strip dist/my-lib');
     });
 
     it('should not overwrite existing strip-showcase script', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create(
             'package.json',
             JSON.stringify(
@@ -382,6 +414,7 @@ describe('ng-add schematic', () => {
         const pkg = readJson(result, '/package.json') as {
             scripts: Record<string, string>;
         };
+
         expect(pkg.scripts['strip-showcase']).toBe('custom-command');
     });
 
@@ -395,6 +428,7 @@ describe('ng-add schematic', () => {
         };
         const customStyle = 'src/styles/custom.scss';
         const buildOptions = workspaceAfterFirst.projects['my-lib-prism'].architect['build']['options'] as Record<string, unknown>;
+
         (buildOptions['styles'] as string[]).push(customStyle);
         tree.overwrite('angular.json', JSON.stringify(workspaceAfterFirst, null, 2) + '\n');
 
@@ -404,6 +438,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const finalStyles = (workspaceAfterSecond.projects['my-lib-prism'].architect['build']['options'] as Record<string, unknown>)['styles'] as string[];
+
         expect(finalStyles).toContain(customStyle);
     });
 
@@ -416,6 +451,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const prismOptions = workspaceAfterFirst.projects['my-lib'].architect['prism']['options'] as Record<string, unknown>;
+
         prismOptions['port'] = 9999;
         tree.overwrite('angular.json', JSON.stringify(workspaceAfterFirst, null, 2) + '\n');
 
@@ -425,6 +461,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const finalOptions = workspaceAfterSecond.projects['my-lib'].architect['prism']['options'] as Record<string, unknown>;
+
         expect(finalOptions['port']).toBe(9999);
     });
 
@@ -436,6 +473,7 @@ describe('ng-add schematic', () => {
         const tsConfigAfterFirst = readJson(tree, '/tsconfig.json') as {
             compilerOptions: { paths: Record<string, string[]> };
         };
+
         tsConfigAfterFirst.compilerOptions.paths['my-lib'] = ['custom/path.ts'];
         tree.overwrite('tsconfig.json', JSON.stringify(tsConfigAfterFirst, null, 2) + '\n');
 
@@ -444,6 +482,7 @@ describe('ng-add schematic', () => {
         const tsConfigAfterSecond = readJson(result, '/tsconfig.json') as {
             compilerOptions: { paths: Record<string, string[]> };
         };
+
         expect(tsConfigAfterSecond.compilerOptions.paths['my-lib']).toEqual(['custom/path.ts']);
     });
 
@@ -455,6 +494,7 @@ describe('ng-add schematic', () => {
         const tsConfigAfterFirst = readJson(tree, '/tsconfig.json') as {
             compilerOptions: { paths: Record<string, string[]> };
         };
+
         tsConfigAfterFirst.compilerOptions.paths['prism-manifest/*'] = ['custom/path.ts'];
         tree.overwrite('tsconfig.json', JSON.stringify(tsConfigAfterFirst, null, 2) + '\n');
 
@@ -463,6 +503,7 @@ describe('ng-add schematic', () => {
         const tsConfigAfterSecond = readJson(result, '/tsconfig.json') as {
             compilerOptions: { paths: Record<string, string[]> };
         };
+
         expect(tsConfigAfterSecond.compilerOptions.paths['prism-manifest/*']).toEqual(['custom/path.ts']);
     });
 
@@ -475,6 +516,7 @@ describe('ng-add schematic', () => {
         } as unknown as SchematicContext;
 
         const rule = ngAdd({ project: 'my-lib' });
+
         await firstValueFrom(callRule(rule, tree, loggingContext));
 
         expect(logs.some((l) => l.includes('my-lib-prism'))).toBe(true);
@@ -483,6 +525,7 @@ describe('ng-add schematic', () => {
 
     it('adds runtime peer deps to devDependencies', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('package.json', JSON.stringify({ name: 'host' }) + '\n');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -496,6 +539,7 @@ describe('ng-add schematic', () => {
 
     it('does not overwrite existing dependencies', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create(
             'package.json',
             JSON.stringify({
@@ -515,6 +559,7 @@ describe('ng-add schematic', () => {
 
     it('respects existing entries in dependencies (not devDependencies)', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create(
             'package.json',
             JSON.stringify({
@@ -539,10 +584,12 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib', zoneless: true }, tree);
 
         const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).toContain("import { provideZonelessChangeDetection } from '@angular/core'");
         expect(mainTs).toContain('provideZonelessChangeDetection()');
         const zonelessIndex = mainTs.indexOf('provideZonelessChangeDetection()');
         const providePrismIndex = mainTs.indexOf('providePrism(PRISM_RUNTIME_MANIFEST, config)');
+
         expect(zonelessIndex).toBeGreaterThan(-1);
         expect(providePrismIndex).toBeGreaterThan(-1);
         expect(zonelessIndex).toBeLessThan(providePrismIndex);
@@ -559,6 +606,7 @@ describe('ng-add schematic', () => {
             projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
         };
         const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
+
         expect(buildOptions['polyfills']).toEqual([]);
     });
 
@@ -568,6 +616,7 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib' }, tree);
 
         const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).not.toContain('provideZonelessChangeDetection');
     });
 
@@ -577,12 +626,14 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib', zoneless: false }, tree);
 
         const mainTs = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).not.toContain('provideZonelessChangeDetection');
 
         const workspace = readJson(result, '/angular.json') as {
             projects: Record<string, { architect: Record<string, { options: Record<string, unknown> }> }>;
         };
         const buildOptions = workspace.projects['my-lib-prism'].architect['build'].options;
+
         expect(buildOptions['polyfills']).toEqual(['zone.js']);
     });
 
@@ -595,6 +646,7 @@ describe('ng-add schematic', () => {
         const result = await runSchematic({ project: 'my-lib', zoneless: true }, tree);
 
         const mainTsAfterSecond = result.read('/projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTsAfterSecond).toBe(mainTsAfterFirst);
     });
 });
@@ -673,6 +725,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const result = await runSchematic({ project: 'button' }, tree);
 
         const files = [] as string[];
+
         result.visit((path) => files.push(path));
         expect(files).toContain('/apps/button-prism/src/main.ts');
         expect(files).not.toContain('/projects/button-prism/src/main.ts');
@@ -680,6 +733,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const workspace = readJson(result, '/angular.json') as {
             projects: Record<string, Record<string, unknown>>;
         };
+
         expect(workspace.projects['button-prism']['root']).toBe('apps/button-prism');
         expect(workspace.projects['button-prism']['sourceRoot']).toBe('apps/button-prism/src');
     });
@@ -693,6 +747,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const result = await runSchematic({ project: 'button' }, tree);
 
         const files = [] as string[];
+
         result.visit((path) => files.push(path));
         expect(files).toContain('/packages/apps/button-prism/src/main.ts');
     });
@@ -703,6 +758,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const result = await runSchematic({ project: 'button' }, tree);
 
         const files = [] as string[];
+
         result.visit((path) => files.push(path));
         expect(files).toContain('/libs/button-prism/src/main.ts');
     });
@@ -716,6 +772,7 @@ describe('ng-add schematic — Nx workspaces', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const architect = workspace.projects['button-prism'].architect;
+
         expect(architect['build']['builder']).toBe('@angular/build:application');
         expect(architect['serve']['builder']).toBe('@angular/build:dev-server');
     });
@@ -728,6 +785,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const base = readJson(result, '/tsconfig.base.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(base.compilerOptions?.paths?.['ng-prism.config']).toEqual(['./ng-prism.config.ts']);
         expect(base.compilerOptions?.paths?.['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
         expect(result.exists('/tsconfig.json')).toBe(false);
@@ -741,6 +799,7 @@ describe('ng-add schematic — Nx workspaces', () => {
         const base = readJson(result, '/tsconfig.base.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(base.compilerOptions?.paths?.['button']).toEqual(['libs/button/src/index.ts']);
     });
 
@@ -754,6 +813,7 @@ describe('ng-add schematic — Nx workspaces', () => {
             compilerOptions: { outDir: string; rootDir: string };
             include: string[];
         };
+
         expect(tsconfigApp.extends).toBe('../../tsconfig.base.json');
         expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
         expect(tsconfigApp.include).toContain('../../ng-prism-cache/button-prism/**/*.ts');
@@ -772,6 +832,7 @@ describe('ng-add schematic — Nx workspaces', () => {
             compilerOptions: { outDir: string; rootDir: string };
             include: string[];
         };
+
         expect(tsconfigApp.extends).toBe('../../../tsconfig.base.json');
         expect(tsconfigApp.compilerOptions.rootDir).toBe('../../..');
         expect(tsconfigApp.compilerOptions.outDir).toBe('../../../out-tsc/app');
@@ -787,9 +848,11 @@ describe('ng-add schematic — Nx workspaces', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const architect = workspace.projects['button'].architect;
+
         expect(architect['prism']['builder']).toBe('@ng-prism/core:serve');
         expect(architect['prism-build']['builder']).toBe('@ng-prism/core:build');
         const opts = architect['prism']['options'] as Record<string, unknown>;
+
         expect(opts['entryPoint']).toBe('libs/button');
         expect(opts['prismProject']).toBe('button-prism');
     });
@@ -798,6 +861,7 @@ describe('ng-add schematic — Nx workspaces', () => {
 describe('ng-add schematic — application builder resolution', () => {
     it('should use @angular-devkit/build-angular when @angular/build is not a direct dependency', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create(
             'package.json',
             JSON.stringify({
@@ -812,12 +876,14 @@ describe('ng-add schematic — application builder resolution', () => {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
         const architect = workspace.projects['my-lib-prism'].architect;
+
         expect(architect['build']['builder']).toBe('@angular-devkit/build-angular:application');
         expect(architect['serve']['builder']).toBe('@angular-devkit/build-angular:dev-server');
     });
 
     it('should prefer @angular/build when both are direct dependencies', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create(
             'package.json',
             JSON.stringify({
@@ -834,6 +900,7 @@ describe('ng-add schematic — application builder resolution', () => {
         const workspace = readJson(result, '/angular.json') as {
             projects: Record<string, { architect: Record<string, Record<string, unknown>> }>;
         };
+
         expect(workspace.projects['my-lib-prism'].architect['build']['builder']).toBe('@angular/build:application');
     });
 });
@@ -841,6 +908,7 @@ describe('ng-add schematic — application builder resolution', () => {
 describe('ng-add schematic — library barrel resolution', () => {
     it('should read the barrel from ng-package.json when no mapping exists yet', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib/ng-package.json', JSON.stringify({ lib: { entryFile: 'src/my-entry.ts' } }));
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -848,11 +916,13 @@ describe('ng-add schematic — library barrel resolution', () => {
         const tsConfig = readJson(result, '/tsconfig.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual(['./projects/my-lib/src/my-entry.ts']);
     });
 
     it('should probe for src/index.ts when there is no ng-package.json', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib/src/index.ts', 'export {};\n');
 
         const result = await runSchematic({ project: 'my-lib' }, tree);
@@ -860,11 +930,13 @@ describe('ng-add schematic — library barrel resolution', () => {
         const tsConfig = readJson(result, '/tsconfig.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual(['./projects/my-lib/src/index.ts']);
     });
 
     it('should prefer an existing public-api.ts over index.ts', async () => {
         const tree = createTree(defaultLibProject());
+
         tree.create('projects/my-lib/src/index.ts', 'export {};\n');
         tree.create('projects/my-lib/src/public-api.ts', 'export {};\n');
 
@@ -873,6 +945,7 @@ describe('ng-add schematic — library barrel resolution', () => {
         const tsConfig = readJson(result, '/tsconfig.json') as {
             compilerOptions?: { paths?: Record<string, string[]> };
         };
+
         expect(tsConfig.compilerOptions?.paths?.['my-lib']).toEqual(['./projects/my-lib/src/public-api.ts']);
     });
 });

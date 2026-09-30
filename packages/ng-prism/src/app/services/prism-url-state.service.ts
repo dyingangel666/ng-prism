@@ -1,6 +1,6 @@
 import { effect, inject, Injectable, Injector } from '@angular/core';
-import type { NavigationItem } from './navigation-item.types.js';
 import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
+import type { NavigationItem } from './navigation-item.types.js';
 import { PrismManifestService } from './prism-manifest.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismPanelService } from './prism-panel.service.js';
@@ -58,11 +58,13 @@ export class PrismUrlStateService {
         try {
             if (componentClassName) {
                 const comp = this.manifestService.components().find((c) => c.meta.className === componentClassName);
+
                 if (comp) {
                     this.navigationService.select(comp);
                     if (variantParam !== null) {
                         const index = parseInt(variantParam, 10);
                         const maxIndex = (comp.meta.showcaseConfig.variants?.length ?? 1) - 1;
+
                         if (!Number.isNaN(index) && index >= 0 && index <= maxIndex) {
                             this.rendererService.activeVariantIndex.set(index);
                         }
@@ -70,6 +72,7 @@ export class PrismUrlStateService {
                 }
             } else if (pageTitle) {
                 const page = this.manifestService.pages().find((p) => p.title === pageTitle);
+
                 if (page) {
                     this.navigationService.selectPage(page);
                 }

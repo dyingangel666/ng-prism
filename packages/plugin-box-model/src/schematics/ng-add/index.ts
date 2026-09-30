@@ -14,6 +14,7 @@ function injectPlugin(options: NgAddSchemaOptions): Rule {
             importFrom: PLUGIN_IMPORT_FROM,
             call: PLUGIN_CALL
         });
+
         if (changed) {
             context.logger.info(`  ${PLUGIN_IMPORT_FROM} → added to ${configPath}`);
         } else {

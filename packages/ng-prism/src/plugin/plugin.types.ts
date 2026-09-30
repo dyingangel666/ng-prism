@@ -1,6 +1,6 @@
 import type { Provider, Type } from '@angular/core';
-import type { StyleguidePage } from './page.types.js';
 import type { CanvasBg } from '../shared/canvas-bg.type.js';
+import type { StyleguidePage } from './page.types.js';
 
 export interface NgPrismPlugin {
     /** Unique plugin name — used for debugging and conflict detection */

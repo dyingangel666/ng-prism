@@ -7,12 +7,14 @@ function setup(config: NgPrismConfig): PrismPluginService {
     const injector = Injector.create({
         providers: [{ provide: PRISM_CONFIG, useValue: config }]
     });
+
     return runInInjectionContext(injector, () => new PrismPluginService());
 }
 
 describe('PrismPluginService', () => {
     it('should return empty panels and controls with no plugins', () => {
         const service = setup({});
+
         expect(service.panels()).toEqual([]);
         expect(service.controls()).toEqual([]);
     });
@@ -23,6 +25,7 @@ describe('PrismPluginService', () => {
             panels: [{ id: 'test', label: 'Test', component: class {} as any }]
         };
         const service = setup({ plugins: [plugin] });
+
         expect(service.panels().length).toBe(1);
         expect(service.panels()[0].id).toBe('test');
     });
@@ -33,6 +36,7 @@ describe('PrismPluginService', () => {
             controls: [{ matchType: () => true, component: class {} as any }]
         };
         const service = setup({ plugins: [plugin] });
+
         expect(service.controls().length).toBe(1);
     });
 
@@ -46,12 +50,14 @@ describe('PrismPluginService', () => {
             panels: [{ id: 'b', label: 'B', component: class {} as any }]
         };
         const service = setup({ plugins: [plugin1, plugin2] });
+
         expect(service.panels().length).toBe(2);
         expect(service.panels().map((p) => p.id)).toEqual(['a', 'b']);
     });
 
     it('should return no navigation decorations with no plugins', () => {
         const service = setup({});
+
         expect(service.navigationDecorations()).toEqual([]);
     });
 
@@ -61,6 +67,7 @@ describe('PrismPluginService', () => {
             navigationDecorations: [{ id: 'test', icon: 'box', order: 10, badge: () => null }]
         };
         const service = setup({ plugins: [plugin] });
+
         expect(service.navigationDecorations().map((d) => d.id)).toEqual(['test']);
     });
 
@@ -74,6 +81,7 @@ describe('PrismPluginService', () => {
             navigationDecorations: [{ id: 'b', icon: 'camera', badge: () => null }]
         };
         const service = setup({ plugins: [a, b] });
+
         expect(service.navigationDecorations()).toHaveLength(2);
     });
 });

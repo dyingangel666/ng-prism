@@ -72,6 +72,7 @@ export class PrismCanvasService {
             this.viewportWidth.set(null);
         } else {
             const clamped = clampViewportWidth(w);
+
             this.lastViewportWidth = clamped;
             this.viewportWidth.set(clamped);
         }
@@ -85,8 +86,10 @@ export class PrismCanvasService {
     private loadFromStorage(): void {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
+
             if (!raw) return;
             const d = JSON.parse(raw) as Record<string, unknown>;
+
             if (CANVAS_BGS.includes(d['bg'] as CanvasBg)) {
                 this.bg.set(d['bg'] as CanvasBg);
             }
@@ -95,6 +98,7 @@ export class PrismCanvasService {
             if (typeof d['rulers'] === 'boolean') this.rulers.set(d['rulers']);
             if (typeof d['viewportWidth'] === 'number') {
                 const w = clampViewportWidth(d['viewportWidth']);
+
                 this.lastViewportWidth = w;
                 this.viewportWidth.set(w);
             }

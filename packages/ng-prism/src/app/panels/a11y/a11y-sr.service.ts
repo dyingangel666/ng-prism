@@ -41,6 +41,7 @@ const STRUCTURAL_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'META', 'LINK', 
 export class A11ySrService {
     buildAnnouncementList(root: Element, getById?: (id: string) => Element | null): SrAnnouncement[] {
         const announcements: SrAnnouncement[] = [];
+
         walk(root, announcements, getById);
         announcements.forEach((a, i) => {
             a.index = i + 1;
@@ -53,6 +54,7 @@ function walk(element: Element, out: SrAnnouncement[], getById?: (id: string) =>
     if (isHidden(element)) return;
 
     const tag = element.tagName?.toUpperCase() ?? '';
+
     if (STRUCTURAL_TAGS.has(tag) && !element.getAttribute('role')) {
         for (const child of Array.from(element.childNodes)) {
             if (child.nodeType === 1) walk(child as Element, out, getById);
@@ -70,11 +72,13 @@ function walk(element: Element, out: SrAnnouncement[], getById?: (id: string) =>
         const roleLabel = ROLE_LABELS[role] ?? role;
 
         let levelSuffix = '';
+
         if (role === 'heading' && states['level']) {
             levelSuffix = ` level ${states['level']}`;
         }
 
         const parts: string[] = [];
+
         if (name) parts.push(`"${name}"`);
         parts.push(`${roleLabel}${levelSuffix}`);
         parts.push(...stateList.filter((s) => s !== 'level'));

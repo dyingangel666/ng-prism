@@ -32,6 +32,7 @@ describe('A11yKeyboardService', () => {
     it('returns empty list when no focusable elements exist', () => {
         const root = el('div', {}, '', []);
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result).toHaveLength(0);
     });
 
@@ -41,6 +42,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn1, btn2]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].index).toBe(1);
         expect(result[1].index).toBe(2);
     });
@@ -50,6 +52,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].role).toBe('button');
     });
 
@@ -58,6 +61,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [input]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].name).toBe('Email address');
         expect(result[0].nameSource).toBe('aria-label');
     });
@@ -67,6 +71,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].name).toBe('Submit form');
         expect(result[0].nameSource).toBe('text-content');
     });
@@ -77,6 +82,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [natBtn, posBtn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].element).toBe(posBtn);
         expect(result[1].element).toBe(natBtn);
     });
@@ -88,6 +94,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn3, btn1, btn2]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].element).toBe(btn1);
         expect(result[1].element).toBe(btn2);
         expect(result[2].element).toBe(btn3);
@@ -98,6 +105,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [input]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].states).toContain('required');
     });
 
@@ -106,6 +114,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [input]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].states).toContain('required');
     });
 
@@ -114,6 +123,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].states).toContain('expanded');
     });
 
@@ -122,6 +132,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].element).toBe(btn);
     });
 
@@ -130,6 +141,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].tabindex).toBe(5);
     });
 
@@ -138,6 +150,7 @@ describe('A11yKeyboardService', () => {
         const root = el('div', {}, '', [btn]);
 
         const result = service.extractTabOrder(root as unknown as Element);
+
         expect(result[0].tabindex).toBeNull();
     });
 });

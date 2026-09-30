@@ -1,25 +1,25 @@
-import { Component, computed, effect, inject, untracked, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, untracked } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
-import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
-import { PrismThemeService } from '../services/prism-theme.service.js';
+import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
+import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
+import { PrismComponentHeadComponent } from '../component-head/prism-component-head.component.js';
+import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
+import { PrismHeaderComponent } from '../header/prism-header.component.js';
+import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
+import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.component.js';
+import { PrismRendererComponent } from '../renderer/prism-renderer.component.js';
 import { PrismLayoutService } from '../services/prism-layout.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismPanelService } from '../services/prism-panel.service.js';
-import { PrismComponentHeadComponent } from '../component-head/prism-component-head.component.js';
-import { PrismVariantRibbonComponent } from '../variant-ribbon/prism-variant-ribbon.component.js';
-import { PrismHeaderComponent } from '../header/prism-header.component.js';
-import { PrismPanelHostComponent } from '../panels/panel-host/prism-panel-host.component.js';
-import { PrismRendererComponent } from '../renderer/prism-renderer.component.js';
-import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
-import { PrismPageRendererComponent } from '../page-renderer/prism-page-renderer.component.js';
-import { PrismUrlStateService } from '../services/prism-url-state.service.js';
 import { PrismPersistenceService } from '../services/prism-persistence.service.js';
-import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
-import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
-import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
-import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
-import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
+import { PrismThemeService } from '../services/prism-theme.service.js';
+import { PrismUrlStateService } from '../services/prism-url-state.service.js';
+import { PrismSidebarComponent } from '../sidebar/prism-sidebar.component.js';
+import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
+import { PrismVariantRibbonComponent } from '../variant-ribbon/prism-variant-ribbon.component.js';
 import { nextViewId } from '../view-tab-bar/next-view-id.js';
+import { PrismViewPanelHostComponent } from '../view-tab-bar/prism-view-panel-host.component.js';
+import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.component.js';
 
 @Component({
     selector: 'prism-shell',
@@ -57,6 +57,7 @@ export class PrismShellComponent {
 
     protected readonly shellStyle = computed(() => {
         const sw = this.layout.sidebarVisible() ? this.layout.sidebarWidth() : 0;
+
         return `--sw: ${sw}px;`;
     });
 
@@ -75,6 +76,7 @@ export class PrismShellComponent {
         // effect only reads the two signals it needs and applies the result.
         effect(() => {
             const next = nextViewId(this.panelService.activeViewId(), this.panelService.visibleViewPanels());
+
             if (next !== null) {
                 untracked(() => this.panelService.activeViewId.set(next));
             }
@@ -84,6 +86,7 @@ export class PrismShellComponent {
             const item = this.navigationService.activeItem();
             const activeComp = this.navigationService.activeComponent();
             const activePage = this.navigationService.activePage();
+
             if (item !== null && activeComp === null && activePage === null) {
                 untracked(() => this.navigationService.selectFirst());
             }

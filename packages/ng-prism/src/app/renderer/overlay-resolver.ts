@@ -31,6 +31,7 @@ export function resolveOverlay(
     if (options.captureActive) return NONE;
 
     const panel = panels.find((p) => p.id === activePanelId);
+
     if (!panel) return NONE;
 
     if (panel.overlayComponent) {
@@ -40,6 +41,7 @@ export function resolveOverlay(
     if (panel.loadOverlayComponent) {
         const cached = options.cache.get(panel.id);
         const loadOverlayComponent = panel.loadOverlayComponent;
+
         return cached
             ? { kind: 'eager', component: cached }
             : {

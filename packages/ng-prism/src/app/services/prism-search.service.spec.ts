@@ -31,6 +31,7 @@ function setup(manifest: RuntimeManifest): PrismSearchService {
         providers: [{ provide: PrismManifestService, useValue: manifestService }],
         parent: injector
     });
+
     return runInInjectionContext(childInjector, () => new PrismSearchService());
 }
 
@@ -38,6 +39,7 @@ describe('PrismSearchService', () => {
     it('should return all components when query is empty', () => {
         const comps = [createComponent({ title: 'Button' }), createComponent({ title: 'Card' })];
         const service = setup({ components: comps });
+
         expect(service.filteredComponents()).toEqual(comps);
     });
 
@@ -89,6 +91,7 @@ describe('PrismSearchService', () => {
 
     it('should handle empty results', () => {
         const service = setup({ components: [createComponent({ title: 'Button' })] });
+
         service.search('nonexistent');
         expect(service.filteredComponents()).toEqual([]);
     });

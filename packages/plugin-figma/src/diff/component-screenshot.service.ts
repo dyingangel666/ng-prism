@@ -3,6 +3,7 @@ export async function captureDomElement(element: HTMLElement | null): Promise<HT
 
     type Html2CanvasFn = (el: HTMLElement, opts?: object) => Promise<HTMLCanvasElement>;
     const { default: html2canvas } = (await import('html2canvas')) as unknown as { default: Html2CanvasFn };
+
     return html2canvas(element, {
         useCORS: true,
         scale: window.devicePixelRatio || 1,

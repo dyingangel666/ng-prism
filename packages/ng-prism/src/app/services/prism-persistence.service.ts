@@ -1,8 +1,8 @@
 import { effect, inject, Injectable, Injector } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
-import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { A11yPanelStateService, type A11ySubTab } from '../panels/a11y/a11y-panel-state.service.js';
-import { A11yPerspectiveService, type A11yPerspectiveMode } from '../panels/a11y/a11y-perspective.service.js';
+import { type A11yPerspectiveMode, A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
+import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PrismCaptureService } from './prism-capture.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
@@ -41,6 +41,7 @@ export class PrismPersistenceService {
         // an external screenshot tool captures.
         if (this.capture.active()) return;
         const { raw } = this.restoreFromStorage();
+
         if (raw !== null) this.lastSerialized = raw;
         this.setupSyncEffect();
     }
@@ -48,6 +49,7 @@ export class PrismPersistenceService {
     private restoreFromStorage(): { raw: string | null } {
         let parsed: PrismPersistedState | null = null;
         let raw: string | null = null;
+
         try {
             raw = sessionStorage.getItem(STORAGE_KEY);
             if (raw) parsed = JSON.parse(raw) as PrismPersistedState;
@@ -60,6 +62,7 @@ export class PrismPersistenceService {
         this.suppressSync = true;
         try {
             const a11yTabs: A11ySubTab[] = ['violations', 'keyboard', 'tree', 'sr'];
+
             if (parsed.a11y?.activeTab && a11yTabs.includes(parsed.a11y.activeTab)) {
                 this.a11yPanelState.activeTab.set(parsed.a11y.activeTab);
             }
@@ -68,11 +71,14 @@ export class PrismPersistenceService {
             }
 
             const activeComp = this.navigationService.activeComponent();
+
             if (activeComp && parsed.inputs) {
                 const bucket = parsed.inputs[activeComp.meta.className];
+
                 if (bucket && bucket.variantIndex === this.rendererService.activeVariantIndex()) {
                     const validKeys = new Set(activeComp.meta.inputs.map((i) => i.name));
                     const filtered: Record<string, unknown> = {};
+
                     for (const [k, v] of Object.entries(bucket.values)) {
                         if (validKeys.has(k) || k === '__prismContent__') filtered[k] = v;
                     }
@@ -112,6 +118,7 @@ export class PrismPersistenceService {
             this.writeTimer = null;
             const state = this.serialize();
             const next = JSON.stringify(state);
+
             if (next === this.lastSerialized) return;
             try {
                 sessionStorage.setItem(STORAGE_KEY, next);
@@ -128,9 +135,11 @@ export class PrismPersistenceService {
         const values = this.rendererService.inputValues();
 
         let inputs: PrismPersistedState['inputs'] = {};
+
         if (this.lastSerialized) {
             try {
                 const prev = JSON.parse(this.lastSerialized) as PrismPersistedState;
+
                 if (prev.version === SCHEMA_VERSION) inputs = { ...prev.inputs };
             } catch {
                 inputs = {};

@@ -58,9 +58,11 @@ function flat(src: string): string {
 function block(selector: string): string {
     const src = withoutComments(readFileSync(RENDERER_CSS, 'utf-8'));
     const start = src.indexOf(selector);
+
     if (start === -1) throw new Error(`selector not found: ${selector}`);
     const open = src.indexOf('{', start);
     const close = src.indexOf('}', open);
+
     return flat(src.slice(open + 1, close));
 }
 
@@ -76,9 +78,11 @@ function block(selector: string): string {
 function openingTag(marker: string): string {
     const src = readFileSync(RENDERER_HTML, 'utf-8');
     const markerPos = src.indexOf(marker);
+
     if (markerPos === -1) throw new Error(`marker not found: ${marker}`);
     const tagStart = src.lastIndexOf('<', markerPos);
     const tagEnd = src.indexOf('>', markerPos);
+
     return flat(src.slice(tagStart, tagEnd + 1));
 }
 
@@ -89,6 +93,7 @@ describe('viewport CSS invariants', () => {
         // file, but the grips would then read an unset --prism-vp-w, their calc() would
         // fall back to auto, and both would silently collapse to the stage centre.
         const stageTag = openingTag('class="prism-canvas-stage"');
+
         expect(stageTag).toContain('[style.--prism-vp-w.px]=');
 
         // And it reads the capture-aware computed, never the service signal
@@ -99,6 +104,7 @@ describe('viewport CSS invariants', () => {
         expect(stageTag).not.toContain('canvasService.viewportWidth()');
 
         const demoWrapTag = openingTag('class="demo-wrap"');
+
         expect(demoWrapTag).not.toContain('--prism-vp-w');
         expect(demoWrapTag).not.toContain('canvasService.viewportWidth()');
     });
@@ -108,14 +114,17 @@ describe('viewport CSS invariants', () => {
         // width:auto inline-block that .demo-wrap is at rest, that would decouple
         // its width from its contents and shift every recorded VRT baseline.
         const resting = block('.demo-wrap {');
+
         expect(resting).not.toContain('container-type');
 
         const constrained = block('.demo-wrap[data-viewport] {');
+
         expect(constrained).toContain('container-type: inline-size');
     });
 
     it('lets an explicit viewport width out of the stretch layout cap', () => {
         const constrained = block('.demo-wrap[data-viewport] {');
+
         // A plain substring check for "width: var(--prism-vp-w)" would also match
         // inside "max-width: var(--prism-vp-w)" — the lookbehind rules that out.
         expect(constrained).toMatch(/(?<!-)width:\s*var\(--prism-vp-w\)/);
@@ -127,6 +136,7 @@ describe('viewport CSS invariants', () => {
         // component at 800px again while the canvas still looked correct at
         // narrower widths, and no other assertion here would notice.
         const src = withoutComments(readFileSync(RENDERER_CSS, 'utf-8'));
+
         expect(src.indexOf('.demo-wrap[data-viewport] {')).toBeGreaterThan(src.indexOf(".demo-wrap[data-canvas-layout='stretch'] {"));
     });
 
@@ -159,8 +169,10 @@ describe('viewport CSS invariants', () => {
         // above), and the drag that feeds them reads no layout.
         const src = withoutComments(readFileSync(RENDERER_TS, 'utf-8'));
         const at = src.indexOf('protected onViewportResize(');
+
         if (at === -1) throw new Error('onViewportResize not found');
         const body = src.slice(at, src.indexOf('\n  }', at));
+
         for (const api of ['getBoundingClientRect', 'offsetWidth', 'clientWidth', 'getComputedStyle']) {
             expect(body).not.toContain(api);
         }
@@ -173,6 +185,7 @@ describe('viewport CSS invariants', () => {
         // --zoom from the cascade and would silently drift to the stage's
         // fallback of 1 if this binding were ever removed.
         const stageTag = openingTag('class="prism-canvas-stage"');
+
         expect(stageTag).toContain('[style.--zoom]="canvasService.zoom()"');
     });
 
@@ -185,6 +198,7 @@ describe('viewport CSS invariants', () => {
         // silently re-align the specimen's own text whenever the viewport is
         // switched on. Centring at the container touches nothing inside it.
         const constrained = block('.demo-wrap[data-viewport] {');
+
         expect(constrained).toContain('display: grid');
         expect(constrained).toMatch(/justify-items:\s*safe center/);
         expect(constrained).not.toContain('text-align');
@@ -195,6 +209,7 @@ describe('viewport CSS invariants', () => {
         // align-self: stretch is what carries the line the full height; a fixed
         // height here would turn it back into a second nub.
         const line = block('.vp-grip::after {');
+
         expect(line).toContain('align-self: stretch');
         expect(line).toContain('width: 1px');
         expect(line).toContain('--prism-measure');
@@ -205,6 +220,7 @@ describe('viewport CSS invariants', () => {
         // selector would make `block()` ambiguous for whichever of the two it
         // named last, which is how this test first failed.
         const handle = block('.vp-grip__bar {');
+
         expect(handle).toContain('grid-area: 1 / 1');
         expect(line).toContain('grid-area: 1 / 1');
     });
@@ -214,11 +230,13 @@ describe('viewport CSS invariants', () => {
         // measures the distance between them, so a dimension line on a different
         // factor would draw a measurement of something that is not there.
         const dim = block('.vp-dim {');
+
         expect(dim).toMatch(/width:\s*calc\(var\(--prism-vp-w\)\s*\*\s*var\(--zoom, 1\)\)/);
 
         // The end ticks are what make it read as a measurement of the span rather
         // than as a divider laid across the canvas.
         const tick = block('.vp-dim__rule::before {');
+
         expect(tick).toContain('height: 7px');
         expect(tick).toContain('width: 1px');
     });
@@ -231,6 +249,7 @@ describe('viewport CSS invariants', () => {
         // silent and total: the dimension line states 1024 while every @container
         // rule in the specimen answers whatever the canvas allowed.
         const constrained = block('.demo-wrap[data-viewport] {');
+
         expect(constrained).toMatch(/flex:\s*none|flex-shrink:\s*0/);
     });
 
@@ -243,12 +262,14 @@ describe('viewport CSS invariants', () => {
         const grip = block('.vp-grip {');
         const width = /width:\s*(\d+(?:\.\d+)?)px/.exec(grip);
         const offset = /\/ 2 - (\d+(?:\.\d+)?)px\)/.exec(grip);
+
         expect(width).not.toBeNull();
         expect(offset).not.toBeNull();
         expect(Number(offset![1])).toBeCloseTo(Number(width![1]) / 2, 5);
 
         // and the far grip has to use the same offset in the other direction
         const end = block('.vp-grip--end {');
+
         expect(end).toContain(`/ 2 - ${offset![1]}px)`);
     });
 
@@ -267,6 +288,7 @@ describe('viewport CSS invariants', () => {
         // a 9px target: drop either and the grip becomes as thin to hit as it
         // looks.
         const bar = block('.vp-grip__bar {');
+
         expect(bar).toContain('box-sizing: content-box');
         expect(bar).toContain('background-clip: content-box');
         expect(bar).toMatch(/padding:\s*\d+px \d+px/);

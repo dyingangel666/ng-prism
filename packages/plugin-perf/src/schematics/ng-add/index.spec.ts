@@ -27,6 +27,7 @@ async function run(tree: Tree, options: { configPath?: string } = {}) {
 describe('plugin-perf ng-add', () => {
     it('adds perfPlugin import + call to empty config', async () => {
         const tree = Tree.empty();
+
         tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
         const result = await run(tree);
@@ -38,6 +39,7 @@ describe('plugin-perf ng-add', () => {
 
     it('is idempotent on re-run', async () => {
         const tree = Tree.empty();
+
         tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
         const first = await run(tree);
@@ -50,6 +52,7 @@ describe('plugin-perf ng-add', () => {
 
     it('throws when ng-prism.config.ts is missing', async () => {
         const tree = Tree.empty();
+
         await expect(run(tree)).rejects.toThrow(/Run "ng add @ng-prism\/core" first/);
     });
 });

@@ -41,10 +41,13 @@ function popoverTargets(src: string): string[] {
 
 function popoverIds(src: string): Set<string> {
     const ids = new Set<string>();
+
     for (const tag of src.matchAll(/<[a-z][^>]*>/gi)) {
         const text = tag[0];
+
         if (!/\spopover(\s|=|>)/.test(text)) continue;
         const id = /\sid="([^"]+)"/.exec(text)?.[1];
+
         if (id) ids.add(id);
     }
     return ids;
@@ -56,6 +59,7 @@ const declaredUnion = new Set([...declaredByFile.values()].flatMap((ids) => [...
 describe('popover wiring', () => {
     it.each(TEMPLATES)('%s targets only popovers declared somewhere in the package', (stem) => {
         const targets = popoverTargets(readTemplate(stem));
+
         expect(targets.length).toBeGreaterThan(0);
         for (const target of targets) {
             expect(declaredUnion).toContain(target);
@@ -64,6 +68,7 @@ describe('popover wiring', () => {
 
     it('gives every popover a unique id across the package', () => {
         const seen = new Map<string, string>();
+
         for (const [stem, ids] of declaredByFile) {
             for (const id of ids) {
                 expect(seen.has(id)).toBe(false);
@@ -97,18 +102,23 @@ describe('popover wiring', () => {
     /** The declaration block of `.<cls> { … }`, or null when there is none. */
     const baseBlock = (src: string, cls: string): string | null => {
         const start = src.indexOf(`.${cls} {`);
+
         if (start === -1) return null;
         const end = src.indexOf('}', start);
+
         return end === -1 ? null : src.slice(start, end);
     };
 
     it.each(TEMPLATES)('%s keeps display off every popover base rule', (stem) => {
         const classes = popoverClasses(readTemplate(stem));
+
         expect(classes.length).toBeGreaterThan(0);
 
         const styles = readStyles(stem);
+
         for (const cls of classes) {
             const block = baseBlock(styles, cls);
+
             if (block === null) continue;
             // The base rule must stay silent about display. A popover that needs a
             // layout other than the element's default states it on

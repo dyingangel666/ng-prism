@@ -6,6 +6,7 @@ import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocCommen
 function parseExpression(code: string): ts.Expression {
     const sourceFile = ts.createSourceFile('test.ts', code, ts.ScriptTarget.Latest, true);
     const stmt = sourceFile.statements[0] as ts.ExpressionStatement;
+
     return stmt.expression;
 }
 
@@ -13,6 +14,7 @@ function createProgramFromSource(source: string) {
     const fileName = '/test.ts';
     const host = ts.createCompilerHost({});
     const originalGetSourceFile = host.getSourceFile;
+
     host.getSourceFile = (name, target, onError) => {
         if (name === fileName) {
             return ts.createSourceFile(name, source, target, true);
@@ -25,6 +27,7 @@ function createProgramFromSource(source: string) {
     const program = ts.createProgram([fileName], { target: ts.ScriptTarget.Latest }, host);
     const checker = program.getTypeChecker();
     const sourceFile = program.getSourceFile(fileName)!;
+
     return { program, checker, sourceFile };
 }
 
@@ -77,6 +80,7 @@ describe('evaluateExpression', () => {
 
     it('should evaluate nested structures', () => {
         const result = evaluateExpression(parseExpression("({ items: ['a', 'b'], nested: { x: 1 } })"));
+
         expect(result).toEqual({ items: ['a', 'b'], nested: { x: 1 } });
     });
 
@@ -98,6 +102,7 @@ describe('evaluateExpression', () => {
 
     it('should evaluate objects with keyword property names', () => {
         const result = evaluateExpression(parseExpression("({ import: { name: 'Foo', from: 'bar' }, default: 'baz' })"));
+
         expect(result).toEqual({ import: { name: 'Foo', from: 'bar' }, default: 'baz' });
     });
 });
@@ -117,12 +122,15 @@ describe('findDecorator', () => {
         const classDecl = sourceFile.statements.find(ts.isClassDeclaration)!;
 
         const showcase = findDecorator(classDecl, 'Showcase');
+
         expect(showcase).toBeDefined();
 
         const component = findDecorator(classDecl, 'Component');
+
         expect(component).toBeDefined();
 
         const missing = findDecorator(classDecl, 'Injectable');
+
         expect(missing).toBeUndefined();
     });
 
@@ -137,6 +145,7 @@ describe('findDecorator', () => {
 
         // Note: @MyDeco without () is an identifier, not a call
         const deco = findDecorator(classDecl, 'MyDeco');
+
         expect(deco).toBeDefined();
     });
 });
@@ -155,6 +164,7 @@ describe('getDecoratorArgument', () => {
         const decorator = findDecorator(classDecl, 'Showcase')!;
 
         const arg = getDecoratorArgument(decorator);
+
         expect(arg).toBeDefined();
         expect(ts.isObjectLiteralExpression(arg!)).toBe(true);
     });

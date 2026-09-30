@@ -69,8 +69,10 @@ export function decorateItem(item: NavigationItem, defs: readonly NavigationDeco
     if (item.kind !== 'component') return null;
 
     const marks: ItemMark[] = [];
+
     for (const def of defs) {
         const badge = def.badge(item.data);
+
         if (!badge) continue;
         marks.push({
             id: def.id,
@@ -83,6 +85,7 @@ export function decorateItem(item: NavigationItem, defs: readonly NavigationDeco
     if (marks.length === 0) return null;
 
     let worst: 'warn' | 'danger' = 'warn';
+
     for (const mark of marks) {
         if (SEVERITY[mark.variant] > SEVERITY[worst]) worst = mark.variant;
     }

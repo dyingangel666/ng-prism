@@ -1,6 +1,6 @@
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import { discoverSecondaryEntryPoints } from './entry-point-discovery.js';
 
 function createTempDir(): string {
@@ -36,6 +36,7 @@ describe('discoverSecondaryEntryPoints', () => {
 
         for (const sub of ['atoms/pill', 'atoms/icon', 'overlay/tooltip']) {
             const dir = join(tmp, ...sub.split('/'));
+
             mkdirSync(dir, { recursive: true });
             writeJson(dir, 'ng-package.json', { lib: { entryFile: 'public-api.ts' } });
             writeFileSync(join(dir, 'public-api.ts'), 'export {}');
@@ -44,6 +45,7 @@ describe('discoverSecondaryEntryPoints', () => {
         const result = discoverSecondaryEntryPoints(tmp, 'sgui-lib');
 
         const importPaths = result.map((e) => e.importPath).sort();
+
         expect(importPaths).toEqual(['sgui-lib/atoms/icon', 'sgui-lib/atoms/pill', 'sgui-lib/overlay/tooltip']);
     });
 
@@ -110,6 +112,7 @@ describe('discoverSecondaryEntryPoints', () => {
         const result = discoverSecondaryEntryPoints(tmp, 'my-lib');
 
         const importPaths = result.map((e) => e.importPath).sort();
+
         expect(importPaths).toEqual(['my-lib', 'my-lib/testing']);
     });
 

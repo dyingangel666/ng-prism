@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
+import { dirname, extname, resolve } from 'path';
 import { gzipSync } from 'zlib';
-import { dirname, resolve, extname } from 'path';
 import ts from 'typescript';
 import type { BundleMetrics } from '../perf.types.js';
 
@@ -9,6 +9,7 @@ export function scanBundle(filePath: string, maxTreeDepth = 5): BundleMetrics {
     const sourceSize = Buffer.byteLength(source, 'utf-8');
 
     let gzipEstimate: number;
+
     try {
         gzipEstimate = gzipSync(Buffer.from(source)).length;
     } catch {
@@ -26,6 +27,7 @@ export function scanBundle(filePath: string, maxTreeDepth = 5): BundleMetrics {
 
 function extractImports(sourceFile: ts.SourceFile): string[] {
     const imports: string[] = [];
+
     ts.forEachChild(sourceFile, (node) => {
         if (ts.isImportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
             imports.push(node.moduleSpecifier.text);
@@ -45,6 +47,7 @@ function computeTreeDepth(filePath: string, imports: string[], maxDepth: number,
         if (!imp.startsWith('.')) continue;
 
         const resolved = resolveImport(dir, imp);
+
         if (!resolved || visited.has(resolved)) continue;
 
         try {
@@ -52,6 +55,7 @@ function computeTreeDepth(filePath: string, imports: string[], maxDepth: number,
             const childSf = ts.createSourceFile(resolved, childSource, ts.ScriptTarget.Latest, true);
             const childImports = extractImports(childSf);
             const childDepth = computeTreeDepth(resolved, childImports, maxDepth, visited, currentDepth + 1);
+
             deepest = Math.max(deepest, childDepth);
         } catch {
             // File not readable — treat as leaf
@@ -67,6 +71,7 @@ function resolveImport(dir: string, importPath: string): string | null {
 
     if (extname(base)) {
         const withoutExt = base.replace(/\.[^.]+$/, '');
+
         for (const ext of extensions) {
             try {
                 readFileSync(withoutExt + ext);

@@ -20,6 +20,7 @@ const NEW_PATH_MAPPING = './ng-prism-cache/*/prism-manifest.ts';
 
 function readWorkspace(tree: Tree): AngularWorkspace | undefined {
     const buffer = tree.read('angular.json');
+
     if (!buffer) return undefined;
     return JSON.parse(buffer.toString('utf-8')) as AngularWorkspace;
 }
@@ -27,11 +28,14 @@ function readWorkspace(tree: Tree): AngularWorkspace | undefined {
 function findPrismProjects(workspace: AngularWorkspace): string[] {
     const projects = workspace.projects ?? {};
     const result: string[] = [];
+
     for (const [, project] of Object.entries(projects)) {
         const architect = project.architect ?? {};
+
         for (const target of Object.values(architect)) {
             if (target.builder === '@ng-prism/core:serve') {
                 const prismProject = target.options?.['prismProject'];
+
                 if (typeof prismProject === 'string' && !result.includes(prismProject)) {
                     result.push(prismProject);
                 }
@@ -48,10 +52,12 @@ function findPrismProjects(workspace: AngularWorkspace): string[] {
  */
 function updateTsConfigMapping(tree: Tree, context: SchematicContext): void {
     const buffer = tree.read('tsconfig.json');
+
     if (!buffer) return;
     let parsed: {
         compilerOptions?: { paths?: Record<string, string[]> };
     };
+
     try {
         parsed = JSON.parse(buffer.toString('utf-8'));
     } catch {
@@ -61,6 +67,7 @@ function updateTsConfigMapping(tree: Tree, context: SchematicContext): void {
         return;
     }
     const existing = parsed.compilerOptions?.paths?.['prism-manifest/*'];
+
     if (!existing) {
         // No existing mapping — fall through to addTsConfigPath which inserts the new default.
         addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest/*', [NEW_PATH_MAPPING]);
@@ -68,6 +75,7 @@ function updateTsConfigMapping(tree: Tree, context: SchematicContext): void {
     }
     // Replace any entries that still reference the legacy dot-dir; leave the rest alone.
     const updated = existing.map((entry) => (entry === OLD_PATH_MAPPING ? NEW_PATH_MAPPING : entry));
+
     if (updated.every((entry, i) => entry === existing[i])) return;
     parsed.compilerOptions!.paths!['prism-manifest/*'] = updated;
     tree.overwrite('tsconfig.json', JSON.stringify(parsed, null, 2) + '\n');
@@ -78,10 +86,12 @@ function updateTsConfigAppInclude(tree: Tree, workspace: AngularWorkspace, prism
     const projectRoot = project?.root ?? `projects/${prismProject}`;
     const path = `${projectRoot}/tsconfig.app.json`;
     const buffer = tree.read(path);
+
     if (!buffer) return;
 
     const sourceText = buffer.toString('utf-8');
     let parsed: { include?: unknown };
+
     try {
         parsed = JSON.parse(sourceText) as { include?: unknown };
     } catch {
@@ -93,20 +103,24 @@ function updateTsConfigAppInclude(tree: Tree, workspace: AngularWorkspace, prism
     const newEntry = `../../${NEW_DIR}/${prismProject}/**/*.ts`;
     const include = parsed.include as string[];
     const oldIndex = include.indexOf(oldEntry);
+
     if (oldIndex === -1 && include.includes(newEntry)) return;
     if (oldIndex === -1) return;
 
     const next = [...include];
+
     next[oldIndex] = newEntry;
     // Avoid duplicates if user already had both entries for some reason.
     const deduped = Array.from(new Set(next));
     const updated = { ...(parsed as object), include: deduped };
+
     tree.overwrite(path, JSON.stringify(updated, null, 2) + '\n');
 }
 
 function renameGitignoreEntry(tree: Tree): void {
     const path = '.gitignore';
     const buffer = tree.read(path);
+
     if (!buffer) return;
     const content = buffer.toString('utf-8');
     const lines = content.split('\n');
@@ -118,6 +132,7 @@ function renameGitignoreEntry(tree: Tree): void {
         }
         return line;
     });
+
     if (!changed) {
         // Ensure the new entry exists even if the old one was already missing.
         if (next.some((line) => line.trim() === NEW_GITIGNORE_ENTRY)) return;
@@ -130,9 +145,11 @@ function renameGitignoreEntry(tree: Tree): void {
 export function migrate(): Rule {
     return (tree: Tree, context: SchematicContext) => {
         const workspace = readWorkspace(tree);
+
         if (!workspace) return tree;
 
         const prismProjects = findPrismProjects(workspace);
+
         if (prismProjects.length === 0) return tree;
 
         updateTsConfigMapping(tree, context);

@@ -34,6 +34,7 @@ const SURFACE: Partial<Record<CanvasBg, string>> = {
  */
 export function shotSurfaceStyle(bg: CanvasBg | undefined): Record<string, string> {
     const surface = bg ? SURFACE[bg] : undefined;
+
     if (!surface) return {};
     return { 'background-color': surface, 'background-image': 'none' };
 }
@@ -53,6 +54,7 @@ export function shotSurfaceStyle(bg: CanvasBg | undefined): Record<string, strin
  */
 export function bgChange(variant: VrtVariantResult): { from: CanvasBg; to: CanvasBg } | null {
     const { baselineBg, bg } = variant;
+
     if (!baselineBg || !bg || baselineBg === bg) return null;
     return { from: baselineBg, to: bg };
 }

@@ -11,6 +11,7 @@ function parseSides(style: CSSStyleDeclaration, props: [string, string, string, 
 
 export function getBoxModel(element: Element): BoxModelData {
     const style = window.getComputedStyle(element);
+
     return {
         element,
         content: element.getBoundingClientRect(),

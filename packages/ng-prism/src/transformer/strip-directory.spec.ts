@@ -1,6 +1,6 @@
-import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { stripShowcaseFromDirectory } from './strip-directory.js';
 
 describe('stripShowcaseFromDirectory', () => {
@@ -23,11 +23,13 @@ describe('stripShowcaseFromDirectory', () => {
         expect(result.strippedFiles).toBe(1);
 
         const strippedContent = await readFile(join(tmpDir, 'comp-a.mjs'), 'utf-8');
+
         expect(strippedContent).not.toContain('@ng-prism/core');
         expect(strippedContent).not.toContain('Showcase');
         expect(strippedContent).toContain('class MyComp');
 
         const unchangedContent = await readFile(join(tmpDir, 'comp-b.mjs'), 'utf-8');
+
         expect(unchangedContent).toBe(withoutShowcase);
     });
 
@@ -41,6 +43,7 @@ describe('stripShowcaseFromDirectory', () => {
 
         expect(result.strippedFiles).toBe(1);
         const content = await readFile(join(tmpDir, 'fesm2022', 'bundle.mjs'), 'utf-8');
+
         expect(content).not.toContain('Showcase');
     });
 

@@ -1,6 +1,6 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import type { VisualRegressionPluginOptions } from './visual-regression.types.js';
 import { hasResults, reviewBadge, VRT_NAVIGATION_DECORATION } from './panel-contributions.js';
+import type { VisualRegressionPluginOptions } from './visual-regression.types.js';
 
 /**
  * Browser-safe twin of {@link visualRegressionPlugin}.

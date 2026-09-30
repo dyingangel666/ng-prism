@@ -83,6 +83,7 @@ describe('PrismVariantBgService', () => {
             { name: 'A', bg: 'dark' },
             { name: 'B', bg: 'light' }
         ]);
+
         activate(manifestService, nav, comp);
         renderer.activeVariantIndex.set(0);
         TestBed.flushEffects();
@@ -168,6 +169,7 @@ describe('PrismVariantBgService in capture mode', () => {
         // The manifest's promise and the painted surface are the same resolution,
         // reached through one shared function.
         const comp = makeComponent('dark', [{ name: 'A' }, { name: 'B', bg: 'plain' }]);
+
         activate(manifestService, nav, comp);
 
         for (const index of [0, 1]) {

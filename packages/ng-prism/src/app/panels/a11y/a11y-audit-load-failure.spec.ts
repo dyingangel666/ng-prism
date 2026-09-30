@@ -3,11 +3,11 @@
  * load time: a `jest.mock` factory that throws makes `import('axe-core')`
  * reject, which the shared mock in `a11y-audit.service.spec.ts` cannot express.
  */
+import { runCoreAudit } from './a11y-audit.service.js';
+
 jest.mock('axe-core', () => {
     throw new Error('Failed to fetch dynamically imported module');
 });
-
-import { runCoreAudit } from './a11y-audit.service.js';
 
 const mockElement = {} as Element;
 

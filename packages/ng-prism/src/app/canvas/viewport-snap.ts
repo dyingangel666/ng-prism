@@ -16,6 +16,7 @@ export function snapViewportWidth(width: number, snaps: readonly number[] = VIEW
 
     for (const snap of snaps) {
         const distance = Math.abs(snap - width);
+
         if (distance <= tolerance && distance < bestDistance) {
             best = snap;
             bestDistance = distance;

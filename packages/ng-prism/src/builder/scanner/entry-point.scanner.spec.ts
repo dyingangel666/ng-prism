@@ -44,8 +44,10 @@ describe('resolveEntryPointExports', () => {
 
     it('should warn and return empty exports for a missing entry point (no throw)', () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
         try {
             const { entries } = resolveEntryPointExports([{ entryFile: '/non-existent/file.ts', importPath: 'fixture' }], compilerOptions);
+
             expect(entries).toHaveLength(1);
             expect(entries[0].exports).toEqual([]);
             expect(warn).toHaveBeenCalledWith(expect.stringContaining('source file not found for entry point'));
@@ -56,6 +58,7 @@ describe('resolveEntryPointExports', () => {
 
     it('should isolate per-entry failures: other entries still resolved', () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
         try {
             const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
             const { entries } = resolveEntryPointExports(
@@ -65,6 +68,7 @@ describe('resolveEntryPointExports', () => {
                 ],
                 compilerOptions
             );
+
             expect(entries[0].exports).toEqual([]);
             expect(entries[1].exports.length).toBeGreaterThan(0);
         } finally {

@@ -4,5 +4,6 @@ import { PrismManifestService } from './services/prism-manifest.service.js';
 
 export function enablePrismHmr(appRef: ApplicationRef, newManifest: RuntimeManifest): void {
     const service = appRef.injector.get(PrismManifestService);
+
     service.updateManifest(newManifest);
 }

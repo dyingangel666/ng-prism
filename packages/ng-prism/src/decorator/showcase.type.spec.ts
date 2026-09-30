@@ -29,6 +29,7 @@ const okLabel: AssertExtends<{ label: string }, Partial<FixtureInputs>> = true;
 const okRequiredTitle: AssertExtends<{ title: string }, Partial<FixtureInputs>> = true;
 const okModel: AssertExtends<{ value: string }, Partial<FixtureInputs>> = true;
 const okNullableTabIndex: AssertExtends<{ tabIndex: null }, Partial<FixtureInputs>> = true;
+
 void okPrimary;
 void okLabel;
 void okRequiredTitle;
@@ -77,11 +78,13 @@ void OutputUsage;
 // (d2) `output()` properties are filtered out of `InputsOf<T>` entirely.
 type OutputKeysAbsent = AssertEqual<Extract<keyof InputsOf<FixtureComponent>, 'clicked' | 'valueChange'>, never>;
 const outputsFilteredOut: OutputKeysAbsent = true;
+
 void outputsFilteredOut;
 
 // (d3) The exact key set is the signal-input set.
 type InputKeysEqual = AssertEqual<keyof InputsOf<FixtureComponent>, 'variant' | 'label' | 'disabled' | 'title' | 'tabIndex' | 'value'>;
 const inputKeysMatch: InputKeysEqual = true;
+
 void inputKeysMatch;
 
 // (e) Calls without the generic type param still compile (backward compat) —
@@ -103,6 +106,7 @@ const untypedInputs: Partial<InputsOf<unknown>> = {
     other: 'string',
     nested: { x: 1 }
 };
+
 void untypedInputs;
 
 describe('@Showcase<T> typed variant inputs', () => {

@@ -1,5 +1,5 @@
-import { Component, effect, ElementRef, inject } from '@angular/core';
 import { JsonPipe, NgComponentOutlet } from '@angular/common';
+import { Component, effect, ElementRef, inject } from '@angular/core';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 
 @Component({

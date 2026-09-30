@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { resolveAssetUrl } from './asset-url.js';
+import type { VrtVariantResult } from './visual-regression.types.js';
 import { bgChange, shotSurfaceStyle } from './vrt-bg.js';
 import { formatPercent } from './vrt-summarize.js';
-import { frameWidthStyle, ZOOMS, type Zoom } from './vrt-zoom.js';
-import type { VrtVariantResult } from './visual-regression.types.js';
+import { frameWidthStyle, type Zoom, ZOOMS } from './vrt-zoom.js';
 
 type CompareMode = 'wipe' | 'side-by-side' | 'diff';
 
@@ -50,6 +50,7 @@ export class VrtCompareComponent {
     protected readonly images = computed(() => {
         const left = this.baselineUrl();
         const right = this.currentUrl() ?? this.diffUrl();
+
         if (!left || !right) return null;
         return {
             left,
@@ -76,6 +77,7 @@ export class VrtCompareComponent {
         if (this.images()) return null;
         const baseline = this.baselineUrl();
         const only = baseline ?? this.currentUrl() ?? this.diffUrl();
+
         if (!only) return null;
 
         // The caption follows which URL actually won, never the status alone.
@@ -84,6 +86,7 @@ export class VrtCompareComponent {
         // would otherwise show the baseline image labelled "Current".
         const showingBaseline = Boolean(baseline);
         const isNew = this.variant().status === 'new' && !showingBaseline;
+
         return {
             src: only,
             surface: showingBaseline ? this.baselineSurface() : this.currentSurface(),
@@ -111,6 +114,7 @@ export class VrtCompareComponent {
     protected readonly activeMode = computed<CompareMode>(() => {
         const available = this.availableModes();
         const requested = this.requestedMode();
+
         return requested && available.includes(requested) ? requested : (available[0] ?? 'wipe');
     });
 
@@ -123,12 +127,14 @@ export class VrtCompareComponent {
      */
     protected readonly showToolbar = computed(() => {
         const variant = this.variant();
+
         return this.availableModes().length > 0 || this.canZoom() || variant.diffPixels !== undefined || variant.diffRatio !== undefined;
     });
 
     /** Width declarations for the frame; see {@link frameWidthStyle}. */
     protected readonly frameStyle = computed(() => {
         const { width, height } = this.variant();
+
         return frameWidthStyle(width, height, this.zoom());
     });
 

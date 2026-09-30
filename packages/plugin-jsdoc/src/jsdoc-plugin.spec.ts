@@ -1,6 +1,6 @@
 import path from 'node:path';
-import { jsDocPlugin } from './jsdoc-plugin.js';
 import type { ScannedComponent } from '@ng-prism/core/plugin';
+import { jsDocPlugin } from './jsdoc-plugin.js';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/documented-button.ts');
 
@@ -19,17 +19,20 @@ function makeComponent(overrides?: Partial<ScannedComponent>): ScannedComponent 
 describe('jsDocPlugin', () => {
     it('should return a plugin with the correct name', () => {
         const plugin = jsDocPlugin();
+
         expect(plugin.name).toBe('@ng-prism/plugin-jsdoc');
     });
 
     it('should register a single panel', () => {
         const plugin = jsDocPlugin();
+
         expect(plugin.panels).toHaveLength(1);
     });
 
     it('should define the API panel with correct properties', () => {
         const plugin = jsDocPlugin();
         const panel = plugin.panels![0];
+
         expect(panel.id).toBe('jsdoc');
         expect(panel.label).toBe('API');
         expect(panel.position).toBe('bottom');
@@ -41,17 +44,20 @@ describe('jsDocPlugin', () => {
         const plugin = jsDocPlugin();
         const panel = plugin.panels![0];
         const Component = await panel.loadComponent!();
+
         expect(Component).toBeDefined();
         expect(Component.name).toBe('JsDocPanelComponent');
     });
 
     it('should define onComponentScanned hook', () => {
         const plugin = jsDocPlugin();
+
         expect(plugin.onComponentScanned).toBeDefined();
     });
 
     it('should not define onPageScanned or onManifestReady hooks', () => {
         const plugin = jsDocPlugin();
+
         expect(plugin.onPageScanned).toBeUndefined();
         expect(plugin.onManifestReady).toBeUndefined();
     });
@@ -64,8 +70,10 @@ describe('jsDocPlugin', () => {
 
             expect(result).toBeDefined();
             const meta = (result as ScannedComponent).showcaseConfig.meta;
+
             expect(meta?.['jsdoc']).toBeDefined();
             const jsdoc = meta?.['jsdoc'] as any;
+
             expect(jsdoc.classDescription).toBe('Primary action button component.');
             expect(jsdoc.classTags.since).toBe('1.0.0');
             expect(jsdoc.classTags.deprecated).toBeTruthy();
@@ -79,6 +87,7 @@ describe('jsDocPlugin', () => {
             const result = await plugin.onComponentScanned!(component);
 
             const meta = (result as ScannedComponent).showcaseConfig.meta;
+
             expect(meta?.['figma']).toBe('https://figma.com/foo');
             expect(meta?.['jsdoc']).toBeDefined();
         });
@@ -97,6 +106,7 @@ describe('jsDocPlugin', () => {
             const result = await plugin.onComponentScanned!(component);
 
             const jsdoc = (result as ScannedComponent).showcaseConfig.meta?.['jsdoc'] as any;
+
             expect(jsdoc.memberTags['variant']).toBeDefined();
             expect(jsdoc.memberTags['variant'].deprecated).toBeTruthy();
         });

@@ -14,6 +14,7 @@ import type { RuntimeComponent } from '../../plugin/plugin.types.js';
  */
 export function showsOverview(component: RuntimeComponent): boolean {
     const config = component.meta.showcaseConfig;
+
     if (config.renderPage) return false;
     return (config.variants?.length ?? 0) >= 2;
 }

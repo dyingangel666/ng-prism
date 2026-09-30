@@ -4,11 +4,11 @@ import { ɵresolveComponentResources as resolveComponentResources } from '@angul
 import { TestBed } from '@angular/core/testing';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { CanvasBg } from '../../shared/canvas-bg.type.js';
-import { PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismManifestService } from '../services/prism-manifest.service.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
+import { PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismCanvasBgPillComponent } from './prism-canvas-bg-pill.component.js';
 
 function makeComponent(bg?: CanvasBg): RuntimeComponent {
@@ -70,6 +70,7 @@ describe('PrismCanvasBgPillComponent', () => {
     it('is hidden when no recommendation exists', () => {
         activate(makeComponent());
         const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+
         fixture.detectChanges();
 
         expect(fixture.nativeElement.querySelector('.prism-bg-pill')).toBeNull();
@@ -78,6 +79,7 @@ describe('PrismCanvasBgPillComponent', () => {
     it('is hidden when recommendation exists but no override is set', () => {
         activate(makeComponent('dark'));
         const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+
         fixture.detectChanges();
 
         expect(fixture.nativeElement.querySelector('.prism-bg-pill')).toBeNull();
@@ -87,6 +89,7 @@ describe('PrismCanvasBgPillComponent', () => {
         activate(makeComponent('dark'));
         bgService.setOverride('dark');
         const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+
         fixture.detectChanges();
 
         expect(fixture.nativeElement.querySelector('.prism-bg-pill')).toBeNull();
@@ -96,9 +99,11 @@ describe('PrismCanvasBgPillComponent', () => {
         activate(makeComponent('dark'));
         bgService.setOverride('light');
         const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+
         fixture.detectChanges();
 
         const pill = fixture.nativeElement.querySelector('.prism-bg-pill');
+
         expect(pill).not.toBeNull();
         expect(pill.textContent).toContain('Recommended: dark');
     });
@@ -107,9 +112,11 @@ describe('PrismCanvasBgPillComponent', () => {
         activate(makeComponent('dark'));
         bgService.setOverride('light');
         const fixture = TestBed.createComponent(PrismCanvasBgPillComponent);
+
         fixture.detectChanges();
 
         const button = fixture.nativeElement.querySelector('button');
+
         button.click();
         fixture.detectChanges();
 

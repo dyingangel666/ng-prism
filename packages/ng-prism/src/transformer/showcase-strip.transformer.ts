@@ -22,29 +22,34 @@ interface DecorateResult {
 
 function tryHandleDecorateStatement(stmt: ts.ExpressionStatement, names: Set<string>, factory: ts.NodeFactory): DecorateResult | undefined {
     const expr = stmt.expression;
+
     if (!ts.isBinaryExpression(expr) || expr.operatorToken.kind !== ts.SyntaxKind.EqualsToken) {
         return undefined;
     }
 
     const chain: ts.BinaryExpression[] = [];
     let current: ts.Expression = expr;
+
     while (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
         chain.push(current);
         current = current.right;
     }
 
     const rhs = current;
+
     if (!ts.isCallExpression(rhs) || !ts.isIdentifier(rhs.expression) || rhs.expression.text !== '__decorate') {
         return undefined;
     }
 
     const args = rhs.arguments;
+
     if (args.length < 2 || !ts.isArrayLiteralExpression(args[0])) {
         return undefined;
     }
 
     const decoratorArray = args[0] as ts.ArrayLiteralExpression;
     const hasShowcase = decoratorArray.elements.some((el) => isShowcaseCall(el, names));
+
     if (!hasShowcase) return undefined;
 
     const remaining = decoratorArray.elements.filter((el) => !isShowcaseCall(el, names));
@@ -57,12 +62,15 @@ function tryHandleDecorateStatement(stmt: ts.ExpressionStatement, names: Set<str
     const newCall = factory.updateCallExpression(rhs, rhs.expression, rhs.typeArguments, [newArray, ...args.slice(1)]);
 
     let newRhs: ts.Expression = newCall;
+
     for (let i = chain.length - 1; i >= 0; i--) {
         const link = chain[i];
+
         newRhs = factory.updateBinaryExpression(link, link.left, link.operatorToken, newRhs);
     }
 
     const newStmt = factory.updateExpressionStatement(stmt, newRhs);
+
     return { action: 'replace', statement: newStmt };
 }
 
@@ -72,9 +80,11 @@ function isShowcaseDecorator(d: ts.Decorator, names: Set<string>): boolean {
 
 function stripNativeDecorators(node: ts.ClassDeclaration, names: Set<string>, factory: ts.NodeFactory): ts.ClassDeclaration | undefined {
     const decorators = ts.getDecorators(node);
+
     if (!decorators) return undefined;
 
     const keptDecorators = decorators.filter((d) => !isShowcaseDecorator(d, names));
+
     if (keptDecorators.length === decorators.length) return undefined;
 
     const modifiers = ts.getModifiers(node) ?? [];
@@ -97,10 +107,12 @@ function findShowcaseImports(sourceFile: ts.SourceFile): ImportInfo {
         if (!isShowcaseModule(stmt.moduleSpecifier.text)) continue;
 
         const namedBindings = stmt.importClause?.namedBindings;
+
         if (!namedBindings || !ts.isNamedImports(namedBindings)) continue;
 
         for (const spec of namedBindings.elements) {
             const importedName = (spec.propertyName ?? spec.name).text;
+
             if (importedName === 'Showcase') {
                 localNames.add(spec.name.text);
                 declarations.add(stmt);
@@ -119,6 +131,7 @@ function cleanupImports(statements: ts.Statement[], info: ImportInfo, factory: t
         }
 
         const namedBindings = stmt.importClause?.namedBindings;
+
         if (!namedBindings || !ts.isNamedImports(namedBindings)) {
             acc.push(stmt);
             return acc;
@@ -126,6 +139,7 @@ function cleanupImports(statements: ts.Statement[], info: ImportInfo, factory: t
 
         const remaining = namedBindings.elements.filter((spec) => {
             const importedName = (spec.propertyName ?? spec.name).text;
+
             return importedName !== 'Showcase';
         });
 
@@ -155,6 +169,7 @@ export function createShowcaseStripTransformer(): ts.TransformerFactory<ts.Sourc
 
         return (sourceFile) => {
             const importInfo = findShowcaseImports(sourceFile);
+
             if (importInfo.localNames.size === 0) return sourceFile;
 
             const names = importInfo.localNames;
@@ -165,6 +180,7 @@ export function createShowcaseStripTransformer(): ts.TransformerFactory<ts.Sourc
                     if (isLoweredShowcaseCall(stmt.expression, names)) continue;
 
                     const decorateResult = tryHandleDecorateStatement(stmt, names, factory);
+
                     if (decorateResult) {
                         if (decorateResult.action === 'replace' && decorateResult.statement) {
                             filtered.push(decorateResult.statement);
@@ -175,6 +191,7 @@ export function createShowcaseStripTransformer(): ts.TransformerFactory<ts.Sourc
 
                 if (ts.isClassDeclaration(stmt)) {
                     const stripped = stripNativeDecorators(stmt, names, factory);
+
                     if (stripped) {
                         filtered.push(stripped);
                         continue;
@@ -185,6 +202,7 @@ export function createShowcaseStripTransformer(): ts.TransformerFactory<ts.Sourc
             }
 
             const cleaned = cleanupImports(filtered, importInfo, factory);
+
             return factory.updateSourceFile(sourceFile, cleaned);
         };
     };
@@ -202,6 +220,7 @@ function findShowcaseLeak(sourceFile: ts.SourceFile, names: Set<string>): LeakLo
         if (leak) return;
         if (ts.isIdentifier(node) && names.has(node.text)) {
             const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile));
+
             leak = { name: node.text, line: line + 1 };
             return;
         }
@@ -216,15 +235,18 @@ export function stripShowcaseDecorators(source: string, fileName = 'file.ts'): s
     const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true);
 
     const importInfo = findShowcaseImports(sourceFile);
+
     if (importInfo.localNames.size === 0) return source;
 
     const result = ts.transform(sourceFile, [createShowcaseStripTransformer()]);
     const printer = ts.createPrinter({ newLine: ts.NewLineKind.LineFeed });
     const output = printer.printFile(result.transformed[0]);
+
     result.dispose();
 
     const audited = ts.createSourceFile(fileName, output, ts.ScriptTarget.Latest, true);
     const leak = findShowcaseLeak(audited, importInfo.localNames);
+
     if (leak) {
         throw new Error(
             `[ng-prism] Showcase reference '${leak.name}' left in output after stripping at ${fileName}:${leak.line}. ` +

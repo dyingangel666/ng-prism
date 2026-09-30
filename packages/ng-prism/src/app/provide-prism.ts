@@ -1,8 +1,8 @@
-import { makeEnvironmentProviders, type EnvironmentProviders } from '@angular/core';
+import { type EnvironmentProviders, makeEnvironmentProviders } from '@angular/core';
 import { provideHighlightOptions } from 'ngx-highlightjs';
-import type { NgPrismConfig, RuntimeManifest } from '../plugin/plugin.types.js';
 import type { ComponentPageOptions } from '../plugin/page-helpers.js';
 import { componentPage } from '../plugin/page-helpers.js';
+import type { NgPrismConfig, RuntimeManifest } from '../plugin/plugin.types.js';
 import { buildDiscoveryManifest } from './discovery-manifest.js';
 import { BUILTIN_PANELS } from './panels/builtin-panels.js';
 import { PRISM_BUILTIN_PANELS, PRISM_CONFIG, PRISM_MANIFEST } from './tokens/prism-tokens.js';

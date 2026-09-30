@@ -1,5 +1,5 @@
-import type { InputMeta } from '../../plugin/plugin.types.js';
 import type { DirectiveHost } from '../../decorator/showcase.types.js';
+import type { InputMeta } from '../../plugin/plugin.types.js';
 
 export interface SnippetDirectiveOptions {
     host?: string | DirectiveHost;
@@ -65,10 +65,12 @@ export function generateSnippet(
             return `<${selector} />`;
         }
         const singleLine = `<${selector} ${attributes.join(' ')} />`;
+
         if (singleLine.length <= 80) {
             return singleLine;
         }
         const indented = attributes.map((attr) => `  ${attr}`).join('\n');
+
         return `<${selector}\n${indented} />`;
     }
 
@@ -86,16 +88,19 @@ export function generateSnippet(
     }
 
     const indented = attributes.map((attr) => `  ${attr}`).join('\n');
+
     return `<${selector}\n${indented}>\n  ${contentHtml}\n${closeTag}`;
 }
 
 function directiveSelectorToAttr(selector: string): string {
     const match = selector.match(/^\[([^\]]+)]$/);
+
     return match ? match[1] : selector;
 }
 
 function parseHostStringSimple(host: string): { tag: string; attrs: string } {
     const match = host.trim().match(/^<\s*([a-zA-Z][a-zA-Z0-9-]*)((?:\s+[^>]*?)?)\s*\/?\s*>$/);
+
     if (!match) return { tag: 'div', attrs: '' };
     return { tag: match[1], attrs: match[2].trim() };
 }
@@ -115,6 +120,7 @@ function generateDirectiveSnippet(
 
     if (typeof host === 'string') {
         const parsed = parseHostStringSimple(host);
+
         tag = parsed.tag;
         if (parsed.attrs) hostAttrs.push(parsed.attrs);
     } else {
@@ -156,8 +162,10 @@ function generateDirectiveSnippet(
     if (!contentHtml) {
         if (!allAttrs) return `<${tag} />`;
         const singleLine = `<${tag} ${allAttrs} />`;
+
         if (singleLine.length <= 80) return singleLine;
         const indented = [...hostAttrs, directiveAttr, ...attributes].map((a) => `  ${a}`).join('\n');
+
         return `<${tag}\n${indented} />`;
     }
 
@@ -168,11 +176,13 @@ function generateDirectiveSnippet(
     if (singleLine.length <= 80) return singleLine;
 
     const allAttrsList = [...hostAttrs, directiveAttr, ...attributes];
+
     if (allAttrsList.length <= 2) {
         return `${openTag}\n  ${contentHtml}\n${closeTag}`;
     }
 
     const indented = allAttrsList.map((a) => `  ${a}`).join('\n');
+
     return `<${tag}\n${indented}>\n  ${contentHtml}\n${closeTag}`;
 }
 
@@ -181,11 +191,13 @@ function resolveContentHtml(content?: string | Record<string, string>): string |
     if (typeof content === 'string') return content;
 
     const parts: string[] = [];
+
     for (const [selector, html] of Object.entries(content)) {
         if (selector === 'default') {
             parts.push(html);
         } else {
             const attr = selector.replace(/^\[|\]$/g, '');
+
             parts.push(`<ng-container ${attr}>${html}</ng-container>`);
         }
     }

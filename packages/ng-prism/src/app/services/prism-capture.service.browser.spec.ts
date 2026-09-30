@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { CAPTURE_PARAM, PrismCaptureService, parseCaptureParam } from './prism-capture.service.js';
+import { CAPTURE_PARAM, parseCaptureParam, PrismCaptureService } from './prism-capture.service.js';
 
 function setSearch(search: string): void {
     window.history.replaceState({}, '', `/${search}`);
@@ -8,6 +8,7 @@ function setSearch(search: string): void {
 function captureRules(): CSSStyleRule[] {
     const style = document.getElementById('ng-prism-capture-styles') as HTMLStyleElement | null;
     const sheet = style?.sheet;
+
     if (!sheet) throw new Error('capture stylesheet not injected');
     return [...sheet.cssRules].filter((rule): rule is CSSStyleRule => rule instanceof CSSStyleRule);
 }
@@ -81,6 +82,7 @@ describe('PrismCaptureService', () => {
         setSearch('?capture=1');
         createService();
         const style = document.getElementById('ng-prism-capture-styles');
+
         expect(style?.textContent).toContain('animation: none');
     });
 
@@ -88,6 +90,7 @@ describe('PrismCaptureService', () => {
         setSearch('?capture=1');
         createService();
         const style = document.getElementById('ng-prism-capture-styles');
+
         expect(style?.textContent).toContain('[data-prism-capture] .prism-canvas-stage');
         expect(style?.textContent).toContain('background-image: none !important');
     });
@@ -97,6 +100,7 @@ describe('PrismCaptureService', () => {
         createService();
         const rules = captureRules();
         const colouring = rules.filter((rule) => rule.style.getPropertyValue('background-color'));
+
         // A declared `@Showcase({ bg })` survives capture mode: `light`, `dark`,
         // `dots`, `plain` and `checker` keep their colour and lose only the
         // non-deterministic pattern. `transparent` is the sole value whose colour
@@ -115,6 +119,7 @@ describe('PrismCaptureService', () => {
     it('should stay active after the flag is removed from the URL', () => {
         setSearch('?capture=1');
         const service = createService();
+
         setSearch('?component=ButtonComponent');
         expect(service.active()).toBe(true);
     });

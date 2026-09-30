@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { Highlight } from 'ngx-highlightjs';
 import type { InputMeta, OutputMeta } from '@ng-prism/core/plugin';
+import { Highlight } from 'ngx-highlightjs';
 import type { JsDocData, MethodDoc } from './jsdoc.types.js';
-import { parseExample, renderBlockMarkdown, renderInlineMarkdown, type ParsedExample } from './markdown.js';
+import { type ParsedExample, parseExample, renderBlockMarkdown, renderInlineMarkdown } from './markdown.js';
 
 @Component({
     selector: 'prism-jsdoc-panel',
@@ -20,16 +20,19 @@ export class JsDocPanelComponent {
 
     protected readonly jsdocData = computed<JsDocData | null>(() => {
         const comp = this.activeComponent() as any;
+
         return (comp?.meta?.showcaseConfig?.meta?.['jsdoc'] as JsDocData) ?? null;
     });
 
     protected readonly inputs = computed<InputMeta[]>(() => {
         const comp = this.activeComponent() as any;
+
         return comp?.meta?.inputs ?? [];
     });
 
     protected readonly outputs = computed<OutputMeta[]>(() => {
         const comp = this.activeComponent() as any;
+
         return comp?.meta?.outputs ?? [];
     });
 
@@ -39,6 +42,7 @@ export class JsDocPanelComponent {
     // not user input — bypassing sanitization is safe here.
     protected readonly renderedClassDescription = computed<SafeHtml | null>(() => {
         const html = renderBlockMarkdown(this.classDescription());
+
         return html ? this.sanitizer.bypassSecurityTrustHtml(html) : null;
     });
 
@@ -48,6 +52,7 @@ export class JsDocPanelComponent {
 
     protected readonly deprecatedMessage = computed(() => {
         const d = this.classTags().deprecated;
+
         return typeof d === 'string' ? d : undefined;
     });
 

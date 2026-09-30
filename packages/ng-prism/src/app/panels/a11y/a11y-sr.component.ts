@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { A11ySrService } from './a11y-sr.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
+import { A11ySrService } from './a11y-sr.service.js';
 
 @Component({
     selector: 'prism-a11y-sr',
@@ -15,8 +15,10 @@ export class A11ySrComponent {
 
     protected readonly announcements = computed(() => {
         const root = this.rendererService.renderedElement();
+
         if (!root) return [];
         const doc = (root as HTMLElement).ownerDocument;
+
         return this.srService.buildAnnouncementList(root, doc ? (id) => doc.getElementById(id) : undefined);
     });
 }

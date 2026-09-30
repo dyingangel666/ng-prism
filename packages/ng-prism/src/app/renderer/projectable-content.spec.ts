@@ -23,6 +23,7 @@ describe('parseContentToNodes', () => {
 
         expect(slots[0]).toHaveLength(0);
         const projected = slots[1][0] as Element;
+
         expect(projected.tagName).toBe('H3');
         expect(projected.hasAttribute('card-header')).toBe(true);
     });
@@ -31,6 +32,7 @@ describe('parseContentToNodes', () => {
         const slots = parseContentToNodes({ '[card-footer]': 'Footer' });
 
         const projected = slots[1][0] as Element;
+
         expect(projected.tagName).toBe('SPAN');
         expect(projected.textContent).toBe('Footer');
         expect(projected.hasAttribute('card-footer')).toBe(true);

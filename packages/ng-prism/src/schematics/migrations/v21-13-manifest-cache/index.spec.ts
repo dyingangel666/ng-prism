@@ -12,6 +12,7 @@ interface AngularProject {
 
 function createWorkspaceTree(projects: Record<string, AngularProject>): Tree {
     const tree = Tree.empty();
+
     tree.create(
         'angular.json',
         JSON.stringify(
@@ -70,6 +71,7 @@ async function run(tree: Tree): Promise<Tree> {
 describe('migration v21-13-manifest-cache', () => {
     it('rewrites main.ts import to use the path-mapped specifier', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/src/main.ts',
             [
@@ -88,12 +90,14 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const mainTs = result.read('projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).toContain("import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'");
         expect(mainTs).not.toContain("import { PRISM_RUNTIME_MANIFEST } from './prism-manifest'");
     });
 
     it('rewrites a Vite hot.accept target from ./prism-manifest to the path-mapped specifier', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/src/main.ts',
             [
@@ -117,6 +121,7 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const mainTs = result.read('projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).toContain("import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'");
         expect(mainTs).toContain("hot?.accept('prism-manifest/my-lib-prism',");
         expect(mainTs).not.toContain("'./prism-manifest'");
@@ -129,6 +134,7 @@ describe('migration v21-13-manifest-cache', () => {
             "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism';",
             ''
         ].join('\n');
+
         tree.create('projects/my-lib-prism/src/main.ts', migratedMain);
 
         const result = await run(tree);
@@ -138,6 +144,7 @@ describe('migration v21-13-manifest-cache', () => {
 
     it('logs a warning and skips when main.ts has no recognizable import line', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('projects/my-lib-prism/src/main.ts', 'export const customSetup = true;\n');
 
         const logs: string[] = [];
@@ -178,11 +185,13 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
     });
 
     it('is idempotent: does not overwrite an existing prism-manifest mapping', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.overwrite(
             'tsconfig.json',
             JSON.stringify(
@@ -199,11 +208,13 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual(['custom/elsewhere.ts']);
     });
 
     it('deletes the legacy prism-manifest.ts from sourceRoot', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('projects/my-lib-prism/src/prism-manifest.ts', '// auto-generated\n');
 
         const result = await run(tree);
@@ -219,11 +230,13 @@ describe('migration v21-13-manifest-cache', () => {
 
     it('removes the specific prism-manifest entry from .gitignore', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('.gitignore', ['node_modules', 'dist', 'projects/my-lib-prism/src/prism-manifest.ts', ''].join('\n'));
 
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore')!.toString('utf-8');
+
         expect(gitignore).not.toContain('projects/my-lib-prism/src/prism-manifest.ts');
         expect(gitignore).toContain('node_modules');
         expect(gitignore).toContain('dist');
@@ -241,6 +254,7 @@ describe('migration v21-13-manifest-cache', () => {
     it('is a no-op when the specific entry is not present', async () => {
         const tree = createWorkspaceTree(defaultProjects());
         const original = 'node_modules\ndist\n';
+
         tree.create('.gitignore', original);
 
         const result = await run(tree);
@@ -248,6 +262,7 @@ describe('migration v21-13-manifest-cache', () => {
         // NOTE: removeGitignoreEntry leaves the file untouched, but ensureNgPrismGitignoreEntry
         // still appends ng-prism-cache/. The original entries are preserved.
         const gitignore = result.read('.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('node_modules');
         expect(gitignore).toContain('dist');
         expect(gitignore).toContain('ng-prism-cache/');
@@ -259,28 +274,33 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore');
+
         expect(gitignore).not.toBeNull();
         expect(gitignore!.toString('utf-8')).toContain('ng-prism-cache/');
     });
 
     it('does not duplicate ng-prism-cache/ when already in .gitignore', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('.gitignore', 'node_modules\nng-prism-cache/\n');
 
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore')!.toString('utf-8');
         const matches = gitignore.match(/ng-prism-cache\//g);
+
         expect(matches).toHaveLength(1);
     });
 
     it('preserves existing entries when adding ng-prism-cache/', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('.gitignore', 'node_modules\ndist\n');
 
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('node_modules');
         expect(gitignore).toContain('dist');
         expect(gitignore).toContain('ng-prism-cache/');
@@ -288,6 +308,7 @@ describe('migration v21-13-manifest-cache', () => {
 
     it('adds the cache include and sets rootDir on the prism tsconfig.app.json', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/tsconfig.app.json',
             JSON.stringify(
@@ -308,6 +329,7 @@ describe('migration v21-13-manifest-cache', () => {
             compilerOptions: { rootDir?: string };
             include: string[];
         };
+
         expect(tsconfigApp.compilerOptions.rootDir).toBe('../..');
         expect(tsconfigApp.include).toContain('src/**/*.d.ts');
         expect(tsconfigApp.include).toContain('../../ng-prism-cache/my-lib-prism/**/*.ts');
@@ -315,6 +337,7 @@ describe('migration v21-13-manifest-cache', () => {
 
     it('does not overwrite a user-defined rootDir in tsconfig.app.json', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/tsconfig.app.json',
             JSON.stringify(
@@ -332,11 +355,13 @@ describe('migration v21-13-manifest-cache', () => {
         const result = await run(tree);
 
         const tsconfigApp = JSON.parse(result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')) as { compilerOptions: { rootDir?: string } };
+
         expect(tsconfigApp.compilerOptions.rootDir).toBe('custom/root');
     });
 
     it('does not duplicate the cache include if already present', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/tsconfig.app.json',
             JSON.stringify(
@@ -354,6 +379,7 @@ describe('migration v21-13-manifest-cache', () => {
 
         const tsconfigApp = JSON.parse(result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')) as { include: string[] };
         const occurrences = tsconfigApp.include.filter((entry) => entry === '../../ng-prism-cache/my-lib-prism/**/*.ts');
+
         expect(occurrences).toHaveLength(1);
     });
 
@@ -399,6 +425,7 @@ describe('migration v21-13-manifest-cache', () => {
             }
         };
         const tree = createWorkspaceTree(projects);
+
         tree.create('projects/lib-a-prism/src/main.ts', "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';\n");
         tree.create('projects/lib-b-prism/src/main.ts', "import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';\n");
 
@@ -406,6 +433,7 @@ describe('migration v21-13-manifest-cache', () => {
 
         // Wildcard mapping makes both projects coexist cleanly.
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
 
         expect(result.read('projects/lib-a-prism/src/main.ts')!.toString('utf-8')).toContain("from 'prism-manifest/lib-a-prism'");
@@ -414,11 +442,13 @@ describe('migration v21-13-manifest-cache', () => {
 
     it('migrates a workspace already on the intermediate single-key import form', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('projects/my-lib-prism/src/main.ts', "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest';\n");
 
         const result = await run(tree);
 
         const mainTs = result.read('projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         expect(mainTs).toContain("import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'");
     });
 
@@ -429,11 +459,13 @@ describe('migration v21-13-manifest-cache', () => {
             "import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism';",
             ''
         ].join('\n');
+
         tree.create('projects/my-lib-prism/src/main.ts', mainTs);
 
         const result = await run(tree);
 
         const after = result.read('projects/my-lib-prism/src/main.ts')!.toString('utf-8');
+
         // commented line untouched
         expect(after).toContain("// import { PRISM_RUNTIME_MANIFEST } from './prism-manifest';");
         // live import already correct, unchanged

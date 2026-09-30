@@ -60,23 +60,27 @@ function setup(manifest: RuntimeManifest) {
         }),
         () => new PrismRendererService()
     );
+
     return { renderer, navigation };
 }
 
 describe('PrismRendererService', () => {
     it('should have empty inputValues initially', () => {
         const { renderer } = setup({ components: [] });
+
         expect(renderer.inputValues()).toEqual({});
     });
 
     it('should update single input via updateInput()', () => {
         const { renderer } = setup({ components: [] });
+
         renderer.updateInput('label', 'World');
         expect(renderer.inputValues()).toEqual({ label: 'World' });
     });
 
     it('should merge inputs via updateInput()', () => {
         const { renderer } = setup({ components: [] });
+
         renderer.updateInput('a', 1);
         renderer.updateInput('b', 2);
         expect(renderer.inputValues()).toEqual({ a: 1, b: 2 });
@@ -139,6 +143,7 @@ describe('PrismRendererService', () => {
             variants: [{ name: 'Default' }, { name: 'Disabled', inputs: { disabled: true } }]
         });
         const { renderer, navigation } = setup({ components: [comp] });
+
         navigation.select(comp);
 
         renderer.selectVariant(1);
@@ -160,6 +165,7 @@ describe('PrismRendererService', () => {
             ]
         });
         const { renderer, navigation } = setup({ components: [comp] });
+
         navigation.select(comp);
 
         renderer.selectVariant(1);
@@ -176,6 +182,7 @@ describe('PrismRendererService', () => {
             variants: [{ name: 'With Unknown', inputs: { label: 'Test', nonExistent: true } }]
         });
         const { renderer, navigation } = setup({ components: [comp] });
+
         navigation.select(comp);
 
         renderer.selectVariant(0);
@@ -192,6 +199,7 @@ describe('PrismRendererService', () => {
             variants: [{ name: 'Default' }, { name: 'WithTitle', inputs: { title: 'Hello' } }]
         });
         const { renderer, navigation } = setup({ components: [comp] });
+
         navigation.select(comp);
 
         renderer.selectVariant(1);
@@ -228,6 +236,7 @@ describe('PrismRendererService', () => {
                 inputs: [{ name: 'label', type: 'string', defaultValue: 'Hello', required: false }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
 
             renderer.reconcileForComponent(comp);
@@ -242,6 +251,7 @@ describe('PrismRendererService', () => {
                 variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
             renderer.selectVariant(2);
@@ -250,6 +260,7 @@ describe('PrismRendererService', () => {
                 inputs: [{ name: 'label', type: 'string', defaultValue: 'Hi', required: false }],
                 variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
             });
+
             renderer.reconcileForComponent(compRefreshed);
 
             expect(renderer.activeVariantIndex()).toBe(2);
@@ -261,6 +272,7 @@ describe('PrismRendererService', () => {
                 variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
             renderer.selectVariant(2);
@@ -269,6 +281,7 @@ describe('PrismRendererService', () => {
                 inputs: [],
                 variants: [{ name: 'V1' }]
             });
+
             renderer.reconcileForComponent(compShrunk);
 
             expect(renderer.activeVariantIndex()).toBe(0);
@@ -282,6 +295,7 @@ describe('PrismRendererService', () => {
                 ]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
             renderer.updateInput('label', 'User Value');
@@ -301,6 +315,7 @@ describe('PrismRendererService', () => {
                 ]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
             renderer.updateInput('label', 'Keep');
@@ -309,6 +324,7 @@ describe('PrismRendererService', () => {
             const compReduced = createComponent({
                 inputs: [{ name: 'label', type: 'string', required: false }]
             });
+
             renderer.reconcileForComponent(compReduced);
 
             expect(renderer.inputValues()['label']).toBe('Keep');
@@ -321,6 +337,7 @@ describe('PrismRendererService', () => {
                 variants: [{ name: 'V1', inputs: { label: 'Orig' } }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
 
@@ -331,6 +348,7 @@ describe('PrismRendererService', () => {
                 ],
                 variants: [{ name: 'V1', inputs: { label: 'Orig', variant: 'primary' } }]
             });
+
             renderer.reconcileForComponent(compExpanded);
 
             expect(renderer.inputValues()['label']).toBe('Orig');
@@ -341,9 +359,11 @@ describe('PrismRendererService', () => {
             const first = createComponent({
                 inputs: [{ name: 'label', type: 'string', defaultValue: 'A', required: false }]
             });
+
             first.meta.className = 'First';
 
             const { renderer, navigation } = setup({ components: [first] });
+
             navigation.select(first);
             renderer.resetForComponent(first);
             renderer.updateInput('label', 'Custom');
@@ -351,6 +371,7 @@ describe('PrismRendererService', () => {
             const second = createComponent({
                 inputs: [{ name: 'title', type: 'string', defaultValue: 'B', required: false }]
             });
+
             second.meta.className = 'Second';
 
             renderer.reconcileForComponent(second);
@@ -367,6 +388,7 @@ describe('PrismRendererService', () => {
                 variants: [{ name: 'V1', content: 'Hover me' }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
             expect(renderer.inputValues()['__prismContent__']).toBe('Hover me');
@@ -391,6 +413,7 @@ describe('PrismRendererService', () => {
         it('should still reset to 0 on a real component switch', () => {
             const compA = createComponent({ variants: [{ name: 'A1' }, { name: 'A2' }] });
             const compB = createComponent({ variants: [{ name: 'B1' }] });
+
             compB.meta.className = 'Other';
             const { renderer } = setup({ components: [compA, compB] });
 
@@ -412,6 +435,7 @@ describe('PrismRendererService', () => {
                 ]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
 
@@ -426,6 +450,7 @@ describe('PrismRendererService', () => {
                 ]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
 
@@ -445,6 +470,7 @@ describe('PrismRendererService', () => {
                 variants: [{ name: 'Default' }, { name: 'Disabled', inputs: { disabled: true } }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.selectVariant(1);
 
@@ -464,6 +490,7 @@ describe('PrismRendererService', () => {
                 inputs: [{ name: 'data', type: 'object', defaultValue: { a: 1 }, required: false }]
             });
             const { renderer, navigation } = setup({ components: [comp] });
+
             navigation.select(comp);
             renderer.resetForComponent(comp);
 
@@ -476,11 +503,13 @@ describe('PrismRendererService', () => {
 
         it('should be 0 when no active component', () => {
             const { renderer } = setup({ components: [] });
+
             expect(renderer.dirtyInputCount()).toBe(0);
         });
 
         it('should be a no-op when no active component', () => {
             const { renderer } = setup({ components: [] });
+
             renderer.resetInputsToVariantDefaults();
             expect(renderer.inputValues()).toEqual({});
         });

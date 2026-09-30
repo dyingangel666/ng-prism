@@ -15,6 +15,7 @@ import { describeAll, matchesSafely, renderCanvasChain } from './__fixtures__/ca
 function isPaintedByStylesheet(el: Element): boolean {
     for (const sheet of Array.from(document.styleSheets)) {
         let rules: CSSRule[];
+
         try {
             rules = Array.from(sheet.cssRules);
         } catch {
@@ -23,6 +24,7 @@ function isPaintedByStylesheet(el: Element): boolean {
         for (const rule of rules) {
             if (!(rule instanceof CSSStyleRule)) continue;
             const value = (rule.style.getPropertyValue('background-color') || rule.style.getPropertyValue('background')).trim();
+
             if (!value || value === 'transparent' || value === 'none') continue;
             if (matchesSafely(el, rule.selectorText)) return true;
         }
@@ -33,6 +35,7 @@ function isPaintedByStylesheet(el: Element): boolean {
 /** Every element from `el`'s parent up to `<html>`, inclusive. */
 function ancestorsToRoot(el: Element): Element[] {
     const chain: Element[] = [];
+
     for (let at = el.parentElement; at; at = at.parentElement) chain.push(at);
     return chain;
 }
@@ -66,6 +69,7 @@ describe('capture mode with a transparent background', () => {
         expect(painted.length).toBeGreaterThanOrEqual(4);
 
         const unneutralised = painted.filter((el) => !matchesSafely(el, CAPTURE_TRANSPARENT_SELECTOR));
+
         expect(describeAll(unneutralised)).toEqual([]);
     });
 
@@ -92,6 +96,7 @@ describe('capture mode with a transparent background', () => {
         // start dropping colours that `@Showcase({ bg })` asked for.
         expect(painted.length).toBeGreaterThanOrEqual(4);
         const neutralised = painted.filter((el) => matchesSafely(el, CAPTURE_TRANSPARENT_SELECTOR));
+
         expect(describeAll(neutralised)).toEqual([]);
     });
 });

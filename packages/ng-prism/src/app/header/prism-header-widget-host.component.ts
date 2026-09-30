@@ -20,6 +20,7 @@ export class PrismHeaderWidgetHostComponent {
     constructor() {
         effect(() => {
             const w = this.widget();
+
             if (w.component) {
                 this.resolved.set(w.component);
                 return;
@@ -29,6 +30,7 @@ export class PrismHeaderWidgetHostComponent {
                 return;
             }
             const cached = lazyCache.get(w.id);
+
             if (cached) {
                 this.resolved.set(cached);
                 return;

@@ -3,6 +3,7 @@ import { addPluginToConfig } from './config-ast.js';
 
 function makeTreeWithConfig(content: string): Tree {
     const tree = Tree.empty();
+
     tree.create('ng-prism.config.ts', content);
     return tree;
 }
@@ -25,6 +26,7 @@ describe('addPluginToConfig', () => {
 
         expect(changed).toBe(true);
         const result = tree.read('ng-prism.config.ts')!.toString('utf-8');
+
         expect(result).toContain(`import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';`);
         expect(result).toContain('plugins: [jsDocPlugin()]');
     });
@@ -39,6 +41,7 @@ export default defineConfig({ plugins: [otherPlugin()] });
 
         expect(changed).toBe(true);
         const result = tree.read('ng-prism.config.ts')!.toString('utf-8');
+
         expect(result).toContain('plugins: [otherPlugin(), jsDocPlugin()]');
         expect(result).toContain(`import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';`);
     });
@@ -78,11 +81,13 @@ export default defineConfig({});
 
         expect(changed).toBe(true);
         const result = tree.read('ng-prism.config.ts')!.toString('utf-8');
+
         expect(result).toContain('plugins: [jsDocPlugin()]');
     });
 
     it('throws when config file is missing', () => {
         const tree = Tree.empty();
+
         expect(() => addPluginToConfig(tree, 'ng-prism.config.ts', JSDOC_OPTS)).toThrow(/Run "ng add @ng-prism\/core" first/);
     });
 
@@ -91,6 +96,7 @@ export default defineConfig({});
 const opts = { plugins: [] };
 export default defineConfig(opts);
 `);
+
         expect(() => addPluginToConfig(tree, 'ng-prism.config.ts', JSDOC_OPTS)).toThrow(/must be an object literal/);
     });
 
@@ -99,6 +105,7 @@ export default defineConfig(opts);
 const myPlugins = [];
 export default defineConfig({ plugins: myPlugins });
 `);
+
         expect(() => addPluginToConfig(tree, 'ng-prism.config.ts', JSDOC_OPTS)).toThrow(/plugins must be an array literal/);
     });
 
@@ -116,6 +123,7 @@ export default defineConfig({
 
         expect(changed).toBe(true);
         const result = tree.read('ng-prism.config.ts')!.toString('utf-8');
+
         expect(result).toMatch(/otherPlugin\(\),\s*jsDocPlugin\(\)/);
     });
 });

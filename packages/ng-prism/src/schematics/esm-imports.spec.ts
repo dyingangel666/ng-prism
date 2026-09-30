@@ -25,8 +25,10 @@ const IMPORT_RE = /(?:^|\n)\s*import[\s\S]*?from\s*['"]([^'"]+)['"]/g;
 
 function collectSourceFiles(dir: string): string[] {
     const files: string[] = [];
+
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
         const full = join(dir, entry.name);
+
         if (entry.isDirectory()) {
             files.push(...collectSourceFiles(full));
         } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts')) {
@@ -38,9 +40,11 @@ function collectSourceFiles(dir: string): string[] {
 
 function subpathImports(source: string): string[] {
     const found: string[] = [];
+
     for (const match of source.matchAll(IMPORT_RE)) {
         const specifier = match[1];
         const unsafe = DIRECTORY_IMPORT_UNSAFE.find((pkg) => specifier.startsWith(`${pkg}/`) && specifier !== pkg);
+
         if (unsafe) found.push(specifier);
     }
     return found;
@@ -58,6 +62,7 @@ describe('schematics ESM imports', () => {
 
         for (const file of sourceFiles) {
             const source = readFileSync(file, 'utf-8');
+
             for (const specifier of subpathImports(source)) {
                 if (specifier.startsWith(`${pkg}/`) && !specifier.endsWith('.js')) {
                     offenders.push(`${file}: ${specifier}`);

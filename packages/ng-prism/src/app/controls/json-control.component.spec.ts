@@ -3,6 +3,7 @@ import { highlightJson, stringifyForJsonControl } from './json-control.component
 describe('highlightJson', () => {
     it('wraps JSON tokens in classed spans', () => {
         const html = highlightJson('{"label":"hi","n":2}');
+
         expect(html).toContain('<span class="jh-key">"label"</span>');
         expect(html).toContain('<span class="jh-string">"hi"</span>');
         expect(html).toContain('<span class="jh-number">2</span>');

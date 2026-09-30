@@ -1,5 +1,5 @@
-import type { NgPrismPlugin, PrismManifest, ScannedComponent } from '../../plugin/plugin.types.js';
 import type { StyleguidePage } from '../../plugin/page.types.js';
+import type { NgPrismPlugin, PrismManifest, ScannedComponent } from '../../plugin/plugin.types.js';
 
 function pluginLabel(plugin: NgPrismPlugin): string {
     return plugin.name ? `"${plugin.name}"` : '<unnamed>';
@@ -8,6 +8,7 @@ function pluginLabel(plugin: NgPrismPlugin): string {
 function wrapPluginError(plugin: NgPrismPlugin, hook: string, target: string, err: unknown): Error {
     const cause = err instanceof Error ? err.message : String(err);
     const wrapped = new Error(`ng-prism: plugin ${pluginLabel(plugin)} failed in ${hook} for ${target} — ${cause}`, err instanceof Error ? { cause: err } : undefined);
+
     if (err instanceof Error && err.stack) {
         wrapped.stack = `${wrapped.message}\nCaused by: ${err.stack}`;
     }
@@ -19,10 +20,12 @@ export async function runPluginHooks(manifest: PrismManifest, plugins: NgPrismPl
 
     for (let i = 0; i < components.length; i++) {
         let current: ScannedComponent = components[i];
+
         for (const plugin of plugins) {
             if (plugin.onComponentScanned) {
                 try {
                     const result = await plugin.onComponentScanned(current);
+
                     if (result) {
                         current = result;
                     }
@@ -38,10 +41,12 @@ export async function runPluginHooks(manifest: PrismManifest, plugins: NgPrismPl
 
     for (let i = 0; i < pages.length; i++) {
         let current: StyleguidePage = pages[i];
+
         for (const plugin of plugins) {
             if (plugin.onPageScanned) {
                 try {
                     const result = await plugin.onPageScanned(current);
+
                     if (result) {
                         current = result;
                     }
@@ -59,6 +64,7 @@ export async function runPluginHooks(manifest: PrismManifest, plugins: NgPrismPl
         if (plugin.onManifestReady) {
             try {
                 const updated = await plugin.onManifestReady(result);
+
                 if (updated) {
                     result = updated;
                 }

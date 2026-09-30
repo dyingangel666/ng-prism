@@ -4,6 +4,7 @@ import { addTsConfigPath } from './tsconfig-paths.js';
 
 function createTree(initial: string): Tree {
     const tree = Tree.empty();
+
     tree.create('tsconfig.json', initial);
     return tree;
 }
@@ -15,6 +16,7 @@ describe('addTsConfigPath', () => {
         addTsConfigPath(tree, 'tsconfig.json', 'foo', ['bar/baz.ts']);
 
         const parsed = parseJsonc(tree.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(parsed.compilerOptions.paths['foo']).toEqual(['bar/baz.ts']);
     });
 
@@ -24,6 +26,7 @@ describe('addTsConfigPath', () => {
         addTsConfigPath(tree, 'tsconfig.json', 'foo', ['bar/baz.ts']);
 
         const parsed = parseJsonc(tree.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(parsed.compilerOptions.paths['foo']).toEqual(['existing.ts']);
     });
 
@@ -34,6 +37,7 @@ describe('addTsConfigPath', () => {
         addTsConfigPath(tree, 'tsconfig.json', 'foo', ['bar/baz.ts']);
 
         const written = tree.read('tsconfig.json')!.toString('utf-8');
+
         expect(written).toContain('/* important comment */');
         expect(written).toContain('// strict mode');
         expect(written).toContain('"foo"');

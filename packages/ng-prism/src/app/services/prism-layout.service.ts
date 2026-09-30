@@ -54,8 +54,10 @@ export class PrismLayoutService {
     private loadFromStorage(): void {
         try {
             const raw = localStorage.getItem(STORAGE_KEY);
+
             if (!raw) return;
             const d = JSON.parse(raw) as Record<string, unknown>;
+
             if (typeof d['sidebarVisible'] === 'boolean') this.sidebarVisible.set(d['sidebarVisible']);
             if (typeof d['addonsVisible'] === 'boolean') this.addonsVisible.set(d['addonsVisible']);
             if (typeof d['toolbarVisible'] === 'boolean') this.toolbarVisible.set(d['toolbarVisible']);
@@ -78,6 +80,7 @@ export class PrismLayoutService {
             panelHeight: this.panelHeight(),
             panelWidth: this.panelWidth()
         };
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 }

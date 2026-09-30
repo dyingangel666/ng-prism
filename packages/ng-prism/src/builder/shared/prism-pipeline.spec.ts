@@ -1,8 +1,8 @@
-import { mkdtempSync, cpSync, rmSync, existsSync, readFileSync, statSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import type { BuilderContext } from '@angular-devkit/architect';
-import { runPrismPipeline, createPipelineState } from './prism-pipeline.js';
+import { createPipelineState, runPrismPipeline } from './prism-pipeline.js';
 
 const FIXTURES_DIR = join(__dirname, '..', 'scanner', '__fixtures__');
 const MULTI_ENTRY_FIXTURES_DIR = join(__dirname, '__fixtures__', 'multi-entry-lib');
@@ -10,6 +10,7 @@ const CONFIG_FIXTURE = join(__dirname, '__fixtures__', 'ng-prism.config.ts');
 
 function createTempWorkspace(): string {
     const tmp = mkdtempSync(join(tmpdir(), 'ng-prism-pipeline-'));
+
     cpSync(FIXTURES_DIR, join(tmp, 'lib'), { recursive: true });
     cpSync(CONFIG_FIXTURE, join(tmp, 'ng-prism.config.ts'));
     return tmp;
@@ -17,6 +18,7 @@ function createTempWorkspace(): string {
 
 function createMultiEntryWorkspace(): string {
     const tmp = mkdtempSync(join(tmpdir(), 'ng-prism-pipeline-multi-'));
+
     cpSync(MULTI_ENTRY_FIXTURES_DIR, join(tmp, 'lib'), { recursive: true });
     cpSync(CONFIG_FIXTURE, join(tmp, 'ng-prism.config.ts'));
     return tmp;
@@ -111,6 +113,7 @@ describe('runPrismPipeline integration', () => {
         await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
         const content = readFileSync(join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'), 'utf-8');
+
         expect(content).toContain(
             "import { ButtonComponent, CardComponent, SignalButtonComponent, ModelInputComponent, HighlightDirective, InvalidBgComponent, InvalidStatusComponent, DeprecatedBgComponent, SectionedComponent } from 'my-lib'"
         );
@@ -123,6 +126,7 @@ describe('runPrismPipeline integration', () => {
         await runPrismPipeline(defaultOptions, ctx, createPipelineState());
 
         const content = readFileSync(join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'), 'utf-8');
+
         expect(content).toContain('type: ButtonComponent,');
         expect(content).toContain('type: CardComponent,');
         expect(content).toContain('type: SignalButtonComponent,');
@@ -170,6 +174,7 @@ describe('runPrismPipeline integration', () => {
         await runPrismPipeline(defaultOptions, createMockContext(tmp), createPipelineState());
 
         const content = readManifest(tmp);
+
         expect(content).toContain('a11y:');
         expect(content).toContain('variant: "warn"');
     });
@@ -218,6 +223,7 @@ describe('runPrismPipeline integration', () => {
         await runPrismPipeline(defaultOptions, createMockContext(tmp), createPipelineState());
 
         const content = readManifest(tmp);
+
         expect(content).toContain('fromPlugin: "still-here"');
         expect(content).toContain('a11y:');
     });
@@ -255,6 +261,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
         await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
         const content = readFileSync(join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'), 'utf-8');
+
         expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
         expect(content).toContain("from 'multi-entry-lib/atoms/pill'");
         expect(content).not.toContain("from 'multi-entry-lib';");
@@ -267,6 +274,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
         await runPrismPipeline(multiOptions, ctx, createPipelineState());
 
         const content = readFileSync(join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'), 'utf-8');
+
         expect(content).toContain('type: PillComponent,');
         expect(content).toContain('type: IconComponent,');
     });
@@ -280,6 +288,7 @@ describe('runPrismPipeline multi-entry-point integration', () => {
         expect(result.componentCount).toBe(2);
 
         const content = readFileSync(join(tmp, 'ng-prism-cache', 'my-lib-prism', 'prism-manifest.ts'), 'utf-8');
+
         expect(content).toContain("from 'multi-entry-lib/atoms/icon'");
         expect(content).toContain("from 'multi-entry-lib/atoms/pill'");
         expect(content).not.toContain("from 'multi-entry-lib';");
@@ -437,9 +446,11 @@ describe('runPrismPipeline skip-write behavior', () => {
             const buttonFile = join(tmp, 'lib', 'button.component.ts');
             const content = readFileSync(buttonFile, 'utf-8');
             const { writeFileSync } = await import('fs');
+
             writeFileSync(buttonFile, content.replace("title: 'Button',", "title: 'MutatedButton',"));
 
             const second = await runPrismPipeline(options, ctx, state);
+
             expect(second.written).toBe(true);
             expect(statSync(second.manifestPath).ino).toBe(firstInode);
         } finally {

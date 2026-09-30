@@ -8,6 +8,7 @@ export class PrismPluginService {
 
     readonly panels = computed<PanelDefinition[]>(() => {
         const result: PanelDefinition[] = [];
+
         for (const plugin of this.config.plugins ?? []) {
             if (plugin.panels) {
                 result.push(...plugin.panels);
@@ -22,6 +23,7 @@ export class PrismPluginService {
 
     readonly controls = computed<ControlDefinition[]>(() => {
         const result: ControlDefinition[] = [];
+
         for (const plugin of this.config.plugins ?? []) {
             if (plugin.controls) {
                 result.push(...plugin.controls);
@@ -32,6 +34,7 @@ export class PrismPluginService {
 
     readonly headerWidgets = computed<HeaderWidgetDefinition[]>(() => {
         const result: HeaderWidgetDefinition[] = [];
+
         for (const plugin of this.config.plugins ?? []) {
             if (plugin.headerWidgets) {
                 result.push(...plugin.headerWidgets);
@@ -51,6 +54,7 @@ export class PrismPluginService {
      */
     readonly navigationDecorations = computed<NavigationDecorationDefinition[]>(() => {
         const result: NavigationDecorationDefinition[] = [];
+
         for (const plugin of this.config.plugins ?? []) {
             if (plugin.navigationDecorations) {
                 result.push(...plugin.navigationDecorations);

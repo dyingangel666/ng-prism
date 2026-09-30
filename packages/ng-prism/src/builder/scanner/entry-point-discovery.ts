@@ -1,5 +1,5 @@
-import { readdirSync, readFileSync, statSync, existsSync } from 'fs';
-import { join, relative, posix } from 'path';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
+import { join, posix, relative } from 'path';
 
 export interface DiscoveredEntryPoint {
     entryFile: string;
@@ -8,6 +8,7 @@ export interface DiscoveredEntryPoint {
 
 export function discoverSecondaryEntryPoints(libraryRoot: string, baseImportPath: string): DiscoveredEntryPoint[] {
     const entryPoints: DiscoveredEntryPoint[] = [];
+
     findNgPackageJsons(libraryRoot, libraryRoot, baseImportPath, entryPoints);
     return entryPoints;
 }
@@ -26,6 +27,7 @@ function findNgPackageJsons(dir: string, libraryRoot: string, baseImportPath: st
             if (existsSync(entryFilePath)) {
                 const relDir = relative(libraryRoot, dir);
                 const importPath = relDir === '' ? baseImportPath : posix.join(baseImportPath, relDir.split('\\').join('/'));
+
                 result.push({ entryFile: entryFilePath, importPath });
             }
 
@@ -34,6 +36,7 @@ function findNgPackageJsons(dir: string, libraryRoot: string, baseImportPath: st
     }
 
     let entries: string[];
+
     try {
         entries = readdirSync(dir);
     } catch {
@@ -44,6 +47,7 @@ function findNgPackageJsons(dir: string, libraryRoot: string, baseImportPath: st
         if (entry === 'node_modules' || entry === '.git') continue;
 
         const fullPath = join(dir, entry);
+
         try {
             if (!statSync(fullPath).isDirectory()) continue;
         } catch {

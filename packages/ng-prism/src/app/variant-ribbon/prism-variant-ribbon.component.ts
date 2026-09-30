@@ -1,4 +1,4 @@
-import { Component, ElementRef, inject, computed, effect, viewChild, viewChildren, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, viewChild, viewChildren } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
@@ -21,6 +21,7 @@ export class PrismVariantRibbonComponent {
 
     protected readonly variants = computed(() => {
         const comp = this.navigationService.activeComponent();
+
         return comp?.meta.showcaseConfig.variants ?? [];
     });
 
@@ -29,6 +30,7 @@ export class PrismVariantRibbonComponent {
             const idx = this.rendererService.activeVariantIndex();
             const container = this.tabsContainer()?.nativeElement;
             const button = this.tabButtons()[idx]?.nativeElement;
+
             if (!container || !button) return;
 
             const buttonLeft = button.offsetLeft;
@@ -50,11 +52,13 @@ export class PrismVariantRibbonComponent {
 
     protected prev(): void {
         const idx = this.rendererService.activeVariantIndex();
+
         if (idx > 0) this.rendererService.selectVariant(idx - 1);
     }
 
     protected next(): void {
         const idx = this.rendererService.activeVariantIndex();
+
         if (idx < this.variants().length - 1) this.rendererService.selectVariant(idx + 1);
     }
 }

@@ -17,6 +17,7 @@ describe('resolveOverlay', () => {
             captureActive: false,
             cache: NO_CACHE
         });
+
         expect(result).toEqual({ kind: 'none' });
     });
 
@@ -25,6 +26,7 @@ describe('resolveOverlay', () => {
             captureActive: false,
             cache: NO_CACHE
         });
+
         expect(result).toEqual({ kind: 'none' });
     });
 
@@ -33,6 +35,7 @@ describe('resolveOverlay', () => {
             captureActive: false,
             cache: NO_CACHE
         });
+
         expect(result).toEqual({ kind: 'eager', component: EagerOverlay });
     });
 
@@ -42,6 +45,7 @@ describe('resolveOverlay', () => {
             captureActive: false,
             cache: NO_CACHE
         });
+
         expect(result).toMatchObject({ kind: 'lazy', panelId: 'p' });
         expect(load).not.toHaveBeenCalled();
         if (result.kind !== 'lazy') throw new Error('expected a lazy resolution');
@@ -77,6 +81,7 @@ describe('resolveOverlay', () => {
             captureActive: false,
             cache: new Map([['p', LazyOverlay]])
         });
+
         expect(result).toEqual({ kind: 'eager', component: LazyOverlay });
     });
 
@@ -86,6 +91,7 @@ describe('resolveOverlay', () => {
                 captureActive: true,
                 cache: NO_CACHE
             });
+
             expect(result).toEqual({ kind: 'none' });
         });
 
@@ -94,6 +100,7 @@ describe('resolveOverlay', () => {
                 captureActive: true,
                 cache: new Map([['p', LazyOverlay]])
             });
+
             expect(result).toEqual({ kind: 'none' });
         });
 
@@ -103,6 +110,7 @@ describe('resolveOverlay', () => {
                 captureActive: true,
                 cache: NO_CACHE
             });
+
             expect(result).toEqual({ kind: 'none' });
             expect(load).not.toHaveBeenCalled();
         });

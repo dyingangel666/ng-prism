@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { PrismMetricBadgeComponent } from '@ng-prism/core';
 import { PRISM_MANIFEST } from '@ng-prism/core/plugin';
 import type { RuntimeManifest } from '@ng-prism/core/plugin';
-import { PrismMetricBadgeComponent } from '@ng-prism/core';
 import type { VrtManifestMeta } from './visual-regression.types.js';
 
 type Variant = 'ok' | 'warn' | 'danger';
@@ -18,6 +18,7 @@ export class VisualRegressionHeaderBadgeComponent {
 
     protected readonly data = computed(() => {
         const meta = this.manifest.meta?.['visualRegression'] as VrtManifestMeta | undefined;
+
         if (!meta?.found || !meta.total) return null;
 
         const { total, thresholds } = meta;
@@ -30,6 +31,7 @@ export class VisualRegressionHeaderBadgeComponent {
             `${total.unchanged} unchanged · ${total.changed} changed · ${total.sizeMismatch} resized`,
             `${total.new} new (no baseline yet)`
         ];
+
         if (total.excluded) parts.push(`${total.excluded} excluded`);
         parts.push(`${total.auditedVariants} variants across ${total.auditedComponents} components`);
 

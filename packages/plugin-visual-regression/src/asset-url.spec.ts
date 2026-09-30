@@ -47,6 +47,7 @@ describe('resolveAssetUrl', () => {
         const base = '/'.repeat(200_000) + 'a';
 
         const started = performance.now();
+
         expect(resolveAssetUrl(base, 'vrt/a.png')).toBe(`${base}/vrt/a.png`);
         expect(performance.now() - started).toBeLessThan(500);
     });

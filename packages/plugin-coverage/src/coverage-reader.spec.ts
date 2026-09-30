@@ -1,6 +1,5 @@
 import path from 'node:path';
 import { averageThreshold, clearCoverageCache, readCoverageForFile, readTotalCoverage } from './coverage-reader.js';
-import type { CoverageData } from './coverage.types.js';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/coverage-summary.json');
 
@@ -56,6 +55,7 @@ describe('readCoverageForFile', () => {
         readCoverageForFile(FIXTURE_PATH, '/workspace/src/app/card/card.component.ts');
 
         const matchingCalls = spy.mock.calls.filter((call) => typeof call[0] === 'string' && (call[0] as string).includes('coverage-summary'));
+
         expect(matchingCalls).toHaveLength(1);
     });
 

@@ -1,9 +1,9 @@
+import { NgComponentOutlet } from '@angular/common';
 import { Component, computed, input, signal, Type } from '@angular/core';
+import { summarizeValue } from './prism-json-node.utils.js';
 
 const MAX_DEPTH = 10;
 const MAX_ENTRIES = 50;
-import { NgComponentOutlet } from '@angular/common';
-import { summarizeValue } from './prism-json-node.utils.js';
 
 export { summarizeValue } from './prism-json-node.utils.js';
 
@@ -35,6 +35,7 @@ export class PrismJsonNodeComponent {
 
     protected readonly entries = computed<{ key: string; value: unknown }[]>(() => {
         const v = this.value();
+
         if (typeof v !== 'object' || v === null || Array.isArray(v)) return [];
         try {
             return Object.entries(v as Record<string, unknown>)
@@ -47,6 +48,7 @@ export class PrismJsonNodeComponent {
 
     protected readonly items = computed<unknown[]>(() => {
         const v = this.value();
+
         return Array.isArray(v) ? v : [];
     });
 

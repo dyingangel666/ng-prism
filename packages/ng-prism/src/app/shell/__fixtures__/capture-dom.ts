@@ -38,6 +38,7 @@ function expandSelfClosing(template: string): string {
 /** The `selector:` of a component source, e.g. `prism-shell`. */
 function selectorOf(source: string): string {
     const match = /selector:\s*'([^']+)'/.exec(source);
+
     if (!match) throw new Error('no selector in component source');
     return match[1];
 }
@@ -85,6 +86,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     const rendererSource = read(RENDERER_SOURCE);
 
     const composed = expandSelfClosing(read(SHELL_TEMPLATE).replace('<prism-renderer />', `<prism-renderer>${read(RENDERER_TEMPLATE)}</prism-renderer>`));
+
     if (!composed.includes('demo-wrap')) {
         throw new Error('the renderer template was not spliced into the shell');
     }
@@ -114,6 +116,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // specificity either way — a class selector and an attribute selector both
     // weigh (0,1,0) — so source order is what decides here too.
     const style = document.createElement('style');
+
     style.textContent = [scopeHost(read(RENDERER_STYLES), selectorOf(rendererSource)), CANVAS_BG_STYLES, scopeHost(read(SHELL_STYLES), selectorOf(shellSource))].join(
         '\n'
     );
@@ -125,6 +128,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // fixtures exist to describe — and a `:host` background added to the shell
     // would then paint above a capture without a single test noticing.
     const host = document.createElement(selectorOf(shellSource));
+
     host.innerHTML = composed;
     document.body.appendChild(host);
 
@@ -132,6 +136,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     const stage = host.querySelector('.prism-canvas-stage');
     const demoWrap = host.querySelector('.demo-wrap');
     const canvasWrap = host.querySelector('.prism-canvas-wrap');
+
     if (!shell || !stage || !demoWrap || !canvasWrap) {
         throw new Error('canvas markup not found');
     }
@@ -147,6 +152,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // inherited `display`, so an element nested one level deeper would be visited
     // by nothing and prove nothing.
     const toolrail = document.createElement('div');
+
     toolrail.className = 'prism-toolrail';
     canvasWrap.appendChild(toolrail);
 

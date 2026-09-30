@@ -12,10 +12,12 @@ export interface ParsedExample {
 export function parseExample(raw: string): ParsedExample {
     const trimmed = raw.trim();
     const match = FENCE_RE.exec(trimmed);
+
     if (!match) {
         return { lang: 'typescript', code: raw };
     }
     const lang = match[1].trim() || 'typescript';
+
     return { lang, code: match[2] };
 }
 

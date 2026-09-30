@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { PRISM_CONFIG, PRISM_MANIFEST } from '../../tokens/prism-tokens.js';
 import type { NgPrismConfig, RuntimeManifest } from '../../../plugin/plugin.types.js';
 import { PrismMetricBadgeComponent } from '../../shared/prism-metric-badge.component.js';
+import { PRISM_CONFIG, PRISM_MANIFEST } from '../../tokens/prism-tokens.js';
 import { resolveA11yThresholds } from './a11y-thresholds.js';
 import type { A11yManifestMeta, A11yThresholds } from './a11y.types.js';
 
@@ -20,6 +20,7 @@ export class A11yHeaderBadgeComponent {
 
     protected readonly data = computed(() => {
         const meta = this.manifest.meta?.['a11y'] as A11yManifestMeta | undefined;
+
         if (!meta?.total) return null;
 
         const score = meta.total.score;

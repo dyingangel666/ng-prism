@@ -16,6 +16,7 @@ describe('PrismEventLogService', () => {
         service.log('hover', null);
 
         const events = service.events();
+
         expect(events.length).toBe(2);
         expect(events[0].name).toBe('hover');
         expect(events[1].name).toBe('click');
@@ -24,16 +25,19 @@ describe('PrismEventLogService', () => {
     it('should store value and name correctly', () => {
         service.log('submit', { form: 'test' });
         const entry = service.events()[0];
+
         expect(entry.name).toBe('submit');
         expect(entry.value).toEqual({ form: 'test' });
     });
 
     it('should include timestamp', () => {
         const before = Date.now();
+
         service.log('test', null);
         const after = Date.now();
 
         const ts = service.events()[0].timestamp;
+
         expect(ts).toBeGreaterThanOrEqual(before);
         expect(ts).toBeLessThanOrEqual(after);
     });

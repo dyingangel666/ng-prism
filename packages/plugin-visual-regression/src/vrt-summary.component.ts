@@ -34,6 +34,7 @@ export class VrtSummaryComponent {
 
     protected readonly maxDiff = computed(() => {
         const ratio = this.summary().maxDiffRatio;
+
         if (ratio === null) return null;
         return {
             value: formatPercent(ratio),

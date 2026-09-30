@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 let instance: PerfRenderService | null = null;
 
@@ -18,26 +18,31 @@ export class PerfRenderService {
 
     readonly avgRerender = computed(() => {
         const samples = this.rerenders();
+
         if (samples.length === 0) return 0;
         return samples.reduce((a, b) => a + b, 0) / samples.length;
     });
 
     readonly p95Rerender = computed(() => {
         const samples = this.rerenders();
+
         if (samples.length === 0) return 0;
         const sorted = [...samples].sort((a, b) => a - b);
         const idx = Math.ceil(sorted.length * 0.95) - 1;
+
         return sorted[idx];
     });
 
     readonly maxRerender = computed(() => {
         const samples = this.rerenders();
+
         if (samples.length === 0) return 0;
         return Math.max(...samples);
     });
 
     readonly lastRerender = computed(() => {
         const samples = this.rerenders();
+
         return samples.length > 0 ? samples[samples.length - 1] : null;
     });
 
@@ -59,6 +64,7 @@ export class PerfRenderService {
                     this.cdRunCount.update((c) => c + 1);
                     this.rerenders.update((arr) => {
                         const next = [...arr, entry.duration];
+
                         return next.length > this.bufferSize ? next.slice(-this.bufferSize) : next;
                     });
                 }

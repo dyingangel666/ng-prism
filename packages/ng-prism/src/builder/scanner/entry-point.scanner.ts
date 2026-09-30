@@ -38,12 +38,14 @@ export function resolveEntryPointExports(
     const entries: ResolvedEntryPoint[] = entryPoints.map(({ entryFile, importPath }) => {
         try {
             const sourceFile = program.getSourceFile(entryFile);
+
             if (!sourceFile) {
                 console.warn(`⚠ ng-prism: source file not found for entry point ${entryFile}, skipping.`);
                 return { entryFile, importPath, exports: [] };
             }
             const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
             const exports = moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : [];
+
             return { entryFile, importPath, exports };
         } catch (err) {
             console.error(`⚠ ng-prism: failed to resolve exports for ${entryFile}: ${err instanceof Error ? err.message : String(err)}`);

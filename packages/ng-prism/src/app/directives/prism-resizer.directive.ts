@@ -52,6 +52,7 @@ export class PrismResizerDirective {
 
         const onMove = (ev: MouseEvent) => {
             const delta = this.axis() === 'x' ? ev.clientX - startPos : startPos - ev.clientY;
+
             this.valueChange.emit(resizeValue(startVal, delta, this.scale(), this.min(), this.max()));
         };
 

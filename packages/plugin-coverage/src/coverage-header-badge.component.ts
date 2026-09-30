@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { PrismMetricBadgeComponent } from '@ng-prism/core';
 import { PRISM_MANIFEST } from '@ng-prism/core/plugin';
 import type { RuntimeManifest } from '@ng-prism/core/plugin';
-import { PrismMetricBadgeComponent } from '@ng-prism/core';
 import { deriveCoverageSummary } from './coverage-summary.js';
 import type { CoverageManifestMeta } from './coverage.types.js';
 
@@ -17,6 +17,7 @@ export class CoverageHeaderBadgeComponent {
 
     protected readonly data = computed(() => {
         const meta = this.manifest.meta?.['coverage'] as CoverageManifestMeta | undefined;
+
         if (!meta?.total?.found) return null;
 
         const score = meta.total.score;

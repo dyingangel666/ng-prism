@@ -20,11 +20,13 @@ export class CoveragePanelComponent {
 
     protected readonly coverage = computed<CoverageData | null>(() => {
         const comp = this.activeComponent() as any;
+
         return (comp?.meta?.showcaseConfig?.meta?.['coverage'] as CoverageData) ?? null;
     });
 
     protected readonly summaryStats = computed(() => {
         const c = this.coverage();
+
         if (!c?.found) return [];
         return [
             { label: 'Lines', pct: c.lines.pct },
@@ -44,6 +46,7 @@ export class CoveragePanelComponent {
 
     protected fileName(path: string): string {
         const parts = path.split('/');
+
         return parts[parts.length - 1];
     }
 }

@@ -13,6 +13,7 @@ export function computeVariantState(
     options: { onUnknownInput?: (variantName: string, key: string) => void } = {}
 ): ComputedVariantState {
     const defaults: Record<string, unknown> = {};
+
     for (const input of comp.meta.inputs) {
         if (input.defaultValue !== undefined) {
             defaults[input.name] = input.defaultValue;
@@ -22,6 +23,7 @@ export function computeVariantState(
     const requiredInputNames = new Set(comp.meta.inputs.filter((i) => i.required).map((i) => i.name));
 
     const reset: Record<string, unknown> = {};
+
     for (const v of comp.meta.showcaseConfig.variants ?? []) {
         for (const key of Object.keys(v.inputs ?? {})) {
             if (!requiredInputNames.has(key) && !(key in reset)) {
@@ -33,6 +35,7 @@ export function computeVariantState(
     const variant = comp.meta.showcaseConfig.variants?.[index];
     const variantInputs = variant?.inputs ?? {};
     const validInputNames = new Set(comp.meta.inputs.map((i) => i.name));
+
     for (const key of Object.keys(variantInputs)) {
         if (!validInputNames.has(key)) {
             options.onUnknownInput?.(variant?.name ?? String(index), key);
@@ -77,11 +80,13 @@ export class PrismRendererService {
 
     readonly dirtyInputCount = computed<number>(() => {
         const comp = this.navigationService.activeComponent();
+
         if (!comp) return 0;
         const { values: expected } = computeVariantState(comp, this.activeVariantIndex());
         const current = this.inputValues();
         const keys = new Set<string>([...Object.keys(expected), ...Object.keys(current)]);
         let count = 0;
+
         for (const key of keys) {
             if (!valuesEqual(expected[key], current[key])) count++;
         }
@@ -98,6 +103,7 @@ export class PrismRendererService {
 
     reconcileForComponent(comp: RuntimeComponent): void {
         const prev = this._lastClassName;
+
         this._lastClassName = comp.meta.className;
 
         if (prev !== null && prev !== comp.meta.className) {
@@ -109,9 +115,11 @@ export class PrismRendererService {
         const variants = comp.meta.showcaseConfig.variants ?? [];
         const maxIndex = Math.max(0, variants.length - 1);
         const preservedIndex = Math.min(this.activeVariantIndex(), maxIndex);
+
         this.activeVariantIndex.set(preservedIndex);
 
         const defaults: Record<string, unknown> = {};
+
         for (const input of comp.meta.inputs) {
             if (input.defaultValue !== undefined) {
                 defaults[input.name] = input.defaultValue;
@@ -121,6 +129,7 @@ export class PrismRendererService {
         const validKeys = new Set(comp.meta.inputs.map((i) => i.name));
         const currentValues = this.inputValues();
         const preserved: Record<string, unknown> = {};
+
         for (const [key, value] of Object.entries(currentValues)) {
             if (validKeys.has(key) || key === '__prismContent__') {
                 preserved[key] = value;
@@ -142,6 +151,7 @@ export class PrismRendererService {
     selectVariant(index: number): void {
         this.activeVariantIndex.set(index);
         const comp = this.navigationService.activeComponent();
+
         if (comp) this.applyVariant(index, comp);
     }
 
@@ -151,6 +161,7 @@ export class PrismRendererService {
 
     resetInputsToVariantDefaults(): void {
         const comp = this.navigationService.activeComponent();
+
         if (!comp) return;
         this.applyVariant(this.activeVariantIndex(), comp);
     }
@@ -160,6 +171,7 @@ export class PrismRendererService {
             onUnknownInput: (variantName, key) =>
                 console.warn(`[ng-prism] Variant "${variantName}" references unknown input "${key}" on ${comp.meta.className} — ignoring.`)
         });
+
         this.inputValues.set(values);
         this.activeContent.set(activeContent);
     }

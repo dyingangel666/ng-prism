@@ -1,11 +1,11 @@
-import { createBuilder, type Builder, type BuilderContext, type BuilderOutput } from '@angular-devkit/architect';
-import type { json } from '@angular-devkit/core';
-import { join } from 'path';
 import { existsSync } from 'fs';
-import type { ServeBuilderSchema } from './schema.js';
-import { runPrismPipeline, createPipelineState, type PrismPipelineOptions } from '../shared/prism-pipeline.js';
+import { join } from 'path';
+import { type Builder, type BuilderContext, type BuilderOutput, createBuilder } from '@angular-devkit/architect';
+import type { json } from '@angular-devkit/core';
+import { createPipelineState, type PrismPipelineOptions, runPrismPipeline } from '../shared/prism-pipeline.js';
 import { resolveCacheDir } from '../shared/resolve-cache-dir.js';
 import { startWatcher } from '../watcher/index.js';
+import type { ServeBuilderSchema } from './schema.js';
 
 async function createServeBuilder(options: ServeBuilderSchema, context: BuilderContext): Promise<BuilderOutput> {
     const cacheDir = resolveCacheDir(options.cacheDir, context.workspaceRoot);
@@ -19,6 +19,7 @@ async function createServeBuilder(options: ServeBuilderSchema, context: BuilderC
     };
 
     const state = createPipelineState();
+
     await runPrismPipeline(pipelineOptions, context, state);
 
     const absoluteEntryPoint = join(context.workspaceRoot, options.entryPoint);
@@ -55,6 +56,7 @@ async function createServeBuilder(options: ServeBuilderSchema, context: BuilderC
 
     return new Promise<BuilderOutput>((resolve, reject) => {
         let lastOutput: BuilderOutput | undefined;
+
         run.output.subscribe({
             next: (output) => {
                 lastOutput = output;
@@ -74,4 +76,5 @@ async function createServeBuilder(options: ServeBuilderSchema, context: BuilderC
 }
 
 const builder: Builder<ServeBuilderSchema & json.JsonObject> = createBuilder<ServeBuilderSchema>(createServeBuilder);
+
 export default builder;

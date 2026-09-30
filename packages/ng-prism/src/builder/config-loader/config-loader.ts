@@ -1,5 +1,5 @@
 import '@angular/compiler';
-import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { resolve, sep } from 'path';
 import { pathToFileURL } from 'url';
 import ts from 'typescript';
@@ -41,6 +41,7 @@ export async function loadConfig(options: ConfigLoaderOptions): Promise<NgPrismC
     try {
         writeFileSync(tempPath, transpiled.outputText, 'utf-8');
         const module = await import(pathToFileURL(tempPath).href);
+
         return module.default ?? {};
     } finally {
         if (existsSync(tempPath)) {

@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
-import { resolveEntryPointExports, type EntryPointInput } from './entry-point.scanner.js';
 import { scanComponents } from './component.scanner.js';
+import { type EntryPointInput, resolveEntryPointExports } from './entry-point.scanner.js';
 
 export interface CreateScannerOptions {
     entryPoints: ReadonlyArray<EntryPointInput>;
@@ -52,6 +52,7 @@ export function createScanner(options: CreateScannerOptions): Scanner {
     return {
         scan(): ScanResult {
             const { program, entries } = resolveEntryPointExports(options.entryPoints, compilerOptions, previousProgram);
+
             previousProgram = program;
 
             const checker = program.getTypeChecker();
@@ -59,6 +60,7 @@ export function createScanner(options: CreateScannerOptions): Scanner {
 
             for (const { exports, importPath } of entries) {
                 const components = scanComponents(exports, checker);
+
                 for (const c of components) c.importPath = importPath;
                 allComponents.push(...components);
             }
@@ -69,8 +71,10 @@ export function createScanner(options: CreateScannerOptions): Scanner {
             // generated manifest and a runtime collision in the Prism shell.
             const seen = new Set<string>();
             const unique: ScannedComponent[] = [];
+
             for (const c of allComponents) {
                 const key = `${c.filePath}::${c.className}`;
+
                 if (seen.has(key)) {
                     console.warn(
                         `⚠ ng-prism: ${c.className} is exported by multiple entry points; ` +

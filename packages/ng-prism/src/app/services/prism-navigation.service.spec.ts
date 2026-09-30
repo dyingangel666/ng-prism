@@ -60,18 +60,21 @@ function setup(manifest: RuntimeManifest): {
         parent: rootInjector
     });
     const service = runInInjectionContext(navInjector, () => new PrismNavigationService());
+
     return { service, manifestService };
 }
 
 describe('PrismNavigationService', () => {
     it('should have null activeComponent by default', () => {
         const { service } = setup({ components: [] });
+
         expect(service.activeComponent()).toBeNull();
     });
 
     it('should set activeComponent via select()', () => {
         const comp = createComponent({ title: 'Button' });
         const { service } = setup({ components: [comp] });
+
         service.select(comp);
         expect(service.activeComponent()).toBe(comp);
     });
@@ -80,6 +83,7 @@ describe('PrismNavigationService', () => {
         const first = createComponent({ title: 'Alpha', className: 'Alpha' });
         const second = createComponent({ title: 'Beta', className: 'Beta' });
         const { service } = setup({ components: [first, second] });
+
         service.selectFirst();
         expect(service.activeComponent()).toBe(first);
     });
@@ -92,6 +96,7 @@ describe('PrismNavigationService', () => {
             component: class {} as any
         };
         const { service } = setup({ components: [comp], pages: [page] });
+
         service.selectFirst();
         expect(service.activePage()).toBe(page);
         expect(service.activeComponent()).toBeNull();
@@ -99,6 +104,7 @@ describe('PrismNavigationService', () => {
 
     it('should set null when selectFirst() called on empty manifest', () => {
         const { service } = setup({ components: [] });
+
         service.selectFirst();
         expect(service.activeComponent()).toBeNull();
     });
@@ -106,9 +112,11 @@ describe('PrismNavigationService', () => {
     it('should re-link activeComponent to new reference when manifest updates with same className', () => {
         const original = createComponent({ title: 'Button', className: 'Btn' });
         const { service, manifestService } = setup({ components: [original] });
+
         service.select(original);
 
         const updated = createComponent({ title: 'Button NEW', className: 'Btn' });
+
         manifestService.updateManifest({ components: [updated] });
 
         expect(service.activeComponent()).toBe(updated);
@@ -121,6 +129,7 @@ describe('PrismNavigationService', () => {
         const { service, manifestService } = setup({
             components: [removed, survivor]
         });
+
         service.select(removed);
 
         manifestService.updateManifest({ components: [survivor] });
@@ -131,6 +140,7 @@ describe('PrismNavigationService', () => {
     it('should set activeItem to null when active component is removed and manifest is empty', () => {
         const comp = createComponent({ className: 'Only' });
         const { service, manifestService } = setup({ components: [comp] });
+
         service.select(comp);
 
         manifestService.updateManifest({ components: [] });
@@ -149,6 +159,7 @@ describe('PrismNavigationService', () => {
             components: [],
             pages: [page]
         });
+
         service.selectPage(page);
 
         const updatedPage = {
@@ -157,6 +168,7 @@ describe('PrismNavigationService', () => {
             category: 'Docs',
             component: class {} as any
         };
+
         manifestService.updateManifest({ components: [], pages: [updatedPage] });
 
         expect(service.activePage()).toBe(updatedPage);
@@ -169,6 +181,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [comp] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Components']);
             expect(tree[0].categories[0].items[0].kind).toBe('component');
         });
@@ -178,6 +191,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [dir] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Directives']);
         });
 
@@ -187,6 +201,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [comp, dir] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Components', 'Directives']);
         });
 
@@ -199,6 +214,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [dir] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Behavior']);
         });
 
@@ -208,6 +224,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [dir, comp] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Components', 'Directives']);
         });
 
@@ -221,6 +238,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [a, b] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Custom', 'Components']);
         });
 
@@ -231,6 +249,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [a, b, c] });
 
             const tree = service.sectionTree();
+
             expect(tree.map((s) => s.name)).toEqual(['Components', 'Alpha', 'Zeta']);
         });
 
@@ -250,6 +269,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [a, b, c] });
 
             const tree = service.sectionTree();
+
             expect(tree).toHaveLength(1);
             expect(tree[0].name).toBe('Components');
             expect(tree[0].categories.map((c) => c.name)).toEqual(['Forms', 'Layout']);
@@ -262,6 +282,7 @@ describe('PrismNavigationService', () => {
             const { service } = setup({ components: [comp] });
 
             const tree = service.sectionTree();
+
             expect(tree[0].categories[0].name).toBe('Uncategorized');
         });
 
@@ -277,6 +298,7 @@ describe('PrismNavigationService', () => {
             const tree = service.sectionTree();
             const comps = tree.find((s) => s.name === 'Components');
             const dirs = tree.find((s) => s.name === 'Directives');
+
             expect(comps?.totalCount).toBe(2);
             expect(dirs?.totalCount).toBe(1);
         });

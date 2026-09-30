@@ -1,7 +1,7 @@
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import type { VisualRegressionPluginOptions, VrtComponentMeta } from './visual-regression.types.js';
 import { hasResults, reviewBadge, VRT_NAVIGATION_DECORATION } from './panel-contributions.js';
 import { resolveVrtThresholds } from './thresholds.js';
+import type { VisualRegressionPluginOptions, VrtComponentMeta } from './visual-regression.types.js';
 import { statSummary, summarize } from './vrt-summarize.js';
 
 const DEFAULT_REPORT_PATH = 'vrt-report.json';

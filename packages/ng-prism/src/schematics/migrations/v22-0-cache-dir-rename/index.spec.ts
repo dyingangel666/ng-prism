@@ -12,6 +12,7 @@ interface AngularProject {
 
 function createWorkspaceTree(projects: Record<string, AngularProject>): Tree {
     const tree = Tree.empty();
+
     tree.create(
         'angular.json',
         JSON.stringify(
@@ -70,6 +71,7 @@ async function run(tree: Tree): Promise<Tree> {
 describe('migration v22-0-cache-dir-rename', () => {
     it('rewrites the prism-manifest path mapping from .ng-prism/ to ng-prism-cache/', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.overwrite(
             'tsconfig.json',
             JSON.stringify(
@@ -88,11 +90,13 @@ describe('migration v22-0-cache-dir-rename', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
     });
 
     it('preserves a user-customised path mapping', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.overwrite(
             'tsconfig.json',
             JSON.stringify(
@@ -111,6 +115,7 @@ describe('migration v22-0-cache-dir-rename', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths['prism-manifest/*']).toEqual(['./custom-location/*/manifest.ts']);
     });
 
@@ -120,11 +125,13 @@ describe('migration v22-0-cache-dir-rename', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('tsconfig.json')!.toString('utf-8')) as { compilerOptions: { paths?: Record<string, string[]> } };
+
         expect(tsconfig.compilerOptions.paths?.['prism-manifest/*']).toEqual(['./ng-prism-cache/*/prism-manifest.ts']);
     });
 
     it("updates each prism project's tsconfig.app.json include entry", async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create(
             'projects/my-lib-prism/tsconfig.app.json',
             JSON.stringify(
@@ -142,17 +149,20 @@ describe('migration v22-0-cache-dir-rename', () => {
         const result = await run(tree);
 
         const tsconfig = JSON.parse(result.read('projects/my-lib-prism/tsconfig.app.json')!.toString('utf-8')) as { include: string[] };
+
         expect(tsconfig.include).toContain('../../ng-prism-cache/my-lib-prism/**/*.ts');
         expect(tsconfig.include).not.toContain('../../.ng-prism/my-lib-prism/**/*.ts');
     });
 
     it('renames the .ng-prism/ entry in .gitignore to ng-prism-cache/', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('.gitignore', 'node_modules\ndist\n.ng-prism/\n');
 
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('ng-prism-cache/');
         expect(gitignore).not.toContain('.ng-prism/');
         expect(gitignore).toContain('node_modules');
@@ -161,16 +171,19 @@ describe('migration v22-0-cache-dir-rename', () => {
 
     it('ensures ng-prism-cache/ exists in .gitignore even when .ng-prism/ was already missing', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.create('.gitignore', 'node_modules\ndist\n');
 
         const result = await run(tree);
 
         const gitignore = result.read('.gitignore')!.toString('utf-8');
+
         expect(gitignore).toContain('ng-prism-cache/');
     });
 
     it('is idempotent: a second run after migration does not change anything', async () => {
         const tree = createWorkspaceTree(defaultProjects());
+
         tree.overwrite(
             'tsconfig.json',
             JSON.stringify(

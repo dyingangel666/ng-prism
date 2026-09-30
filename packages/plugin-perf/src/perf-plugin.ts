@@ -8,6 +8,7 @@ export function perfPlugin(options?: PerfPluginOptions): NgPrismPlugin {
 
         async onComponentScanned(component) {
             const bundle = scanBundle(component.filePath, options?.bundle?.maxTreeDepth ?? 5);
+
             return {
                 ...component,
                 showcaseConfig: {

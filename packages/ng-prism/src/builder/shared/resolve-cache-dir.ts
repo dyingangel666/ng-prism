@@ -1,4 +1,4 @@
-import { join, isAbsolute } from 'path';
+import { isAbsolute, join } from 'path';
 
 /**
  * Normalizes a user-provided `cacheDir` builder option to an absolute path

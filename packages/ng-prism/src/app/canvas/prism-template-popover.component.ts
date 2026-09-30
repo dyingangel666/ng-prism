@@ -1,8 +1,8 @@
-import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
+import { generateSnippet } from '../renderer/snippet-generator.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-import { generateSnippet } from '../renderer/snippet-generator.js';
 
 function esc(s: string): string {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -12,6 +12,7 @@ function tokenizeXml(code: string): string {
     const re = /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
     let out = '';
     let m: RegExpExecArray | null;
+
     while ((m = re.exec(code)) !== null) {
         if (m[1] != null) {
             out += `<span class="tok-com">${esc(m[1])}</span>`;
@@ -49,10 +50,12 @@ export class PrismTemplatePopoverComponent {
 
     protected readonly snippet = computed(() => {
         const comp = this.navigationService.activeComponent();
+
         if (!comp) return '';
         const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
         const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
         const directiveOptions = comp.meta.componentMeta.isDirective ? { host: comp.meta.showcaseConfig.host } : undefined;
+
         return generateSnippet(
             comp.meta.componentMeta.selector,
             comp.meta.inputs,
@@ -65,12 +68,14 @@ export class PrismTemplatePopoverComponent {
 
     protected readonly highlighted = computed(() => {
         const code = this.snippet();
+
         if (!code) return '';
         return tokenizeXml(code);
     });
 
     protected copy(): void {
         const code = this.snippet();
+
         if (!code) return;
         navigator.clipboard?.writeText(code);
         this.copied.set(true);

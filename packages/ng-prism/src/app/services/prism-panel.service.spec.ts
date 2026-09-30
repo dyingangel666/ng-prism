@@ -46,6 +46,7 @@ function createService(
             { provide: EnvironmentInjector, useValue: {} }
         ]
     });
+
     return runInInjectionContext(injector, () => new PrismPanelService());
 }
 
@@ -56,6 +57,7 @@ describe('PrismPanelService', () => {
 
     it('updates activePanelId when set', () => {
         const service = createService();
+
         service.activePanelId.set('box-model');
         expect(service.activePanelId()).toBe('box-model');
     });

@@ -39,6 +39,7 @@ describe('PrismCanvasService', () => {
 
         it('should persist a zoom change', () => {
             const service = createService();
+
             service.setZoom(1.5);
             expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').zoom).toBe(1.5);
         });
@@ -64,6 +65,7 @@ describe('PrismCanvasService', () => {
 
         it('should not write canvas state back to storage', () => {
             const service = createService();
+
             service.setZoom(1.5);
             expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
         });
@@ -86,18 +88,21 @@ describe('PrismCanvasService', () => {
 
         it('should persist a width change', () => {
             const service = createService();
+
             service.setViewportWidth(640);
             expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}').viewportWidth).toBe(640);
         });
 
         it('should clamp a width outside the legal range', () => {
             const service = createService();
+
             service.setViewportWidth(10);
             expect(service.viewportWidth()).toBe(100);
         });
 
         it('should clear the constraint when set to null', () => {
             const service = createService();
+
             service.setViewportWidth(640);
             service.setViewportWidth(null);
             expect(service.viewportWidth()).toBeNull();
@@ -112,12 +117,14 @@ describe('PrismCanvasService', () => {
     describe('viewport toggle', () => {
         it('should turn on at the default width', () => {
             const service = createService();
+
             service.toggleViewport();
             expect(service.viewportWidth()).toBe(390);
         });
 
         it('should turn off again', () => {
             const service = createService();
+
             service.toggleViewport();
             service.toggleViewport();
             expect(service.viewportWidth()).toBeNull();
@@ -125,6 +132,7 @@ describe('PrismCanvasService', () => {
 
         it('should return to the last width rather than the default', () => {
             const service = createService();
+
             service.setViewportWidth(768);
             service.toggleViewport();
             service.toggleViewport();

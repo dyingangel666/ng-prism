@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { PrismCaptureService } from '../services/prism-capture.service.js';
-import { describeAll, renderCanvasChain, type CaptureDom } from './__fixtures__/capture-dom.js';
+import { type CaptureDom, describeAll, renderCanvasChain } from './__fixtures__/capture-dom.js';
 
 /**
  * What these tests would rather assert, and why they cannot.
@@ -39,6 +39,7 @@ function setSearch(search: string): void {
  */
 function renderInCaptureMode(): CaptureDom {
     const dom = renderCanvasChain('light');
+
     setSearch('?capture=1');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({});
@@ -56,6 +57,7 @@ function occupiesLayout(el: Element): boolean {
  */
 function siblingsOfCanvasChain(dom: CaptureDom): Element[] {
     const siblings: Element[] = [];
+
     for (let node: Element = dom.stage; node.parentElement && node !== dom.shell; node = node.parentElement) {
         for (const sibling of Array.from(node.parentElement.children)) {
             if (sibling !== node) siblings.push(sibling);
@@ -103,6 +105,7 @@ describe('capture mode layout isolation', () => {
         // The mirror image: a rule that suppressed the canvas too would satisfy
         // the test above and produce an empty screenshot.
         const chain: Element[] = [];
+
         for (let node: Element = dom.stage; node !== dom.shell && node.parentElement; node = node.parentElement) {
             chain.push(node);
         }
@@ -126,6 +129,7 @@ describe('capture mode layout isolation', () => {
 
         for (const selector of ['.prism-main__panel', '.prism-resizer-row']) {
             const el = host.querySelector(selector);
+
             expect(el).not.toBeNull();
             expect(getComputedStyle(el as Element).display).toBe('none');
         }
@@ -138,10 +142,12 @@ describe('capture mode layout isolation', () => {
      */
     it('should leave a view without a canvas alone', () => {
         const dom = renderInCaptureMode();
+
         dom.host.querySelector('.prism-canvas-wrap')?.remove();
 
         const pageRenderer = dom.host.querySelector('prism-page-renderer');
         const sidebar = dom.host.querySelector('.prism-sidebar-wrap');
+
         expect(pageRenderer).not.toBeNull();
         expect(sidebar).not.toBeNull();
         expect(occupiesLayout(pageRenderer as Element)).toBe(true);
@@ -169,6 +175,7 @@ describe('capture mode layout isolation', () => {
         // `.demo-wrap` that reaches the stage edge composites it into the PNG.
         // The transparency selector clears background colour and cannot reach it.
         const style = getComputedStyle(stage);
+
         // The shorthands, not the longhands: jsdom stores what the stylesheet
         // declared and never expands `outline` into `outline-style`.
         expect(style.outline).toBe('none');

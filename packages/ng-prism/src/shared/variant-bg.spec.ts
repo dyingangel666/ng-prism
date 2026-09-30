@@ -34,6 +34,7 @@ describe('declaredVariantBg', () => {
             bg: 'dark' as const,
             variants: [variant('A', 'light'), variant('B')]
         };
+
         expect(declaredVariantBg(config, 0)).toBe('light');
         expect(declaredVariantBg(config, 1)).toBe('dark');
     });

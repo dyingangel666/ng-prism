@@ -19,5 +19,6 @@ export interface SpectrumSlot {
 export function spectrumSlot(index: number, count: number): SpectrumSlot {
     const n = count < 2 ? 2 : count;
     const i = index < 0 ? 0 : index > n - 1 ? n - 1 : index;
+
     return { i, n };
 }

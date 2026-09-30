@@ -35,9 +35,11 @@ export class A11yViolationsComponent {
 
     protected readonly allResults = computed(() => {
         const results = this.auditService.results();
+
         if (!results) return [];
         const violations = [...results.violations].sort((a, b) => (IMPACT_ORDER[a.impact ?? ''] ?? 4) - (IMPACT_ORDER[b.impact ?? ''] ?? 4));
         const passes = results.passes.slice(0, 4);
+
         return [...violations, ...passes];
     });
 

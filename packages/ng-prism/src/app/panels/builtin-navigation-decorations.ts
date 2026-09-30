@@ -13,6 +13,7 @@ export const BUILTIN_NAVIGATION_DECORATIONS: NavigationDecorationDefinition[] = 
         order: 10,
         badge: (component) => {
             const meta = component.meta.showcaseConfig.meta?.['a11y'] as A11yComponentMeta | undefined;
+
             if (!meta?.found || !meta.summary) return null;
             if (meta.summary.variant === 'ok') return null;
             return { variant: meta.summary.variant, label: meta.summary.label };

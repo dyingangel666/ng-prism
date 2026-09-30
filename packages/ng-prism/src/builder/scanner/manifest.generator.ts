@@ -40,6 +40,7 @@ function indent(depth: number): string {
 
 function formatObject(obj: Record<string, unknown>, baseIndent: number): string {
     const entries = Object.entries(obj).filter(([, v]) => v !== undefined);
+
     if (entries.length === 0) return '{}';
 
     const inner = baseIndent + 2;
@@ -49,6 +50,7 @@ function formatObject(obj: Record<string, unknown>, baseIndent: number): string 
             : typeof value === 'object' && value !== null
               ? formatObject(value as Record<string, unknown>, inner)
               : json(value);
+
         return `${indent(inner)}${key}: ${formatted},`;
     });
 
@@ -61,6 +63,7 @@ function formatArray(arr: unknown[], baseIndent: number): string {
     const inner = baseIndent + 2;
     const items = arr.map((item) => {
         const formatted = typeof item === 'object' && item !== null && !Array.isArray(item) ? formatObject(item as Record<string, unknown>, inner) : json(item);
+
         return `${indent(inner)}${formatted},`;
     });
 

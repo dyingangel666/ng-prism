@@ -48,6 +48,7 @@ describe('PerfRenderService', () => {
 
     it('should compute p95 correctly', () => {
         const samples = Array.from({ length: 20 }, (_, i) => i + 1);
+
         service.rerenders.set(samples);
         expect(service.p95Rerender()).toBe(19);
     });

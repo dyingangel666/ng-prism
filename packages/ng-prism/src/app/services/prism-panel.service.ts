@@ -35,6 +35,7 @@ export class PrismPanelService {
      */
     readonly visibleViewPanels = computed<PanelDefinition[]>(() => {
         const component = this.navigationService.activeComponent();
+
         if (!component) return [];
         return this.viewPanels().filter((p) => !p.isVisible || p.isVisible(component));
     });
@@ -46,9 +47,11 @@ export class PrismPanelService {
     getInjector(panelId: string): EnvironmentInjector | null {
         const allPanels = [...this.builtinPanels, ...this.pluginService.panels()];
         const panel = allPanels.find((p) => p.id === panelId);
+
         if (!panel?.providers?.length) return null;
 
         let injector = this.injectorCache.get(panel.id);
+
         if (!injector) {
             injector = createEnvironmentInjector(panel.providers, this.envInjector, `PrismPanel[${panel.id}]`);
             this.injectorCache.set(panel.id, injector);

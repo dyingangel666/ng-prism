@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { summarizeMetrics, type HeadMetric } from './head-metrics.js';
+import { type HeadMetric, summarizeMetrics } from './head-metrics.js';
 import { PrismStatComponent } from './prism-stat.component.js';
 
 /**
@@ -28,6 +28,7 @@ export class PrismHeadGaugeComponent {
     protected readonly summary = computed(() => summarizeMetrics(this.metrics()));
     protected readonly ariaLabel = computed(() => {
         const s = this.summary();
+
         return s.worst === null
             ? `${s.measured} metrics, all within threshold`
             : `${s.worst.label} ${s.worst.value}${s.others > 0 ? `, ${s.others} more deviating` : ''}`;

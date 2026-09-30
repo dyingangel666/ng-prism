@@ -1,5 +1,5 @@
-import { calculateScore, runCoreAudit } from './a11y-audit.service.js';
 import type { AxeResults } from 'axe-core';
+import { calculateScore, runCoreAudit } from './a11y-audit.service.js';
 
 const mockResults: AxeResults = {
     violations: [],
@@ -22,6 +22,7 @@ jest.mock('axe-core', () => ({
 describe('calculateScore', () => {
     it('returns 100 with no violations', () => {
         const result = calculateScore({ ...mockResults, violations: [], passes: [] });
+
         expect(result.score).toBe(100);
     });
 
@@ -30,6 +31,7 @@ describe('calculateScore', () => {
             ...mockResults,
             violations: [{ id: 'v', impact: 'critical', description: '', nodes: [], tags: [], help: '', helpUrl: '' }]
         });
+
         expect(result.score).toBe(75);
     });
 
@@ -38,6 +40,7 @@ describe('calculateScore', () => {
             ...mockResults,
             violations: [{ id: 'v', impact: 'serious', description: '', nodes: [], tags: [], help: '', helpUrl: '' }]
         });
+
         expect(result.score).toBe(90);
     });
 
@@ -46,6 +49,7 @@ describe('calculateScore', () => {
             ...mockResults,
             violations: [{ id: 'v', impact: 'moderate', description: '', nodes: [], tags: [], help: '', helpUrl: '' }]
         });
+
         expect(result.score).toBe(95);
     });
 
@@ -54,6 +58,7 @@ describe('calculateScore', () => {
             ...mockResults,
             violations: [{ id: 'v', impact: 'minor', description: '', nodes: [], tags: [], help: '', helpUrl: '' }]
         });
+
         expect(result.score).toBe(99);
     });
 
@@ -68,6 +73,7 @@ describe('calculateScore', () => {
             helpUrl: ''
         }));
         const result = calculateScore({ ...mockResults, violations: criticals });
+
         expect(result.score).toBe(0);
     });
 
@@ -79,6 +85,7 @@ describe('calculateScore', () => {
                 { id: 'b', impact: 'moderate', description: '', nodes: [], tags: [], help: '', helpUrl: '' }
             ]
         });
+
         expect(result.score).toBe(70);
     });
 
@@ -92,6 +99,7 @@ describe('calculateScore', () => {
             ],
             incomplete: [{ id: 'i1', impact: null, description: '', nodes: [], tags: [], help: '', helpUrl: '' }]
         });
+
         expect(result.passes).toBe(2);
         expect(result.incomplete).toBe(1);
     });
@@ -106,6 +114,7 @@ describe('runCoreAudit', () => {
 
     it('calls axe-core with the element', async () => {
         const axe = (await import('axe-core')).default;
+
         (axe.run as jest.Mock).mockResolvedValue(mockResults);
 
         await runCoreAudit(mockElement);
@@ -115,6 +124,7 @@ describe('runCoreAudit', () => {
 
     it('passes rules config to axe-core', async () => {
         const axe = (await import('axe-core')).default;
+
         (axe.run as jest.Mock).mockResolvedValue(mockResults);
 
         await runCoreAudit(mockElement, {
@@ -128,6 +138,7 @@ describe('runCoreAudit', () => {
 
     it('propagates axe-core errors', async () => {
         const axe = (await import('axe-core')).default;
+
         (axe.run as jest.Mock).mockRejectedValueOnce(new Error('axe failed'));
 
         await expect(runCoreAudit(mockElement)).rejects.toThrow('axe failed');

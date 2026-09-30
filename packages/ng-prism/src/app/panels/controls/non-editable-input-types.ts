@@ -14,6 +14,7 @@ const NON_EDITABLE_TYPE_PATTERN = new RegExp(`\\b(?:${NON_EDITABLE_TYPE_NAMES.jo
 
 export function isNonEditableInputType(input: InputMeta): boolean {
     const raw = input.rawType;
+
     if (!raw) return false;
     return NON_EDITABLE_TYPE_PATTERN.test(raw);
 }

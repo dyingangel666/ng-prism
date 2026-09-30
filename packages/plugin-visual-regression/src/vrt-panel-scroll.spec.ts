@@ -22,10 +22,12 @@ const PANEL_STYLES = join(__dirname, 'visual-regression-panel.component.css');
  */
 function mountPanel(): { host: HTMLElement } {
     const style = document.createElement('style');
+
     style.textContent = readFileSync(PANEL_STYLES, 'utf8').replace(/:host\b/g, '.vrt-host');
     document.head.appendChild(style);
 
     const host = document.createElement('div');
+
     host.className = 'vrt-host';
     // The template's outermost element is wrapped in `@if` blocks, which parse
     // as text around it; the elements themselves still nest correctly.
@@ -37,6 +39,7 @@ function mountPanel(): { host: HTMLElement } {
 function scrolls(el: Element | null): boolean {
     if (!el) throw new Error('element not found');
     const overflow = getComputedStyle(el).overflow;
+
     return overflow === 'auto' || overflow === 'scroll';
 }
 
@@ -78,6 +81,7 @@ describe('visual regression panel scrolling', () => {
 
         for (const selector of ['.vrt', '.vrt__aside', '.vrt__list', '.vrt__viewer']) {
             const el = host.querySelector(selector);
+
             if (!el) throw new Error(`${selector} not found`);
             // Paired with the selector so a failure names the link that broke; the
             // unit is open because jsdom reports a bare `0` where a browser says
@@ -91,6 +95,7 @@ describe('visual regression panel scrolling', () => {
         const { host } = mountPanel();
 
         const summary = host.querySelector('.vrt__summary');
+
         expect(summary).not.toBeNull();
         expect(summary!.closest('.vrt__aside')).not.toBeNull();
     });

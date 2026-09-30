@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { coveragePlugin, resolveCoverageThresholds } from './coverage-plugin.js';
-import { coveragePlugin as coveragePluginBrowser } from './coverage-plugin.browser.js';
-import { clearCoverageCache } from './coverage-reader.js';
 import type { PrismManifest, ScannedComponent } from '@ng-prism/core/plugin';
+import { coveragePlugin as coveragePluginBrowser } from './coverage-plugin.browser.js';
+import { coveragePlugin, resolveCoverageThresholds } from './coverage-plugin.js';
+import { clearCoverageCache } from './coverage-reader.js';
 import type { CoverageManifestMeta } from './coverage.types.js';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/coverage-summary.json');
@@ -30,17 +30,20 @@ describe('coveragePlugin', () => {
 
     it('should return a plugin with the correct name', () => {
         const plugin = coveragePlugin();
+
         expect(plugin.name).toBe('@ng-prism/plugin-coverage');
     });
 
     it('should register a single panel', () => {
         const plugin = coveragePlugin();
+
         expect(plugin.panels).toHaveLength(1);
     });
 
     it('should define the Coverage panel with correct properties', () => {
         const plugin = coveragePlugin();
         const panel = plugin.panels![0];
+
         expect(panel.id).toBe('coverage');
         expect(panel.label).toBe('Coverage');
         expect(panel.position).toBe('bottom');
@@ -52,12 +55,14 @@ describe('coveragePlugin', () => {
         const plugin = coveragePlugin();
         const panel = plugin.panels![0];
         const Component = await panel.loadComponent!();
+
         expect(Component).toBeDefined();
         expect(Component.name).toBe('CoveragePanelComponent');
     });
 
     it('should define onComponentScanned hook', () => {
         const plugin = coveragePlugin();
+
         expect(plugin.onComponentScanned).toBeDefined();
     });
 
@@ -69,8 +74,10 @@ describe('coveragePlugin', () => {
 
             expect(result).toBeDefined();
             const meta = (result as ScannedComponent).showcaseConfig.meta;
+
             expect(meta?.['coverage']).toBeDefined();
             const coverage = meta?.['coverage'] as any;
+
             expect(coverage.found).toBe(true);
             expect(coverage.score).toBe(Math.round((80 + 75 + 100 + 90) / 4));
         });
@@ -86,6 +93,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(component);
 
             const meta = (result as ScannedComponent).showcaseConfig.meta;
+
             expect(meta?.['figma']).toBe('https://figma.com/foo');
             expect(meta?.['coverage']).toBeDefined();
         });
@@ -98,6 +106,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(component);
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.found).toBe(false);
             expect(coverage.score).toBe(0);
         });
@@ -110,6 +119,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(component);
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.found).toBe(false);
         });
 
@@ -118,6 +128,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(makeComponent());
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.thresholds).toEqual({
                 lines: 80,
                 branches: 80,
@@ -134,6 +145,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(makeComponent());
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.thresholds).toEqual({
                 lines: 90,
                 branches: 90,
@@ -150,6 +162,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(makeComponent());
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.thresholds).toEqual({
                 lines: 95,
                 branches: 70,
@@ -166,6 +179,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onComponentScanned!(makeComponent());
 
             const coverage = (result as ScannedComponent).showcaseConfig.meta?.['coverage'] as any;
+
             expect(coverage.found).toBe(false);
             expect(coverage.thresholds).toEqual({
                 lines: 95,
@@ -183,6 +197,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onManifestReady!(manifest);
 
             const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+
             expect(meta.total.found).toBe(true);
             expect(meta.total.score).toBe(Math.round((80 + 70 + 90 + 80) / 4));
             expect(meta.thresholds).toEqual({
@@ -210,6 +225,7 @@ describe('coveragePlugin', () => {
             const result = await plugin.onManifestReady!({ components: [] });
 
             const meta = (result as PrismManifest).meta?.['coverage'] as CoverageManifestMeta;
+
             expect(meta.total.found).toBe(false);
         });
     });
@@ -217,8 +233,10 @@ describe('coveragePlugin', () => {
     describe('headerWidgets', () => {
         it('should register a coverage-total header widget', () => {
             const plugin = coveragePlugin();
+
             expect(plugin.headerWidgets).toHaveLength(1);
             const widget = plugin.headerWidgets![0];
+
             expect(widget.id).toBe('coverage-total');
             expect(widget.placement).toBe('end');
             expect(widget.loadComponent).toBeDefined();
@@ -228,6 +246,7 @@ describe('coveragePlugin', () => {
             const plugin = coveragePlugin();
             const widget = plugin.headerWidgets![0];
             const Component = await widget.loadComponent!();
+
             expect(Component).toBeDefined();
             expect(Component.name).toBe('CoverageHeaderBadgeComponent');
         });
@@ -236,6 +255,7 @@ describe('coveragePlugin', () => {
     describe('navigation decoration', () => {
         it('registers the coverage source', () => {
             const ids = (coveragePlugin().navigationDecorations ?? []).map((d) => d.id);
+
             expect(ids).toEqual(['coverage']);
         });
     });

@@ -5,5 +5,6 @@ const ora = () => ({
     fail: jest.fn(),
     stop: jest.fn()
 });
+
 module.exports = ora;
 module.exports.default = ora;

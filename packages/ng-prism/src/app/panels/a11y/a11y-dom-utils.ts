@@ -59,6 +59,7 @@ export function getImplicitRole(element: Element): string {
 
     if (tag === 'INPUT') {
         const type = (element.getAttribute('type') ?? 'text').toLowerCase();
+
         return INPUT_TYPE_ROLES[type] ?? 'textbox';
     }
 
@@ -80,29 +81,36 @@ export interface AccessibleName {
 
 export function computeAccessibleName(element: Element, getById?: (id: string) => Element | null): AccessibleName {
     const labelledBy = element.getAttribute('aria-labelledby');
+
     if (labelledBy && getById) {
         const parts = labelledBy.trim().split(/\s+/);
         const names = parts.map((id) => getById(id)?.textContent?.trim() ?? '').filter(Boolean);
+
         if (names.length) return { name: names.join(' '), source: 'aria-labelledby' };
     }
 
     const ariaLabel = element.getAttribute('aria-label');
+
     if (ariaLabel?.trim()) return { name: ariaLabel.trim(), source: 'aria-label' };
 
     const tag = element.tagName.toUpperCase();
 
     if (tag === 'IMG') {
         const alt = element.getAttribute('alt');
+
         if (alt !== null) return { name: alt, source: 'alt' };
     }
 
     const text = element.textContent?.trim() ?? '';
+
     if (text) return { name: text, source: 'text-content' };
 
     const title = element.getAttribute('title');
+
     if (title?.trim()) return { name: title.trim(), source: 'title' };
 
     const placeholder = element.getAttribute('placeholder');
+
     if (placeholder?.trim()) return { name: placeholder.trim(), source: 'placeholder' };
 
     return { name: '', source: 'none' };
@@ -122,18 +130,23 @@ export function extractStates(element: Element): Record<string, string | boolean
     }
 
     const checked = element.getAttribute('aria-checked');
+
     if (checked !== null) states['checked'] = checked;
 
     const expanded = element.getAttribute('aria-expanded');
+
     if (expanded !== null) states['expanded'] = expanded === 'true';
 
     const selected = element.getAttribute('aria-selected');
+
     if (selected !== null) states['selected'] = selected === 'true';
 
     const pressed = element.getAttribute('aria-pressed');
+
     if (pressed !== null) states['pressed'] = pressed;
 
     const level = element.getAttribute('aria-level');
+
     if (level !== null) {
         states['level'] = level;
     } else if (HEADING_LEVELS[tag]) {
@@ -142,6 +155,7 @@ export function extractStates(element: Element): Record<string, string | boolean
 
     const setsize = element.getAttribute('aria-setsize');
     const posinset = element.getAttribute('aria-posinset');
+
     if (setsize !== null) states['setsize'] = setsize;
     if (posinset !== null) states['posinset'] = posinset;
 
@@ -156,6 +170,7 @@ export function isHidden(element: Element): boolean {
 
 export function statesToList(states: Record<string, string | boolean>): string[] {
     const result: string[] = [];
+
     for (const [key, value] of Object.entries(states)) {
         if (key === 'hidden') continue;
         if (value === true) result.push(key);

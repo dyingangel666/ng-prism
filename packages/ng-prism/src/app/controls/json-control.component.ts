@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, ElementRef, input, output, signal, viewChild } from '@angular/core';
 
 export function highlightJson(json: unknown): string {
     if (typeof json !== 'string') return '';
@@ -18,6 +18,7 @@ export function highlightJson(json: unknown): string {
 export function stringifyForJsonControl(val: unknown): string {
     try {
         const serialized = JSON.stringify(val, null, 2);
+
         // JSON.stringify returns `undefined` (the value, not a string) for
         // `undefined`, functions, and symbols. Surface that as visible text so the
         // textarea + highlighter never see a non-string.
@@ -48,6 +49,7 @@ export class JsonControlComponent {
 
     readonly displayText = computed(() => {
         const local = this.localText();
+
         if (local !== null) return local;
         return stringifyForJsonControl(this.value());
     });
@@ -58,6 +60,7 @@ export class JsonControlComponent {
         this.localText.set(raw);
         try {
             const parsed = JSON.parse(raw);
+
             this.parseError.set(false);
             this.valueChange.emit(parsed);
         } catch {
@@ -68,6 +71,7 @@ export class JsonControlComponent {
     syncScroll(): void {
         const textarea = this.textareaEl()?.nativeElement;
         const pre = this.preEl()?.nativeElement;
+
         if (textarea && pre) {
             pre.scrollTop = textarea.scrollTop;
             pre.scrollLeft = textarea.scrollLeft;

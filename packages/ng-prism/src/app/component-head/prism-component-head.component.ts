@@ -1,10 +1,10 @@
-import { Component, inject, computed, ChangeDetectionStrategy } from '@angular/core';
-import { PrismNavigationService } from '../services/prism-navigation.service.js';
-import { A11yAuditService } from '../panels/a11y/a11y-audit.service.js';
-import { PrismHeadInfoComponent } from './prism-head-info.component.js';
-import { PrismHeadGaugeComponent } from './prism-head-gauge.component.js';
-import type { HeadMetric } from './head-metrics.js';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import type { ComponentStatus } from '../../decorator/showcase.types.js';
+import { A11yAuditService } from '../panels/a11y/a11y-audit.service.js';
+import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import type { HeadMetric } from './head-metrics.js';
+import { PrismHeadGaugeComponent } from './prism-head-gauge.component.js';
+import { PrismHeadInfoComponent } from './prism-head-info.component.js';
 
 interface StatusBadge {
     label: string;
@@ -46,11 +46,13 @@ export class PrismComponentHeadComponent {
 
     protected readonly category = computed(() => {
         const c = this.comp();
+
         return c?.meta.showcaseConfig.category ?? 'Uncategorized';
     });
 
     protected readonly variantCount = computed(() => {
         const c = this.comp();
+
         return c?.meta.showcaseConfig.variants?.length ?? 0;
     });
 
@@ -58,12 +60,14 @@ export class PrismComponentHeadComponent {
 
     protected readonly statusBadge = computed<StatusBadge | null>(() => {
         const s = this.status();
+
         return s ? STATUS_BADGES[s] : null;
     });
 
     protected readonly coveragePercent = computed<number | null>(() => {
         const meta = this.componentMeta();
         const coverage = meta?.['coverage'] as Record<string, unknown> | undefined;
+
         if (coverage?.['found'] && typeof coverage['score'] === 'number') return coverage['score'];
         return null;
     });
@@ -101,8 +105,10 @@ export class PrismComponentHeadComponent {
         variant: 'ok' | 'warn' | 'danger';
     } | null>(() => {
         const vrt = this.componentMeta()?.['visualRegression'] as { found?: boolean; summary?: { value: string; variant: string } } | undefined;
+
         if (!vrt?.found || !vrt.summary) return null;
         const { value, variant } = vrt.summary;
+
         return variant === 'ok' || variant === 'warn' || variant === 'danger' ? { value, variant } : null;
     });
 
@@ -143,6 +149,7 @@ export class PrismComponentHeadComponent {
     private readonly componentMeta = computed(() => {
         const c = this.comp();
         const meta = c?.meta.showcaseConfig.meta;
+
         return meta && typeof meta === 'object' ? (meta as Record<string, unknown>) : null;
     });
 }

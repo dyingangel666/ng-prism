@@ -3,6 +3,7 @@ import { PRISM_BASE_TOKENS, PRISM_DARK_THEME, PRISM_LIGHT_THEME } from './prism-
 describe('spacing scale', () => {
     it('declares seven steps', () => {
         const steps = ['--sp-1', '--sp-2', '--sp-3', '--sp-4', '--sp-5', '--sp-6', '--sp-7'];
+
         for (const step of steps) {
             expect(PRISM_BASE_TOKENS[step]).toMatch(/^\d+px$/);
         }
@@ -11,6 +12,7 @@ describe('spacing scale', () => {
     it('is strictly ascending', () => {
         const px = (key: string) => Number.parseInt(PRISM_BASE_TOKENS[key], 10);
         const values = [1, 2, 3, 4, 5, 6, 7].map((n) => px(`--sp-${n}`));
+
         for (let i = 1; i < values.length; i++) {
             expect(values[i]).toBeGreaterThan(values[i - 1]);
         }

@@ -227,6 +227,7 @@ export class PrismCaptureService {
         document.documentElement.setAttribute(CAPTURE_ATTRIBUTE, '');
         if (document.getElementById(STYLE_ELEMENT_ID)) return;
         const style = document.createElement('style');
+
         style.id = STYLE_ELEMENT_ID;
         style.textContent = CAPTURE_STYLES;
         document.head.appendChild(style);
@@ -241,6 +242,7 @@ export class PrismCaptureService {
  */
 export function parseCaptureParam(search: string): boolean {
     const value = new URLSearchParams(search).get(CAPTURE_PARAM);
+
     if (value === null) return false;
     return value === '' || value === '1' || value === 'true';
 }

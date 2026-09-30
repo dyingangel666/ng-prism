@@ -9,6 +9,7 @@ export const PRISM_CONTENT_INPUT = '__prismContent__';
 
 export function buildKnownInputs(comp: RuntimeComponent): Set<string> {
     const known = new Set(comp.meta.inputs.map((i) => i.name));
+
     if (comp.meta.componentMeta.isDirective) {
         known.add(PRISM_CONTENT_INPUT);
     }

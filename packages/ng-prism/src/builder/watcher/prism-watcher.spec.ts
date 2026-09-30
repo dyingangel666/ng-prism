@@ -1,10 +1,10 @@
+import chokidar from 'chokidar';
+import { createChangeHandler, startWatcher } from './prism-watcher.js';
+
 jest.mock('chokidar', () => ({
     __esModule: true,
     default: { watch: jest.fn() }
 }));
-
-import chokidar from 'chokidar';
-import { createChangeHandler, startWatcher } from './prism-watcher.js';
 
 const mockChokidarWatch = chokidar.watch as jest.Mock;
 
@@ -18,6 +18,7 @@ function createLogger() {
 describe('startWatcher', () => {
     function makeMockWatcher() {
         const w = { on: jest.fn(), close: jest.fn() };
+
         w.on.mockReturnValue(w);
         return w;
     }
@@ -28,6 +29,7 @@ describe('startWatcher', () => {
 
     it('should pass ignorePaths to chokidar ignored option', () => {
         const mockWatcher = makeMockWatcher();
+
         mockChokidarWatch.mockReturnValue(mockWatcher);
         const logger = createLogger();
         const handle = startWatcher({
@@ -38,6 +40,7 @@ describe('startWatcher', () => {
         });
 
         const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+
         expect(Array.isArray(watchOptions.ignored)).toBe(true);
         expect(watchOptions.ignored).toContain('/some/lib/ng-prism-cache');
 
@@ -46,6 +49,7 @@ describe('startWatcher', () => {
 
     it('should only include default ignore pattern when ignorePaths is not provided', () => {
         const mockWatcher = makeMockWatcher();
+
         mockChokidarWatch.mockReturnValue(mockWatcher);
         const logger = createLogger();
         const handle = startWatcher({
@@ -55,6 +59,7 @@ describe('startWatcher', () => {
         });
 
         const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+
         expect(Array.isArray(watchOptions.ignored)).toBe(true);
         expect(watchOptions.ignored).toHaveLength(1);
         expect(watchOptions.ignored[0]).toBeInstanceOf(RegExp);

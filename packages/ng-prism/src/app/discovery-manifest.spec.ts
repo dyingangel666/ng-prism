@@ -1,6 +1,6 @@
 import type { Type } from '@angular/core';
-import type { RuntimeManifest } from '../plugin/plugin.types.js';
 import type { ShowcaseConfig } from '../decorator/showcase.types.js';
+import type { RuntimeManifest } from '../plugin/plugin.types.js';
 import { DEFAULT_VARIANT_BG } from '../shared/variant-bg.js';
 import { buildDiscoveryManifest, serializableMeta } from './discovery-manifest.js';
 
@@ -75,6 +75,7 @@ describe('serializableMeta', () => {
 
     it('breaks cycles instead of throwing', () => {
         const cyclic: Record<string, unknown> = { keep: 1 };
+
         cyclic['self'] = cyclic;
         expect(() => serializableMeta(cyclic)).not.toThrow();
         expect(serializableMeta(cyclic)).toEqual({ keep: 1 });
@@ -89,13 +90,16 @@ describe('serializableMeta', () => {
     it('survives a structured clone, which is what the tooling bridge does', () => {
         class SomeComponent {}
         const cyclic: Record<string, unknown> = { component: SomeComponent };
+
         cyclic['self'] = cyclic;
         const sanitized = serializableMeta({ ...cyclic, figma: 'https://x', n: 1 });
+
         expect(() => structuredClone(sanitized)).not.toThrow();
     });
 
     it('does not mutate the input', () => {
         const input = { keep: 1, fn: () => 0 };
+
         serializableMeta(input);
         expect(typeof input.fn).toBe('function');
     });
@@ -130,6 +134,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Icon' }
             })
         );
+
         expect(result.components[0].variants).toEqual([{ name: 'Default', index: 0, bg: 'transparent' }]);
     });
 
@@ -143,6 +148,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Icon', variants: [] }
             })
         );
+
         expect(result.components[0].variants).toEqual([{ name: 'Default', index: 0, bg: 'transparent' }]);
     });
 
@@ -173,6 +179,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Button', variants: [{ name: 'Filled' }] }
             })
         );
+
         expect(result.components[0].variants[0].bg).toBe(DEFAULT_VARIANT_BG);
     });
 
@@ -183,6 +190,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Icon', bg: 'dark' }
             })
         );
+
         expect(result.components[0].variants).toEqual([{ name: 'Default', index: 0, bg: 'dark' }]);
     });
 
@@ -195,6 +203,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Button', bg: 'dark' }
             })
         );
+
         expect('bg' in result.components[0]).toBe(false);
     });
 
@@ -225,6 +234,7 @@ describe('buildDiscoveryManifest', () => {
                 }
             })
         );
+
         expect(result.components[0].meta).toEqual({
             figma: 'https://figma.com/x',
             coverage: { lines: 90 }
@@ -238,6 +248,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Button' }
             })
         );
+
         expect('meta' in result.components[0]).toBe(false);
     });
 
@@ -252,6 +263,7 @@ describe('buildDiscoveryManifest', () => {
                 }
             })
         );
+
         expect(result.components[0].meta).toEqual({ tag: 'x' });
     });
 
@@ -260,6 +272,7 @@ describe('buildDiscoveryManifest', () => {
             className: 'ButtonComponent',
             showcaseConfig: { title: 'Button' }
         });
+
         manifest.pages = [
             { type: 'custom', title: 'Patterns', data: {} },
             { type: 'custom', title: 'Tokens', data: {} }
@@ -274,6 +287,7 @@ describe('buildDiscoveryManifest', () => {
                 showcaseConfig: { title: 'Button' }
             })
         );
+
         expect(result.pages).toEqual([]);
     });
 
@@ -289,6 +303,7 @@ describe('buildDiscoveryManifest', () => {
                 }
             })
         );
+
         expect(() => structuredClone(result)).not.toThrow();
     });
 });

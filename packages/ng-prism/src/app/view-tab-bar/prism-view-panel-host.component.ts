@@ -28,6 +28,7 @@ export class PrismViewPanelHostComponent implements OnDestroy {
     protected readonly activeInjector = computed(() => {
         const panelId = this.panelService.activeViewId();
         const panel = this.allViewPanels().find((p) => p.id === panelId);
+
         if (!panel?.providers?.length) return this.envInjector;
 
         if (!this.injectorCache.has(panel.id)) {
@@ -39,6 +40,7 @@ export class PrismViewPanelHostComponent implements OnDestroy {
     constructor() {
         effect(() => {
             const panel = this.allViewPanels().find((p) => p.id === this.panelService.activeViewId()) ?? null;
+
             if (!panel) {
                 this.resolvedComponent.set(null);
                 return;
@@ -51,6 +53,7 @@ export class PrismViewPanelHostComponent implements OnDestroy {
 
             if (panel.loadComponent) {
                 const cached = this.lazyCache.get(panel.id);
+
                 if (cached) {
                     this.resolvedComponent.set(cached);
                     return;

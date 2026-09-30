@@ -28,6 +28,7 @@ function buildNode(element: Element, getById?: (id: string) => Element | null): 
         for (const child of Array.from(element.childNodes)) {
             if (child.nodeType === 1) {
                 const childEl = child as Element;
+
                 if (!STRUCTURAL_TAGS.has(childEl.tagName?.toUpperCase() ?? '')) {
                     children.push(buildNode(childEl, getById));
                 }

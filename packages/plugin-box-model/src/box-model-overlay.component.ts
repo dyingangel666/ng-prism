@@ -1,9 +1,9 @@
 import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, input } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { fromEvent } from 'rxjs';
 import type { PrismRendererService } from '@ng-prism/core';
-import { getBoxModel } from './box-model-utils.js';
+import { fromEvent } from 'rxjs';
 import { BoxModelStateService } from './box-model-state.service.js';
+import { getBoxModel } from './box-model-utils.js';
 
 interface BoxStyle {
     left: string;
@@ -35,6 +35,7 @@ export class BoxModelOverlayComponent {
     readonly boxStyles = computed<BoxStyles | null>(() => {
         const bm = this.stateService.hoveredBoxModel();
         const canvas = this.el.nativeElement.parentElement;
+
         if (!bm || !canvas) return null;
 
         const canvasRect = canvas.getBoundingClientRect();
@@ -77,24 +78,30 @@ export class BoxModelOverlayComponent {
 
     readonly contentSize = computed(() => {
         const bm = this.stateService.hoveredBoxModel();
+
         if (!bm) return '';
         const { content, border, padding } = bm;
         const w = Math.round(content.width - border.left - border.right - padding.left - padding.right);
         const h = Math.round(content.height - border.top - border.bottom - padding.top - padding.bottom);
+
         return `${w} × ${h}`;
     });
 
     labelMargin(side: 'top' | 'right' | 'bottom' | 'left'): string {
         const bm = this.stateService.hoveredBoxModel();
+
         if (!bm) return '';
         const v = bm.margin[side];
+
         return v === 0 ? '' : `${v}px`;
     }
 
     labelPadding(side: 'top' | 'right' | 'bottom' | 'left'): string {
         const bm = this.stateService.hoveredBoxModel();
+
         if (!bm) return '';
         const v = bm.padding[side];
+
         return v === 0 ? '' : `${v}px`;
     }
 
@@ -105,6 +112,7 @@ export class BoxModelOverlayComponent {
 
         afterNextRender(() => {
             const canvas = this.el.nativeElement.parentElement;
+
             if (!canvas) return;
 
             fromEvent<MouseEvent>(canvas, 'mousemove')
@@ -119,12 +127,14 @@ export class BoxModelOverlayComponent {
 
     private handleMouseMove(event: MouseEvent): void {
         const renderedEl = this.rendererService()?.renderedElement();
+
         if (!renderedEl) {
             this.stateService.hoveredBoxModel.set(null);
             return;
         }
 
         const element = document.elementFromPoint(event.clientX, event.clientY);
+
         if (!element || !renderedEl.contains(element)) {
             this.stateService.hoveredBoxModel.set(null);
             return;

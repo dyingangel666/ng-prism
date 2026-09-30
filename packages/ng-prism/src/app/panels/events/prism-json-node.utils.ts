@@ -10,18 +10,23 @@ export function summarizeValue(val: unknown, depth = 0, visited = new WeakSet<ob
         if (Array.isArray(val)) {
             if (val.length === 0) return '[]';
             const items = val.slice(0, 3).map((item) => summarizeValue(item, depth + 1, visited));
+
             return val.length > 3 ? `[${items.join(', ')}, …]` : `[${items.join(', ')}]`;
         }
         const proto = Object.getPrototypeOf(val);
+
         if (proto !== Object.prototype && proto !== null) {
             const name = (val as { constructor?: { name?: string } }).constructor?.name;
+
             return name ? `[${name}]` : '[Object]';
         }
         try {
             const keys = Object.keys(val as object);
+
             if (keys.length === 0) return '{}';
             const obj = val as Record<string, unknown>;
             const pairs = keys.slice(0, 2).map((k) => `${k}: ${summarizeValue(obj[k], depth + 1, visited)}`);
+
             return keys.length > 2 ? `{${pairs.join(', ')}, …}` : `{${pairs.join(', ')}}`;
         } catch {
             return '[Object]';

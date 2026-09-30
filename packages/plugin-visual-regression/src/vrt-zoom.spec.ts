@@ -13,6 +13,7 @@ describe('frameWidthStyle', () => {
 
         it('gives every step a distinct width', () => {
             const widths = [1, 2, 4].map((z) => frameWidthStyle(98, 35, z as 1 | 2 | 4)['width']);
+
             expect(new Set(widths).size).toBe(3);
         });
 
@@ -36,6 +37,7 @@ describe('frameWidthStyle', () => {
             // 302 x 229 at the 4x scale cap would be 1208px wide and 916px tall, so
             // the height budget has to be the binding constraint here.
             const cap = Number(frameWidthStyle(302, 229, 'fit')['max-width']?.replace('px', ''));
+
             expect(cap).toBeLessThan(302 * MAX_FIT_SCALE);
             expect((cap / 302) * 229).toBeCloseTo(MAX_FIT_HEIGHT, 0);
         });

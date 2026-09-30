@@ -1,6 +1,6 @@
-import type { ScannedComponent, InputMeta } from '../../plugin/plugin.types.js';
-import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { DirectiveHost } from '../../decorator/showcase.types.js';
+import type { StyleguidePage } from '../../plugin/page.types.js';
+import type { InputMeta, ScannedComponent } from '../../plugin/plugin.types.js';
 import { parseHostString } from './host-parser.js';
 
 export interface RuntimeManifestOptions {
@@ -25,6 +25,7 @@ function inputTypeAnnotation(input: InputMeta): string {
 function formatInputDeclaration(input: InputMeta): string {
     if (input.required) {
         const typeAnnotation = inputTypeAnnotation(input);
+
         return `input.required<${typeAnnotation}>()`;
     }
 
@@ -33,6 +34,7 @@ function formatInputDeclaration(input: InputMeta): string {
 
     if (needsAnnotation) {
         const typeAnnotation = inputTypeAnnotation(input);
+
         return `input<${typeAnnotation}>(${def})`;
     }
     return `input(${def})`;
@@ -40,6 +42,7 @@ function formatInputDeclaration(input: InputMeta): string {
 
 function directiveSelector(selector: string): string {
     const match = selector.match(/^\[([^\]]+)]$/);
+
     return match ? match[1] : selector;
 }
 
@@ -63,16 +66,19 @@ function generateWrapperClass(comp: ScannedComponent): string {
 
     if (typeof host === 'string') {
         const parsed = parseHostString(host);
+
         tag = parsed?.tag ?? 'div';
         attrs = parsed?.attrs ? ` ${parsed.attrs}` : '';
         hostContentDefault = parsed?.content ?? '';
         importsArray = `[${comp.className}]`;
     } else if (host && typeof host === 'object') {
         const hostObj = host as DirectiveHost;
+
         tag = hostObj.selector;
         const staticInputs = Object.entries(hostObj.inputs ?? {})
             .map(([k, v]) => ` ${k}="${String(v)}"`)
             .join('');
+
         attrs = staticInputs;
         importsArray = `[${comp.className}, ${hostObj.import.name}]`;
     } else {
@@ -88,6 +94,7 @@ function generateWrapperClass(comp: ScannedComponent): string {
     const template = `<${tag}${attrs} ${directiveAttr}${inputBindings}${outputBindings}>{{ __prismContent__() }}</${tag}>`;
 
     const members: string[] = [];
+
     for (const i of bindableInputs) {
         members.push(`  ${i.name} = ${formatInputDeclaration(i)};`);
     }
@@ -103,9 +110,11 @@ function generateWrapperClass(comp: ScannedComponent): string {
 
 function groupComponentsByImportPath(components: ScannedComponent[], fallbackImportPath: string): Map<string, string[]> {
     const groups = new Map<string, string[]>();
+
     for (const comp of components) {
         const path = comp.importPath ?? fallbackImportPath;
         const list = groups.get(path);
+
         if (list) {
             list.push(comp.className);
         } else {
@@ -132,9 +141,11 @@ export function generateRuntimeManifest(options: RuntimeManifestOptions): string
 
         for (const comp of directives) {
             const host = comp.showcaseConfig.host;
+
             if (host && typeof host === 'object' && 'import' in host) {
                 const hostObj = host as DirectiveHost;
                 const existing = groups.get(hostObj.import.from);
+
                 if (existing) {
                     if (!existing.includes(hostObj.import.name)) {
                         existing.push(hostObj.import.name);
@@ -164,6 +175,7 @@ export function generateRuntimeManifest(options: RuntimeManifestOptions): string
 
     for (const comp of components) {
         const typeName = comp.componentMeta.isDirective ? `${comp.className}__PrismHost` : comp.className;
+
         lines.push('    {');
         lines.push(`      type: ${typeName},`);
         lines.push(`      meta: ${formatMeta(comp, 6)},`);
@@ -186,6 +198,7 @@ export function generateRuntimeManifest(options: RuntimeManifestOptions): string
             .split('\n')
             .map((l, i) => (i === 0 ? l : '  ' + l))
             .join('\n');
+
         lines.push(`  meta: ${metaJson},`);
     }
 
@@ -223,6 +236,7 @@ function formatMeta(comp: ScannedComponent, baseIndent: number): string {
 
 function formatObject(obj: Record<string, unknown>, baseIndent: number): string {
     const entries = Object.entries(obj).filter(([, v]) => v !== undefined);
+
     if (entries.length === 0) return '{}';
 
     const inner = baseIndent + 2;
@@ -232,6 +246,7 @@ function formatObject(obj: Record<string, unknown>, baseIndent: number): string 
             : typeof value === 'object' && value !== null
               ? formatObject(value as Record<string, unknown>, inner)
               : json(value);
+
         return `${indent(inner)}${key}: ${formatted},`;
     });
 
@@ -244,6 +259,7 @@ function formatArray(arr: unknown[], baseIndent: number): string {
     const inner = baseIndent + 2;
     const items = arr.map((item) => {
         const formatted = typeof item === 'object' && item !== null && !Array.isArray(item) ? formatObject(item as Record<string, unknown>, inner) : json(item);
+
         return `${indent(inner)}${formatted},`;
     });
 

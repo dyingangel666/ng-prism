@@ -1,16 +1,16 @@
-import { join, dirname } from 'path';
-import { writeFileSync, readFileSync, mkdirSync, statSync, existsSync } from 'fs';
-import ts from 'typescript';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 import type { BuilderContext } from '@angular-devkit/architect';
+import ts from 'typescript';
 import type { StyleguidePage } from '../../plugin/page.types.js';
 import type { PrismManifest } from '../../plugin/plugin.types.js';
-import { createScanner, type Scanner } from '../scanner/scanner.js';
-import type { EntryPointInput } from '../scanner/entry-point.scanner.js';
-import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
+import { checkA11yThresholds, DEFAULT_A11Y_REPORT_PATH, readA11yForComponents, readA11yMeta } from '../a11y/a11y-report-reader.js';
 import { loadConfig } from '../config-loader/config-loader.js';
-import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
 import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.js';
-import { DEFAULT_A11Y_REPORT_PATH, checkA11yThresholds, readA11yForComponents, readA11yMeta } from '../a11y/a11y-report-reader.js';
+import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
+import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
+import type { EntryPointInput } from '../scanner/entry-point.scanner.js';
+import { createScanner, type Scanner } from '../scanner/scanner.js';
 
 export interface PrismPipelineOptions {
     entryPoint: string;
@@ -59,20 +59,25 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
     const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
     const a11yReportPathAbs = join(workspaceRoot, a11yReportPath);
     const a11yMeta = readA11yMeta(a11yReportPathAbs, config.a11y?.thresholds);
+
     if (a11yMeta) {
         const violations = checkA11yThresholds(a11yMeta);
+
         if (violations.length > 0) {
             const summary = violations.map((v) => `${v.metric}: ${v.actual} (threshold ${v.threshold})`).join(', ');
+
             throw new Error(`ng-prism: a11y thresholds violated — ${summary}. ` + `Update components or relax thresholds via config.a11y.thresholds.`);
         }
         // Read once, not once per component: the reader re-stats the file on every
         // call even when its cache hits, so a per-component lookup scales the
         // syscalls with the library and repeats them on every watch rebuild.
         const a11yByComponent = readA11yForComponents(a11yReportPathAbs, a11yMeta.thresholds);
+
         manifest = {
             ...manifest,
             components: manifest.components.map((component) => {
                 const a11y = a11yByComponent.get(component.className);
+
                 if (!a11y) return component;
                 return {
                     ...component,
@@ -122,6 +127,7 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
 function writeManifestIfChanged(manifestPath: string, newContent: string): boolean {
     if (existsSync(manifestPath)) {
         const currentContent = readFileSync(manifestPath, 'utf-8');
+
         if (currentContent === newContent) {
             return false;
         }
@@ -152,6 +158,7 @@ function isDirectory(path: string): boolean {
 function findLibraryRoot(filePath: string): string | undefined {
     let dir = dirname(filePath);
     let parent = dirname(dir);
+
     while (dir !== parent) {
         if (existsSync(join(dir, 'ng-package.json'))) {
             return dir;
@@ -164,13 +171,16 @@ function findLibraryRoot(filePath: string): string | undefined {
 
 function resolveTsconfigPaths(entryPointDir: string): ts.CompilerOptions {
     const configPath = ts.findConfigFile(entryPointDir, ts.sys.fileExists, 'tsconfig.json');
+
     if (!configPath) return {};
 
     const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+
     if (configFile.error) return {};
 
     const parsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, dirname(configPath));
     const result: ts.CompilerOptions = {};
+
     if (parsed.options.paths) result.paths = parsed.options.paths;
     if (parsed.options.baseUrl) result.baseUrl = parsed.options.baseUrl;
     return result;

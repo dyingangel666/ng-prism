@@ -24,12 +24,14 @@ export function evaluateExpression(node: ts.Expression): unknown {
 
     if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
         const operand = evaluateExpression(node.operand);
+
         if (typeof operand === 'number') return -operand;
         return undefined;
     }
 
     if (ts.isArrayLiteralExpression(node)) {
         const result: unknown[] = [];
+
         for (const element of node.elements) {
             if (ts.isSpreadElement(element)) return undefined;
             result.push(evaluateExpression(element));
@@ -39,11 +41,13 @@ export function evaluateExpression(node: ts.Expression): unknown {
 
     if (ts.isObjectLiteralExpression(node)) {
         const result: Record<string, unknown> = {};
+
         for (const prop of node.properties) {
             if (ts.isSpreadAssignment(prop)) return undefined;
             if (!ts.isPropertyAssignment(prop)) return undefined;
 
             const key = ts.isIdentifier(prop.name) ? prop.name.text : ts.isStringLiteral(prop.name) ? prop.name.text : undefined;
+
             if (key === undefined) return undefined;
 
             result[key] = evaluateExpression(prop.initializer);
@@ -59,10 +63,12 @@ export function evaluateExpression(node: ts.Expression): unknown {
  */
 export function findDecorator(node: ts.ClassDeclaration | ts.PropertyDeclaration, name: string): ts.Decorator | undefined {
     const decorators = ts.getDecorators(node);
+
     if (!decorators) return undefined;
 
     return decorators.find((d) => {
         const expr = d.expression;
+
         // @Name
         if (ts.isIdentifier(expr)) return expr.text === name;
         // @Name(...)
@@ -79,6 +85,7 @@ export function findDecorator(node: ts.ClassDeclaration | ts.PropertyDeclaration
  */
 export function getDecoratorArgument(decorator: ts.Decorator): ts.Expression | undefined {
     const expr = decorator.expression;
+
     if (ts.isCallExpression(expr) && expr.arguments.length > 0) {
         return expr.arguments[0];
     }
@@ -90,8 +97,10 @@ export function getDecoratorArgument(decorator: ts.Decorator): ts.Expression | u
  */
 export function getJsDocComment(node: ts.Node, checker: ts.TypeChecker): string | undefined {
     const symbol = checker.getSymbolAtLocation(ts.isClassDeclaration(node) || ts.isPropertyDeclaration(node) ? (node.name ?? node) : node);
+
     if (!symbol) return undefined;
 
     const doc = ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim();
+
     return doc || undefined;
 }

@@ -1,12 +1,12 @@
-import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import type { RuntimeComponent, RuntimeManifest, NgPrismConfig } from '../../plugin/plugin.types.js';
+import { TestBed } from '@angular/core/testing';
+import type { NgPrismConfig, RuntimeComponent, RuntimeManifest } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
+import { CAPTURE_PARAM } from './prism-capture.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismPanelService } from './prism-panel.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 import { PrismUrlStateService } from './prism-url-state.service.js';
-import { CAPTURE_PARAM } from './prism-capture.service.js';
 
 function createComponent(
     overrides: Partial<{
@@ -85,6 +85,7 @@ describe('PrismUrlStateService', () => {
 
         it('should restore component by className', () => {
             const comp = createComponent({ className: 'SguiButton' });
+
             setUrl('?component=SguiButton');
             const { url, nav } = setup({ components: [comp] });
 
@@ -98,6 +99,7 @@ describe('PrismUrlStateService', () => {
                 className: 'SguiButton',
                 variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
             });
+
             setUrl('?component=SguiButton&variant=2');
             const { url, renderer } = setup({ components: [comp] });
 
@@ -113,6 +115,7 @@ describe('PrismUrlStateService', () => {
                 category: 'Docs',
                 component: class {} as any
             };
+
             setUrl('?page=ButtonPatterns');
             const { url, nav } = setup({ components: [], pages: [page] });
 
@@ -132,6 +135,7 @@ describe('PrismUrlStateService', () => {
 
         it('should ignore unknown component className without crashing', () => {
             const comp = createComponent({ className: 'Real' });
+
             setUrl('?component=Unknown');
             const { url, nav } = setup({ components: [comp] });
 
@@ -145,6 +149,7 @@ describe('PrismUrlStateService', () => {
                 className: 'SguiButton',
                 variants: [{ name: 'V1' }]
             });
+
             setUrl('?component=SguiButton&variant=99');
             const { url, renderer } = setup({ components: [comp] });
 
@@ -158,6 +163,7 @@ describe('PrismUrlStateService', () => {
                 className: 'SguiButton',
                 variants: [{ name: 'V1' }, { name: 'V2' }]
             });
+
             setUrl('?component=SguiButton&variant=abc');
             const { url, renderer } = setup({ components: [comp] });
 
@@ -316,6 +322,7 @@ describe('PrismUrlStateService', () => {
 
         it('should not restore from URL when config.urlState is false', () => {
             const comp = createComponent({ className: 'A' });
+
             setUrl('?component=A');
             const { url, nav } = setup({ components: [comp] }, { urlState: false });
 
@@ -328,6 +335,7 @@ describe('PrismUrlStateService', () => {
     describe('suppressSync', () => {
         it('should not re-write URL during restoreFromUrl', () => {
             const comp = createComponent({ className: 'A' });
+
             setUrl('?component=A');
             const pushSpy = jest.spyOn(window.history, 'pushState');
             const replaceSpy = jest.spyOn(window.history, 'replaceState');
@@ -344,6 +352,7 @@ describe('PrismUrlStateService', () => {
     describe('panel param', () => {
         it('should restore panel from URL', () => {
             const comp = createComponent({ className: 'Foo' });
+
             setUrl('?component=Foo&panel=events');
             const { url, panel } = setup({ components: [comp] });
 
@@ -354,6 +363,7 @@ describe('PrismUrlStateService', () => {
 
         it('should write panel to URL when changed (non-default)', () => {
             const comp = createComponent({ className: 'Foo' });
+
             setUrl('?component=Foo');
             const { url, panel, nav } = setup({ components: [comp] });
 
@@ -367,6 +377,7 @@ describe('PrismUrlStateService', () => {
 
         it('should omit panel from URL when value is default (controls)', () => {
             const comp = createComponent({ className: 'Foo' });
+
             setUrl('?component=Foo&panel=a11y');
             const { url, panel, nav } = setup({ components: [comp] });
 
@@ -387,6 +398,7 @@ describe('PrismUrlStateService', () => {
 
         it('should never write the capture flag back to the URL', () => {
             const comp = createComponent({ className: 'Foo' });
+
             setUrl('?component=Foo&capture=1');
             const { url, nav } = setup({ components: [comp] });
 
@@ -402,6 +414,7 @@ describe('PrismUrlStateService', () => {
                 className: 'Foo',
                 variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
             });
+
             setUrl('?capture=1&component=Foo&variant=2');
             const { url, nav, renderer } = setup({ components: [comp] });
 
@@ -413,6 +426,7 @@ describe('PrismUrlStateService', () => {
 
         it('should not reintroduce the capture flag on popstate', () => {
             const comp = createComponent({ className: 'Foo' });
+
             setUrl('?component=Foo&capture=1');
             const { url, nav } = setup({ components: [comp] });
 

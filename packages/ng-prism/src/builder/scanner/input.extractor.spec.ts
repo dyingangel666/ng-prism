@@ -16,11 +16,13 @@ const compilerOptions: ts.CompilerOptions = {
 
 function getClassDeclaration(exports: ts.Symbol[], className: string, checker: ts.TypeChecker): ts.ClassDeclaration {
     let sym = exports.find((s) => s.name === className)!;
+
     // Resolve alias symbols (from re-exports)
     if (sym.flags & ts.SymbolFlags.Alias) {
         sym = checker.getAliasedSymbol(sym);
     }
     const decl = sym.declarations!.find(ts.isClassDeclaration)!;
+
     return decl;
 }
 
@@ -31,6 +33,7 @@ describe('extractInputs', () => {
     beforeAll(() => {
         const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
         checker = result.program.getTypeChecker();
         exports = result.entries[0].exports;
     });
@@ -41,6 +44,7 @@ describe('extractInputs', () => {
 
         expect(inputs).toHaveLength(5);
         const names = inputs.map((i) => i.name);
+
         expect(names).toEqual(['variant', 'label', 'disabled', 'size', 'items']);
     });
 
@@ -126,6 +130,7 @@ describe('extractInputs (signal-based)', () => {
     beforeAll(() => {
         const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
         checker = result.program.getTypeChecker();
         exports = result.entries[0].exports;
     });
@@ -136,6 +141,7 @@ describe('extractInputs (signal-based)', () => {
 
         expect(inputs).toHaveLength(6);
         const names = inputs.map((i) => i.name);
+
         expect(names).toEqual(['variant', 'label', 'disabled', 'title', 'tabIndex', 'size']);
     });
 
@@ -232,6 +238,7 @@ describe('extractOutputs (signal-based)', () => {
     beforeAll(() => {
         const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
         checker = result.program.getTypeChecker();
         exports = result.entries[0].exports;
     });
@@ -255,6 +262,7 @@ describe('extractOutputs', () => {
     beforeAll(() => {
         const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
         checker = result.program.getTypeChecker();
         exports = result.entries[0].exports;
     });

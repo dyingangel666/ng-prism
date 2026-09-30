@@ -1,12 +1,12 @@
-import { Component, computed, inject, ChangeDetectionStrategy, HostListener } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject } from '@angular/core';
+import type { NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismLayoutMenuComponent } from '../layout-menu/prism-layout-menu.component.js';
-import type { NgPrismConfig } from '../../plugin/plugin.types.js';
-import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { BUILTIN_HEADER_WIDGETS } from '../panels/builtin-header-widgets.js';
 import { PrismPluginService } from '../services/prism-plugin.service.js';
 import { PrismSearchService } from '../services/prism-search.service.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
+import { PRISM_CONFIG } from '../tokens/prism-tokens.js';
 import { PrismHeaderWidgetHostComponent } from './prism-header-widget-host.component.js';
 
 @Component({
@@ -35,8 +35,10 @@ export class PrismHeaderComponent {
 
     protected readonly logoUrl = computed(() => {
         const logo = this.config.logo;
+
         if (!logo) return null;
         const isDark = this.themeService.isDark();
+
         return (isDark ? (logo.dark ?? logo.light) : (logo.light ?? logo.dark)) ?? null;
     });
 
@@ -45,8 +47,10 @@ export class PrismHeaderComponent {
 
     protected readonly buildInfoLabel = computed(() => {
         const info = this.config.buildInfo;
+
         if (!info) return null;
         const parts: string[] = [];
+
         if (info.version) parts.push(`v${info.version}`);
         if (info.gitHash) parts.push(info.gitHash.slice(0, 7));
         return parts.length ? parts.join(' · ') : null;

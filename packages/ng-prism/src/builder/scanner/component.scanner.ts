@@ -1,16 +1,16 @@
 import ts from 'typescript';
-import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import type { ComponentStatus, ShowcaseConfig } from '../../decorator/showcase.types.js';
+import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
+import { evaluateExpression, findDecorator, getDecoratorArgument } from './ast-utils.js';
+import { extractInputs, extractOutputs } from './input.extractor.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
 function isComponentStatus(value: unknown): value is ComponentStatus {
     return typeof value === 'string' && (COMPONENT_STATUSES as readonly string[]).includes(value);
 }
-import { evaluateExpression, findDecorator, getDecoratorArgument } from './ast-utils.js';
-import { extractInputs, extractOutputs } from './input.extractor.js';
 
 /**
  * Backgrounds that still work but should not be reached for any more.
@@ -31,6 +31,7 @@ const DEPRECATED_BGS: Partial<Record<CanvasBg, string>> = {
 
 function warnDeprecatedBg(bg: CanvasBg, where: string): void {
     const advice = DEPRECATED_BGS[bg];
+
     if (!advice) return;
     console.warn(`⚠ ng-prism: ${where} declares bg "${bg}", which is deprecated and will ` + `be removed in 23.0.0 — ${advice}.`);
 }
@@ -53,6 +54,7 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): S
         const resolved = sym.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(sym) : sym;
 
         const classDecl = resolved.declarations?.find(ts.isClassDeclaration);
+
         if (!classDecl) continue;
 
         // Perf: cheap pre-filter — skip the full decorator walk for files that don't
@@ -61,10 +63,12 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): S
         if (!classDecl.getSourceFile().text.includes('@Showcase')) continue;
 
         const showcaseDecorator = findDecorator(classDecl, 'Showcase');
+
         if (!showcaseDecorator) continue;
 
         const className = classDecl.name?.text ?? 'Anonymous';
         const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className);
+
         if (!showcaseConfig) continue;
 
         const componentMeta = extractComponentMeta(classDecl);
@@ -100,9 +104,11 @@ function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
 
 function extractShowcaseConfig(decorator: ts.Decorator, className: string): ShowcaseConfig | undefined {
     const arg = getDecoratorArgument(decorator);
+
     if (!arg) return undefined;
 
     const raw = evaluateExpression(arg);
+
     if (!raw || typeof raw !== 'object') return undefined;
 
     if (!('title' in raw)) {
@@ -158,6 +164,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
     if (Array.isArray(obj['variants'])) {
         config.variants = (obj['variants'] as Array<Record<string, unknown>>).map((variant) => {
             const cleaned: Record<string, unknown> = { ...variant };
+
             if (isCanvasBg(variant['bg'])) {
                 warnDeprecatedBg(variant['bg'], `${className} variant "${String(variant['name'])}"`);
             }
@@ -185,16 +192,20 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
 
 function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent['componentMeta'] {
     const componentDecorator = findDecorator(classDecl, 'Component');
+
     if (componentDecorator) {
         const arg = getDecoratorArgument(componentDecorator);
+
         if (!arg) return { selector: '', standalone: true, isDirective: false };
 
         const raw = evaluateExpression(arg);
+
         if (!raw || typeof raw !== 'object') {
             return { selector: '', standalone: true, isDirective: false };
         }
 
         const obj = raw as Record<string, unknown>;
+
         return {
             selector: (obj['selector'] as string) ?? '',
             standalone: obj['standalone'] !== false,
@@ -203,16 +214,20 @@ function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent[
     }
 
     const directiveDecorator = findDecorator(classDecl, 'Directive');
+
     if (directiveDecorator) {
         const arg = getDecoratorArgument(directiveDecorator);
+
         if (!arg) return { selector: '', standalone: true, isDirective: true };
 
         const raw = evaluateExpression(arg);
+
         if (!raw || typeof raw !== 'object') {
             return { selector: '', standalone: true, isDirective: true };
         }
 
         const obj = raw as Record<string, unknown>;
+
         return {
             selector: (obj['selector'] as string) ?? '',
             standalone: obj['standalone'] !== false,

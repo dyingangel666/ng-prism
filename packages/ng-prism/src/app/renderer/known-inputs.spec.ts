@@ -54,6 +54,7 @@ describe('buildKnownInputs', () => {
 
     it('does not add __prismContent__ for non-directive components', () => {
         const comp = makeComp({ isDirective: false });
+
         expect(buildKnownInputs(comp).has(PRISM_CONTENT_INPUT)).toBe(false);
     });
 });

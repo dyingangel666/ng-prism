@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, effect, inject, viewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, viewChild } from '@angular/core';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismThemeService } from '../services/prism-theme.service.js';
 
@@ -30,6 +30,7 @@ export class PrismCanvasRulersComponent {
         effect(() => {
             const show = this.canvas.rulers();
             const zoom = this.canvas.zoom();
+
             this.themeService.theme();
 
             if (!show) {
@@ -48,6 +49,7 @@ export class PrismCanvasRulersComponent {
     private observeResize(zoom: number): void {
         if (this.ro) return;
         const wrap = this.rulerTop()?.nativeElement?.parentElement;
+
         if (!wrap) return;
         this.ro = new ResizeObserver(() => this.paint(this.canvas.zoom()));
         this.ro.observe(wrap);
@@ -60,20 +62,24 @@ export class PrismCanvasRulersComponent {
 
     private paintH(zoom: number): void {
         const el = this.rulerTop()?.nativeElement;
+
         if (!el) return;
 
         const wrap = el.parentElement!;
         const w = wrap.clientWidth - R;
         const h = R;
+
         if (w <= 0) return;
 
         const dpr = devicePixelRatio;
+
         el.width = w * dpr;
         el.height = h * dpr;
         el.style.width = w + 'px';
         el.style.height = h + 'px';
 
         const ctx = el.getContext('2d')!;
+
         ctx.scale(dpr, dpr);
 
         const cs = getComputedStyle(document.documentElement);
@@ -102,6 +108,7 @@ export class PrismCanvasRulersComponent {
         ctx.textBaseline = 'top';
 
         let logical = 0;
+
         for (let x = 0; x < w; x += pxStep, logical += step) {
             const xr = Math.round(x) + 0.5;
             const major = logical % (step * 5) === 0;
@@ -119,20 +126,24 @@ export class PrismCanvasRulersComponent {
 
     private paintV(zoom: number): void {
         const el = this.rulerLeft()?.nativeElement;
+
         if (!el) return;
 
         const wrap = el.parentElement!;
         const w = R;
         const h = wrap.clientHeight - R;
+
         if (h <= 0) return;
 
         const dpr = devicePixelRatio;
+
         el.width = w * dpr;
         el.height = h * dpr;
         el.style.width = w + 'px';
         el.style.height = h + 'px';
 
         const ctx = el.getContext('2d')!;
+
         ctx.scale(dpr, dpr);
 
         const cs = getComputedStyle(document.documentElement);
@@ -159,6 +170,7 @@ export class PrismCanvasRulersComponent {
         ctx.font = '9px monospace';
 
         let logical = 0;
+
         for (let y = 0; y < h; y += pxStep, logical += step) {
             const yr = Math.round(y) + 0.5;
             const major = logical % (step * 5) === 0;

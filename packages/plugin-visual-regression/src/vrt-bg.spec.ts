@@ -1,5 +1,5 @@
-import { bgChange, shotSurfaceStyle } from './vrt-bg.js';
 import type { VrtVariantResult } from './visual-regression.types.js';
+import { bgChange, shotSurfaceStyle } from './vrt-bg.js';
 
 function result(patch: Partial<VrtVariantResult> = {}): VrtVariantResult {
     return {

@@ -49,6 +49,7 @@ export function resolvePanelBadge(panel: PanelDefinition, component: RuntimeComp
         // `=== null` rather than a falsy check: a score of 0 is a real, and the
         // most urgent, thing to show.
         const result = context.a11yResult;
+
         if (result === null) return null;
         return {
             text: String(result.score),

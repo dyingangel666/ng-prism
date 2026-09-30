@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { BundleSectionComponent } from './bundle/bundle-section.component.js';
+import { MemorySectionComponent } from './memory/memory-section.component.js';
+import { PerfMemoryService } from './memory/perf-memory.service.js';
 import type { BundleMetrics, PerfThresholds } from './perf.types.js';
 import { DEFAULT_THRESHOLDS } from './perf.types.js';
 import { PerfRenderService } from './render/perf-render.service.js';
-import { PerfMemoryService } from './memory/perf-memory.service.js';
-import { BundleSectionComponent } from './bundle/bundle-section.component.js';
 import { RenderSectionComponent } from './render/render-section.component.js';
-import { MemorySectionComponent } from './memory/memory-section.component.js';
 
 type SubTab = 'bundle' | 'render' | 'memory';
 
@@ -37,6 +37,7 @@ export class PerfPanelComponent {
                 showcaseConfig?: { meta?: { perf?: { bundle?: BundleMetrics } } };
             };
         } | null;
+
         return comp?.meta?.showcaseConfig?.meta?.perf?.bundle ?? null;
     });
 }

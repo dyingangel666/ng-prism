@@ -20,6 +20,7 @@ function componentMeta(component: RuntimeComponent): VrtComponentMeta | null {
 /** True when the plugin recorded at least one result for this component. */
 export function hasResults(component: RuntimeComponent): boolean {
     const meta = componentMeta(component);
+
     return Boolean(meta?.found && meta.variants.length > 0);
 }
 
@@ -40,10 +41,12 @@ export function hasResults(component: RuntimeComponent): boolean {
  */
 export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
     const meta = componentMeta(component);
+
     if (!meta?.found) return null;
 
     let count = 0;
     let changed = false;
+
     for (const variant of meta.variants) {
         if (!isReviewStatus(variant.status)) continue;
         count++;
@@ -64,6 +67,7 @@ export const VRT_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
     order: 20,
     badge: (component) => {
         const meta = componentMeta(component);
+
         if (!meta?.found || !meta.summary) return null;
         if (meta.summary.variant === 'ok') return null;
         return { variant: meta.summary.variant, label: meta.summary.label };

@@ -1,11 +1,11 @@
-import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import type { RuntimeManifest, NgPrismConfig, RuntimeComponent } from '../../plugin/plugin.types.js';
-import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
-import { PrismPersistenceService } from './prism-persistence.service.js';
+import { TestBed } from '@angular/core/testing';
+import type { NgPrismConfig, RuntimeComponent, RuntimeManifest } from '../../plugin/plugin.types.js';
 import { A11yPanelStateService } from '../panels/a11y/a11y-panel-state.service.js';
 import { A11yPerspectiveService } from '../panels/a11y/a11y-perspective.service.js';
+import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
+import { PrismPersistenceService } from './prism-persistence.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 
 const STORAGE_KEY = 'ng-prism:state';
@@ -101,6 +101,7 @@ describe('PrismPersistenceService', () => {
 
             const a11yPanelState = TestBed.inject(A11yPanelStateService);
             const a11yPerspective = TestBed.inject(A11yPerspectiveService);
+
             expect(a11yPanelState.activeTab()).toBe('keyboard');
             expect(a11yPerspective.mode()).toBe('screen-reader');
         });
@@ -111,6 +112,7 @@ describe('PrismPersistenceService', () => {
                 inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
                 variants: [{ name: 'A' }, { name: 'B' }, { name: 'C' }]
             });
+
             sessionStorage.setItem(
                 STORAGE_KEY,
                 JSON.stringify({
@@ -122,6 +124,7 @@ describe('PrismPersistenceService', () => {
             const service = setup({ components: [comp] });
             const nav = TestBed.inject(PrismNavigationService);
             const rendererService = TestBed.inject(PrismRendererService);
+
             nav.select(comp);
             rendererService.activeVariantIndex.set(2);
 
@@ -151,6 +154,7 @@ describe('PrismPersistenceService', () => {
             service.init();
 
             const a11yPanelState = TestBed.inject(A11yPanelStateService);
+
             expect(a11yPanelState.activeTab()).toBe('violations');
         });
 
@@ -160,6 +164,7 @@ describe('PrismPersistenceService', () => {
                 inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
                 variants: [{ name: 'A' }, { name: 'B' }]
             });
+
             sessionStorage.setItem(
                 STORAGE_KEY,
                 JSON.stringify({
@@ -170,6 +175,7 @@ describe('PrismPersistenceService', () => {
             const service = setup({ components: [comp] });
             const nav = TestBed.inject(PrismNavigationService);
             const renderer = TestBed.inject(PrismRendererService);
+
             nav.select(comp);
             renderer.activeVariantIndex.set(0);
 
@@ -184,6 +190,7 @@ describe('PrismPersistenceService', () => {
                 inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
                 variants: [{ name: 'A' }]
             });
+
             sessionStorage.setItem(
                 STORAGE_KEY,
                 JSON.stringify({
@@ -199,11 +206,13 @@ describe('PrismPersistenceService', () => {
             const service = setup({ components: [comp] });
             const nav = TestBed.inject(PrismNavigationService);
             const renderer = TestBed.inject(PrismRendererService);
+
             nav.select(comp);
 
             service.init();
 
             const result = renderer.inputValues();
+
             expect(result['size']).toBe('large');
             expect(result['removedProp']).toBeUndefined();
         });
@@ -235,6 +244,7 @@ describe('PrismPersistenceService', () => {
             jest.advanceTimersByTime(250);
 
             const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
+
             expect(stored.version).toBe(1);
             expect(stored.inputs.Btn).toEqual({
                 variantIndex: 0,
@@ -266,6 +276,7 @@ describe('PrismPersistenceService', () => {
                 inputs: [{ name: 'size', type: 'string', required: false, defaultValue: 'md' }],
                 variants: [{ name: 'A' }]
             });
+
             sessionStorage.setItem(
                 STORAGE_KEY,
                 JSON.stringify({
@@ -279,6 +290,7 @@ describe('PrismPersistenceService', () => {
             const service = setup({ components: [btn] });
             const nav = TestBed.inject(PrismNavigationService);
             const renderer = TestBed.inject(PrismRendererService);
+
             nav.select(btn);
             renderer.activeVariantIndex.set(0);
 
@@ -289,6 +301,7 @@ describe('PrismPersistenceService', () => {
             jest.advanceTimersByTime(250);
 
             const stored = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null');
+
             expect(stored.inputs.Card).toEqual({
                 variantIndex: 0,
                 values: { color: 'red' }

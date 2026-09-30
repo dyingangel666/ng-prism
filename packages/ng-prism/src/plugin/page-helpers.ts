@@ -1,5 +1,5 @@
 import type { Type } from '@angular/core';
-import type { CustomPage, ComponentPage } from './page.types.js';
+import type { ComponentPage, CustomPage } from './page.types.js';
 
 export interface CustomPageOptions {
     title: string;

@@ -37,6 +37,7 @@ describe('plugin-figma ng-add', () => {
 
     it('adds figmaPlugin import + call to empty config', async () => {
         const tree = Tree.empty();
+
         tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
         const result = await run(tree);
@@ -48,6 +49,7 @@ describe('plugin-figma ng-add', () => {
 
     it('is idempotent on re-run', async () => {
         const tree = Tree.empty();
+
         tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
         const first = await run(tree);
@@ -60,11 +62,13 @@ describe('plugin-figma ng-add', () => {
 
     it('throws when ng-prism.config.ts is missing', async () => {
         const tree = Tree.empty();
+
         await expect(run(tree)).rejects.toThrow(/Run "ng add @ng-prism\/core" first/);
     });
 
     it('logs optional peers hint after successful inject', async () => {
         const tree = Tree.empty();
+
         tree.create('ng-prism.config.ts', EMPTY_CONFIG);
         await run(tree);
 

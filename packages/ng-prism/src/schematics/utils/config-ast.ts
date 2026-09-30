@@ -24,6 +24,7 @@ interface Edit {
  */
 export function addPluginToConfig(tree: Tree, configPath: string, options: AddPluginToConfigOptions): boolean {
     const buffer = tree.read(configPath);
+
     if (!buffer) {
         throw new SchematicsException(`${configPath} not found. Run "ng add @ng-prism/core" first.`);
     }
@@ -33,16 +34,19 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
     const imports = sf.statements.filter(ts.isImportDeclaration);
 
     const defineConfigCall = findDefineConfigCall(sf);
+
     if (!defineConfigCall) {
         throw new SchematicsException('Unsupported config: defineConfig() call not found at default export.');
     }
     const arg = defineConfigCall.arguments[0];
+
     if (!arg || !ts.isObjectLiteralExpression(arg)) {
         throw new SchematicsException('Unsupported config: defineConfig argument must be an object literal.');
     }
     const objectLiteral = arg;
 
     const pluginsProp = findPluginsProperty(objectLiteral);
+
     if (pluginsProp && !ts.isArrayLiteralExpression(pluginsProp.initializer)) {
         throw new SchematicsException('Unsupported config: plugins must be an array literal.');
     }
@@ -61,6 +65,7 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
 
     if (!importAlreadyPresent) {
         const insertPos = imports.length > 0 ? imports[imports.length - 1].end : 0;
+
         edits.push({
             start: insertPos,
             end: insertPos,
@@ -71,6 +76,7 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
     if (!callAlreadyPresent) {
         if (!pluginsProp) {
             const insertPos = objectLiteral.getStart(sf) + 1;
+
             edits.push({
                 start: insertPos,
                 end: insertPos,
@@ -78,6 +84,7 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
             });
         } else {
             const arr = pluginsProp.initializer as ts.ArrayLiteralExpression;
+
             if (arr.elements.length === 0) {
                 edits.push({
                     start: arr.getStart(sf),
@@ -87,6 +94,7 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
             } else {
                 const lastElement = arr.elements[arr.elements.length - 1];
                 const insertPos = lastElement.end;
+
                 edits.push({
                     start: insertPos,
                     end: insertPos,
@@ -98,6 +106,7 @@ export function addPluginToConfig(tree: Tree, configPath: string, options: AddPl
 
     edits.sort((a, b) => b.start - a.start);
     let result = source;
+
     for (const e of edits) {
         result = result.slice(0, e.start) + e.newText + result.slice(e.end);
     }
@@ -110,6 +119,7 @@ function findDefineConfigCall(sf: ts.SourceFile): ts.CallExpression | null {
     for (const stmt of sf.statements) {
         if (!ts.isExportAssignment(stmt) || stmt.isExportEquals) continue;
         const expr = stmt.expression;
+
         if (ts.isCallExpression(expr) && ts.isIdentifier(expr.expression) && expr.expression.text === 'defineConfig') {
             return expr;
         }
@@ -130,6 +140,7 @@ function importHasNamedBinding(imp: ts.ImportDeclaration, moduleSpecifier: strin
     if (!ts.isStringLiteral(imp.moduleSpecifier)) return false;
     if (imp.moduleSpecifier.text !== moduleSpecifier) return false;
     const clause = imp.importClause;
+
     if (!clause?.namedBindings) return false;
     if (!ts.isNamedImports(clause.namedBindings)) return false;
     return clause.namedBindings.elements.some((el) => el.name.text === binding);

@@ -31,16 +31,19 @@ describe('createScanner', () => {
         expect(button.componentMeta.standalone).toBe(true);
 
         const variant = button.inputs.find((i) => i.name === 'variant')!;
+
         expect(variant.type).toBe('union');
         expect(variant.values).toEqual(['primary', 'secondary', 'danger']);
         expect(variant.defaultValue).toBe('primary');
         expect(variant.doc).toBe('Visual appearance of the button');
 
         const disabled = button.inputs.find((i) => i.name === 'disabled')!;
+
         expect(disabled.type).toBe('boolean');
         expect(disabled.defaultValue).toBe(false);
 
         const clicked = button.outputs.find((o) => o.name === 'clicked')!;
+
         expect(clicked.doc).toBe('Click event');
     });
 
@@ -102,9 +105,11 @@ describe('createScanner', () => {
         const scanner = createScanner({ entryPoints });
 
         const first = scanner.scan();
+
         expect(first.components.length).toBeGreaterThan(0);
 
         const second = scanner.scan();
+
         expect(second.components.map((c) => c.className)).toEqual(first.components.map((c) => c.className));
     });
 
@@ -120,6 +125,7 @@ describe('createScanner', () => {
 
     it('should dedupe a component re-exported by multiple entry points', () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
         try {
             const scanner = createScanner({
                 entryPoints: [
@@ -136,6 +142,7 @@ describe('createScanner', () => {
             const result = scanner.scan();
 
             const buttons = result.components.filter((c) => c.className === 'ButtonComponent');
+
             expect(buttons).toHaveLength(1);
             // First-occurrence wins → importPath should be 'lib/a'
             expect(buttons[0].importPath).toBe('lib/a');
@@ -147,6 +154,7 @@ describe('createScanner', () => {
 
     it('should isolate a failing entry: other entries still scanned', () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
         try {
             const scanner = createScanner({
                 entryPoints: [
@@ -168,6 +176,7 @@ describe('createScanner', () => {
 
     it('should pick up file changes between scans', () => {
         const tmpDir = mkdtempSync(join(tmpdir(), 'ng-prism-scanner-'));
+
         try {
             cpSync(FIXTURES_DIR, tmpDir, { recursive: true });
             const mutableEntry = join(tmpDir, 'public-api.ts');
@@ -177,14 +186,17 @@ describe('createScanner', () => {
 
             const first = scanner.scan();
             const originalButton = first.components.find((c) => c.className === 'ButtonComponent')!;
+
             expect(originalButton.showcaseConfig.title).toBe('Button');
 
             const buttonFile = join(tmpDir, 'button.component.ts');
             const content = readFileSync(buttonFile, 'utf-8');
+
             writeFileSync(buttonFile, content.replace("title: 'Button',", "title: 'MutatedButton',"));
 
             const second = scanner.scan();
             const mutatedButton = second.components.find((c) => c.className === 'ButtonComponent')!;
+
             expect(mutatedButton.showcaseConfig.title).toBe('MutatedButton');
         } finally {
             rmSync(tmpDir, { recursive: true, force: true });
@@ -193,6 +205,7 @@ describe('createScanner', () => {
 
     it('should pick up variant array changes between scans', () => {
         const tmpDir = mkdtempSync(join(tmpdir(), 'ng-prism-scanner-'));
+
         try {
             cpSync(FIXTURES_DIR, tmpDir, { recursive: true });
             const mutableEntry = join(tmpDir, 'public-api.ts');
@@ -202,16 +215,19 @@ describe('createScanner', () => {
 
             const first = scanner.scan();
             const firstButton = first.components.find((c) => c.className === 'ButtonComponent')!;
+
             expect(firstButton.showcaseConfig.variants?.map((v) => v.name)).toEqual(['Primary', 'Danger']);
 
             const buttonFile = join(tmpDir, 'button.component.ts');
             const content = readFileSync(buttonFile, 'utf-8');
             const danger = content.match(/\s*\{\s*name:\s*'Danger',[^}]*\},?/);
+
             if (!danger) throw new Error('Danger variant block not found in fixture');
             writeFileSync(buttonFile, content.replace(danger[0], ''));
 
             const second = scanner.scan();
             const mutatedButton = second.components.find((c) => c.className === 'ButtonComponent')!;
+
             expect(mutatedButton.showcaseConfig.variants?.map((v) => v.name)).toEqual(['Primary']);
         } finally {
             rmSync(tmpDir, { recursive: true, force: true });

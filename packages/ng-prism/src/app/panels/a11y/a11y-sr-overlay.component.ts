@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, signal } from '@angular/core';
-import { A11ySrService } from './a11y-sr.service.js';
-import { A11yPerspectiveService } from './a11y-perspective.service.js';
-import { A11yPanelStateService } from './a11y-panel-state.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
+import { A11yPanelStateService } from './a11y-panel-state.service.js';
+import { A11yPerspectiveService } from './a11y-perspective.service.js';
+import { A11ySrService } from './a11y-sr.service.js';
 
 interface SrBadgePosition {
     index: number;
@@ -38,10 +38,12 @@ export class A11ySrOverlayComponent {
             const isSrMode = this.perspective.mode() === 'screen-reader';
             const isSrTab = this.panelState.activeTab() === 'sr';
             const root = this.rendererService.renderedElement();
+
             this.rendererService.inputValues();
             this.rendererService.activeVariantIndex();
 
             const shouldShow = isSrMode && isSrTab && !!root;
+
             this.showOverlay.set(shouldShow);
 
             if (!shouldShow || !root) {
@@ -64,6 +66,7 @@ export class A11ySrOverlayComponent {
 
     private computeBadges(root: Element): void {
         const canvas = this.elementRef.nativeElement.closest('.prism-canvas-stage') as HTMLElement | null;
+
         if (!canvas) return;
 
         const doc = (root as HTMLElement).ownerDocument;
@@ -77,6 +80,7 @@ export class A11ySrOverlayComponent {
             .map((a, i) => {
                 const el = a.element as HTMLElement;
                 const rect = el.getBoundingClientRect();
+
                 if (!rect.width && !rect.height) return null;
                 return {
                     index: a.index,

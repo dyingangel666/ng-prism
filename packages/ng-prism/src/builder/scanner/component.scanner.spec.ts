@@ -1,7 +1,7 @@
 import path from 'node:path';
 import ts from 'typescript';
-import { resolveEntryPointExports } from './entry-point.scanner.js';
 import { scanComponents } from './component.scanner.js';
+import { resolveEntryPointExports } from './entry-point.scanner.js';
 
 const FIXTURES_DIR = path.join(__dirname, '__fixtures__');
 
@@ -21,6 +21,7 @@ describe('scanComponents', () => {
     beforeAll(() => {
         const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
         checker = result.program.getTypeChecker();
         exports = result.entries[0].exports;
     });
@@ -153,6 +154,7 @@ describe('scanComponents', () => {
 
     it('should warn when @Showcase class uses @Input() decorators', () => {
         const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
         scanComponents(exports, checker);
 
         expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('ButtonComponent uses @Input() decorators'));
@@ -172,12 +174,14 @@ describe('scanComponents', () => {
 
     it('should warn that a checker background is deprecated', () => {
         const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
         scanComponents(exports, checker);
 
         // Once for the component and once for the variant that declares its own:
         // a reviewer fixing this has to find both, and only the variant warning
         // says which variant.
         const messages = warnSpy.mock.calls.map((call) => String(call[0])).filter((message) => message.includes('DeprecatedBgComponent'));
+
         expect(messages.filter((m) => m.includes('deprecated'))).toHaveLength(2);
         expect(messages.some((m) => m.includes('Also checker'))).toBe(true);
 
@@ -199,6 +203,7 @@ describe('scanComponents', () => {
 
     it('should not warn for signal-based components', () => {
         const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
         scanComponents(exports, checker);
 
         expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('SignalButtonComponent'));
@@ -234,6 +239,7 @@ describe('scanComponents', () => {
         const components = scanComponents(exports, checker);
 
         const invalid = components.find((c) => c.className === 'InvalidBgComponent')!;
+
         expect(invalid.showcaseConfig.bg).toBeUndefined();
         expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('InvalidBgComponent declares invalid bg "rainbow"'));
 
@@ -259,6 +265,7 @@ describe('scanComponents', () => {
         const components = scanComponents(exports, checker);
 
         const invalid = components.find((c) => c.className === 'InvalidStatusComponent')!;
+
         expect(invalid.showcaseConfig.status).toBeUndefined();
         expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('InvalidStatusComponent declares invalid status "banana"'));
 

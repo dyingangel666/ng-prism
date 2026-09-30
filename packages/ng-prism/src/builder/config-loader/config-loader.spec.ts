@@ -1,5 +1,5 @@
-import { join } from 'path';
 import { readdirSync } from 'fs';
+import { join } from 'path';
 import { loadConfig } from './config-loader.js';
 
 const FIXTURES_DIR = join(__dirname, '__fixtures__');
@@ -42,6 +42,7 @@ describe('loadConfig', () => {
         });
 
         const leftovers = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.tmp.mjs'));
+
         expect(leftovers).toEqual([]);
     });
 
@@ -57,6 +58,7 @@ describe('loadConfig', () => {
 
         expect(second).toEqual(first);
         const leftovers = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.tmp.mjs'));
+
         expect(leftovers).toEqual([]);
     });
 

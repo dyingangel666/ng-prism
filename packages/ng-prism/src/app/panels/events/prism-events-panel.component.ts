@@ -1,4 +1,4 @@
-import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import type { RuntimeComponent } from '../../../plugin/plugin.types.js';
 import { PrismEventLogService } from '../../services/prism-event-log.service.js';
 import { PrismJsonNodeComponent } from './prism-json-node.component.js';
@@ -18,6 +18,7 @@ export class PrismEventsPanelComponent {
 
     protected formatTime(ts: number): string {
         const d = new Date(ts);
+
         return d.toLocaleTimeString('en-US', {
             hour12: false,
             fractionalSecondDigits: 3

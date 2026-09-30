@@ -14,31 +14,37 @@ export class MemorySectionComponent {
     private readonly maxBytes = computed(() => {
         const svc = this.memoryService();
         const vals = [svc.beforeCreate()?.bytes ?? 0, svc.afterCreate()?.bytes ?? 0, svc.afterDestroy()?.bytes ?? 0];
+
         return Math.max(...vals);
     });
 
     readonly deltaText = computed(() => {
         const d = this.memoryService().delta();
+
         if (d === null) return '';
         return `+${this.formatMb(d)} MB delta`;
     });
 
     readonly residualText = computed(() => {
         const r = this.memoryService().residual();
+
         if (r === null) return '';
         return `+${this.formatMb(r)} MB residual`;
     });
 
     readonly afterCreateColor = computed(() => {
         const d = this.memoryService().delta();
+
         if (d !== null && d > 0) return 'var(--prism-warn)';
         return '';
     });
 
     readonly destroyColor = computed(() => {
         const svc = this.memoryService();
+
         if (!svc.afterDestroy()) return 'var(--prism-text-ghost)';
         const status = svc.leakStatus();
+
         if (status === 'ok') return 'var(--prism-success)';
         if (status === 'warn') return 'var(--prism-danger)';
         return '';

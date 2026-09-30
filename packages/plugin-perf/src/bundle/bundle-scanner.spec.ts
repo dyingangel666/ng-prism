@@ -1,6 +1,6 @@
-import { writeFileSync, mkdirSync, rmSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
+import { join } from 'path';
 import { scanBundle } from './bundle-scanner.js';
 
 describe('scanBundle', () => {
@@ -16,6 +16,7 @@ describe('scanBundle', () => {
 
     function writeFixture(name: string, content: string): string {
         const path = join(testDir, name);
+
         writeFileSync(path, content, 'utf-8');
         return path;
     }
@@ -23,6 +24,7 @@ describe('scanBundle', () => {
     it('should calculate source size in bytes', () => {
         const path = writeFixture('size.ts', 'export const x = 42;\n');
         const result = scanBundle(path);
+
         expect(result.sourceSize).toBe(Buffer.byteLength('export const x = 42;\n', 'utf-8'));
     });
 
@@ -30,6 +32,7 @@ describe('scanBundle', () => {
         const content = 'export const x = "hello world";\n'.repeat(50);
         const path = writeFixture('gzip.ts', content);
         const result = scanBundle(path);
+
         expect(result.gzipEstimate).toBeLessThan(result.sourceSize);
         expect(result.gzipEstimate).toBeGreaterThan(0);
     });
@@ -46,6 +49,7 @@ describe('scanBundle', () => {
     `
         );
         const result = scanBundle(path);
+
         expect(result.directImports).toBe(3);
         expect(result.importList).toEqual(['@angular/core', 'rxjs', 'rxjs/operators']);
     });
@@ -59,6 +63,7 @@ describe('scanBundle', () => {
     `
         );
         const result = scanBundle(path);
+
         expect(result.treeDepth).toBe(1);
     });
 
@@ -72,6 +77,7 @@ describe('scanBundle', () => {
     `
         );
         const result = scanBundle(path);
+
         expect(result.treeDepth).toBe(2);
     });
 
@@ -80,12 +86,14 @@ describe('scanBundle', () => {
         writeFixture('deep-b.ts', `import { c } from './deep-c.js';\nexport const b = c;\n`);
         const path = writeFixture('deep-a.ts', `import { b } from './deep-b.js';\nexport const a = b;\n`);
         const result = scanBundle(path, 2);
+
         expect(result.treeDepth).toBe(2);
     });
 
     it('should handle empty files', () => {
         const path = writeFixture('empty.ts', '');
         const result = scanBundle(path);
+
         expect(result.sourceSize).toBe(0);
         expect(result.directImports).toBe(0);
         expect(result.importList).toEqual([]);
@@ -100,6 +108,7 @@ describe('scanBundle', () => {
     `
         );
         const result = scanBundle(path);
+
         expect(result.directImports).toBe(1);
         expect(result.importList).toContain('@angular/core');
     });

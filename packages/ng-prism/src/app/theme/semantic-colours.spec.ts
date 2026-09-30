@@ -24,22 +24,26 @@ type Rgb = [number, number, number];
 
 const rgb = (hex: string): Rgb => {
     const h = hex.replace('#', '');
+
     return [0, 2, 4].map((i) => Number.parseInt(h.slice(i, i + 2), 16)) as Rgb;
 };
 
 const toLinear = (channel: number): number => {
     const c = channel / 255;
+
     return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
 };
 
 const luminance = (hex: string): number => {
     const [r, g, b] = rgb(hex).map(toLinear);
+
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
 
 /** WCAG 2.x contrast ratio, 1–21. */
 const contrast = (a: string, b: string): number => {
     const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+
     return (hi + 0.05) / (lo + 0.05);
 };
 
@@ -51,6 +55,7 @@ const lab = (hex: string): [number, number, number] => {
     const z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
     const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
     const [fx, fy, fz] = [f(x), f(y), f(z)];
+
     return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
 };
 
@@ -104,6 +109,7 @@ describe('semantic colours', () => {
         const failing = Object.fromEntries(
             SEMANTIC.map((token) => [token, Number(contrast(theme[token], theme['--prism-bg']).toFixed(2))]).filter(([, ratio]) => (ratio as number) < 4.5)
         );
+
         expect(failing).toEqual({});
     });
 
@@ -167,6 +173,7 @@ describe('semantic colours', () => {
         const overrideFor = (bg: 'light' | 'dark'): string => {
             const rule = CANVAS_BG_STYLES.slice(CANVAS_BG_STYLES.indexOf(`[data-bg="${bg}"]`));
             const found = /--prism-measure:\s*(#[0-9a-f]{6})/i.exec(rule.slice(0, rule.indexOf('}')));
+
             if (!found) throw new Error(`[data-bg="${bg}"] declares no --prism-measure`);
             return found[1];
         };
@@ -182,6 +189,7 @@ describe('semantic colours', () => {
                 Math.round(f * alpha + b * (1 - alpha))
                     .toString(16)
                     .padStart(2, '0');
+
             return `#${ch(fr, br)}${ch(fg_, bg_)}${ch(fb, bb)}`;
         };
 
@@ -212,6 +220,7 @@ describe('semantic colours', () => {
         const paintedAlphas = (): number[] => {
             const src = readFileSync(join(__dirname, '../renderer/prism-renderer.component.css'), 'utf-8');
             const found = [...src.matchAll(/var\(--prism-measure\)\s+(\d+)%/g)].map((m) => Number(m[1]) / 100);
+
             if (found.length === 0) throw new Error('no --prism-measure layers found');
             return [...new Set(found)].sort((a, b) => a - b);
         };
@@ -220,9 +229,11 @@ describe('semantic colours', () => {
         const alphaInRule = (selector: string): number => {
             const src = readFileSync(join(__dirname, '../renderer/prism-renderer.component.css'), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '');
             const at = src.indexOf(selector);
+
             if (at === -1) throw new Error(`rule not found: ${selector}`);
             const body = src.slice(at, src.indexOf('}', at));
             const found = /var\(--prism-measure\)\s+(\d+)%/.exec(body);
+
             if (!found) throw new Error(`${selector} paints no --prism-measure`);
             return Number(found[1]) / 100;
         };
@@ -239,6 +250,7 @@ describe('semantic colours', () => {
                     .map((a) => [`${Math.round(a * 100)}%`, Number(contrast(atAlpha(colour, ground, a), ground).toFixed(2))])
                     .filter(([, ratio]) => (ratio as number) < 2.5)
             );
+
             // 2.5 is the floor for chrome that only has to be seen. The two layers
             // that have to be *operated* or *read* are held higher, below.
             expect(failing).toEqual({});
@@ -249,6 +261,7 @@ describe('semantic colours', () => {
             // the measurement, so both are WCAG 1.4.11 non-text contrast at 3:1.
             const handle = alphaInRule('.vp-grip__bar {');
             const rule = alphaInRule('.vp-dim__rule {');
+
             expect(contrast(atAlpha(colour, ground, handle), ground)).toBeGreaterThanOrEqual(3);
             expect(contrast(atAlpha(colour, ground, rule), ground)).toBeGreaterThanOrEqual(3);
         });

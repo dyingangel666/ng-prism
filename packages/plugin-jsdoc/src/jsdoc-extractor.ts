@@ -7,6 +7,7 @@ export function extractJsDocData(filePath: string, className: string): JsDocData
     const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.ES2022, true);
 
     const classDecl = findClassByName(sourceFile, className);
+
     if (!classDecl) return null;
 
     return {
@@ -35,10 +36,12 @@ function findClassByName(sourceFile: ts.SourceFile, className: string): ts.Class
 
 function extractDescription(node: ts.Node): string | undefined {
     const jsDocNodes = (node as any).jsDoc as ts.JSDoc[] | undefined;
+
     if (!jsDocNodes?.length) return undefined;
 
     const lastDoc = jsDocNodes[jsDocNodes.length - 1];
     const comment = lastDoc.comment;
+
     if (!comment) return undefined;
 
     if (typeof comment === 'string') return comment.trim() || undefined;
@@ -53,6 +56,7 @@ function extractDescription(node: ts.Node): string | undefined {
 
 function extractTags(node: ts.Node): JsDocTags {
     const tags = ts.getJSDocTags(node);
+
     return buildTagsFromList(tags);
 }
 
@@ -71,6 +75,7 @@ function buildTagsFromList(tags: readonly ts.JSDocTag[]): JsDocTags {
             result.version = comment;
         } else if (tagName === 'see') {
             const seeRef = extractSeeReference(tag, comment);
+
             if (seeRef) result.see = [...(result.see ?? []), seeRef];
         } else if (tagName === 'example') {
             result.example = [...(result.example ?? []), ...(comment ? [comment] : [])];
@@ -83,6 +88,7 @@ function buildTagsFromList(tags: readonly ts.JSDocTag[]): JsDocTags {
 function extractSeeReference(tag: ts.JSDocTag, comment: string | undefined): string | undefined {
     const seeTag = tag as any;
     const nameRef: string | undefined = seeTag.name?.name?.text ?? seeTag.name?.left?.text;
+
     if (nameRef) return nameRef;
     if (comment && comment !== '*') return comment;
     return undefined;
@@ -104,9 +110,11 @@ function extractAllMemberTags(classDecl: ts.ClassDeclaration): Record<string, Js
 
     for (const member of classDecl.members) {
         const name = getMemberName(member);
+
         if (!name) continue;
 
         const tags = ts.getJSDocTags(member);
+
         if (tags.length === 0) continue;
 
         result[name] = buildTagsFromList(tags);
@@ -141,10 +149,12 @@ function extractPublicMethods(classDecl: ts.ClassDeclaration): MethodDoc[] {
         if (!ts.isMethodDeclaration(member)) continue;
 
         const name = getMemberName(member);
+
         if (!name || name.startsWith('_')) continue;
         if (LIFECYCLE_HOOKS.has(name)) continue;
 
         const isPrivate = member.modifiers?.some((m) => m.kind === ts.SyntaxKind.PrivateKeyword || m.kind === ts.SyntaxKind.ProtectedKeyword);
+
         if (isPrivate) continue;
 
         if (!hasDirectJsDoc(member, sourceFile)) continue;
@@ -164,16 +174,19 @@ function extractPublicMethods(classDecl: ts.ClassDeclaration): MethodDoc[] {
 
 function hasDirectJsDoc(node: ts.Node, sourceFile: ts.SourceFile): boolean {
     const jsDocNodes = (node as any).jsDoc as ts.JSDoc[] | undefined;
+
     if (!jsDocNodes?.length) return false;
 
     const lastDoc = jsDocNodes[jsDocNodes.length - 1];
 
     const commentEnd = sourceFile.getLineAndCharacterOfPosition(lastDoc.end).line;
     const methodStart = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line;
+
     if (methodStart - commentEnd > 1) return false;
 
     const commentText = lastDoc.getText(sourceFile);
     const stripped = commentText.replace(/[/*\s]/g, '');
+
     if (stripped.length === 0) return false;
     if (/^[*=\-_#~]+$/.test(stripped)) return false;
 
@@ -182,9 +195,11 @@ function hasDirectJsDoc(node: ts.Node, sourceFile: ts.SourceFile): boolean {
 
 function extractParamDocs(method: ts.MethodDeclaration): ParamDoc[] {
     const jsDocNodes = (method as any).jsDoc as ts.JSDoc[] | undefined;
+
     if (!jsDocNodes?.length) return [];
 
     const lastDoc = jsDocNodes[jsDocNodes.length - 1];
+
     if (!lastDoc.tags) return [];
 
     const result: ParamDoc[] = [];

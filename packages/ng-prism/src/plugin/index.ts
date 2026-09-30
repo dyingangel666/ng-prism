@@ -1,25 +1,25 @@
 // Plugin API exports
 export type {
-    NgPrismPlugin,
-    PanelBadge,
-    PanelDefinition,
     ControlDefinition,
+    DiscoveryComponent,
+    DiscoveryManifest,
+    DiscoveryPage,
+    DiscoveryVariant,
     HeaderWidgetDefinition,
+    InputMeta,
     NavigationDecoration,
     NavigationDecorationDefinition,
     NgPrismConfig,
-    PrismManifest,
-    ScannedComponent,
-    InputMeta,
+    NgPrismPlugin,
     OutputMeta,
-    RuntimeManifest,
+    PanelBadge,
+    PanelDefinition,
+    PrismManifest,
     RuntimeComponent,
-    DiscoveryManifest,
-    DiscoveryComponent,
-    DiscoveryVariant,
-    DiscoveryPage
+    RuntimeManifest,
+    ScannedComponent
 } from './plugin.types.js';
-export type { StyleguidePage, CustomPage, ComponentPage } from './page.types.js';
+export type { ComponentPage, CustomPage, StyleguidePage } from './page.types.js';
 
 // The canvas background a variant renders on. Part of the discovery contract
 // (`DiscoveryVariant.bg`), so external tooling and plugins can name the type
@@ -28,7 +28,7 @@ export type { CanvasBg } from '../shared/canvas-bg.type.js';
 export { CANVAS_BGS } from '../shared/canvas-bg.type.js';
 export { DEFAULT_VARIANT_BG, resolveVariantBg } from '../shared/variant-bg.js';
 export type { VariantBgSource } from '../shared/variant-bg.js';
-export { customPage, componentPage } from './page-helpers.js';
+export { componentPage, customPage } from './page-helpers.js';
 export type { ComponentPageOptions } from './page-helpers.js';
 export { defineConfig } from './define-config.js';
 // From the dependency-free registry module, not `prism-icon.component.js`.
@@ -41,5 +41,5 @@ export { defineConfig } from './define-config.js';
 // Node is harmless. The line being drawn is decorated declarations, not the
 // package.
 export { ICON_NAMES } from '../app/icons/icon-registry.js';
-export { PRISM_RENDERER_HOOKS, PRISM_MANIFEST, PRISM_CONFIG } from '../app/tokens/prism-tokens.js';
+export { PRISM_CONFIG, PRISM_MANIFEST, PRISM_RENDERER_HOOKS } from '../app/tokens/prism-tokens.js';
 export type { PrismRendererHooks } from '../app/tokens/prism-tokens.js';

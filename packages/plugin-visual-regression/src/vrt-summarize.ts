@@ -124,6 +124,7 @@ export function summarySegments(summary: VrtSummary): VrtSegment[] {
  */
 export function formatPercent(ratio: number): string {
     const pct = ratio * 100;
+
     if (pct === 0) return '0%';
     if (pct < 0.01) return '<0.01%';
     return `${pct.toFixed(2)}%`;
@@ -230,6 +231,7 @@ export function defaultExpandedGroups<T>(groups: readonly VrtGroup<T>[]): VrtGro
  */
 function warnReason(counts: VrtSummary['counts']): string {
     const parts: string[] = [];
+
     if (counts['size-mismatch'] > 0) {
         parts.push(`${counts['size-mismatch']} resized`);
     }

@@ -22,19 +22,24 @@ export function parseContentToNodes(content: string | Record<string, string>): N
     for (const [selector, html] of Object.entries(content)) {
         if (selector === 'default') continue;
         const wrapper = document.createElement('div');
+
         // SAFETY: trusted developer-authored HTML — see SECURITY.md.
         wrapper.innerHTML = html;
         const nodes: Node[] = [];
+
         for (const child of Array.from(wrapper.childNodes)) {
             const el = document.createElement('div');
+
             // SAFETY: trusted developer-authored HTML — see SECURITY.md.
             el.innerHTML = (child as Element).outerHTML ?? child.textContent ?? '';
             const projected = el.firstChild;
+
             if (projected && projected instanceof Element) {
                 applySelector(projected, selector);
                 nodes.push(projected);
             } else if (projected) {
                 const span = document.createElement('span');
+
                 applySelector(span, selector);
                 span.textContent = child.textContent;
                 nodes.push(span);
@@ -50,12 +55,14 @@ export function parseContentToNodes(content: string | Record<string, string>): N
 // developer-authored variant content from the `@Showcase` decorator.
 function htmlToNodes(html: string): Node[] {
     const wrapper = document.createElement('div');
+
     wrapper.innerHTML = html;
     return Array.from(wrapper.childNodes);
 }
 
 function applySelector(el: Element, selector: string): void {
     const attrMatch = selector.match(/^\[([^\]=]+)]$/);
+
     if (attrMatch) {
         el.setAttribute(attrMatch[1], '');
     }

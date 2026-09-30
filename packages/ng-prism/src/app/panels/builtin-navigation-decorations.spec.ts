@@ -1,5 +1,5 @@
-import { ICON_NAMES } from '../icons/prism-icon.component.js';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
+import { ICON_NAMES } from '../icons/prism-icon.component.js';
 import { BUILTIN_NAVIGATION_DECORATIONS } from './builtin-navigation-decorations.js';
 
 function component(meta?: Record<string, unknown>): RuntimeComponent {
@@ -47,6 +47,7 @@ describe('a11y navigation decoration', () => {
                 summary: { variant: 'ok', label: 'A11y score 100' }
             }
         };
+
         expect(a11y.badge(component(meta))).toBeNull();
     });
 
@@ -61,6 +62,7 @@ describe('a11y navigation decoration', () => {
                 summary: { variant: 'danger', label: 'A11y: 2 critical' }
             }
         };
+
         expect(a11y.badge(component(meta))).toEqual({
             variant: 'danger',
             label: 'A11y: 2 critical'

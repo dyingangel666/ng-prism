@@ -1,7 +1,7 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { PrismIconComponent } from '../icons/prism-icon.component.js';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { VIEWPORT_SNAPS } from '../../shared/viewport.type.js';
+import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismVariantBgService } from '../services/prism-variant-bg.service.js';
 

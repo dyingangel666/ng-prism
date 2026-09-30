@@ -11,6 +11,7 @@ function warnOnDuplicatePluginNames(config: NgPrismConfig): void {
 
     const seen = new Set<string>();
     const duplicates = new Set<string>();
+
     for (const plugin of config.plugins) {
         if (!plugin.name) continue;
         if (seen.has(plugin.name)) {

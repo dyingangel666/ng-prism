@@ -1,9 +1,9 @@
 import { join } from 'node:path';
-import type { ScannedComponent, PrismManifest } from '@ng-prism/core/plugin';
-import { visualRegressionPlugin } from './visual-regression-plugin.js';
-import { visualRegressionPlugin as visualRegressionPluginBrowser } from './visual-regression-plugin.browser.js';
-import { DEFAULT_VRT_THRESHOLDS, resolveVrtThresholds } from './thresholds.js';
+import type { PrismManifest, ScannedComponent } from '@ng-prism/core/plugin';
 import { clearReportCache } from './report-reader.js';
+import { DEFAULT_VRT_THRESHOLDS, resolveVrtThresholds } from './thresholds.js';
+import { visualRegressionPlugin as visualRegressionPluginBrowser } from './visual-regression-plugin.browser.js';
+import { visualRegressionPlugin } from './visual-regression-plugin.js';
 import type { VrtComponentMeta, VrtManifestMeta } from './visual-regression.types.js';
 
 const FIXTURE = join(__dirname, '__fixtures__', 'vrt-report.json');
@@ -51,6 +51,7 @@ describe('visualRegressionPlugin', () => {
             const result = (await plugin.onComponentScanned!(scanned('DividerComponent'))) as ScannedComponent;
 
             const meta = result.showcaseConfig.meta!['visualRegression'] as VrtComponentMeta;
+
             expect(meta.found).toBe(true);
             expect(meta.variants).toHaveLength(2);
         });
@@ -63,6 +64,7 @@ describe('visualRegressionPlugin', () => {
             const result = (await plugin.onComponentScanned!(scanned('DividerComponent'))) as ScannedComponent;
 
             const meta = result.showcaseConfig.meta!['visualRegression'] as VrtComponentMeta;
+
             expect(meta.assetBaseUrl).toBe('assets/vrt/');
         });
 
@@ -71,6 +73,7 @@ describe('visualRegressionPlugin', () => {
             const result = (await plugin.onComponentScanned!(scanned('UnknownComponent'))) as ScannedComponent;
 
             const meta = result.showcaseConfig.meta!['visualRegression'] as VrtComponentMeta;
+
             expect(meta.found).toBe(false);
             expect(meta.variants).toEqual([]);
         });
@@ -78,6 +81,7 @@ describe('visualRegressionPlugin', () => {
         it('preserves existing meta from other plugins', async () => {
             const plugin = visualRegressionPlugin({ reportPath: FIXTURE });
             const input = scanned('DividerComponent');
+
             input.showcaseConfig.meta = { jsdoc: { description: 'keep me' } };
 
             const result = (await plugin.onComponentScanned!(input)) as ScannedComponent;
@@ -94,6 +98,7 @@ describe('visualRegressionPlugin', () => {
             const result = (await plugin.onManifestReady!(manifest())) as PrismManifest;
 
             const meta = result.meta!['visualRegression'] as VrtManifestMeta;
+
             expect(meta.found).toBe(true);
             expect(meta.total!.score).toBe(75);
             expect(meta.thresholds).toEqual(DEFAULT_VRT_THRESHOLDS);
@@ -104,6 +109,7 @@ describe('visualRegressionPlugin', () => {
             const result = (await plugin.onManifestReady!(manifest())) as PrismManifest;
 
             const meta = result.meta!['visualRegression'] as VrtManifestMeta;
+
             expect(meta.found).toBe(false);
             expect(meta.total).toBeNull();
         });
@@ -112,6 +118,7 @@ describe('visualRegressionPlugin', () => {
     describe('panel', () => {
         it('registers one lazy bottom panel', () => {
             const panel = visualRegressionPlugin().panels![0];
+
             expect(panel.id).toBe('visual-regression');
             expect(panel.position).toBe('bottom');
             expect(panel.loadComponent).toBeDefined();
@@ -127,6 +134,7 @@ describe('visualRegressionPlugin', () => {
                     }
                 }
             } as never;
+
             expect(panel.isVisible!(comp)).toBe(true);
         });
 
@@ -139,12 +147,14 @@ describe('visualRegressionPlugin', () => {
                     }
                 }
             } as never;
+
             expect(panel.isVisible!(comp)).toBe(false);
         });
 
         it('is hidden for a component the plugin never annotated', () => {
             const panel = visualRegressionPlugin().panels![0];
             const comp = { meta: { showcaseConfig: {} } } as never;
+
             expect(panel.isVisible!(comp)).toBe(false);
         });
     });
@@ -152,6 +162,7 @@ describe('visualRegressionPlugin', () => {
     describe('header widget', () => {
         it('registers one lazy badge at the end of the header', () => {
             const widget = visualRegressionPlugin().headerWidgets![0];
+
             expect(widget.id).toBe('visual-regression-total');
             expect(widget.placement).toBe('end');
             expect(widget.order).toBe(-10);
@@ -162,6 +173,7 @@ describe('visualRegressionPlugin', () => {
     describe('navigation decoration', () => {
         it('registers the visual-regression source', () => {
             const ids = (visualRegressionPlugin().navigationDecorations ?? []).map((d) => d.id);
+
             expect(ids).toEqual(['visual-regression']);
         });
     });
