@@ -6,13 +6,13 @@ Variants are named tabs displayed above the component canvas. Each variant defin
 
 ```typescript
 interface Variant<T = unknown> {
-  name: string;
-  inputs?: Partial<InputsOf<T>>;
-  content?: string | Record<string, string>;
-  description?: string;
-  meta?: Record<string, unknown>;
-  bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
-  canvasLayout?: 'fit' | 'stretch';
+    name: string;
+    inputs?: Partial<InputsOf<T>>;
+    content?: string | Record<string, string>;
+    description?: string;
+    meta?: Record<string, unknown>;
+    bg?: 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
+    canvasLayout?: 'fit' | 'stretch';
 }
 ```
 

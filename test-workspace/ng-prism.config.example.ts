@@ -7,12 +7,5 @@ import { boxModelPlugin } from '@ng-prism/plugin-box-model';
 import { visualRegressionPlugin } from '@ng-prism/plugin-visual-regression';
 
 export default defineConfig({
-  plugins: [
-    figmaPlugin(),
-    jsDocPlugin(),
-    perfPlugin(),
-    coveragePlugin(),
-    boxModelPlugin(),
-    visualRegressionPlugin({ assetBaseUrl: 'assets/' }),
-  ],
+    plugins: [figmaPlugin(), jsDocPlugin(), perfPlugin(), coveragePlugin(), boxModelPlugin(), visualRegressionPlugin({ assetBaseUrl: 'assets/' })]
 });

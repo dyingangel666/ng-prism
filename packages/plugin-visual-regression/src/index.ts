@@ -4,12 +4,12 @@ export { VisualRegressionPanelComponent } from './visual-regression-panel.compon
 export { VisualRegressionHeaderBadgeComponent } from './visual-regression-header-badge.component.js';
 export { resolveAssetUrl } from './asset-url.js';
 export type {
-  VisualRegressionPluginOptions,
-  VrtComponentMeta,
-  VrtManifestMeta,
-  VrtReport,
-  VrtStatus,
-  VrtThresholds,
-  VrtTotals,
-  VrtVariantResult,
+    VisualRegressionPluginOptions,
+    VrtComponentMeta,
+    VrtManifestMeta,
+    VrtReport,
+    VrtStatus,
+    VrtThresholds,
+    VrtTotals,
+    VrtVariantResult
 } from './visual-regression.types.js';

@@ -1,94 +1,94 @@
 export interface A11yCoreConfig {
-  rules?: Record<string, { enabled: boolean }>;
-  disable?: boolean;
+    rules?: Record<string, { enabled: boolean }>;
+    disable?: boolean;
 }
 
 export interface A11yScoreResult {
-  score: number;
-  violations: number;
-  critical: number;
-  serious: number;
-  moderate: number;
-  minor: number;
-  passes: number;
-  incomplete: number;
+    score: number;
+    violations: number;
+    critical: number;
+    serious: number;
+    moderate: number;
+    minor: number;
+    passes: number;
+    incomplete: number;
 }
 
 export interface A11yThresholds {
-  /** Minimum acceptable avg score (0-100). Default: 80 */
-  score: number;
-  /** Maximum allowed critical violations across the library. Default: 0 */
-  critical: number;
-  /** Maximum allowed serious violations across the library. Default: 0 */
-  serious: number;
-  /** Maximum allowed moderate violations across the library. Default: A11Y_UNLIMITED. */
-  moderate: number;
+    /** Minimum acceptable avg score (0-100). Default: 80 */
+    score: number;
+    /** Maximum allowed critical violations across the library. Default: 0 */
+    critical: number;
+    /** Maximum allowed serious violations across the library. Default: 0 */
+    serious: number;
+    /** Maximum allowed moderate violations across the library. Default: A11Y_UNLIMITED. */
+    moderate: number;
 }
 
 /** A11y-Report shape produced by the build-time audit (or any user script). */
 export interface A11yReport {
-  /** Aggregate library-wide score data (avg + sum of violations). */
-  total: A11yScoreResult & {
-    auditedComponents: number;
-    auditedVariants: number;
-  };
-  /** Optional per-component breakdown (className → score). Used for tooltips/drilldown. */
-  components?: Record<string, A11yScoreResult>;
-  /** Timestamp the report was generated. */
-  generatedAt?: string;
+    /** Aggregate library-wide score data (avg + sum of violations). */
+    total: A11yScoreResult & {
+        auditedComponents: number;
+        auditedVariants: number;
+    };
+    /** Optional per-component breakdown (className → score). Used for tooltips/drilldown. */
+    components?: Record<string, A11yScoreResult>;
+    /** Timestamp the report was generated. */
+    generatedAt?: string;
 }
 
 /** Shape stored under `manifest.meta.a11y` once the report is merged in. */
 export interface A11yManifestMeta {
-  total: A11yReport['total'];
-  thresholds: A11yThresholds;
+    total: A11yReport['total'];
+    thresholds: A11yThresholds;
 }
 
 /** Shape stored under `showcaseConfig.meta.a11y`. */
 export interface A11yComponentMeta {
-  found: boolean;
-  score: A11yScoreResult;
-  /**
-   * Pre-derived headline, written by the build step. Optional because a report
-   * written before this field existed simply has none, and the marker is then
-   * left out rather than guessed at.
-   */
-  summary?: { variant: 'ok' | 'warn' | 'danger'; label: string };
+    found: boolean;
+    score: A11yScoreResult;
+    /**
+     * Pre-derived headline, written by the build step. Optional because a report
+     * written before this field existed simply has none, and the marker is then
+     * left out rather than guessed at.
+     */
+    summary?: { variant: 'ok' | 'warn' | 'danger'; label: string };
 }
 
 export interface NgPrismA11yConfig {
-  /** Thresholds for the header badge color-coding and (when run via the CLI) build failure. */
-  thresholds?: Partial<A11yThresholds>;
-  /** Path to the a11y report JSON, relative to the workspace root. Default: 'a11y-report.json'. */
-  reportPath?: string;
+    /** Thresholds for the header badge color-coding and (when run via the CLI) build failure. */
+    thresholds?: Partial<A11yThresholds>;
+    /** Path to the a11y report JSON, relative to the workspace root. Default: 'a11y-report.json'. */
+    reportPath?: string;
 }
 
 export interface FocusableElement {
-  element: Element;
-  index: number;
-  role: string;
-  name: string;
-  nameSource: string;
-  states: string[];
-  tabindex: number | null;
+    element: Element;
+    index: number;
+    role: string;
+    name: string;
+    nameSource: string;
+    states: string[];
+    tabindex: number | null;
 }
 
 export interface A11yNode {
-  role: string;
-  name: string | null;
-  nameSource: string | null;
-  description: string | null;
-  states: Record<string, string | boolean>;
-  children: A11yNode[];
-  hidden: boolean;
-  element: Element;
+    role: string;
+    name: string | null;
+    nameSource: string | null;
+    description: string | null;
+    states: Record<string, string | boolean>;
+    children: A11yNode[];
+    hidden: boolean;
+    element: Element;
 }
 
 export interface SrAnnouncement {
-  index: number;
-  text: string;
-  name: string;
-  role: string;
-  states: string[];
-  element: Element;
+    index: number;
+    text: string;
+    name: string;
+    role: string;
+    states: string[];
+    element: Element;
 }

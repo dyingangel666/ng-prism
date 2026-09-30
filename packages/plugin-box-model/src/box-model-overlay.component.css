@@ -1,67 +1,67 @@
 :host {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 .prism-bm__box {
-  position: absolute;
-  box-sizing: border-box;
+    position: absolute;
+    box-sizing: border-box;
 }
 .prism-bm__box--margin {
-  background: rgba(245, 158, 11, 0.2);
-  outline: 1px solid rgba(245, 158, 11, 0.5);
+    background: rgba(245, 158, 11, 0.2);
+    outline: 1px solid rgba(245, 158, 11, 0.5);
 }
 .prism-bm__box--border {
-  background: rgba(234, 179, 8, 0.3);
+    background: rgba(234, 179, 8, 0.3);
 }
 .prism-bm__box--padding {
-  background: rgba(16, 185, 129, 0.2);
-  outline: 1px solid rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.2);
+    outline: 1px solid rgba(16, 185, 129, 0.4);
 }
 .prism-bm__box--content {
-  background: rgba(59, 130, 246, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    background: rgba(59, 130, 246, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .prism-bm__label {
-  position: absolute;
-  font-size: 10px;
-  font-family: monospace;
-  color: #1f2937;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 0 3px;
-  border-radius: 2px;
-  white-space: nowrap;
-  line-height: 1.4;
+    position: absolute;
+    font-size: 10px;
+    font-family: monospace;
+    color: #1f2937;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 0 3px;
+    border-radius: 2px;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 .prism-bm__label--top {
-  top: 2px;
-  left: 50%;
-  transform: translateX(-50%);
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .prism-bm__label--bottom {
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .prism-bm__label--left {
-  left: 2px;
-  top: 50%;
-  transform: translateY(-50%);
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 .prism-bm__label--right {
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 .prism-bm__size {
-  font-size: 11px;
-  font-family: monospace;
-  color: #1e3a5f;
-  background: rgba(255, 255, 255, 0.85);
-  padding: 1px 5px;
-  border-radius: 3px;
-  white-space: nowrap;
+    font-size: 11px;
+    font-family: monospace;
+    color: #1e3a5f;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
 }

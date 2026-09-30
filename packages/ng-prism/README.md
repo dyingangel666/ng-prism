@@ -35,24 +35,24 @@ import { Component, input, output } from '@angular/core';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: 'Button',
-  category: 'Atoms',
-  description: 'Primary action button',
-  variants: [
-    { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' } },
-    { name: 'Danger', inputs: { variant: 'danger', disabled: true } },
-  ],
+    title: 'Button',
+    category: 'Atoms',
+    description: 'Primary action button',
+    variants: [
+        { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' } },
+        { name: 'Danger', inputs: { variant: 'danger', disabled: true } }
+    ]
 })
 @Component({
-  selector: 'my-button',
-  standalone: true,
-  template: `<button [class]="variant()">{{ label() }}</button>`,
+    selector: 'my-button',
+    standalone: true,
+    template: `<button [class]="variant()">{{ label() }}</button>`
 })
 export class ButtonComponent {
-  variant = input<'primary' | 'secondary' | 'danger'>('primary');
-  label = input('Button');
-  disabled = input(false);
-  clicked = output<void>();
+    variant = input<'primary' | 'secondary' | 'danger'>('primary');
+    label = input('Button');
+    disabled = input(false);
+    clicked = output<void>();
 }
 ```
 
@@ -80,14 +80,14 @@ import { defineConfig } from '@ng-prism/core/config';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({
-  plugins: [jsDocPlugin()],
+    plugins: [jsDocPlugin()],
 
-  theme: {
-    '--prism-primary': '#00a67e',
-    '--prism-font-sans': "'Inter', sans-serif",
-  },
+    theme: {
+        '--prism-primary': '#00a67e',
+        '--prism-font-sans': "'Inter', sans-serif"
+    },
 
-  appProviders: [provideAnimationsAsync(), provideHttpClient()],
+    appProviders: [provideAnimationsAsync(), provideHttpClient()]
 });
 ```
 
@@ -117,9 +117,7 @@ For complex components that need template projections or mock data:
 
 ```typescript
 providePrism(PRISM_RUNTIME_MANIFEST, config, {
-  componentPages: [
-    { title: 'Table Demo', category: 'Data', component: TableDemoPage },
-  ],
+    componentPages: [{ title: 'Table Demo', category: 'Data', component: TableDemoPage }]
 });
 ```
 

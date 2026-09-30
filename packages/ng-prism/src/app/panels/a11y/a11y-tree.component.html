@@ -1,9 +1,10 @@
 @if (!rendererService.renderedElement()) {
-<div class="tree-empty">
-  Select a component to inspect the accessibility tree.
-</div>
+    <div class="tree-empty"> Select a component to inspect the accessibility tree. </div>
 } @else if (tree()) {
-<div class="aria-tree">
-  <prism-a11y-tree-node [node]="tree()!" [depth]="0" [isLast]="true" />
-</div>
+    <div class="aria-tree">
+        <prism-a11y-tree-node
+            [node]="tree()!"
+            [depth]="0"
+            [isLast]="true" />
+    </div>
 }

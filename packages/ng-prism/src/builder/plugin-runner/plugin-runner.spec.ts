@@ -2,140 +2,140 @@ import type { NgPrismPlugin, PrismManifest, ScannedComponent } from '../../plugi
 import { runPluginHooks } from './plugin-runner.js';
 
 function createComponent(overrides: Partial<ScannedComponent> = {}): ScannedComponent {
-  return {
-    className: 'TestComponent',
-    filePath: 'test.ts',
-    showcaseConfig: { title: 'Test' },
-    inputs: [],
-    outputs: [],
-    componentMeta: { selector: 'test', standalone: true, isDirective: false },
-    ...overrides,
-  };
+    return {
+        className: 'TestComponent',
+        filePath: 'test.ts',
+        showcaseConfig: { title: 'Test' },
+        inputs: [],
+        outputs: [],
+        componentMeta: { selector: 'test', standalone: true, isDirective: false },
+        ...overrides
+    };
 }
 
 function createManifest(components: ScannedComponent[] = [createComponent()]): PrismManifest {
-  return { components };
+    return { components };
 }
 
 describe('runPluginHooks', () => {
-  it('should return manifest unchanged when no plugins are provided', async () => {
-    const manifest = createManifest();
-    const result = await runPluginHooks(manifest, []);
+    it('should return manifest unchanged when no plugins are provided', async () => {
+        const manifest = createManifest();
+        const result = await runPluginHooks(manifest, []);
 
-    expect(result.components).toEqual(manifest.components);
-  });
+        expect(result.components).toEqual(manifest.components);
+    });
 
-  it('should call onComponentScanned for each component', async () => {
-    const spy = jest.fn();
-    const plugin: NgPrismPlugin = { name: 'spy-plugin', onComponentScanned: spy };
-    const manifest = createManifest([createComponent(), createComponent({ className: 'OtherComponent' })]);
+    it('should call onComponentScanned for each component', async () => {
+        const spy = jest.fn();
+        const plugin: NgPrismPlugin = { name: 'spy-plugin', onComponentScanned: spy };
+        const manifest = createManifest([createComponent(), createComponent({ className: 'OtherComponent' })]);
 
-    await runPluginHooks(manifest, [plugin]);
+        await runPluginHooks(manifest, [plugin]);
 
-    expect(spy).toHaveBeenCalledTimes(2);
-  });
+        expect(spy).toHaveBeenCalledTimes(2);
+    });
 
-  it('should apply component transformation when onComponentScanned returns a value', async () => {
-    const plugin: NgPrismPlugin = {
-      name: 'transform-plugin',
-      onComponentScanned: (comp) => ({
-        ...comp,
-        meta: { ...comp.meta, custom: true },
-      }),
-    };
-    const manifest = createManifest();
+    it('should apply component transformation when onComponentScanned returns a value', async () => {
+        const plugin: NgPrismPlugin = {
+            name: 'transform-plugin',
+            onComponentScanned: (comp) => ({
+                ...comp,
+                meta: { ...comp.meta, custom: true }
+            })
+        };
+        const manifest = createManifest();
 
-    const result = await runPluginHooks(manifest, [plugin]);
+        const result = await runPluginHooks(manifest, [plugin]);
 
-    expect(result.components[0].meta).toEqual({ custom: true });
-  });
+        expect(result.components[0].meta).toEqual({ custom: true });
+    });
 
-  it('should leave component unchanged when onComponentScanned returns void', async () => {
-    const plugin: NgPrismPlugin = {
-      name: 'noop-plugin',
-      onComponentScanned: () => { /* void */ },
-    };
-    const manifest = createManifest();
+    it('should leave component unchanged when onComponentScanned returns void', async () => {
+        const plugin: NgPrismPlugin = {
+            name: 'noop-plugin',
+            onComponentScanned: () => {
+                /* void */
+            }
+        };
+        const manifest = createManifest();
 
-    const result = await runPluginHooks(manifest, [plugin]);
+        const result = await runPluginHooks(manifest, [plugin]);
 
-    expect(result.components[0]).toEqual(manifest.components[0]);
-  });
+        expect(result.components[0]).toEqual(manifest.components[0]);
+    });
 
-  it('should chain multiple plugins sequentially for onComponentScanned', async () => {
-    const pluginA: NgPrismPlugin = {
-      name: 'plugin-a',
-      onComponentScanned: (comp) => ({ ...comp, meta: { ...comp.meta, a: true } }),
-    };
-    const pluginB: NgPrismPlugin = {
-      name: 'plugin-b',
-      onComponentScanned: (comp) => ({ ...comp, meta: { ...comp.meta, b: true } }),
-    };
-    const manifest = createManifest();
+    it('should chain multiple plugins sequentially for onComponentScanned', async () => {
+        const pluginA: NgPrismPlugin = {
+            name: 'plugin-a',
+            onComponentScanned: (comp) => ({ ...comp, meta: { ...comp.meta, a: true } })
+        };
+        const pluginB: NgPrismPlugin = {
+            name: 'plugin-b',
+            onComponentScanned: (comp) => ({ ...comp, meta: { ...comp.meta, b: true } })
+        };
+        const manifest = createManifest();
 
-    const result = await runPluginHooks(manifest, [pluginA, pluginB]);
+        const result = await runPluginHooks(manifest, [pluginA, pluginB]);
 
-    expect(result.components[0].meta).toEqual({ a: true, b: true });
-  });
+        expect(result.components[0].meta).toEqual({ a: true, b: true });
+    });
 
-  it('should call onManifestReady and apply transformation', async () => {
-    const plugin: NgPrismPlugin = {
-      name: 'manifest-plugin',
-      onManifestReady: (m) => ({
-        components: [...m.components, createComponent({ className: 'InjectedComponent' })],
-      }),
-    };
-    const manifest = createManifest();
+    it('should call onManifestReady and apply transformation', async () => {
+        const plugin: NgPrismPlugin = {
+            name: 'manifest-plugin',
+            onManifestReady: (m) => ({
+                components: [...m.components, createComponent({ className: 'InjectedComponent' })]
+            })
+        };
+        const manifest = createManifest();
 
-    const result = await runPluginHooks(manifest, [plugin]);
+        const result = await runPluginHooks(manifest, [plugin]);
 
-    expect(result.components).toHaveLength(2);
-    expect(result.components[1].className).toBe('InjectedComponent');
-  });
+        expect(result.components).toHaveLength(2);
+        expect(result.components[1].className).toBe('InjectedComponent');
+    });
 
-  it('should wrap onComponentScanned errors with plugin and component context', async () => {
-    const plugin: NgPrismPlugin = {
-      name: 'broken-plugin',
-      onComponentScanned: () => {
-        throw new Error('boom');
-      },
-    };
-    const manifest = createManifest([createComponent({ className: 'BadComponent' })]);
+    it('should wrap onComponentScanned errors with plugin and component context', async () => {
+        const plugin: NgPrismPlugin = {
+            name: 'broken-plugin',
+            onComponentScanned: () => {
+                throw new Error('boom');
+            }
+        };
+        const manifest = createManifest([createComponent({ className: 'BadComponent' })]);
 
-    await expect(runPluginHooks(manifest, [plugin])).rejects.toThrow(
-      /plugin "broken-plugin" failed in onComponentScanned for component "BadComponent" — boom/,
-    );
-  });
+        await expect(runPluginHooks(manifest, [plugin])).rejects.toThrow(/plugin "broken-plugin" failed in onComponentScanned for component "BadComponent" — boom/);
+    });
 
-  it('should preserve original error as cause', async () => {
-    const original = new Error('original');
-    const plugin: NgPrismPlugin = {
-      name: 'broken-plugin',
-      onManifestReady: () => {
-        throw original;
-      },
-    };
+    it('should preserve original error as cause', async () => {
+        const original = new Error('original');
+        const plugin: NgPrismPlugin = {
+            name: 'broken-plugin',
+            onManifestReady: () => {
+                throw original;
+            }
+        };
 
-    try {
-      await runPluginHooks(createManifest(), [plugin]);
-      fail('expected to throw');
-    } catch (err) {
-      expect((err as Error & { cause?: unknown }).cause).toBe(original);
-    }
-  });
+        try {
+            await runPluginHooks(createManifest(), [plugin]);
+            fail('expected to throw');
+        } catch (err) {
+            expect((err as Error & { cause?: unknown }).cause).toBe(original);
+        }
+    });
 
-  it('should handle async plugin hooks', async () => {
-    const plugin: NgPrismPlugin = {
-      name: 'async-plugin',
-      onComponentScanned: async (comp) => {
-        await new Promise((r) => setTimeout(r, 1));
-        return { ...comp, meta: { ...comp.meta, async: true } };
-      },
-    };
-    const manifest = createManifest();
+    it('should handle async plugin hooks', async () => {
+        const plugin: NgPrismPlugin = {
+            name: 'async-plugin',
+            onComponentScanned: async (comp) => {
+                await new Promise((r) => setTimeout(r, 1));
+                return { ...comp, meta: { ...comp.meta, async: true } };
+            }
+        };
+        const manifest = createManifest();
 
-    const result = await runPluginHooks(manifest, [plugin]);
+        const result = await runPluginHooks(manifest, [plugin]);
 
-    expect(result.components[0].meta).toEqual({ async: true });
-  });
+        expect(result.components[0].meta).toEqual({ async: true });
+    });
 });

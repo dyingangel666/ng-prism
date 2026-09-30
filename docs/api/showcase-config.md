@@ -6,22 +6,22 @@ Configuration object passed to the `@Showcase` decorator.
 import type { Provider } from '@angular/core';
 
 interface ShowcaseConfig<T = unknown> {
-  title: string;
-  description?: string;
-  section?: string;
-  sectionOrder?: number;
-  category?: string;
-  categoryOrder?: number;
-  componentOrder?: number;
-  variants?: Variant<T>[];
-  tags?: string[];
-  providers?: Provider[];
-  meta?: Record<string, unknown>;
-  bg?: CanvasBg;
-  canvasLayout?: CanvasLayout;
-  host?: string | DirectiveHost;
-  renderPage?: string;
-  status?: ComponentStatus;
+    title: string;
+    description?: string;
+    section?: string;
+    sectionOrder?: number;
+    category?: string;
+    categoryOrder?: number;
+    componentOrder?: number;
+    variants?: Variant<T>[];
+    tags?: string[];
+    providers?: Provider[];
+    meta?: Record<string, unknown>;
+    bg?: CanvasBg;
+    canvasLayout?: CanvasLayout;
+    host?: string | DirectiveHost;
+    renderPage?: string;
+    status?: ComponentStatus;
 }
 
 type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
@@ -281,9 +281,9 @@ When the property is omitted, the component is treated like `stable` but rendere
 UI impact:
 
 - **Sidebar**
-  - `'wip'` → small amber dot at the right edge of the sidebar item, with a native tooltip "Work in progress".
-  - `'deprecated'` → component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
-  - `'stable'` / `'beta'` / unset → no sidebar decoration.
+    - `'wip'` → small amber dot at the right edge of the sidebar item, with a native tooltip "Work in progress".
+    - `'deprecated'` → component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
+    - `'stable'` / `'beta'` / unset → no sidebar decoration.
 - **Component head** — an outlined status chip renders inline with the title for every explicit value (Stable, Beta, Work in progress, Deprecated). The `<selector>` itself has moved into the details popover behind the ⓘ glyph.
 
 All colors come from the `--prism-mark-*` role tokens (plus `--prism-text-muted` for `stable`) and adapt automatically to light/dark mode. The chip is always an outline and never a filled surface, so `deprecated` separates itself by hue rather than by weight.
@@ -294,15 +294,15 @@ All colors come from the `--prism-mark-*` role tokens (plus `--prism-text-muted`
 
 ```typescript
 interface DirectiveHost {
-  /** CSS selector of the host element to render */
-  selector: string;
-  /** Import info for the Angular component */
-  import: {
-    name: string; // exported class name
-    from: string; // npm package or path
-  };
-  /** Static inputs passed to the host component */
-  inputs?: Record<string, unknown>;
+    /** CSS selector of the host element to render */
+    selector: string;
+    /** Import info for the Angular component */
+    import: {
+        name: string; // exported class name
+        from: string; // npm package or path
+    };
+    /** Static inputs passed to the host component */
+    inputs?: Record<string, unknown>;
 }
 ```
 

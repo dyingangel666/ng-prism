@@ -8,15 +8,15 @@ Pass a plain string to project into the default (unnamed) slot:
 
 ```typescript
 @Showcase({
-  title: 'Button',
-  variants: [
-    { name: 'With Icon', content: '<svg viewBox="0 0 16 16">...</svg> Save' },
-    { name: 'Text Only', content: 'Save' },
-  ],
+    title: 'Button',
+    variants: [
+        { name: 'With Icon', content: '<svg viewBox="0 0 16 16">...</svg> Save' },
+        { name: 'Text Only', content: 'Save' }
+    ]
 })
 @Component({
-  selector: 'lib-button',
-  template: `<button><ng-content /></button>`,
+    selector: 'lib-button',
+    template: `<button><ng-content /></button>`
 })
 export class ButtonComponent {}
 ```
@@ -27,33 +27,33 @@ Pass a `Record<string, string>` where each key is a CSS selector matching an `<n
 
 ```typescript
 @Showcase({
-  title: 'Card',
-  variants: [
-    {
-      name: 'Full',
-      content: {
-        '[card-header]': '<h3>Card Title</h3>',
-        '[card-footer]': '<button>Action</button>',
-        default: '<p>This is the card body content.</p>',
-      },
-    },
-    {
-      name: 'Header Only',
-      content: {
-        '[card-header]': '<h3>Card Title</h3>',
-      },
-    },
-  ],
+    title: 'Card',
+    variants: [
+        {
+            name: 'Full',
+            content: {
+                '[card-header]': '<h3>Card Title</h3>',
+                '[card-footer]': '<button>Action</button>',
+                default: '<p>This is the card body content.</p>'
+            }
+        },
+        {
+            name: 'Header Only',
+            content: {
+                '[card-header]': '<h3>Card Title</h3>'
+            }
+        }
+    ]
 })
 @Component({
-  selector: 'lib-card',
-  template: `
-    <div class="card">
-      <div class="card__header"><ng-content select="[card-header]" /></div>
-      <div class="card__body"><ng-content /></div>
-      <div class="card__footer"><ng-content select="[card-footer]" /></div>
-    </div>
-  `,
+    selector: 'lib-card',
+    template: `
+        <div class="card">
+            <div class="card__header"><ng-content select="[card-header]" /></div>
+            <div class="card__body"><ng-content /></div>
+            <div class="card__footer"><ng-content select="[card-footer]" /></div>
+        </div>
+    `
 })
 export class CardComponent {}
 ```
@@ -66,7 +66,7 @@ Content strings are treated as raw HTML and injected via the renderer. You can i
 content: `
   <strong>Bold text</strong> and
   <em>italic text</em> in the same slot.
-`
+`;
 ```
 
 ## Limitations

@@ -36,8 +36,8 @@ const STYLE_ELEMENT_ID = 'ng-prism-capture-styles';
  * looks correct; it just silently stops testing transparency.
  */
 export const CAPTURE_TRANSPARENT_SELECTOR =
-  `[${CAPTURE_ATTRIBUTE}] .prism-canvas-stage[data-bg='transparent'],\n` +
-  `[${CAPTURE_ATTRIBUTE}] :is(html, body, prism-shell, .prism-shell, .prism-body, .prism-main, .prism-canvas-wrap):has(.prism-canvas-stage[data-bg='transparent'])`;
+    `[${CAPTURE_ATTRIBUTE}] .prism-canvas-stage[data-bg='transparent'],\n` +
+    `[${CAPTURE_ATTRIBUTE}] :is(html, body, prism-shell, .prism-shell, .prism-body, .prism-main, .prism-canvas-wrap):has(.prism-canvas-stage[data-bg='transparent'])`;
 
 /**
  * Everything capture mode removes from layout so the canvas owns the viewport.
@@ -82,9 +82,7 @@ export const CAPTURE_TRANSPARENT_SELECTOR =
  * with an empty screenshot rather than an honest one.
  */
 const CAPTURE_CANVAS_ONLY_SELECTOR =
-  `[${CAPTURE_ATTRIBUTE}] ` +
-  `:is(.prism-shell, .prism-body, .prism-main, .prism-canvas-wrap)` +
-  `:has(.prism-canvas-stage) > :not(:has(.prism-canvas-stage))`;
+    `[${CAPTURE_ATTRIBUTE}] ` + `:is(.prism-shell, .prism-body, .prism-main, .prism-canvas-wrap)` + `:has(.prism-canvas-stage) > :not(:has(.prism-canvas-stage))`;
 
 /**
  * Global stylesheet applied in capture mode.
@@ -215,28 +213,24 @@ ${CAPTURE_CANVAS_ONLY_SELECTOR} {
  */
 @Injectable({ providedIn: 'root' })
 export class PrismCaptureService {
-  private readonly _active = signal(
-    typeof window !== 'undefined'
-      ? parseCaptureParam(window.location.search)
-      : false
-  );
+    private readonly _active = signal(typeof window !== 'undefined' ? parseCaptureParam(window.location.search) : false);
 
-  /** True while the app renders for an external screenshot tool. */
-  readonly active = this._active.asReadonly();
+    /** True while the app renders for an external screenshot tool. */
+    readonly active = this._active.asReadonly();
 
-  constructor() {
-    if (this._active()) this.applyToDocument();
-  }
+    constructor() {
+        if (this._active()) this.applyToDocument();
+    }
 
-  private applyToDocument(): void {
-    if (typeof document === 'undefined') return;
-    document.documentElement.setAttribute(CAPTURE_ATTRIBUTE, '');
-    if (document.getElementById(STYLE_ELEMENT_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ELEMENT_ID;
-    style.textContent = CAPTURE_STYLES;
-    document.head.appendChild(style);
-  }
+    private applyToDocument(): void {
+        if (typeof document === 'undefined') return;
+        document.documentElement.setAttribute(CAPTURE_ATTRIBUTE, '');
+        if (document.getElementById(STYLE_ELEMENT_ID)) return;
+        const style = document.createElement('style');
+        style.id = STYLE_ELEMENT_ID;
+        style.textContent = CAPTURE_STYLES;
+        document.head.appendChild(style);
+    }
 }
 
 /**
@@ -246,7 +240,7 @@ export class PrismCaptureService {
  * (including `?capture=0` and `?capture=false`) is "off".
  */
 export function parseCaptureParam(search: string): boolean {
-  const value = new URLSearchParams(search).get(CAPTURE_PARAM);
-  if (value === null) return false;
-  return value === '' || value === '1' || value === 'true';
+    const value = new URLSearchParams(search).get(CAPTURE_PARAM);
+    if (value === null) return false;
+    return value === '' || value === '1' || value === 'true';
 }

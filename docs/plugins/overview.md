@@ -34,7 +34,7 @@ import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
-  plugins: [jsDocPlugin(), figmaPlugin()],
+    plugins: [jsDocPlugin(), figmaPlugin()]
 });
 ```
 

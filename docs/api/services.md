@@ -97,10 +97,10 @@ Records output events emitted by the rendered component for display in the Event
 
 ```typescript
 interface EventLogEntry {
-  id: number;
-  timestamp: number;
-  name: string;
-  value: unknown;
+    id: number;
+    timestamp: number;
+    name: string;
+    value: unknown;
 }
 ```
 

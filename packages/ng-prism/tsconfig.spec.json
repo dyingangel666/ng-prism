@@ -1,20 +1,15 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/jest",
-    "types": ["jest", "node"],
-    "lib": ["ES2022", "DOM"],
-    "forceConsistentCasingInFileNames": true
-  },
-  "include": [
-    "src/**/*.test.ts",
-    "src/**/*.spec.ts",
-    "src/**/*.d.ts",
-    "src/app/**/__fixtures__/*.ts"
-  ],
-  "references": [
-    {
-      "path": "./tsconfig.typecheck.json"
-    }
-  ]
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "./out-tsc/jest",
+        "types": ["jest", "node"],
+        "lib": ["ES2022", "DOM"],
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.d.ts", "src/app/**/__fixtures__/*.ts"],
+    "references": [
+        {
+            "path": "./tsconfig.typecheck.json"
+        }
+    ]
 }

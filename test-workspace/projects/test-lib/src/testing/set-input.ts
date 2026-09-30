@@ -11,10 +11,6 @@
  * the components under test write to them, which is behaviour worth keeping
  * real.
  */
-export function setInput(
-  component: object,
-  name: string,
-  value: unknown
-): void {
-  (component as Record<string, unknown>)[name] = () => value;
+export function setInput(component: object, name: string, value: unknown): void {
+    (component as Record<string, unknown>)[name] = () => value;
 }

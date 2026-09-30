@@ -22,38 +22,38 @@ import { renderCanvasChain } from './__fixtures__/capture-dom.js';
  * stacking.
  */
 describe('shell width', () => {
-  afterEach(() => {
-    document.head.querySelectorAll('style').forEach((el) => el.remove());
-    document.body.innerHTML = '';
-  });
+    afterEach(() => {
+        document.head.querySelectorAll('style').forEach((el) => el.remove());
+        document.body.innerHTML = '';
+    });
 
-  /**
-   * The fix itself. An implicit track is `auto`, and an `auto` track takes the
-   * min-content width of its contents as its minimum — the whole body, in this
-   * one case. Declaring the track is the only way to give it a zero floor.
-   */
-  it('should give its column a zero minimum so the body can shrink', () => {
-    const dom = renderCanvasChain('light');
+    /**
+     * The fix itself. An implicit track is `auto`, and an `auto` track takes the
+     * min-content width of its contents as its minimum — the whole body, in this
+     * one case. Declaring the track is the only way to give it a zero floor.
+     */
+    it('should give its column a zero minimum so the body can shrink', () => {
+        const dom = renderCanvasChain('light');
 
-    const columns = getComputedStyle(dom.shell).gridTemplateColumns;
+        const columns = getComputedStyle(dom.shell).gridTemplateColumns;
 
-    expect(columns).toBe('minmax(0, 1fr)');
-  });
+        expect(columns).toBe('minmax(0, 1fr)');
+    });
 
-  /**
-   * Why one track was enough.
-   *
-   * The levels below the shell declare bare `fr` tracks of their own, and they
-   * get away with it because an item whose `overflow` is not `visible` has an
-   * automatic minimum of zero — so `.prism-main` never imposes its min-content
-   * width on the track holding it. Take that `overflow` away and the one-line
-   * fix above silently stops being sufficient, with nothing else to catch it.
-   */
-  it('should keep the main region clipping, which is what zeroes its own minimum', () => {
-    const dom = renderCanvasChain('light');
-    const main = dom.host.querySelector('.prism-main');
+    /**
+     * Why one track was enough.
+     *
+     * The levels below the shell declare bare `fr` tracks of their own, and they
+     * get away with it because an item whose `overflow` is not `visible` has an
+     * automatic minimum of zero — so `.prism-main` never imposes its min-content
+     * width on the track holding it. Take that `overflow` away and the one-line
+     * fix above silently stops being sufficient, with nothing else to catch it.
+     */
+    it('should keep the main region clipping, which is what zeroes its own minimum', () => {
+        const dom = renderCanvasChain('light');
+        const main = dom.host.querySelector('.prism-main');
 
-    expect(main).not.toBeNull();
-    expect(getComputedStyle(main as Element).overflow).not.toBe('visible');
-  });
+        expect(main).not.toBeNull();
+        expect(getComputedStyle(main as Element).overflow).not.toBe('visible');
+    });
 });

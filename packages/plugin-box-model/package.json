@@ -1,54 +1,54 @@
 {
-  "name": "@ng-prism/plugin-box-model",
-  "version": "22.2.1",
-  "description": "CSS box model inspector for ng-prism.",
-  "ng-add": {
-    "save": "devDependencies"
-  },
-  "schematics": "./schematics/collection.json",
-  "keywords": [
-    "@ng-prism/core",
-    "box-model",
-    "inspector",
-    "plugin",
-    "angular",
-    "styleguide"
-  ],
-  "license": "MIT",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "schematics",
-    "!**/*.tsbuildinfo"
-  ],
-  "peerDependencies": {
-    "@angular/core": ">=20.0.0",
-    "rxjs": ">=7.0.0",
-    "@ng-prism/core": "^22.2.1-0",
-    "@angular-devkit/schematics": ">=20.0.0"
-  },
-  "devDependencies": {
-    "@ng-prism/core": "*"
-  },
-  "dependencies": {
-    "tslib": "^2.3.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dyingangel666/ng-prism.git",
-    "directory": "packages/plugin-box-model"
-  },
-  "homepage": "https://dyingangel666.github.io/ng-prism/",
-  "bugs": "https://github.com/dyingangel666/ng-prism/issues"
+    "name": "@ng-prism/plugin-box-model",
+    "version": "22.2.1",
+    "description": "CSS box model inspector for ng-prism.",
+    "ng-add": {
+        "save": "devDependencies"
+    },
+    "schematics": "./schematics/collection.json",
+    "keywords": [
+        "@ng-prism/core",
+        "box-model",
+        "inspector",
+        "plugin",
+        "angular",
+        "styleguide"
+    ],
+    "license": "MIT",
+    "type": "module",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist",
+        "schematics",
+        "!**/*.tsbuildinfo"
+    ],
+    "peerDependencies": {
+        "@angular/core": ">=20.0.0",
+        "rxjs": ">=7.0.0",
+        "@ng-prism/core": "^22.2.1-0",
+        "@angular-devkit/schematics": ">=20.0.0"
+    },
+    "devDependencies": {
+        "@ng-prism/core": "*"
+    },
+    "dependencies": {
+        "tslib": "^2.3.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dyingangel666/ng-prism.git",
+        "directory": "packages/plugin-box-model"
+    },
+    "homepage": "https://dyingangel666.github.io/ng-prism/",
+    "bugs": "https://github.com/dyingangel666/ng-prism/issues"
 }

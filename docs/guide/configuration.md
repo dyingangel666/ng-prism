@@ -8,12 +8,12 @@ import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({
-  plugins: [jsDocPlugin()],
-  theme: {
-    '--prism-primary': '#6366f1',
-    '--prism-primary-from': '#6366f1',
-    '--prism-primary-to': '#8b5cf6',
-  },
+    plugins: [jsDocPlugin()],
+    theme: {
+        '--prism-primary': '#6366f1',
+        '--prism-primary-from': '#6366f1',
+        '--prism-primary-to': '#8b5cf6'
+    }
 });
 ```
 
@@ -48,10 +48,7 @@ import { defineConfig } from '@ng-prism/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 
 export default defineConfig({
-  appProviders: [
-    provideRouter([], withHashLocation()),
-    { provide: MyApiService, useClass: MockApiService },
-  ],
+    appProviders: [provideRouter([], withHashLocation()), { provide: MyApiService, useClass: MockApiService }]
 });
 ```
 
@@ -63,11 +60,11 @@ Override CSS custom properties to match your design system:
 
 ```typescript
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0ea5e9',
-    '--prism-bg': '#0f172a',
-    '--prism-font-sans': '"Inter", sans-serif',
-  },
+    theme: {
+        '--prism-primary': '#0ea5e9',
+        '--prism-bg': '#0f172a',
+        '--prism-font-sans': '"Inter", sans-serif'
+    }
 });
 ```
 
@@ -79,12 +76,12 @@ Replace the default ng-prism logo, title, and subtitle in the header:
 
 ```typescript
 export default defineConfig({
-  title: 'My Component Library',
-  subtitle: 'acme/design-system',
-  logo: {
-    light: 'assets/logo-dark.svg',
-    dark: 'assets/logo-light.svg',
-  },
+    title: 'My Component Library',
+    subtitle: 'acme/design-system',
+    logo: {
+        light: 'assets/logo-dark.svg',
+        dark: 'assets/logo-light.svg'
+    }
 });
 ```
 
@@ -103,10 +100,10 @@ Show the deployed version and git hash as a pill in the header:
 
 ```typescript
 export default defineConfig({
-  buildInfo: {
-    version: packageJson.version,
-    gitHash: environment.gitHash,
-  },
+    buildInfo: {
+        version: packageJson.version,
+        gitHash: environment.gitHash
+    }
 });
 ```
 
@@ -135,7 +132,7 @@ import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
-  plugins: [jsDocPlugin(), figmaPlugin()],
+    plugins: [jsDocPlugin(), figmaPlugin()]
 });
 ```
 

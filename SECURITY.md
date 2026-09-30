@@ -23,9 +23,9 @@ processed at build time by the TypeScript scanner, and embedded into the
 runtime manifest:
 
 - `@Showcase` decorator metadata, including:
-  - `variants[].inputs` — input values for a variant
-  - `variants[].content` — HTML snippets projected into the rendered component
-  - `providers`, `meta`, `canvasLayout`, etc.
+    - `variants[].inputs` — input values for a variant
+    - `variants[].content` — HTML snippets projected into the rendered component
+    - `providers`, `meta`, `canvasLayout`, etc.
 - `NgPrismConfig` (from `ng-prism.config.ts`) — theme, plugins, custom pages,
   thresholds, …
 - `ComponentPage` and `CustomPage` definitions registered via

@@ -1,83 +1,83 @@
 name: Deploy Docs + Demo
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+    push:
+        branches: [main]
+    workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+    group: pages
+    cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'npm'
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
 
-      - run: npm ci
+            - run: npm ci
 
-      - name: Build ng-prism core + plugins
-        run: npx nx run-many -t build --projects=ng-prism,plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf,plugin-visual-regression
+            - name: Build ng-prism core + plugins
+              run: npx nx run-many -t build --projects=ng-prism,plugin-box-model,plugin-coverage,plugin-figma,plugin-jsdoc,plugin-perf,plugin-visual-regression
 
-      - name: Install test-workspace deps
-        working-directory: test-workspace
-        env:
-          npm_config_registry: https://registry.npmjs.org
-        run: npm install
+            - name: Install test-workspace deps
+              working-directory: test-workspace
+              env:
+                  npm_config_registry: https://registry.npmjs.org
+              run: npm install
 
-      - name: Generate coverage report
-        working-directory: test-workspace
-        # Must run before the demo build: the coverage plugin reads
-        # coverage-summary.json while scanning, and matches its entries against
-        # absolute source paths — so the report has to come from this checkout.
-        run: npm run test:coverage
+            - name: Generate coverage report
+              working-directory: test-workspace
+              # Must run before the demo build: the coverage plugin reads
+              # coverage-summary.json while scanning, and matches its entries against
+              # absolute source paths — so the report has to come from this checkout.
+              run: npm run test:coverage
 
-      - name: Build demo
-        working-directory: test-workspace
-        run: |
-          # ng-prism.config.ts is gitignored because `ng add` writes it, so the
-          # demo mirrors the checked-in example — which enables every plugin.
-          cp ng-prism.config.example.ts ng-prism.config.ts
+            - name: Build demo
+              working-directory: test-workspace
+              run: |
+                  # ng-prism.config.ts is gitignored because `ng add` writes it, so the
+                  # demo mirrors the checked-in example — which enables every plugin.
+                  cp ng-prism.config.example.ts ng-prism.config.ts
 
-          # Serve from the GitHub Pages subpath.
-          node -e "
-            const fs = require('fs');
-            const cfg = JSON.parse(fs.readFileSync('angular.json','utf-8'));
-            cfg.projects['test-lib-prism'].architect.build.options.baseHref = '/ng-prism/demo/';
-            fs.writeFileSync('angular.json', JSON.stringify(cfg, null, 2));
-          "
+                  # Serve from the GitHub Pages subpath.
+                  node -e "
+                    const fs = require('fs');
+                    const cfg = JSON.parse(fs.readFileSync('angular.json','utf-8'));
+                    cfg.projects['test-lib-prism'].architect.build.options.baseHref = '/ng-prism/demo/';
+                    fs.writeFileSync('angular.json', JSON.stringify(cfg, null, 2));
+                  "
 
-          npx ng run test-lib:prism-build
+                  npx ng run test-lib:prism-build
 
-      - name: Assemble site
-        run: |
-          mkdir -p _site
-          cp -r docs/* _site/
-          cp -r test-workspace/dist/test-lib-prism _site/demo
-          cp _site/demo/index.html _site/demo/404.html
-          touch _site/.nojekyll
+            - name: Assemble site
+              run: |
+                  mkdir -p _site
+                  cp -r docs/* _site/
+                  cp -r test-workspace/dist/test-lib-prism _site/demo
+                  cp _site/demo/index.html _site/demo/404.html
+                  touch _site/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: _site
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - id: deployment
+              uses: actions/deploy-pages@v4

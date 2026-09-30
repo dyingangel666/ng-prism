@@ -1,14 +1,13 @@
 @if (visible()) {
-<div class="prism-bg-pill">
-  <span class="label">Recommended: {{ recommended() }}</span>
-  <button
-    type="button"
-    class="reset"
-    title="Reset to recommended background"
-    aria-label="Reset to recommended background"
-    (click)="reset()"
-  >
-    Reset
-  </button>
-</div>
+    <div class="prism-bg-pill">
+        <span class="label">Recommended: {{ recommended() }}</span>
+        <button
+            type="button"
+            class="reset"
+            title="Reset to recommended background"
+            aria-label="Reset to recommended background"
+            (click)="reset()">
+            Reset
+        </button>
+    </div>
 }

@@ -208,12 +208,12 @@ Add the wildcard mapping under `compilerOptions.paths`:
 
 ```jsonc
 {
-  "compilerOptions": {
-    "paths": {
-      // ... your existing mappings ...
-      "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+    "compilerOptions": {
+        "paths": {
+            // ... your existing mappings ...
+            "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+        }
     }
-  }
 }
 ```
 
@@ -291,16 +291,16 @@ A new optional `cacheDir` option on both `@ng-prism/core:serve` and `@ng-prism/c
 
 ```json
 {
-  "architect": {
-    "prism": {
-      "builder": "@ng-prism/core:serve",
-      "options": {
-        "entryPoint": "projects/my-lib",
-        "prismProject": "my-lib-prism",
-        "cacheDir": "tmp/prism-cache"
-      }
+    "architect": {
+        "prism": {
+            "builder": "@ng-prism/core:serve",
+            "options": {
+                "entryPoint": "projects/my-lib",
+                "prismProject": "my-lib-prism",
+                "cacheDir": "tmp/prism-cache"
+            }
+        }
     }
-  }
 }
 ```
 

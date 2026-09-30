@@ -1,49 +1,49 @@
 :host {
-  display: block;
+    display: block;
 }
 
 .aria-tree-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 0;
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  line-height: 1.8;
-  color: var(--prism-text-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--prism-text-2);
 }
 .aria-tree-line--hidden {
-  opacity: 0.4;
+    opacity: 0.4;
 }
 
 .indent {
-  color: var(--prism-text-ghost);
-  opacity: 0.5;
-  user-select: none;
-  flex-shrink: 0;
-  white-space: pre;
-  font-size: 12px;
-  text-align: right;
+    color: var(--prism-text-ghost);
+    opacity: 0.5;
+    user-select: none;
+    flex-shrink: 0;
+    white-space: pre;
+    font-size: 12px;
+    text-align: right;
 }
 
 .tree-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 10px;
-  color: var(--prism-text-muted);
-  padding: 0;
-  width: 12px;
-  flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--prism-text-muted);
+    padding: 0;
+    width: 12px;
+    flex-shrink: 0;
 }
 
 .role {
-  color: var(--prism-primary);
-  font-weight: 600;
+    color: var(--prism-primary);
+    font-weight: 600;
 }
 .name {
-  color: var(--prism-text);
+    color: var(--prism-text);
 }
 .attr {
-  color: var(--prism-text-ghost);
+    color: var(--prism-text-ghost);
 }

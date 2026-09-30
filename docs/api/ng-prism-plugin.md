@@ -4,21 +4,15 @@ Interface implemented by all ng-prism plugins. A plugin is a plain JavaScript ob
 
 ```typescript
 interface NgPrismPlugin {
-  name: string;
-  onComponentScanned?: (
-    component: ScannedComponent
-  ) => ScannedComponent | void | Promise<ScannedComponent | void>;
-  onPageScanned?: (
-    page: StyleguidePage
-  ) => StyleguidePage | void | Promise<StyleguidePage | void>;
-  onManifestReady?: (
-    manifest: PrismManifest
-  ) => PrismManifest | void | Promise<PrismManifest | void>;
-  panels?: PanelDefinition[];
-  controls?: ControlDefinition[];
-  headerWidgets?: HeaderWidgetDefinition[];
-  navigationDecorations?: NavigationDecorationDefinition[];
-  wrapComponent?: Type<unknown>;
+    name: string;
+    onComponentScanned?: (component: ScannedComponent) => ScannedComponent | void | Promise<ScannedComponent | void>;
+    onPageScanned?: (page: StyleguidePage) => StyleguidePage | void | Promise<StyleguidePage | void>;
+    onManifestReady?: (manifest: PrismManifest) => PrismManifest | void | Promise<PrismManifest | void>;
+    panels?: PanelDefinition[];
+    controls?: ControlDefinition[];
+    headerWidgets?: HeaderWidgetDefinition[];
+    navigationDecorations?: NavigationDecorationDefinition[];
+    wrapComponent?: Type<unknown>;
 }
 ```
 
@@ -30,7 +24,7 @@ interface NgPrismPlugin {
 
 ```typescript
 {
-  name: '@my-org/plugin-my-plugin';
+    name: '@my-org/plugin-my-plugin';
 }
 ```
 
@@ -97,14 +91,13 @@ Array of `PanelDefinition` objects registering new panel tabs at runtime (browse
 
 ```typescript
 panels: [
-  {
-    id: 'my-panel',
-    label: 'My Panel',
-    loadComponent: () =>
-      import('./my-panel.component.js').then((m) => m.MyPanelComponent),
-    position: 'bottom',
-    placement: 'addon',
-  },
+    {
+        id: 'my-panel',
+        label: 'My Panel',
+        loadComponent: () => import('./my-panel.component.js').then((m) => m.MyPanelComponent),
+        position: 'bottom',
+        placement: 'addon'
+    }
 ];
 ```
 
@@ -116,10 +109,10 @@ Array of `ControlDefinition` objects registering custom input controls. The Cont
 
 ```typescript
 controls: [
-  {
-    matchType: (input) => input.rawType === 'CssColor',
-    component: ColorPickerControlComponent,
-  },
+    {
+        matchType: (input) => input.rawType === 'CssColor',
+        component: ColorPickerControlComponent
+    }
 ];
 ```
 
@@ -131,15 +124,12 @@ Array of `HeaderWidgetDefinition` objects rendering Angular components inside th
 
 ```typescript
 headerWidgets: [
-  {
-    id: 'coverage-total',
-    placement: 'end',
-    order: -10,
-    loadComponent: () =>
-      import('./coverage-header-badge.component.js').then(
-        (m) => m.CoverageHeaderBadgeComponent
-      ),
-  },
+    {
+        id: 'coverage-total',
+        placement: 'end',
+        order: -10,
+        loadComponent: () => import('./coverage-header-badge.component.js').then((m) => m.CoverageHeaderBadgeComponent)
+    }
 ];
 ```
 
@@ -162,19 +152,15 @@ Array of `NavigationDecorationDefinition` objects, each contributing a marker to
 
 ```typescript
 navigationDecorations: [
-  {
-    id: 'todo',
-    icon: 'file-text',
-    order: 40,
-    badge: (component) => {
-      const todo = component.meta.showcaseConfig.meta?.['todo'] as
-        | { summary?: { variant: 'warn' | 'danger'; label: string } }
-        | undefined;
-      return todo?.summary
-        ? { variant: todo.summary.variant, label: todo.summary.label }
-        : null;
-    },
-  },
+    {
+        id: 'todo',
+        icon: 'file-text',
+        order: 40,
+        badge: (component) => {
+            const todo = component.meta.showcaseConfig.meta?.['todo'] as { summary?: { variant: 'warn' | 'danger'; label: string } } | undefined;
+            return todo?.summary ? { variant: todo.summary.variant, label: todo.summary.label } : null;
+        }
+    }
 ];
 ```
 
@@ -196,19 +182,19 @@ wrapComponent: ThemeProviderWrapperComponent;
 
 ```typescript
 interface PanelDefinition {
-  id: string;
-  label: string;
-  component?: Type<unknown>;
-  loadComponent?: () => Promise<Type<unknown>>;
-  overlayComponent?: Type<unknown>;
-  loadOverlayComponent?: () => Promise<Type<unknown>>;
-  icon?: string;
-  position?: 'bottom' | 'right';
-  placement?: 'addon' | 'view';
-  providers?: Provider[];
-  isVisible?: (component: RuntimeComponent) => boolean;
-  badge?: (component: RuntimeComponent) => PanelBadge | null;
-  keepAlive?: boolean;
+    id: string;
+    label: string;
+    component?: Type<unknown>;
+    loadComponent?: () => Promise<Type<unknown>>;
+    overlayComponent?: Type<unknown>;
+    loadOverlayComponent?: () => Promise<Type<unknown>>;
+    icon?: string;
+    position?: 'bottom' | 'right';
+    placement?: 'addon' | 'view';
+    providers?: Provider[];
+    isVisible?: (component: RuntimeComponent) => boolean;
+    badge?: (component: RuntimeComponent) => PanelBadge | null;
+    keepAlive?: boolean;
 }
 ```
 
@@ -236,8 +222,8 @@ interface PanelDefinition {
 
 ```typescript
 interface PanelBadge {
-  text: string;
-  variant?: 'default' | 'ok' | 'warn' | 'danger';
+    text: string;
+    variant?: 'default' | 'ok' | 'warn' | 'danger';
 }
 ```
 
@@ -250,15 +236,15 @@ A short marker on a panel's tab, returned by [`PanelDefinition.badge`](#paneldef
 
 ```typescript
 panels: [
-  {
-    id: 'visual-regression',
-    label: 'Visual Regression',
-    badge: (component) => {
-      const open = countOpenItems(component);
-      return open ? { text: String(open), variant: 'danger' } : null;
-    },
-    loadComponent: () => import('./panel.component.js').then((m) => m.Panel),
-  },
+    {
+        id: 'visual-regression',
+        label: 'Visual Regression',
+        badge: (component) => {
+            const open = countOpenItems(component);
+            return open ? { text: String(open), variant: 'danger' } : null;
+        },
+        loadComponent: () => import('./panel.component.js').then((m) => m.Panel)
+    }
 ];
 ```
 
@@ -273,8 +259,8 @@ Two rules make the difference between a badge and decoration:
 
 ```typescript
 interface ControlDefinition {
-  matchType: (input: InputMeta) => boolean;
-  component: Type<unknown>;
+    matchType: (input: InputMeta) => boolean;
+    component: Type<unknown>;
 }
 ```
 
@@ -289,11 +275,11 @@ interface ControlDefinition {
 
 ```typescript
 interface HeaderWidgetDefinition {
-  id: string;
-  component?: Type<unknown>;
-  loadComponent?: () => Promise<Type<unknown>>;
-  placement?: 'start' | 'end';
-  order?: number;
+    id: string;
+    component?: Type<unknown>;
+    loadComponent?: () => Promise<Type<unknown>>;
+    placement?: 'start' | 'end';
+    order?: number;
 }
 ```
 
@@ -350,46 +336,33 @@ The shipped `@ng-prism/plugin-coverage` header badge is the reference for this p
 
 ```typescript
 // coverage-header-badge.component.ts
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { PRISM_MANIFEST, type RuntimeManifest } from '@ng-prism/core/plugin';
 import { PrismMetricBadgeComponent } from '@ng-prism/core';
 
 @Component({
-  selector: 'prism-coverage-header-badge',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismMetricBadgeComponent],
-  template: `
-    @if (data(); as d) {
-    <prism-metric-badge
-      icon="shield-check"
-      label="Library coverage"
-      [value]="d.score + '%'"
-      [variant]="d.variant"
-      [title]="d.title"
-    />
-    }
-  `,
+    selector: 'prism-coverage-header-badge',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismMetricBadgeComponent],
+    template: `
+        @if (data(); as d) {
+            <prism-metric-badge icon="shield-check" label="Library coverage" [value]="d.score + '%'" [variant]="d.variant" [title]="d.title" />
+        }
+    `
 })
 export class CoverageHeaderBadgeComponent {
-  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+    private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
 
-  protected readonly data = computed(() => {
-    const meta = this.manifest.meta?.['coverage'] as
-      | { total?: { found: boolean; score: number } }
-      | undefined;
-    if (!meta?.total?.found) return null;
-    return {
-      score: meta.total.score,
-      variant: 'ok' as const,
-      title: 'Library coverage',
-    };
-  });
+    protected readonly data = computed(() => {
+        const meta = this.manifest.meta?.['coverage'] as { total?: { found: boolean; score: number } } | undefined;
+        if (!meta?.total?.found) return null;
+        return {
+            score: meta.total.score,
+            variant: 'ok' as const,
+            title: 'Library coverage'
+        };
+    });
 }
 ```
 
@@ -397,15 +370,12 @@ Registered the usual way:
 
 ```typescript
 headerWidgets: [
-  {
-    id: 'coverage-total',
-    placement: 'end',
-    order: -10,
-    loadComponent: () =>
-      import('./coverage-header-badge.component.js').then(
-        (m) => m.CoverageHeaderBadgeComponent
-      ),
-  },
+    {
+        id: 'coverage-total',
+        placement: 'end',
+        order: -10,
+        loadComponent: () => import('./coverage-header-badge.component.js').then((m) => m.CoverageHeaderBadgeComponent)
+    }
 ];
 ```
 
@@ -417,10 +387,10 @@ headerWidgets: [
 
 ```typescript
 interface NavigationDecorationDefinition {
-  id: string;
-  icon: string;
-  order?: number;
-  badge: (component: RuntimeComponent) => NavigationDecoration | null;
+    id: string;
+    icon: string;
+    order?: number;
+    badge: (component: RuntimeComponent) => NavigationDecoration | null;
 }
 ```
 
@@ -451,8 +421,8 @@ Three rules make the difference between a decoration and one that quietly breaks
 
 ```typescript
 interface NavigationDecoration {
-  variant: 'warn' | 'danger';
-  label: string;
+    variant: 'warn' | 'danger';
+    label: string;
 }
 ```
 
@@ -479,82 +449,74 @@ Three files close that gap:
 
 ```typescript
 // todo-marker-contributions.ts — shared by both entries, dependency-free
-import type {
-  NavigationDecorationDefinition,
-  RuntimeComponent,
-} from '@ng-prism/core/plugin';
+import type { NavigationDecorationDefinition, RuntimeComponent } from '@ng-prism/core/plugin';
 
 export interface TodoSummary {
-  variant: 'warn' | 'danger';
-  label: string;
+    variant: 'warn' | 'danger';
+    label: string;
 }
 
 export interface TodoMeta {
-  count: number;
-  /** Pre-derived verdict, written by the build-time hook in todo-marker-plugin.ts. */
-  summary?: TodoSummary;
+    count: number;
+    /** Pre-derived verdict, written by the build-time hook in todo-marker-plugin.ts. */
+    summary?: TodoSummary;
 }
 
 function todoMeta(component: RuntimeComponent): TodoMeta | undefined {
-  return component.meta.showcaseConfig.meta?.['todo'] as TodoMeta | undefined;
+    return component.meta.showcaseConfig.meta?.['todo'] as TodoMeta | undefined;
 }
 
 export const TODO_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
-  id: 'todo',
-  icon: 'file-text',
-  order: 40,
-  badge: (component) => {
-    const todo = todoMeta(component);
-    return todo?.summary
-      ? { variant: todo.summary.variant, label: todo.summary.label }
-      : null;
-  },
+    id: 'todo',
+    icon: 'file-text',
+    order: 40,
+    badge: (component) => {
+        const todo = todoMeta(component);
+        return todo?.summary ? { variant: todo.summary.variant, label: todo.summary.label } : null;
+    }
 };
 ```
 
 ```typescript
 // todo-marker-plugin.ts — Node entry, loaded by the builder
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
-import {
-  TODO_NAVIGATION_DECORATION,
-  type TodoMeta,
-} from './todo-marker-contributions.js';
+import { TODO_NAVIGATION_DECORATION, type TodoMeta } from './todo-marker-contributions.js';
 
 export function todoMarkerPlugin(): NgPrismPlugin {
-  return {
-    name: '@my-org/plugin-todo-marker',
+    return {
+        name: '@my-org/plugin-todo-marker',
 
-    // Build time only: count `// TODO` markers and decide the verdict once,
-    // here — not in `badge()`, which never sees more than one component and
-    // cannot know what "too many" means for the library as a whole.
-    async onComponentScanned(component) {
-      const { readFileSync } = await import('node:fs');
-      const source = readFileSync(component.filePath, 'utf-8');
-      const count = (source.match(/\/\/\s*TODO/g) ?? []).length;
+        // Build time only: count `// TODO` markers and decide the verdict once,
+        // here — not in `badge()`, which never sees more than one component and
+        // cannot know what "too many" means for the library as a whole.
+        async onComponentScanned(component) {
+            const { readFileSync } = await import('node:fs');
+            const source = readFileSync(component.filePath, 'utf-8');
+            const count = (source.match(/\/\/\s*TODO/g) ?? []).length;
 
-      const todo: TodoMeta = {
-        count,
-        ...(count > 0
-          ? {
-              summary: {
-                variant: count >= 5 ? 'danger' : 'warn',
-                label: `${count} open TODO${count === 1 ? '' : 's'}`,
-              },
-            }
-          : {}),
-      };
+            const todo: TodoMeta = {
+                count,
+                ...(count > 0
+                    ? {
+                          summary: {
+                              variant: count >= 5 ? 'danger' : 'warn',
+                              label: `${count} open TODO${count === 1 ? '' : 's'}`
+                          }
+                      }
+                    : {})
+            };
 
-      return {
-        ...component,
-        showcaseConfig: {
-          ...component.showcaseConfig,
-          meta: { ...component.showcaseConfig.meta, todo },
+            return {
+                ...component,
+                showcaseConfig: {
+                    ...component.showcaseConfig,
+                    meta: { ...component.showcaseConfig.meta, todo }
+                }
+            };
         },
-      };
-    },
 
-    navigationDecorations: [TODO_NAVIGATION_DECORATION],
-  };
+        navigationDecorations: [TODO_NAVIGATION_DECORATION]
+    };
 }
 ```
 
@@ -564,12 +526,12 @@ import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { TODO_NAVIGATION_DECORATION } from './todo-marker-contributions.js';
 
 export function todoMarkerPlugin(): NgPrismPlugin {
-  return {
-    name: '@my-org/plugin-todo-marker',
-    // Runtime only: read the pre-derived verdict back. No file access, no
-    // computation, no build-time hooks — just the shared contribution.
-    navigationDecorations: [TODO_NAVIGATION_DECORATION],
-  };
+    return {
+        name: '@my-org/plugin-todo-marker',
+        // Runtime only: read the pre-derived verdict back. No file access, no
+        // computation, no build-time hooks — just the shared contribution.
+        navigationDecorations: [TODO_NAVIGATION_DECORATION]
+    };
 }
 ```
 
@@ -577,14 +539,14 @@ The two entries are the same exported function name in two files; a `"browser"` 
 
 ```json
 {
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "browser": "./dist/index.browser.js",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "browser": "./dist/index.browser.js",
+            "import": "./dist/index.js",
+            "default": "./dist/index.js"
+        }
     }
-  }
 }
 ```
 

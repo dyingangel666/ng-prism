@@ -1,9 +1,8 @@
 @if (data(); as d) {
-<prism-metric-badge
-  icon="shield-check"
-  label="Library coverage"
-  [value]="d.score + '%'"
-  [variant]="d.variant"
-  [title]="d.title"
-/>
+    <prism-metric-badge
+        icon="shield-check"
+        label="Library coverage"
+        [value]="d.score + '%'"
+        [variant]="d.variant"
+        [title]="d.title" />
 }

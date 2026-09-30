@@ -13,7 +13,7 @@ import type { RuntimeComponent } from '../../plugin/plugin.types.js';
  * Playground says the same thing better.
  */
 export function showsOverview(component: RuntimeComponent): boolean {
-  const config = component.meta.showcaseConfig;
-  if (config.renderPage) return false;
-  return (config.variants?.length ?? 0) >= 2;
+    const config = component.meta.showcaseConfig;
+    if (config.renderPage) return false;
+    return (config.variants?.length ?? 0) >= 2;
 }

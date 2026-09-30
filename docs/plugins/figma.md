@@ -29,14 +29,14 @@ import { defineConfig } from '@ng-prism/core/config';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
-  plugins: [
-    figmaPlugin({
-      // Opt in to the Design Diff panel. Omit it and only the Embed panel is registered.
-      designDiff: true,
-      // Required by the Design Diff panel to fetch node images.
-      accessToken: process.env['FIGMA_TOKEN'],
-    }),
-  ],
+    plugins: [
+        figmaPlugin({
+            // Opt in to the Design Diff panel. Omit it and only the Embed panel is registered.
+            designDiff: true,
+            // Required by the Design Diff panel to fetch node images.
+            accessToken: process.env['FIGMA_TOKEN']
+        })
+    ]
 });
 ```
 

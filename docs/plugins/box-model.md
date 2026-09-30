@@ -25,7 +25,7 @@ import { defineConfig } from '@ng-prism/core';
 import { boxModelPlugin } from '@ng-prism/plugin-box-model';
 
 export default defineConfig({
-  plugins: [boxModelPlugin()],
+    plugins: [boxModelPlugin()]
 });
 ```
 
@@ -46,7 +46,7 @@ Hovering over child elements within the canvas highlights their individual box m
 
 ```typescript
 boxModelPlugin({
-  // highlight child elements on hover (default: true)
-  interactive: true,
+    // highlight child elements on hover (default: true)
+    interactive: true
 });
 ```

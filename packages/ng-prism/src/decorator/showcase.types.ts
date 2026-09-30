@@ -5,9 +5,9 @@ import type { CanvasLayout } from '../shared/canvas-layout.type.js';
 export type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 
 export interface DirectiveHost {
-  selector: string;
-  import: { name: string; from: string };
-  inputs?: Record<string, unknown>;
+    selector: string;
+    import: { name: string; from: string };
+    inputs?: Record<string, unknown>;
 }
 
 // Angular's signal-input brand types are invariant in their type parameters,
@@ -15,12 +15,7 @@ export interface DirectiveHost {
 // and `InputSignalWithTransform<X, Y>` for arbitrary X/Y. We unwrap to the
 // write-side type so consumers can pass transform-input source values (e.g.
 // a `string` for an input typed `boolean` behind `booleanAttribute`).
-type UnwrapSignalInput<S> = S extends InputSignalWithTransform<
-  any,
-  infer WriteT
->
-  ? WriteT
-  : never;
+type UnwrapSignalInput<S> = S extends InputSignalWithTransform<any, infer WriteT> ? WriteT : never;
 
 /**
  * Maps a component class `T` to a record of its signal-input properties
@@ -32,94 +27,92 @@ type UnwrapSignalInput<S> = S extends InputSignalWithTransform<
  * keep working.
  */
 export type InputsOf<T> = [unknown] extends [T]
-  ? Record<string, unknown>
-  : {
-      [K in keyof T as T[K] extends InputSignalWithTransform<any, any>
-        ? K
-        : never]: UnwrapSignalInput<T[K]>;
-    };
+    ? Record<string, unknown>
+    : {
+          [K in keyof T as T[K] extends InputSignalWithTransform<any, any> ? K : never]: UnwrapSignalInput<T[K]>;
+      };
 
 export interface ShowcaseConfig<T = unknown> {
-  /** Display name in the ng-prism UI */
-  title: string;
-  /** Description text — Markdown supported */
-  description?: string;
-  /** Groups the component in the sidebar */
-  category?: string;
-  /** Controls the order of this category in the sidebar (lower = higher). Categories without this sort alphabetically after ordered ones. */
-  categoryOrder?: number;
-  /** Controls the order of this component within its category (lower = higher). Components without this sort alphabetically after ordered ones. */
-  componentOrder?: number;
-  /**
-   * Top-level section in the sidebar. Auto-detected if omitted:
-   * `@Directive` → 'Directives', otherwise 'Components'. Free-form string —
-   * any value creates a new top-level section (e.g. 'Pipes', 'Utilities').
-   */
-  section?: string;
-  /**
-   * Sort order of this section in the sidebar (lower = higher in list).
-   * The section's effective order is the minimum `sectionOrder` of all its items.
-   * Defaults: 'Components' → 0, 'Directives' → 10, all others → 100.
-   */
-  sectionOrder?: number;
-  /** Predefined variants shown as tabs */
-  variants?: Variant<T>[];
-  /** Tags for search and filtering */
-  tags?: string[];
-  /**
-   * Providers for a child injector scoped to this component.
-   * Use for components that require specific services (e.g. DialogService, OverlayService).
-   * For library-wide providers, use defineConfig({ appProviders }).
-   */
-  providers?: Provider[];
-  /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
-  meta?: Record<string, unknown>;
-  /**
-   * Recommended canvas background for this component. Applied when the user
-   * opens the component, unless a variant defines its own `bg`. The user
-   * can override via the canvas toolbar; the override is transient and
-   * resets when switching variants or components.
-   */
-  bg?: CanvasBg;
-  /**
-   * Canvas layout mode for the rendered component.
-   * - `'fit'` (default): wrapper shrinks to content, component is centered in the canvas.
-   * - `'stretch'`: wrapper takes full canvas width (up to a sensible max) so block-level
-   *   components without intrinsic width (e.g. horizontal dividers) and components that
-   *   opt into `width: 100%` (e.g. full-width buttons) render correctly.
-   * A `Variant.canvasLayout` overrides this.
-   */
-  canvasLayout?: CanvasLayout;
-  /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
-  host?: string | DirectiveHost;
-  /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
-  renderPage?: string;
-  /**
-   * Migration / maturity status. When unset, the component is treated as `stable`
-   * but rendered without any indicator in the sidebar or header. Only set it
-   * when you want to draw attention (in-progress or deprecated work) or to
-   * explicitly badge a `stable` / `beta` component.
-   */
-  status?: ComponentStatus;
+    /** Display name in the ng-prism UI */
+    title: string;
+    /** Description text — Markdown supported */
+    description?: string;
+    /** Groups the component in the sidebar */
+    category?: string;
+    /** Controls the order of this category in the sidebar (lower = higher). Categories without this sort alphabetically after ordered ones. */
+    categoryOrder?: number;
+    /** Controls the order of this component within its category (lower = higher). Components without this sort alphabetically after ordered ones. */
+    componentOrder?: number;
+    /**
+     * Top-level section in the sidebar. Auto-detected if omitted:
+     * `@Directive` → 'Directives', otherwise 'Components'. Free-form string —
+     * any value creates a new top-level section (e.g. 'Pipes', 'Utilities').
+     */
+    section?: string;
+    /**
+     * Sort order of this section in the sidebar (lower = higher in list).
+     * The section's effective order is the minimum `sectionOrder` of all its items.
+     * Defaults: 'Components' → 0, 'Directives' → 10, all others → 100.
+     */
+    sectionOrder?: number;
+    /** Predefined variants shown as tabs */
+    variants?: Variant<T>[];
+    /** Tags for search and filtering */
+    tags?: string[];
+    /**
+     * Providers for a child injector scoped to this component.
+     * Use for components that require specific services (e.g. DialogService, OverlayService).
+     * For library-wide providers, use defineConfig({ appProviders }).
+     */
+    providers?: Provider[];
+    /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
+    meta?: Record<string, unknown>;
+    /**
+     * Recommended canvas background for this component. Applied when the user
+     * opens the component, unless a variant defines its own `bg`. The user
+     * can override via the canvas toolbar; the override is transient and
+     * resets when switching variants or components.
+     */
+    bg?: CanvasBg;
+    /**
+     * Canvas layout mode for the rendered component.
+     * - `'fit'` (default): wrapper shrinks to content, component is centered in the canvas.
+     * - `'stretch'`: wrapper takes full canvas width (up to a sensible max) so block-level
+     *   components without intrinsic width (e.g. horizontal dividers) and components that
+     *   opt into `width: 100%` (e.g. full-width buttons) render correctly.
+     * A `Variant.canvasLayout` overrides this.
+     */
+    canvasLayout?: CanvasLayout;
+    /** Host element for directive showcases. String = HTML element (e.g. '<button class="btn">'), object = Angular component. */
+    host?: string | DirectiveHost;
+    /** Title of a registered ComponentPage to render instead of the component itself. Use for complex components that need template projections or mock data. The page component can inject PrismRendererService to react to control panel changes. */
+    renderPage?: string;
+    /**
+     * Migration / maturity status. When unset, the component is treated as `stable`
+     * but rendered without any indicator in the sidebar or header. Only set it
+     * when you want to draw attention (in-progress or deprecated work) or to
+     * explicitly badge a `stable` / `beta` component.
+     */
+    status?: ComponentStatus;
 }
 
 export interface Variant<T = unknown> {
-  /** Tab label */
-  name: string;
-  /** Signal input values for this variant. Pass a component type to `@Showcase<MyComponent>` to get autocomplete and type-checking here. */
-  inputs?: Partial<InputsOf<T>>;
-  /**
-   * Content projected into <ng-content>.
-   * - string → projected into the default (unnamed) slot
-   * - Record<string, string> → keys are slot selectors (e.g. '[card-header]'), 'default' is the unnamed slot
-   */
-  content?: string | Record<string, string>;
-  /** Optional description for this variant */
-  description?: string;
-  /** Arbitrary metadata for plugins (e.g. { figma: 'https://...?node-id=12-34' }) */
-  meta?: Record<string, unknown>;
-  /** Recommended canvas background for this variant. Overrides `ShowcaseConfig.bg`. */
-  bg?: CanvasBg;
-  /** Canvas layout mode for this variant. Overrides `ShowcaseConfig.canvasLayout`. See `ShowcaseConfig.canvasLayout` for semantics. */
-  canvasLayout?: CanvasLayout;
+    /** Tab label */
+    name: string;
+    /** Signal input values for this variant. Pass a component type to `@Showcase<MyComponent>` to get autocomplete and type-checking here. */
+    inputs?: Partial<InputsOf<T>>;
+    /**
+     * Content projected into <ng-content>.
+     * - string → projected into the default (unnamed) slot
+     * - Record<string, string> → keys are slot selectors (e.g. '[card-header]'), 'default' is the unnamed slot
+     */
+    content?: string | Record<string, string>;
+    /** Optional description for this variant */
+    description?: string;
+    /** Arbitrary metadata for plugins (e.g. { figma: 'https://...?node-id=12-34' }) */
+    meta?: Record<string, unknown>;
+    /** Recommended canvas background for this variant. Overrides `ShowcaseConfig.bg`. */
+    bg?: CanvasBg;
+    /** Canvas layout mode for this variant. Overrides `ShowcaseConfig.canvasLayout`. See `ShowcaseConfig.canvasLayout` for semantics. */
+    canvasLayout?: CanvasLayout;
 }

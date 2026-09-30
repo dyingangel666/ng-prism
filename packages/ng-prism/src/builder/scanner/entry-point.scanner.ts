@@ -1,17 +1,17 @@
 import ts from 'typescript';
 
 export interface EntryPointInput {
-  entryFile: string;
-  importPath: string;
+    entryFile: string;
+    importPath: string;
 }
 
 export interface ResolvedEntryPoint extends EntryPointInput {
-  exports: ts.Symbol[];
+    exports: ts.Symbol[];
 }
 
 export interface MultiEntryResult {
-  program: ts.Program;
-  entries: ResolvedEntryPoint[];
+    program: ts.Program;
+    entries: ResolvedEntryPoint[];
 }
 
 /**
@@ -23,43 +23,33 @@ export interface MultiEntryResult {
  * Re-exports (`export * from '...'`) are resolved automatically by TypeScript.
  */
 export function resolveEntryPointExports(
-  entryPoints: ReadonlyArray<EntryPointInput>,
-  compilerOptions: ts.CompilerOptions,
-  previousProgram?: ts.Program
+    entryPoints: ReadonlyArray<EntryPointInput>,
+    compilerOptions: ts.CompilerOptions,
+    previousProgram?: ts.Program
 ): MultiEntryResult {
-  const program = ts.createProgram(
-    entryPoints.map((e) => e.entryFile),
-    compilerOptions,
-    undefined,
-    previousProgram
-  );
-  const checker = program.getTypeChecker();
+    const program = ts.createProgram(
+        entryPoints.map((e) => e.entryFile),
+        compilerOptions,
+        undefined,
+        previousProgram
+    );
+    const checker = program.getTypeChecker();
 
-  const entries: ResolvedEntryPoint[] = entryPoints.map(
-    ({ entryFile, importPath }) => {
-      try {
-        const sourceFile = program.getSourceFile(entryFile);
-        if (!sourceFile) {
-          console.warn(
-            `⚠ ng-prism: source file not found for entry point ${entryFile}, skipping.`
-          );
-          return { entryFile, importPath, exports: [] };
+    const entries: ResolvedEntryPoint[] = entryPoints.map(({ entryFile, importPath }) => {
+        try {
+            const sourceFile = program.getSourceFile(entryFile);
+            if (!sourceFile) {
+                console.warn(`⚠ ng-prism: source file not found for entry point ${entryFile}, skipping.`);
+                return { entryFile, importPath, exports: [] };
+            }
+            const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
+            const exports = moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : [];
+            return { entryFile, importPath, exports };
+        } catch (err) {
+            console.error(`⚠ ng-prism: failed to resolve exports for ${entryFile}: ${err instanceof Error ? err.message : String(err)}`);
+            return { entryFile, importPath, exports: [] };
         }
-        const moduleSymbol = checker.getSymbolAtLocation(sourceFile);
-        const exports = moduleSymbol
-          ? checker.getExportsOfModule(moduleSymbol)
-          : [];
-        return { entryFile, importPath, exports };
-      } catch (err) {
-        console.error(
-          `⚠ ng-prism: failed to resolve exports for ${entryFile}: ${
-            err instanceof Error ? err.message : String(err)
-          }`
-        );
-        return { entryFile, importPath, exports: [] };
-      }
-    }
-  );
+    });
 
-  return { program, entries };
+    return { program, entries };
 }

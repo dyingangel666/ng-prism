@@ -6,10 +6,7 @@ import { join, isAbsolute } from 'path';
  *
  * Relative paths resolve against `workspaceRoot`.
  */
-export function resolveCacheDir(
-  option: string | undefined,
-  workspaceRoot: string
-): string | undefined {
-  if (!option) return undefined;
-  return isAbsolute(option) ? option : join(workspaceRoot, option);
+export function resolveCacheDir(option: string | undefined, workspaceRoot: string): string | undefined {
+    if (!option) return undefined;
+    return isAbsolute(option) ? option : join(workspaceRoot, option);
 }

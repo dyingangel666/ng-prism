@@ -1,48 +1,48 @@
 {
-  "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": [
-      "default",
-      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-      "!{projectRoot}/tsconfig.spec.json",
-      "!{projectRoot}/jest.config.{js,cjs,mjs,ts,cts}",
-      "!{projectRoot}/src/test-setup.[jt]s",
-      "!{projectRoot}/test-setup.[jt]s"
-    ],
-    "sharedGlobals": []
-  },
-  "plugins": [
-    {
-      "plugin": "@nx/js/typescript",
-      "options": {
-        "typecheck": {
-          "targetName": "typecheck"
-        },
-        "build": {
-          "targetName": "build",
-          "configName": "tsconfig.lib.json",
-          "buildDepsName": "build-deps",
-          "watchDepsName": "watch-deps"
-        }
-      }
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "namedInputs": {
+        "default": ["{projectRoot}/**/*", "sharedGlobals"],
+        "production": [
+            "default",
+            "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+            "!{projectRoot}/tsconfig.spec.json",
+            "!{projectRoot}/jest.config.{js,cjs,mjs,ts,cts}",
+            "!{projectRoot}/src/test-setup.[jt]s",
+            "!{projectRoot}/test-setup.[jt]s"
+        ],
+        "sharedGlobals": []
     },
-    {
-      "plugin": "@nx/jest/plugin",
-      "options": {
-        "targetName": "test"
-      }
-    }
-  ],
-  "release": {
-    "version": {
-      "preVersionCommand": "npx nx run-many -t build"
-    }
-  },
-  "targetDefaults": {
-    "test": {
-      "dependsOn": ["^build"]
-    }
-  },
-  "analytics": true
+    "plugins": [
+        {
+            "plugin": "@nx/js/typescript",
+            "options": {
+                "typecheck": {
+                    "targetName": "typecheck"
+                },
+                "build": {
+                    "targetName": "build",
+                    "configName": "tsconfig.lib.json",
+                    "buildDepsName": "build-deps",
+                    "watchDepsName": "watch-deps"
+                }
+            }
+        },
+        {
+            "plugin": "@nx/jest/plugin",
+            "options": {
+                "targetName": "test"
+            }
+        }
+    ],
+    "release": {
+        "version": {
+            "preVersionCommand": "npx nx run-many -t build"
+        }
+    },
+    "targetDefaults": {
+        "test": {
+            "dependsOn": ["^build"]
+        }
+    },
+    "analytics": true
 }

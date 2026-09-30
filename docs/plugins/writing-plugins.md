@@ -6,23 +6,17 @@ A plugin is a plain JavaScript object conforming to the `NgPrismPlugin` interfac
 
 ```typescript
 interface NgPrismPlugin {
-  name: string;
+    name: string;
 
-  // Build-time hooks (run in Node.js)
-  onComponentScanned?: (
-    component: ScannedComponent
-  ) => ScannedComponent | void | Promise<ScannedComponent | void>;
-  onPageScanned?: (
-    page: StyleguidePage
-  ) => StyleguidePage | void | Promise<StyleguidePage | void>;
-  onManifestReady?: (
-    manifest: PrismManifest
-  ) => PrismManifest | void | Promise<PrismManifest | void>;
+    // Build-time hooks (run in Node.js)
+    onComponentScanned?: (component: ScannedComponent) => ScannedComponent | void | Promise<ScannedComponent | void>;
+    onPageScanned?: (page: StyleguidePage) => StyleguidePage | void | Promise<StyleguidePage | void>;
+    onManifestReady?: (manifest: PrismManifest) => PrismManifest | void | Promise<PrismManifest | void>;
 
-  // Runtime contributions (run in the browser)
-  panels?: PanelDefinition[];
-  controls?: ControlDefinition[];
-  wrapComponent?: Type<unknown>;
+    // Runtime contributions (run in the browser)
+    panels?: PanelDefinition[];
+    controls?: ControlDefinition[];
+    wrapComponent?: Type<unknown>;
 }
 ```
 
@@ -36,18 +30,18 @@ Called once per `@Showcase`-decorated component after the scanner extracts all m
 
 ```typescript
 export function myPlugin(): NgPrismPlugin {
-  return {
-    name: 'my-plugin',
-    onComponentScanned(component) {
-      // Add extra metadata for the runtime panel to consume
-      component.meta = {
-        ...component.meta,
-        myPlugin: {
-          customData: computeSomething(component),
-        },
-      };
-    },
-  };
+    return {
+        name: 'my-plugin',
+        onComponentScanned(component) {
+            // Add extra metadata for the runtime panel to consume
+            component.meta = {
+                ...component.meta,
+                myPlugin: {
+                    customData: computeSomething(component)
+                }
+            };
+        }
+    };
 }
 ```
 
@@ -166,41 +160,27 @@ Renders one glyph from the same registry `PanelDefinition.icon` resolves against
 
 ```typescript
 // coverage-header-badge.component.ts
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { PRISM_MANIFEST, type RuntimeManifest } from '@ng-prism/core/plugin';
 import { PrismMetricBadgeComponent } from '@ng-prism/core';
 
 @Component({
-  selector: 'prism-coverage-header-badge',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismMetricBadgeComponent],
-  template: `
-    @if (data(); as d) {
-    <prism-metric-badge
-      icon="shield-check"
-      label="Library coverage"
-      [value]="d.score + '%'"
-      [variant]="d.variant"
-    />
-    }
-  `,
+    selector: 'prism-coverage-header-badge',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismMetricBadgeComponent],
+    template: `
+        @if (data(); as d) {
+            <prism-metric-badge icon="shield-check" label="Library coverage" [value]="d.score + '%'" [variant]="d.variant" />
+        }
+    `
 })
 export class CoverageHeaderBadgeComponent {
-  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
-  protected readonly data = computed(() => {
-    const meta = this.manifest.meta?.['coverage'] as
-      | { total?: { found: boolean; score: number } }
-      | undefined;
-    return meta?.total?.found
-      ? { score: meta.total.score, variant: 'ok' as const }
-      : null;
-  });
+    private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+    protected readonly data = computed(() => {
+        const meta = this.manifest.meta?.['coverage'] as { total?: { found: boolean; score: number } } | undefined;
+        return meta?.total?.found ? { score: meta.total.score, variant: 'ok' as const } : null;
+    });
 }
 ```
 
@@ -230,21 +210,18 @@ Registered like any other `headerWidgets` entry — see [`HeaderWidgetDefinition
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 
 export function myNotesPlugin(): NgPrismPlugin {
-  return {
-    name: 'my-notes-plugin',
-    panels: [
-      {
-        id: 'notes',
-        label: 'Notes',
-        loadComponent: () =>
-          import('./notes-panel.component.js').then(
-            (m) => m.NotesPanelComponent
-          ),
-        position: 'bottom',
-        placement: 'addon',
-      },
-    ],
-  };
+    return {
+        name: 'my-notes-plugin',
+        panels: [
+            {
+                id: 'notes',
+                label: 'Notes',
+                loadComponent: () => import('./notes-panel.component.js').then((m) => m.NotesPanelComponent),
+                position: 'bottom',
+                placement: 'addon'
+            }
+        ]
+    };
 }
 ```
 
@@ -254,21 +231,21 @@ import { Component, inject } from '@angular/core';
 import { PrismNavigationService } from '@ng-prism/core';
 
 @Component({
-  selector: 'app-notes-panel',
-  standalone: true,
-  template: `
-    <div class="notes">
-      <h4>Notes for {{ componentTitle() }}</h4>
-      <textarea placeholder="Write notes here…"></textarea>
-    </div>
-  `,
+    selector: 'app-notes-panel',
+    standalone: true,
+    template: `
+        <div class="notes">
+            <h4>Notes for {{ componentTitle() }}</h4>
+            <textarea placeholder="Write notes here…"></textarea>
+        </div>
+    `
 })
 export class NotesPanelComponent {
-  private readonly nav = inject(PrismNavigationService);
+    private readonly nav = inject(PrismNavigationService);
 
-  componentTitle() {
-    return this.nav.activeComponent()?.meta.showcaseConfig.title ?? '—';
-  }
+    componentTitle() {
+        return this.nav.activeComponent()?.meta.showcaseConfig.title ?? '—';
+    }
 }
 ```
 
@@ -279,17 +256,15 @@ import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { ColorSwatchControlComponent } from './color-swatch-control.component.js';
 
 export function colorSwatchPlugin(): NgPrismPlugin {
-  return {
-    name: 'color-swatch-plugin',
-    controls: [
-      {
-        matchType: (input) =>
-          input.rawType?.startsWith('Color') === true ||
-          input.name.toLowerCase().includes('color'),
-        component: ColorSwatchControlComponent,
-      },
-    ],
-  };
+    return {
+        name: 'color-swatch-plugin',
+        controls: [
+            {
+                matchType: (input) => input.rawType?.startsWith('Color') === true || input.name.toLowerCase().includes('color'),
+                component: ColorSwatchControlComponent
+            }
+        ]
+    };
 }
 ```
 
@@ -297,25 +272,19 @@ The `ColorSwatchControlComponent` receives `inputMeta` and `rendererService` as 
 
 ```typescript
 @Component({
-  selector: 'app-color-swatch-control',
-  standalone: true,
-  template: `
-    <input type="color" [value]="currentValue()" (change)="onChange($event)" />
-  `,
+    selector: 'app-color-swatch-control',
+    standalone: true,
+    template: ` <input type="color" [value]="currentValue()" (change)="onChange($event)" /> `
 })
 export class ColorSwatchControlComponent {
-  readonly inputMeta = input.required<InputMeta>();
-  readonly rendererService = input.required<PrismRendererService>();
+    readonly inputMeta = input.required<InputMeta>();
+    readonly rendererService = input.required<PrismRendererService>();
 
-  currentValue = computed(
-    () =>
-      (this.rendererService().inputValues()[this.inputMeta().name] as string) ??
-      '#000000'
-  );
+    currentValue = computed(() => (this.rendererService().inputValues()[this.inputMeta().name] as string) ?? '#000000');
 
-  onChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.rendererService().updateInput(this.inputMeta().name, value);
-  }
+    onChange(event: Event) {
+        const value = (event.target as HTMLInputElement).value;
+        this.rendererService().updateInput(this.inputMeta().name, value);
+    }
 }
 ```

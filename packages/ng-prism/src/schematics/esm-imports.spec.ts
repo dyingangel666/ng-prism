@@ -24,52 +24,47 @@ const DIRECTORY_IMPORT_UNSAFE = ['@angular-devkit/schematics'];
 const IMPORT_RE = /(?:^|\n)\s*import[\s\S]*?from\s*['"]([^'"]+)['"]/g;
 
 function collectSourceFiles(dir: string): string[] {
-  const files: string[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...collectSourceFiles(full));
-    } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts')) {
-      files.push(full);
+    const files: string[] = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+            files.push(...collectSourceFiles(full));
+        } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.spec.ts')) {
+            files.push(full);
+        }
     }
-  }
-  return files;
+    return files;
 }
 
 function subpathImports(source: string): string[] {
-  const found: string[] = [];
-  for (const match of source.matchAll(IMPORT_RE)) {
-    const specifier = match[1];
-    const unsafe = DIRECTORY_IMPORT_UNSAFE.find(
-      (pkg) => specifier.startsWith(`${pkg}/`) && specifier !== pkg
-    );
-    if (unsafe) found.push(specifier);
-  }
-  return found;
+    const found: string[] = [];
+    for (const match of source.matchAll(IMPORT_RE)) {
+        const specifier = match[1];
+        const unsafe = DIRECTORY_IMPORT_UNSAFE.find((pkg) => specifier.startsWith(`${pkg}/`) && specifier !== pkg);
+        if (unsafe) found.push(specifier);
+    }
+    return found;
 }
 
 describe('schematics ESM imports', () => {
-  const sourceFiles = collectSourceFiles(SCHEMATICS_DIR);
+    const sourceFiles = collectSourceFiles(SCHEMATICS_DIR);
 
-  it('should find schematic sources to check', () => {
-    expect(sourceFiles.length).toBeGreaterThan(0);
-  });
+    it('should find schematic sources to check', () => {
+        expect(sourceFiles.length).toBeGreaterThan(0);
+    });
 
-  it.each(DIRECTORY_IMPORT_UNSAFE)(
-    'should not import a bare subpath of %s',
-    (pkg) => {
-      const offenders: string[] = [];
+    it.each(DIRECTORY_IMPORT_UNSAFE)('should not import a bare subpath of %s', (pkg) => {
+        const offenders: string[] = [];
 
-      for (const file of sourceFiles) {
-        const source = readFileSync(file, 'utf-8');
-        for (const specifier of subpathImports(source)) {
-          if (specifier.startsWith(`${pkg}/`) && !specifier.endsWith('.js')) {
-            offenders.push(`${file}: ${specifier}`);
-          }
+        for (const file of sourceFiles) {
+            const source = readFileSync(file, 'utf-8');
+            for (const specifier of subpathImports(source)) {
+                if (specifier.startsWith(`${pkg}/`) && !specifier.endsWith('.js')) {
+                    offenders.push(`${file}: ${specifier}`);
+                }
+            }
         }
-      }
 
-      expect(offenders).toEqual([]);
-    }
-  );
+        expect(offenders).toEqual([]);
+    });
 });

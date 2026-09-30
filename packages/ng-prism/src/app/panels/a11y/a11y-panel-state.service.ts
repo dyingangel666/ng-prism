@@ -4,5 +4,5 @@ export type A11ySubTab = 'violations' | 'keyboard' | 'tree' | 'sr';
 
 @Injectable({ providedIn: 'root' })
 export class A11yPanelStateService {
-  readonly activeTab = signal<A11ySubTab>('violations');
+    readonly activeTab = signal<A11ySubTab>('violations');
 }

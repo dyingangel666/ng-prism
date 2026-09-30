@@ -1,94 +1,80 @@
-import {
-  Component,
-  inject,
-  computed,
-  signal,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, inject, computed, signal, ChangeDetectionStrategy } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { generateSnippet } from '../renderer/snippet-generator.js';
 
 function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function tokenizeXml(code: string): string {
-  const re =
-    /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
-  let out = '';
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(code)) !== null) {
-    if (m[1] != null) {
-      out += `<span class="tok-com">${esc(m[1])}</span>`;
-    } else if (m[2] != null) {
-      out += `<span class="tok-tag">${esc(m[2])}</span>`;
-    } else if (m[3] != null) {
-      out += `<span class="tok-attr">${esc(m[3])}</span>=`;
-    } else if (m[4] != null) {
-      out += `"<span class="tok-str">${esc(m[4])}</span>"`;
-    } else if (m[5] != null) {
-      out += `<span class="tok-tag">${esc(m[5])}</span>`;
-    } else if (m[6] != null) {
-      out += '\n';
-    } else {
-      out += esc(m[0]);
+    const re = /(\/\/[^\n]*)|(<\/?[\w-]+)|(\[[\w.]+\]|[\w-]+)=|"([^"]*)"|(\/>|>)|(\n)|([^<\["\n/>=]+|[/=])/g;
+    let out = '';
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(code)) !== null) {
+        if (m[1] != null) {
+            out += `<span class="tok-com">${esc(m[1])}</span>`;
+        } else if (m[2] != null) {
+            out += `<span class="tok-tag">${esc(m[2])}</span>`;
+        } else if (m[3] != null) {
+            out += `<span class="tok-attr">${esc(m[3])}</span>=`;
+        } else if (m[4] != null) {
+            out += `"<span class="tok-str">${esc(m[4])}</span>"`;
+        } else if (m[5] != null) {
+            out += `<span class="tok-tag">${esc(m[5])}</span>`;
+        } else if (m[6] != null) {
+            out += '\n';
+        } else {
+            out += esc(m[0]);
+        }
     }
-  }
-  return out;
+    return out;
 }
 
 @Component({
-  selector: 'prism-template-popover',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent],
-  templateUrl: './prism-template-popover.component.html',
-  styleUrl: './prism-template-popover.component.css',
+    selector: 'prism-template-popover',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismIconComponent],
+    templateUrl: './prism-template-popover.component.html',
+    styleUrl: './prism-template-popover.component.css'
 })
 export class PrismTemplatePopoverComponent {
-  private readonly navigationService = inject(PrismNavigationService);
-  private readonly rendererService = inject(PrismRendererService);
+    private readonly navigationService = inject(PrismNavigationService);
+    private readonly rendererService = inject(PrismRendererService);
 
-  protected readonly copied = signal(false);
-  private copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
+    protected readonly copied = signal(false);
+    private copiedResetTimer: ReturnType<typeof setTimeout> | null = null;
 
-  protected readonly snippet = computed(() => {
-    const comp = this.navigationService.activeComponent();
-    if (!comp) return '';
-    const variant =
-      comp.meta.showcaseConfig.variants?.[
-        this.rendererService.activeVariantIndex()
-      ];
-    const explicitKeys = variant?.inputs
-      ? new Set(Object.keys(variant.inputs))
-      : undefined;
-    const directiveOptions = comp.meta.componentMeta.isDirective
-      ? { host: comp.meta.showcaseConfig.host }
-      : undefined;
-    return generateSnippet(
-      comp.meta.componentMeta.selector,
-      comp.meta.inputs,
-      this.rendererService.inputValues(),
-      explicitKeys,
-      this.rendererService.activeContent(),
-      directiveOptions
-    );
-  });
+    protected readonly snippet = computed(() => {
+        const comp = this.navigationService.activeComponent();
+        if (!comp) return '';
+        const variant = comp.meta.showcaseConfig.variants?.[this.rendererService.activeVariantIndex()];
+        const explicitKeys = variant?.inputs ? new Set(Object.keys(variant.inputs)) : undefined;
+        const directiveOptions = comp.meta.componentMeta.isDirective ? { host: comp.meta.showcaseConfig.host } : undefined;
+        return generateSnippet(
+            comp.meta.componentMeta.selector,
+            comp.meta.inputs,
+            this.rendererService.inputValues(),
+            explicitKeys,
+            this.rendererService.activeContent(),
+            directiveOptions
+        );
+    });
 
-  protected readonly highlighted = computed(() => {
-    const code = this.snippet();
-    if (!code) return '';
-    return tokenizeXml(code);
-  });
+    protected readonly highlighted = computed(() => {
+        const code = this.snippet();
+        if (!code) return '';
+        return tokenizeXml(code);
+    });
 
-  protected copy(): void {
-    const code = this.snippet();
-    if (!code) return;
-    navigator.clipboard?.writeText(code);
-    this.copied.set(true);
-    if (this.copiedResetTimer) clearTimeout(this.copiedResetTimer);
-    this.copiedResetTimer = setTimeout(() => this.copied.set(false), 1500);
-  }
+    protected copy(): void {
+        const code = this.snippet();
+        if (!code) return;
+        navigator.clipboard?.writeText(code);
+        this.copied.set(true);
+        if (this.copiedResetTimer) clearTimeout(this.copiedResetTimer);
+        this.copiedResetTimer = setTimeout(() => this.copied.set(false), 1500);
+    }
 }

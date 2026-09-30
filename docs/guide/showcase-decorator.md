@@ -112,7 +112,7 @@ export class AutofocusDirective {}
 @Showcase({ title: 'CurrencyPipe', section: 'Pipes' })
 @Pipe({ name: 'libCurrency', standalone: true })
 export class CurrencyPipe {
-  /* ... */
+    /* ... */
 }
 ```
 

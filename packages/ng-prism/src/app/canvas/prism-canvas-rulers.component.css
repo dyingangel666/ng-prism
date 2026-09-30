@@ -2,40 +2,40 @@
    gutter width is also the canvas size the two rulers are painted at, so R in
    the component is the one place it may be written down. */
 :host {
-  display: contents;
+    display: contents;
 }
 
 .ruler-wrap {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 4;
-  overflow: hidden;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+    overflow: hidden;
 }
 
 .ruler {
-  position: absolute;
+    position: absolute;
 }
 .ruler--top {
-  top: 0;
-  left: var(--prism-ruler-size);
-  right: 0;
-  height: var(--prism-ruler-size);
+    top: 0;
+    left: var(--prism-ruler-size);
+    right: 0;
+    height: var(--prism-ruler-size);
 }
 .ruler--left {
-  top: var(--prism-ruler-size);
-  left: 0;
-  bottom: 0;
-  width: var(--prism-ruler-size);
+    top: var(--prism-ruler-size);
+    left: 0;
+    bottom: 0;
+    width: var(--prism-ruler-size);
 }
 .ruler-corner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--prism-ruler-size);
-  height: var(--prism-ruler-size);
-  background: var(--prism-bg);
-  border-right: 1px solid var(--prism-border);
-  border-bottom: 1px solid var(--prism-border);
-  z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--prism-ruler-size);
+    height: var(--prism-ruler-size);
+    background: var(--prism-bg);
+    border-right: 1px solid var(--prism-border);
+    border-bottom: 1px solid var(--prism-border);
+    z-index: 1;
 }

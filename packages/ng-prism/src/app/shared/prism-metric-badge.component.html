@@ -1,12 +1,14 @@
 <span
-  class="metric-badge"
-  role="img"
-  [class.metric-badge--ok]="variant() === 'ok'"
-  [class.metric-badge--warn]="variant() === 'warn'"
-  [class.metric-badge--danger]="variant() === 'danger'"
-  [attr.title]="title() || label()"
-  [attr.aria-label]="accessibleName()"
->
-  <prism-icon [name]="icon()" [size]="12" aria-hidden="true" />
-  <span class="metric-badge__value">{{ value() }}</span>
+    class="metric-badge"
+    role="img"
+    [class.metric-badge--ok]="variant() === 'ok'"
+    [class.metric-badge--warn]="variant() === 'warn'"
+    [class.metric-badge--danger]="variant() === 'danger'"
+    [attr.title]="title() || label()"
+    [attr.aria-label]="accessibleName()">
+    <prism-icon
+        [name]="icon()"
+        [size]="12"
+        aria-hidden="true" />
+    <span class="metric-badge__value">{{ value() }}</span>
 </span>

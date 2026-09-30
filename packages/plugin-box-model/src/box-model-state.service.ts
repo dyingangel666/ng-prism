@@ -3,5 +3,5 @@ import type { BoxModelData } from './box-model.types.js';
 
 @Injectable()
 export class BoxModelStateService {
-  readonly hoveredBoxModel = signal<BoxModelData | null>(null);
+    readonly hoveredBoxModel = signal<BoxModelData | null>(null);
 }

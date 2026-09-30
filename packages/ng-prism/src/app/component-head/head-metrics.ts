@@ -10,29 +10,29 @@ export type MetricVariant = 'ok' | 'warn' | 'danger' | 'none';
 
 /** One measured value, already formatted for display. */
 export interface HeadMetric {
-  id: string;
-  label: string;
-  value: string;
-  variant: MetricVariant;
+    id: string;
+    label: string;
+    value: string;
+    variant: MetricVariant;
 }
 
 /** What the gauge chip renders, derived from the full metric list. */
 export interface GaugeSummary {
-  /** Metrics that actually carry data. `none` does not count. */
-  measured: number;
-  /** The worst-ranked deviating metric, or null when nothing deviates. */
-  worst: HeadMetric | null;
-  /** How many further metrics deviate besides `worst`. */
-  others: number;
-  /** Colour role for the chip. */
-  variant: 'ok' | 'warn' | 'danger';
+    /** Metrics that actually carry data. `none` does not count. */
+    measured: number;
+    /** The worst-ranked deviating metric, or null when nothing deviates. */
+    worst: HeadMetric | null;
+    /** How many further metrics deviate besides `worst`. */
+    others: number;
+    /** Colour role for the chip. */
+    variant: 'ok' | 'warn' | 'danger';
 }
 
 const SEVERITY: Record<MetricVariant, number> = {
-  none: 0,
-  ok: 0,
-  warn: 1,
-  danger: 2,
+    none: 0,
+    ok: 0,
+    warn: 1,
+    danger: 2
 };
 
 /**
@@ -48,23 +48,23 @@ const SEVERITY: Record<MetricVariant, number> = {
  * renders rather than flickering between two equally bad ones.
  */
 export function summarizeMetrics(metrics: readonly HeadMetric[]): GaugeSummary {
-  let measured = 0;
-  let worst: HeadMetric | null = null;
-  let deviating = 0;
+    let measured = 0;
+    let worst: HeadMetric | null = null;
+    let deviating = 0;
 
-  for (const m of metrics) {
-    if (m.variant !== 'none') measured++;
-    if (SEVERITY[m.variant] === 0) continue;
-    deviating++;
-    if (worst === null || SEVERITY[m.variant] > SEVERITY[worst.variant]) {
-      worst = m;
+    for (const m of metrics) {
+        if (m.variant !== 'none') measured++;
+        if (SEVERITY[m.variant] === 0) continue;
+        deviating++;
+        if (worst === null || SEVERITY[m.variant] > SEVERITY[worst.variant]) {
+            worst = m;
+        }
     }
-  }
 
-  return {
-    measured,
-    worst,
-    others: deviating > 0 ? deviating - 1 : 0,
-    variant: worst === null ? 'ok' : (worst.variant as 'warn' | 'danger'),
-  };
+    return {
+        measured,
+        worst,
+        others: deviating > 0 ? deviating - 1 : 0,
+        variant: worst === null ? 'ok' : (worst.variant as 'warn' | 'danger')
+    };
 }

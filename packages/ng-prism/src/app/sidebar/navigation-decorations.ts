@@ -4,32 +4,32 @@ import type { NavigationItem } from '../services/navigation-item.types.js';
 
 /** One source's verdict on one component, resolved for rendering. */
 export interface ItemMark {
-  /**
-   * The definition's id. `resolveNavigationDecorations` guarantees these are
-   * unique, so this is the only field safe to `@for track` by — `icon` is a
-   * free-form string on a public extension point and two sources can pick the
-   * same one.
-   */
-  id: string;
-  icon: string;
-  variant: 'warn' | 'danger';
-  label: string;
+    /**
+     * The definition's id. `resolveNavigationDecorations` guarantees these are
+     * unique, so this is the only field safe to `@for track` by — `icon` is a
+     * free-form string on a public extension point and two sources can pick the
+     * same one.
+     */
+    id: string;
+    icon: string;
+    variant: 'warn' | 'danger';
+    label: string;
 }
 
 export interface ItemDecorations {
-  /** Ordered marks — never empty; `decorateItem` returns null instead. */
-  marks: ItemMark[];
-  /** Worst variant across `marks`. Drives the group roll-up. */
-  worst: 'warn' | 'danger';
-  /** Newline-joined labels for the item's `title` attribute. */
-  tooltip: string;
+    /** Ordered marks — never empty; `decorateItem` returns null instead. */
+    marks: ItemMark[];
+    /** Worst variant across `marks`. Drives the group roll-up. */
+    worst: 'warn' | 'danger';
+    /** Newline-joined labels for the item's `title` attribute. */
+    tooltip: string;
 }
 
 export interface CategoryRollup {
-  /** Number of items in the category carrying at least one mark. */
-  problems: number;
-  /** Worst variant among them, or null for a clean category. */
-  variant: 'warn' | 'danger' | null;
+    /** Number of items in the category carrying at least one mark. */
+    problems: number;
+    /** Worst variant among them, or null for a clean category. */
+    variant: 'warn' | 'danger' | null;
 }
 
 const SEVERITY: Record<'warn' | 'danger', number> = { warn: 1, danger: 2 };
@@ -44,19 +44,19 @@ const SEVERITY: Record<'warn' | 'danger', number> = { warn: 1, danger: 2 };
  * into the result.
  */
 export function resolveNavigationDecorations(
-  builtin: readonly NavigationDecorationDefinition[],
-  fromPlugins: readonly NavigationDecorationDefinition[]
+    builtin: readonly NavigationDecorationDefinition[],
+    fromPlugins: readonly NavigationDecorationDefinition[]
 ): NavigationDecorationDefinition[] {
-  const seen = new Set<string>();
-  const result: NavigationDecorationDefinition[] = [];
+    const seen = new Set<string>();
+    const result: NavigationDecorationDefinition[] = [];
 
-  for (const def of [...builtin, ...fromPlugins]) {
-    if (seen.has(def.id)) continue;
-    seen.add(def.id);
-    result.push(def);
-  }
+    for (const def of [...builtin, ...fromPlugins]) {
+        if (seen.has(def.id)) continue;
+        seen.add(def.id);
+        result.push(def);
+    }
 
-  return result.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return result.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 /**
@@ -65,32 +65,29 @@ export function resolveNavigationDecorations(
  * Returns `null` rather than an empty result for a clean component, so callers
  * cannot accidentally render an empty marker container.
  */
-export function decorateItem(
-  item: NavigationItem,
-  defs: readonly NavigationDecorationDefinition[]
-): ItemDecorations | null {
-  if (item.kind !== 'component') return null;
+export function decorateItem(item: NavigationItem, defs: readonly NavigationDecorationDefinition[]): ItemDecorations | null {
+    if (item.kind !== 'component') return null;
 
-  const marks: ItemMark[] = [];
-  for (const def of defs) {
-    const badge = def.badge(item.data);
-    if (!badge) continue;
-    marks.push({
-      id: def.id,
-      icon: def.icon,
-      variant: badge.variant,
-      label: badge.label,
-    });
-  }
+    const marks: ItemMark[] = [];
+    for (const def of defs) {
+        const badge = def.badge(item.data);
+        if (!badge) continue;
+        marks.push({
+            id: def.id,
+            icon: def.icon,
+            variant: badge.variant,
+            label: badge.label
+        });
+    }
 
-  if (marks.length === 0) return null;
+    if (marks.length === 0) return null;
 
-  let worst: 'warn' | 'danger' = 'warn';
-  for (const mark of marks) {
-    if (SEVERITY[mark.variant] > SEVERITY[worst]) worst = mark.variant;
-  }
+    let worst: 'warn' | 'danger' = 'warn';
+    for (const mark of marks) {
+        if (SEVERITY[mark.variant] > SEVERITY[worst]) worst = mark.variant;
+    }
 
-  return { marks, worst, tooltip: marks.map((m) => m.label).join('\n') };
+    return { marks, worst, tooltip: marks.map((m) => m.label).join('\n') };
 }
 
 /**
@@ -105,21 +102,19 @@ export function decorateItem(
  * marks, and recomputing it here would both waste the work and let the
  * roll-up drift from what actually renders.
  */
-export function rollupCategory(
-  decorations: readonly (ItemDecorations | null)[]
-): CategoryRollup {
-  let problems = 0;
-  let variant: 'warn' | 'danger' | null = null;
+export function rollupCategory(decorations: readonly (ItemDecorations | null)[]): CategoryRollup {
+    let problems = 0;
+    let variant: 'warn' | 'danger' | null = null;
 
-  for (const decoration of decorations) {
-    if (!decoration) continue;
-    problems++;
-    if (!variant || SEVERITY[decoration.worst] > SEVERITY[variant]) {
-      variant = decoration.worst;
+    for (const decoration of decorations) {
+        if (!decoration) continue;
+        problems++;
+        if (!variant || SEVERITY[decoration.worst] > SEVERITY[variant]) {
+            variant = decoration.worst;
+        }
     }
-  }
 
-  return { problems, variant };
+    return { problems, variant };
 }
 
 /**
@@ -131,5 +126,5 @@ export function rollupCategory(
  * in stroke style.
  */
 export function lifecycleIcon(status: ComponentStatus | undefined): string {
-  return status === 'wip' ? 'circle-dashed' : 'box';
+    return status === 'wip' ? 'circle-dashed' : 'box';
 }

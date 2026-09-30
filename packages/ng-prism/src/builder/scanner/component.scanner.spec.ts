@@ -6,319 +6,278 @@ import { scanComponents } from './component.scanner.js';
 const FIXTURES_DIR = path.join(__dirname, '__fixtures__');
 
 const compilerOptions: ts.CompilerOptions = {
-  target: ts.ScriptTarget.ES2022,
-  module: ts.ModuleKind.ES2022,
-  moduleResolution: ts.ModuleResolutionKind.Node10,
-  experimentalDecorators: true,
-  strict: true,
-  skipLibCheck: true,
+    target: ts.ScriptTarget.ES2022,
+    module: ts.ModuleKind.ES2022,
+    moduleResolution: ts.ModuleResolutionKind.Node10,
+    experimentalDecorators: true,
+    strict: true,
+    skipLibCheck: true
 };
 
 describe('scanComponents', () => {
-  let checker: ts.TypeChecker;
-  let exports: ts.Symbol[];
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
 
-  beforeAll(() => {
-    const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
-    const result = resolveEntryPointExports(
-      [{ entryFile, importPath: 'fixture' }],
-      compilerOptions
-    );
-    checker = result.program.getTypeChecker();
-    exports = result.entries[0].exports;
-  });
-
-  it('should find only @Showcase-annotated components', () => {
-    const components = scanComponents(exports, checker);
-    const names = components.map((c) => c.className);
-
-    expect(names).toContain('ButtonComponent');
-    expect(names).toContain('CardComponent');
-    expect(names).toContain('SignalButtonComponent');
-    expect(names).toContain('ModelInputComponent');
-    expect(names).toContain('HighlightDirective');
-    expect(names).toContain('InvalidBgComponent');
-    expect(names).toContain('InvalidStatusComponent');
-    expect(names).toContain('SectionedComponent');
-    expect(names).not.toContain('NoShowcaseComponent');
-    expect(components).toHaveLength(9);
-  });
-
-  it('should extract showcase config for ButtonComponent', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
-
-    expect(button.showcaseConfig.title).toBe('Button');
-    expect(button.showcaseConfig.category).toBe('Inputs');
-    expect(button.showcaseConfig.description).toBe(
-      'A versatile button component'
-    );
-    expect(button.showcaseConfig.tags).toEqual(['form', 'action']);
-  });
-
-  it('should extract variants', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
-
-    expect(button.showcaseConfig.variants).toHaveLength(2);
-    expect(button.showcaseConfig.variants![0].name).toBe('Primary');
-    expect(button.showcaseConfig.variants![0].inputs).toEqual({
-      variant: 'primary',
-      label: 'Click me',
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'public-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
     });
-    expect(button.showcaseConfig.variants![1].name).toBe('Danger');
-    expect(button.showcaseConfig.variants![1].inputs).toEqual({
-      variant: 'danger',
-      disabled: true,
+
+    it('should find only @Showcase-annotated components', () => {
+        const components = scanComponents(exports, checker);
+        const names = components.map((c) => c.className);
+
+        expect(names).toContain('ButtonComponent');
+        expect(names).toContain('CardComponent');
+        expect(names).toContain('SignalButtonComponent');
+        expect(names).toContain('ModelInputComponent');
+        expect(names).toContain('HighlightDirective');
+        expect(names).toContain('InvalidBgComponent');
+        expect(names).toContain('InvalidStatusComponent');
+        expect(names).toContain('SectionedComponent');
+        expect(names).not.toContain('NoShowcaseComponent');
+        expect(components).toHaveLength(9);
     });
-  });
 
-  it('should extract variant-level meta', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+    it('should extract showcase config for ButtonComponent', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(button.showcaseConfig.variants![0].meta).toEqual({
-      figma: 'https://www.figma.com/design/abc123/DS?node-id=12-34',
+        expect(button.showcaseConfig.title).toBe('Button');
+        expect(button.showcaseConfig.category).toBe('Inputs');
+        expect(button.showcaseConfig.description).toBe('A versatile button component');
+        expect(button.showcaseConfig.tags).toEqual(['form', 'action']);
     });
-    expect(button.showcaseConfig.variants![1].meta).toBeUndefined();
-  });
 
-  it('should extract component metadata (selector, standalone)', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+    it('should extract variants', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(button.componentMeta.selector).toBe('my-button');
-    expect(button.componentMeta.standalone).toBe(true);
-  });
+        expect(button.showcaseConfig.variants).toHaveLength(2);
+        expect(button.showcaseConfig.variants![0].name).toBe('Primary');
+        expect(button.showcaseConfig.variants![0].inputs).toEqual({
+            variant: 'primary',
+            label: 'Click me'
+        });
+        expect(button.showcaseConfig.variants![1].name).toBe('Danger');
+        expect(button.showcaseConfig.variants![1].inputs).toEqual({
+            variant: 'danger',
+            disabled: true
+        });
+    });
 
-  it('should extract inputs and outputs', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+    it('should extract variant-level meta', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(button.inputs.length).toBe(5);
-    expect(button.outputs.length).toBe(2);
-    expect(button.inputs[0].name).toBe('variant');
-    expect(button.outputs[0].name).toBe('clicked');
-  });
+        expect(button.showcaseConfig.variants![0].meta).toEqual({
+            figma: 'https://www.figma.com/design/abc123/DS?node-id=12-34'
+        });
+        expect(button.showcaseConfig.variants![1].meta).toBeUndefined();
+    });
 
-  it('should set filePath', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+    it('should extract component metadata (selector, standalone)', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(button.filePath).toContain('button.component.ts');
-  });
+        expect(button.componentMeta.selector).toBe('my-button');
+        expect(button.componentMeta.standalone).toBe(true);
+    });
 
-  it('should handle CardComponent with minimal config', () => {
-    const components = scanComponents(exports, checker);
-    const card = components.find((c) => c.className === 'CardComponent')!;
+    it('should extract inputs and outputs', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(card.showcaseConfig.title).toBe('Card');
-    expect(card.showcaseConfig.category).toBe('Layout');
-    expect(card.showcaseConfig.variants).toBeUndefined();
-    expect(card.showcaseConfig.tags).toBeUndefined();
-    expect(card.inputs).toHaveLength(2);
-    expect(card.outputs).toHaveLength(0);
-  });
+        expect(button.inputs.length).toBe(5);
+        expect(button.outputs.length).toBe(2);
+        expect(button.inputs[0].name).toBe('variant');
+        expect(button.outputs[0].name).toBe('clicked');
+    });
 
-  it('should set isDirective true for directives', () => {
-    const components = scanComponents(exports, checker);
-    const highlight = components.find(
-      (c) => c.className === 'HighlightDirective'
-    )!;
+    it('should set filePath', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(highlight.componentMeta.isDirective).toBe(true);
-    expect(highlight.componentMeta.selector).toBe('[appHighlight]');
-    expect(highlight.componentMeta.standalone).toBe(true);
-  });
+        expect(button.filePath).toContain('button.component.ts');
+    });
 
-  it('should set isDirective false for components', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+    it('should handle CardComponent with minimal config', () => {
+        const components = scanComponents(exports, checker);
+        const card = components.find((c) => c.className === 'CardComponent')!;
 
-    expect(button.componentMeta.isDirective).toBe(false);
-  });
+        expect(card.showcaseConfig.title).toBe('Card');
+        expect(card.showcaseConfig.category).toBe('Layout');
+        expect(card.showcaseConfig.variants).toBeUndefined();
+        expect(card.showcaseConfig.tags).toBeUndefined();
+        expect(card.inputs).toHaveLength(2);
+        expect(card.outputs).toHaveLength(0);
+    });
 
-  it('should extract inputs and outputs from directives', () => {
-    const components = scanComponents(exports, checker);
-    const highlight = components.find(
-      (c) => c.className === 'HighlightDirective'
-    )!;
+    it('should set isDirective true for directives', () => {
+        const components = scanComponents(exports, checker);
+        const highlight = components.find((c) => c.className === 'HighlightDirective')!;
 
-    expect(highlight.inputs).toHaveLength(1);
-    expect(highlight.inputs[0].name).toBe('highlightColor');
-    expect(highlight.inputs[0].type).toBe('string');
-    expect(highlight.inputs[0].defaultValue).toBe('yellow');
+        expect(highlight.componentMeta.isDirective).toBe(true);
+        expect(highlight.componentMeta.selector).toBe('[appHighlight]');
+        expect(highlight.componentMeta.standalone).toBe(true);
+    });
 
-    expect(highlight.outputs).toHaveLength(1);
-    expect(highlight.outputs[0].name).toBe('highlighted');
-  });
+    it('should set isDirective false for components', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-  it('should extract host config from directive showcase', () => {
-    const components = scanComponents(exports, checker);
-    const highlight = components.find(
-      (c) => c.className === 'HighlightDirective'
-    )!;
+        expect(button.componentMeta.isDirective).toBe(false);
+    });
 
-    expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
-  });
+    it('should extract inputs and outputs from directives', () => {
+        const components = scanComponents(exports, checker);
+        const highlight = components.find((c) => c.className === 'HighlightDirective')!;
 
-  it('should warn when @Showcase class uses @Input() decorators', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    scanComponents(exports, checker);
+        expect(highlight.inputs).toHaveLength(1);
+        expect(highlight.inputs[0].name).toBe('highlightColor');
+        expect(highlight.inputs[0].type).toBe('string');
+        expect(highlight.inputs[0].defaultValue).toBe('yellow');
 
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('ButtonComponent uses @Input() decorators')
-    );
+        expect(highlight.outputs).toHaveLength(1);
+        expect(highlight.outputs[0].name).toBe('highlighted');
+    });
 
-    warnSpy.mockRestore();
-  });
+    it('should extract host config from directive showcase', () => {
+        const components = scanComponents(exports, checker);
+        const highlight = components.find((c) => c.className === 'HighlightDirective')!;
 
-  it('should warn and skip @Showcase classes without a title', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    const components = scanComponents(exports, checker);
+        expect(highlight.showcaseConfig.host).toBe('<span class="demo-text">');
+    });
 
-    expect(
-      components.find((c) => c.className === 'MissingTitleComponent')
-    ).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'MissingTitleComponent has @Showcase without a "title" field'
-      )
-    );
+    it('should warn when @Showcase class uses @Input() decorators', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        scanComponents(exports, checker);
 
-    warnSpy.mockRestore();
-  });
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('ButtonComponent uses @Input() decorators'));
 
-  it('should warn that a checker background is deprecated', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    scanComponents(exports, checker);
+        warnSpy.mockRestore();
+    });
 
-    // Once for the component and once for the variant that declares its own:
-    // a reviewer fixing this has to find both, and only the variant warning
-    // says which variant.
-    const messages = warnSpy.mock.calls
-      .map((call) => String(call[0]))
-      .filter((message) => message.includes('DeprecatedBgComponent'));
-    expect(messages.filter((m) => m.includes('deprecated'))).toHaveLength(2);
-    expect(messages.some((m) => m.includes('Also checker'))).toBe(true);
+    it('should warn and skip @Showcase classes without a title', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const components = scanComponents(exports, checker);
 
-    warnSpy.mockRestore();
-  });
+        expect(components.find((c) => c.className === 'MissingTitleComponent')).toBeUndefined();
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('MissingTitleComponent has @Showcase without a "title" field'));
 
-  it('should keep a checker background despite deprecating it', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    const components = scanComponents(exports, checker);
-    const deprecated = components.find(
-      (c) => c.className === 'DeprecatedBgComponent'
-    )!;
+        warnSpy.mockRestore();
+    });
 
-    // Deprecated is not invalid. Dropping the value would change what the
-    // component renders on, which is a break dressed up as a warning.
-    expect(deprecated.showcaseConfig.bg).toBe('checker');
-    expect(deprecated.showcaseConfig.variants?.[0].bg).toBe('checker');
+    it('should warn that a checker background is deprecated', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        scanComponents(exports, checker);
 
-    warnSpy.mockRestore();
-  });
+        // Once for the component and once for the variant that declares its own:
+        // a reviewer fixing this has to find both, and only the variant warning
+        // says which variant.
+        const messages = warnSpy.mock.calls.map((call) => String(call[0])).filter((message) => message.includes('DeprecatedBgComponent'));
+        expect(messages.filter((m) => m.includes('deprecated'))).toHaveLength(2);
+        expect(messages.some((m) => m.includes('Also checker'))).toBe(true);
 
-  it('should not warn for signal-based components', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    scanComponents(exports, checker);
+        warnSpy.mockRestore();
+    });
 
-    expect(warnSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining('SignalButtonComponent')
-    );
-    expect(warnSpy).not.toHaveBeenCalledWith(
-      expect.stringContaining('HighlightDirective')
-    );
+    it('should keep a checker background despite deprecating it', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const components = scanComponents(exports, checker);
+        const deprecated = components.find((c) => c.className === 'DeprecatedBgComponent')!;
 
-    warnSpy.mockRestore();
-  });
+        // Deprecated is not invalid. Dropping the value would change what the
+        // component renders on, which is a break dressed up as a warning.
+        expect(deprecated.showcaseConfig.bg).toBe('checker');
+        expect(deprecated.showcaseConfig.variants?.[0].bg).toBe('checker');
 
-  it('should extract component-level bg', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+        warnSpy.mockRestore();
+    });
 
-    expect(button.showcaseConfig.bg).toBe('dark');
-  });
+    it('should not warn for signal-based components', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        scanComponents(exports, checker);
 
-  it('should extract variant-level bg', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+        expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('SignalButtonComponent'));
+        expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('HighlightDirective'));
 
-    expect(button.showcaseConfig.variants![0].bg).toBe('light');
-    expect(button.showcaseConfig.variants![1].bg).toBeUndefined();
-  });
+        warnSpy.mockRestore();
+    });
 
-  it('should leave bg undefined when not declared', () => {
-    const components = scanComponents(exports, checker);
-    const card = components.find((c) => c.className === 'CardComponent')!;
+    it('should extract component-level bg', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    expect(card.showcaseConfig.bg).toBeUndefined();
-  });
+        expect(button.showcaseConfig.bg).toBe('dark');
+    });
 
-  it('should warn and skip invalid bg values', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    const components = scanComponents(exports, checker);
+    it('should extract variant-level bg', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    const invalid = components.find(
-      (c) => c.className === 'InvalidBgComponent'
-    )!;
-    expect(invalid.showcaseConfig.bg).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'InvalidBgComponent declares invalid bg "rainbow"'
-      )
-    );
+        expect(button.showcaseConfig.variants![0].bg).toBe('light');
+        expect(button.showcaseConfig.variants![1].bg).toBeUndefined();
+    });
 
-    warnSpy.mockRestore();
-  });
+    it('should leave bg undefined when not declared', () => {
+        const components = scanComponents(exports, checker);
+        const card = components.find((c) => c.className === 'CardComponent')!;
 
-  it('should extract status from showcase config', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+        expect(card.showcaseConfig.bg).toBeUndefined();
+    });
 
-    expect(button.showcaseConfig.status).toBe('beta');
-  });
+    it('should warn and skip invalid bg values', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const components = scanComponents(exports, checker);
 
-  it('should leave status undefined when not declared', () => {
-    const components = scanComponents(exports, checker);
-    const card = components.find((c) => c.className === 'CardComponent')!;
+        const invalid = components.find((c) => c.className === 'InvalidBgComponent')!;
+        expect(invalid.showcaseConfig.bg).toBeUndefined();
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('InvalidBgComponent declares invalid bg "rainbow"'));
 
-    expect(card.showcaseConfig.status).toBeUndefined();
-  });
+        warnSpy.mockRestore();
+    });
 
-  it('should warn and skip invalid status values', () => {
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-    const components = scanComponents(exports, checker);
+    it('should extract status from showcase config', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
 
-    const invalid = components.find(
-      (c) => c.className === 'InvalidStatusComponent'
-    )!;
-    expect(invalid.showcaseConfig.status).toBeUndefined();
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'InvalidStatusComponent declares invalid status "banana"'
-      )
-    );
+        expect(button.showcaseConfig.status).toBe('beta');
+    });
 
-    warnSpy.mockRestore();
-  });
+    it('should leave status undefined when not declared', () => {
+        const components = scanComponents(exports, checker);
+        const card = components.find((c) => c.className === 'CardComponent')!;
 
-  it('extracts section and sectionOrder from showcaseConfig', () => {
-    const components = scanComponents(exports, checker);
-    const sectioned = components.find(
-      (c) => c.className === 'SectionedComponent'
-    )!;
+        expect(card.showcaseConfig.status).toBeUndefined();
+    });
 
-    expect(sectioned.showcaseConfig.section).toBe('Pipes');
-    expect(sectioned.showcaseConfig.sectionOrder).toBe(5);
-  });
+    it('should warn and skip invalid status values', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const components = scanComponents(exports, checker);
 
-  it('omits section and sectionOrder when not declared', () => {
-    const components = scanComponents(exports, checker);
-    const button = components.find((c) => c.className === 'ButtonComponent')!;
+        const invalid = components.find((c) => c.className === 'InvalidStatusComponent')!;
+        expect(invalid.showcaseConfig.status).toBeUndefined();
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('InvalidStatusComponent declares invalid status "banana"'));
 
-    expect(button.showcaseConfig.section).toBeUndefined();
-    expect(button.showcaseConfig.sectionOrder).toBeUndefined();
-  });
+        warnSpy.mockRestore();
+    });
+
+    it('extracts section and sectionOrder from showcaseConfig', () => {
+        const components = scanComponents(exports, checker);
+        const sectioned = components.find((c) => c.className === 'SectionedComponent')!;
+
+        expect(sectioned.showcaseConfig.section).toBe('Pipes');
+        expect(sectioned.showcaseConfig.sectionOrder).toBe(5);
+    });
+
+    it('omits section and sectionOrder when not declared', () => {
+        const components = scanComponents(exports, checker);
+        const button = components.find((c) => c.className === 'ButtonComponent')!;
+
+        expect(button.showcaseConfig.section).toBeUndefined();
+        expect(button.showcaseConfig.sectionOrder).toBeUndefined();
+    });
 });

@@ -1,29 +1,25 @@
 // Plugin API exports
 export type {
-  NgPrismPlugin,
-  PanelBadge,
-  PanelDefinition,
-  ControlDefinition,
-  HeaderWidgetDefinition,
-  NavigationDecoration,
-  NavigationDecorationDefinition,
-  NgPrismConfig,
-  PrismManifest,
-  ScannedComponent,
-  InputMeta,
-  OutputMeta,
-  RuntimeManifest,
-  RuntimeComponent,
-  DiscoveryManifest,
-  DiscoveryComponent,
-  DiscoveryVariant,
-  DiscoveryPage,
+    NgPrismPlugin,
+    PanelBadge,
+    PanelDefinition,
+    ControlDefinition,
+    HeaderWidgetDefinition,
+    NavigationDecoration,
+    NavigationDecorationDefinition,
+    NgPrismConfig,
+    PrismManifest,
+    ScannedComponent,
+    InputMeta,
+    OutputMeta,
+    RuntimeManifest,
+    RuntimeComponent,
+    DiscoveryManifest,
+    DiscoveryComponent,
+    DiscoveryVariant,
+    DiscoveryPage
 } from './plugin.types.js';
-export type {
-  StyleguidePage,
-  CustomPage,
-  ComponentPage,
-} from './page.types.js';
+export type { StyleguidePage, CustomPage, ComponentPage } from './page.types.js';
 
 // The canvas background a variant renders on. Part of the discovery contract
 // (`DiscoveryVariant.bg`), so external tooling and plugins can name the type
@@ -45,9 +41,5 @@ export { defineConfig } from './define-config.js';
 // Node is harmless. The line being drawn is decorated declarations, not the
 // package.
 export { ICON_NAMES } from '../app/icons/icon-registry.js';
-export {
-  PRISM_RENDERER_HOOKS,
-  PRISM_MANIFEST,
-  PRISM_CONFIG,
-} from '../app/tokens/prism-tokens.js';
+export { PRISM_RENDERER_HOOKS, PRISM_MANIFEST, PRISM_CONFIG } from '../app/tokens/prism-tokens.js';
 export type { PrismRendererHooks } from '../app/tokens/prism-tokens.js';

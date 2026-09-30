@@ -1,67 +1,48 @@
 import { NgComponentOutlet } from '@angular/common';
-import {
-  Component,
-  inject,
-  input,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { BooleanControlComponent } from '../../controls/boolean-control.component.js';
 import { JsonControlComponent } from '../../controls/json-control.component.js';
 import { NumberControlComponent } from '../../controls/number-control.component.js';
 import { StringControlComponent } from '../../controls/string-control.component.js';
 import { UnionControlComponent } from '../../controls/union-control.component.js';
-import type {
-  ControlDefinition,
-  InputMeta,
-  RuntimeComponent,
-} from '../../../plugin/plugin.types.js';
+import type { ControlDefinition, InputMeta, RuntimeComponent } from '../../../plugin/plugin.types.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
 import { isNonEditableInputType } from './non-editable-input-types.js';
 
 @Component({
-  selector: 'prism-controls-panel',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    NgComponentOutlet,
-    BooleanControlComponent,
-    StringControlComponent,
-    NumberControlComponent,
-    UnionControlComponent,
-    JsonControlComponent,
-  ],
-  templateUrl: './prism-controls-panel.component.html',
-  styleUrl: './prism-controls-panel.component.css',
+    selector: 'prism-controls-panel',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgComponentOutlet, BooleanControlComponent, StringControlComponent, NumberControlComponent, UnionControlComponent, JsonControlComponent],
+    templateUrl: './prism-controls-panel.component.html',
+    styleUrl: './prism-controls-panel.component.css'
 })
 export class PrismControlsPanelComponent {
-  protected readonly navigationService = inject(PrismNavigationService);
-  protected readonly rendererService = inject(PrismRendererService);
-  private readonly pluginService = inject(PrismPluginService);
+    protected readonly navigationService = inject(PrismNavigationService);
+    protected readonly rendererService = inject(PrismRendererService);
+    private readonly pluginService = inject(PrismPluginService);
 
-  readonly activeComponent = input<RuntimeComponent | null>(null);
+    readonly activeComponent = input<RuntimeComponent | null>(null);
 
-  protected getCustomControl(input: InputMeta): ControlDefinition | null {
-    return (
-      this.pluginService.controls().find((ctrl) => ctrl.matchType(input)) ??
-      null
-    );
-  }
+    protected getCustomControl(input: InputMeta): ControlDefinition | null {
+        return this.pluginService.controls().find((ctrl) => ctrl.matchType(input)) ?? null;
+    }
 
-  protected isNonEditable(input: InputMeta): boolean {
-    return isNonEditableInputType(input);
-  }
+    protected isNonEditable(input: InputMeta): boolean {
+        return isNonEditableInputType(input);
+    }
 
-  protected asBoolean(val: unknown): boolean {
-    return Boolean(val);
-  }
+    protected asBoolean(val: unknown): boolean {
+        return Boolean(val);
+    }
 
-  protected asNumber(val: unknown): number {
-    return Number(val) || 0;
-  }
+    protected asNumber(val: unknown): number {
+        return Number(val) || 0;
+    }
 
-  protected asString(val: unknown): string {
-    return String(val ?? '');
-  }
+    protected asString(val: unknown): string {
+        return String(val ?? '');
+    }
 }

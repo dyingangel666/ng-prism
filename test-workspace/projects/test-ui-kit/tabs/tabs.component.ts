@@ -5,20 +5,27 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: 'Tabs',
-  status: 'wip',
-  category: 'Components',
-  description: 'TabsComponent from test-ui-kit/tabs secondary entry point.',
-  variants: [{ name: 'Default', inputs: { label: 'Tabs' } }],
+    title: 'Tabs',
+    status: 'wip',
+    category: 'Components',
+    description: 'TabsComponent from test-ui-kit/tabs secondary entry point.',
+    variants: [{ name: 'Default', inputs: { label: 'Tabs' } }]
 })
 @Component({
-  selector: 'uk-tabs',
-  standalone: true,
-  imports: [CommonModule, MatTabsModule, OverlayModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div class="uk">{{ label() }}</div>`,
-  styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
+    selector: 'uk-tabs',
+    standalone: true,
+    imports: [CommonModule, MatTabsModule, OverlayModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `<div class="uk">{{ label() }}</div>`,
+    styles: `
+        :host {
+            display: inline-block;
+        }
+        .uk {
+            padding: 8px;
+        }
+    `
 })
 export class TabsComponent {
-  readonly label = input<string>('Tabs');
+    readonly label = input<string>('Tabs');
 }

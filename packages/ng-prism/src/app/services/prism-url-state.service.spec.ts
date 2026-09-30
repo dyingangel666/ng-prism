@@ -1,10 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ApplicationRef } from '@angular/core';
-import type {
-  RuntimeComponent,
-  RuntimeManifest,
-  NgPrismConfig,
-} from '../../plugin/plugin.types.js';
+import type { RuntimeComponent, RuntimeManifest, NgPrismConfig } from '../../plugin/plugin.types.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismPanelService } from './prism-panel.service.js';
@@ -13,419 +9,419 @@ import { PrismUrlStateService } from './prism-url-state.service.js';
 import { CAPTURE_PARAM } from './prism-capture.service.js';
 
 function createComponent(
-  overrides: Partial<{
-    className: string;
-    title: string;
-    variants: { name: string }[];
-  }> = {}
+    overrides: Partial<{
+        className: string;
+        title: string;
+        variants: { name: string }[];
+    }> = {}
 ): RuntimeComponent {
-  return {
-    type: class {} as any,
-    meta: {
-      className: overrides.className ?? 'Comp',
-      filePath: '/test.ts',
-      showcaseConfig: {
-        title: overrides.title ?? 'Default',
-        variants: overrides.variants,
-      },
-      inputs: [],
-      outputs: [],
-      componentMeta: { selector: 'test', standalone: true, isDirective: false },
-    },
-  };
+    return {
+        type: class {} as any,
+        meta: {
+            className: overrides.className ?? 'Comp',
+            filePath: '/test.ts',
+            showcaseConfig: {
+                title: overrides.title ?? 'Default',
+                variants: overrides.variants
+            },
+            inputs: [],
+            outputs: [],
+            componentMeta: { selector: 'test', standalone: true, isDirective: false }
+        }
+    };
 }
 
 function setUrl(search: string): void {
-  window.history.replaceState({}, '', `/${search}`);
+    window.history.replaceState({}, '', `/${search}`);
 }
 
 function flush(): void {
-  TestBed.inject(ApplicationRef).tick();
+    TestBed.inject(ApplicationRef).tick();
 }
 
 function setup(
-  manifest: RuntimeManifest,
-  config: NgPrismConfig = {}
+    manifest: RuntimeManifest,
+    config: NgPrismConfig = {}
 ): {
-  url: PrismUrlStateService;
-  nav: PrismNavigationService;
-  renderer: PrismRendererService;
-  panel: PrismPanelService;
+    url: PrismUrlStateService;
+    nav: PrismNavigationService;
+    renderer: PrismRendererService;
+    panel: PrismPanelService;
 } {
-  TestBed.resetTestingModule();
-  TestBed.configureTestingModule({
-    providers: [
-      { provide: PRISM_MANIFEST, useValue: manifest },
-      { provide: PRISM_CONFIG, useValue: config },
-    ],
-  });
-  return {
-    url: TestBed.inject(PrismUrlStateService),
-    nav: TestBed.inject(PrismNavigationService),
-    renderer: TestBed.inject(PrismRendererService),
-    panel: TestBed.inject(PrismPanelService),
-  };
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+        providers: [
+            { provide: PRISM_MANIFEST, useValue: manifest },
+            { provide: PRISM_CONFIG, useValue: config }
+        ]
+    });
+    return {
+        url: TestBed.inject(PrismUrlStateService),
+        nav: TestBed.inject(PrismNavigationService),
+        renderer: TestBed.inject(PrismRendererService),
+        panel: TestBed.inject(PrismPanelService)
+    };
 }
 
 describe('PrismUrlStateService', () => {
-  beforeEach(() => {
-    window.history.replaceState({}, '', '/');
-    jest.restoreAllMocks();
-  });
-
-  afterEach(() => {
-    TestBed.resetTestingModule();
-  });
-
-  describe('init - restore from URL', () => {
-    it('should do nothing when URL has no params', () => {
-      const comp = createComponent({ className: 'Foo' });
-      const { url, nav } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(nav.activeItem()).toBeNull();
+    beforeEach(() => {
+        window.history.replaceState({}, '', '/');
+        jest.restoreAllMocks();
     });
 
-    it('should restore component by className', () => {
-      const comp = createComponent({ className: 'SguiButton' });
-      setUrl('?component=SguiButton');
-      const { url, nav } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(nav.activeComponent()).toBe(comp);
-    });
-
-    it('should restore variant index', () => {
-      const comp = createComponent({
-        className: 'SguiButton',
-        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
-      });
-      setUrl('?component=SguiButton&variant=2');
-      const { url, renderer } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(renderer.activeVariantIndex()).toBe(2);
-    });
-
-    it('should restore page by title', () => {
-      const page = {
-        type: 'component' as const,
-        title: 'ButtonPatterns',
-        category: 'Docs',
-        component: class {} as any,
-      };
-      setUrl('?page=ButtonPatterns');
-      const { url, nav } = setup({ components: [], pages: [page] });
-
-      url.init();
-
-      expect(nav.activePage()).toBe(page);
-    });
-
-    it('should restore view id', () => {
-      setUrl('?view=api');
-      const { url, panel } = setup({ components: [] });
-
-      url.init();
-
-      expect(panel.activeViewId()).toBe('api');
-    });
-
-    it('should ignore unknown component className without crashing', () => {
-      const comp = createComponent({ className: 'Real' });
-      setUrl('?component=Unknown');
-      const { url, nav } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(nav.activeComponent()).toBeNull();
-    });
-
-    it('should ignore out-of-range variant index', () => {
-      const comp = createComponent({
-        className: 'SguiButton',
-        variants: [{ name: 'V1' }],
-      });
-      setUrl('?component=SguiButton&variant=99');
-      const { url, renderer } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(renderer.activeVariantIndex()).toBe(0);
-    });
-
-    it('should ignore NaN variant value', () => {
-      const comp = createComponent({
-        className: 'SguiButton',
-        variants: [{ name: 'V1' }, { name: 'V2' }],
-      });
-      setUrl('?component=SguiButton&variant=abc');
-      const { url, renderer } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(renderer.activeVariantIndex()).toBe(0);
-    });
-  });
-
-  describe('init - write to URL', () => {
-    it('should write component className to URL on select', () => {
-      const comp = createComponent({ className: 'SguiButton' });
-      const { url, nav } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      flush();
-
-      expect(window.location.search).toBe('?component=SguiButton');
-    });
-
-    it('should write variant only when > 0', () => {
-      const comp = createComponent({
-        className: 'SguiButton',
-        variants: [{ name: 'V1' }, { name: 'V2' }],
-      });
-      const { url, nav, renderer } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      flush();
-      expect(window.location.search).toBe('?component=SguiButton');
-
-      renderer.activeVariantIndex.set(1);
-      flush();
-      expect(window.location.search).toBe('?component=SguiButton&variant=1');
-
-      renderer.activeVariantIndex.set(0);
-      flush();
-      expect(window.location.search).toBe('?component=SguiButton');
-    });
-
-    it('should write view only when != renderer', () => {
-      const comp = createComponent({ className: 'SguiButton' });
-      const { url, nav, panel } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      panel.activeViewId.set('api');
-      flush();
-
-      expect(window.location.search).toBe('?component=SguiButton&view=api');
-    });
-
-    it('should write page title instead of component', () => {
-      const page = {
-        type: 'component' as const,
-        title: 'Patterns',
-        category: 'Docs',
-        component: class {} as any,
-      };
-      const { url, nav } = setup({ components: [], pages: [page] });
-
-      url.init();
-      nav.selectPage(page);
-      flush();
-
-      expect(window.location.search).toBe('?page=Patterns');
-    });
-  });
-
-  describe('history API behavior', () => {
-    it('should use pushState when component changes', () => {
-      const a = createComponent({ className: 'A' });
-      const b = createComponent({ className: 'B' });
-      const pushSpy = jest.spyOn(window.history, 'pushState');
-      const { url, nav } = setup({ components: [a, b] });
-
-      url.init();
-      nav.select(a);
-      flush();
-      pushSpy.mockClear();
-
-      nav.select(b);
-      flush();
-
-      expect(pushSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('should use replaceState when variant changes', () => {
-      const comp = createComponent({
-        className: 'A',
-        variants: [{ name: 'V1' }, { name: 'V2' }],
-      });
-      const replaceSpy = jest.spyOn(window.history, 'replaceState');
-      const { url, nav, renderer } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      flush();
-      replaceSpy.mockClear();
-
-      renderer.activeVariantIndex.set(1);
-      flush();
-
-      expect(replaceSpy).toHaveBeenCalledTimes(1);
-    });
-
-    it('should use replaceState when view changes', () => {
-      const comp = createComponent({ className: 'A' });
-      const replaceSpy = jest.spyOn(window.history, 'replaceState');
-      const { url, nav, panel } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      flush();
-      replaceSpy.mockClear();
-
-      panel.activeViewId.set('api');
-      flush();
-
-      expect(replaceSpy).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('popstate handling', () => {
-    it('should re-read URL on popstate event', () => {
-      const a = createComponent({ className: 'A' });
-      const b = createComponent({ className: 'B' });
-      const { url, nav } = setup({ components: [a, b] });
-
-      url.init();
-      nav.select(a);
-      flush();
-
-      setUrl('?component=B');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-
-      expect(nav.activeComponent()).toBe(b);
-    });
-  });
-
-  describe('opt-out via config', () => {
-    it('should not register effect when config.urlState is false', () => {
-      const comp = createComponent({ className: 'A' });
-      const pushSpy = jest.spyOn(window.history, 'pushState');
-      const { url, nav } = setup({ components: [comp] }, { urlState: false });
-
-      url.init();
-      nav.select(comp);
-      flush();
-
-      expect(pushSpy).not.toHaveBeenCalled();
-      expect(window.location.search).toBe('');
-    });
-
-    it('should not restore from URL when config.urlState is false', () => {
-      const comp = createComponent({ className: 'A' });
-      setUrl('?component=A');
-      const { url, nav } = setup({ components: [comp] }, { urlState: false });
-
-      url.init();
-
-      expect(nav.activeComponent()).toBeNull();
-    });
-  });
-
-  describe('suppressSync', () => {
-    it('should not re-write URL during restoreFromUrl', () => {
-      const comp = createComponent({ className: 'A' });
-      setUrl('?component=A');
-      const pushSpy = jest.spyOn(window.history, 'pushState');
-      const replaceSpy = jest.spyOn(window.history, 'replaceState');
-      const { url } = setup({ components: [comp] });
-
-      url.init();
-      flush();
-
-      expect(pushSpy).not.toHaveBeenCalled();
-      expect(replaceSpy).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('panel param', () => {
-    it('should restore panel from URL', () => {
-      const comp = createComponent({ className: 'Foo' });
-      setUrl('?component=Foo&panel=events');
-      const { url, panel } = setup({ components: [comp] });
-
-      url.init();
-
-      expect(panel.activePanelId()).toBe('events');
-    });
-
-    it('should write panel to URL when changed (non-default)', () => {
-      const comp = createComponent({ className: 'Foo' });
-      setUrl('?component=Foo');
-      const { url, panel, nav } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      panel.activePanelId.set('a11y');
-      flush();
-
-      expect(window.location.search).toContain('panel=a11y');
-    });
-
-    it('should omit panel from URL when value is default (controls)', () => {
-      const comp = createComponent({ className: 'Foo' });
-      setUrl('?component=Foo&panel=a11y');
-      const { url, panel, nav } = setup({ components: [comp] });
-
-      url.init();
-      nav.select(comp);
-      panel.activePanelId.set('controls');
-      flush();
-
-      expect(window.location.search).not.toContain('panel=');
-    });
-  });
-
-  describe('capture flag', () => {
     afterEach(() => {
-      document.documentElement.removeAttribute('data-prism-capture');
-      document.getElementById('ng-prism-capture-styles')?.remove();
+        TestBed.resetTestingModule();
     });
 
-    it('should never write the capture flag back to the URL', () => {
-      const comp = createComponent({ className: 'Foo' });
-      setUrl('?component=Foo&capture=1');
-      const { url, nav } = setup({ components: [comp] });
+    describe('init - restore from URL', () => {
+        it('should do nothing when URL has no params', () => {
+            const comp = createComponent({ className: 'Foo' });
+            const { url, nav } = setup({ components: [comp] });
 
-      url.init();
-      nav.select(comp);
-      flush();
+            url.init();
 
-      expect(window.location.search).not.toContain(CAPTURE_PARAM);
+            expect(nav.activeItem()).toBeNull();
+        });
+
+        it('should restore component by className', () => {
+            const comp = createComponent({ className: 'SguiButton' });
+            setUrl('?component=SguiButton');
+            const { url, nav } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(nav.activeComponent()).toBe(comp);
+        });
+
+        it('should restore variant index', () => {
+            const comp = createComponent({
+                className: 'SguiButton',
+                variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
+            });
+            setUrl('?component=SguiButton&variant=2');
+            const { url, renderer } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(renderer.activeVariantIndex()).toBe(2);
+        });
+
+        it('should restore page by title', () => {
+            const page = {
+                type: 'component' as const,
+                title: 'ButtonPatterns',
+                category: 'Docs',
+                component: class {} as any
+            };
+            setUrl('?page=ButtonPatterns');
+            const { url, nav } = setup({ components: [], pages: [page] });
+
+            url.init();
+
+            expect(nav.activePage()).toBe(page);
+        });
+
+        it('should restore view id', () => {
+            setUrl('?view=api');
+            const { url, panel } = setup({ components: [] });
+
+            url.init();
+
+            expect(panel.activeViewId()).toBe('api');
+        });
+
+        it('should ignore unknown component className without crashing', () => {
+            const comp = createComponent({ className: 'Real' });
+            setUrl('?component=Unknown');
+            const { url, nav } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(nav.activeComponent()).toBeNull();
+        });
+
+        it('should ignore out-of-range variant index', () => {
+            const comp = createComponent({
+                className: 'SguiButton',
+                variants: [{ name: 'V1' }]
+            });
+            setUrl('?component=SguiButton&variant=99');
+            const { url, renderer } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(renderer.activeVariantIndex()).toBe(0);
+        });
+
+        it('should ignore NaN variant value', () => {
+            const comp = createComponent({
+                className: 'SguiButton',
+                variants: [{ name: 'V1' }, { name: 'V2' }]
+            });
+            setUrl('?component=SguiButton&variant=abc');
+            const { url, renderer } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(renderer.activeVariantIndex()).toBe(0);
+        });
     });
 
-    it('should still restore navigation state alongside the capture flag', () => {
-      const comp = createComponent({
-        className: 'Foo',
-        variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }],
-      });
-      setUrl('?capture=1&component=Foo&variant=2');
-      const { url, nav, renderer } = setup({ components: [comp] });
+    describe('init - write to URL', () => {
+        it('should write component className to URL on select', () => {
+            const comp = createComponent({ className: 'SguiButton' });
+            const { url, nav } = setup({ components: [comp] });
 
-      url.init();
+            url.init();
+            nav.select(comp);
+            flush();
 
-      expect(nav.activeComponent()).toBe(comp);
-      expect(renderer.activeVariantIndex()).toBe(2);
+            expect(window.location.search).toBe('?component=SguiButton');
+        });
+
+        it('should write variant only when > 0', () => {
+            const comp = createComponent({
+                className: 'SguiButton',
+                variants: [{ name: 'V1' }, { name: 'V2' }]
+            });
+            const { url, nav, renderer } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            flush();
+            expect(window.location.search).toBe('?component=SguiButton');
+
+            renderer.activeVariantIndex.set(1);
+            flush();
+            expect(window.location.search).toBe('?component=SguiButton&variant=1');
+
+            renderer.activeVariantIndex.set(0);
+            flush();
+            expect(window.location.search).toBe('?component=SguiButton');
+        });
+
+        it('should write view only when != renderer', () => {
+            const comp = createComponent({ className: 'SguiButton' });
+            const { url, nav, panel } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            panel.activeViewId.set('api');
+            flush();
+
+            expect(window.location.search).toBe('?component=SguiButton&view=api');
+        });
+
+        it('should write page title instead of component', () => {
+            const page = {
+                type: 'component' as const,
+                title: 'Patterns',
+                category: 'Docs',
+                component: class {} as any
+            };
+            const { url, nav } = setup({ components: [], pages: [page] });
+
+            url.init();
+            nav.selectPage(page);
+            flush();
+
+            expect(window.location.search).toBe('?page=Patterns');
+        });
     });
 
-    it('should not reintroduce the capture flag on popstate', () => {
-      const comp = createComponent({ className: 'Foo' });
-      setUrl('?component=Foo&capture=1');
-      const { url, nav } = setup({ components: [comp] });
+    describe('history API behavior', () => {
+        it('should use pushState when component changes', () => {
+            const a = createComponent({ className: 'A' });
+            const b = createComponent({ className: 'B' });
+            const pushSpy = jest.spyOn(window.history, 'pushState');
+            const { url, nav } = setup({ components: [a, b] });
 
-      url.init();
-      window.dispatchEvent(new PopStateEvent('popstate'));
-      nav.select(comp);
-      flush();
+            url.init();
+            nav.select(a);
+            flush();
+            pushSpy.mockClear();
 
-      expect(window.location.search).not.toContain(CAPTURE_PARAM);
+            nav.select(b);
+            flush();
+
+            expect(pushSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it('should use replaceState when variant changes', () => {
+            const comp = createComponent({
+                className: 'A',
+                variants: [{ name: 'V1' }, { name: 'V2' }]
+            });
+            const replaceSpy = jest.spyOn(window.history, 'replaceState');
+            const { url, nav, renderer } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            flush();
+            replaceSpy.mockClear();
+
+            renderer.activeVariantIndex.set(1);
+            flush();
+
+            expect(replaceSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it('should use replaceState when view changes', () => {
+            const comp = createComponent({ className: 'A' });
+            const replaceSpy = jest.spyOn(window.history, 'replaceState');
+            const { url, nav, panel } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            flush();
+            replaceSpy.mockClear();
+
+            panel.activeViewId.set('api');
+            flush();
+
+            expect(replaceSpy).toHaveBeenCalledTimes(1);
+        });
     });
-  });
+
+    describe('popstate handling', () => {
+        it('should re-read URL on popstate event', () => {
+            const a = createComponent({ className: 'A' });
+            const b = createComponent({ className: 'B' });
+            const { url, nav } = setup({ components: [a, b] });
+
+            url.init();
+            nav.select(a);
+            flush();
+
+            setUrl('?component=B');
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            expect(nav.activeComponent()).toBe(b);
+        });
+    });
+
+    describe('opt-out via config', () => {
+        it('should not register effect when config.urlState is false', () => {
+            const comp = createComponent({ className: 'A' });
+            const pushSpy = jest.spyOn(window.history, 'pushState');
+            const { url, nav } = setup({ components: [comp] }, { urlState: false });
+
+            url.init();
+            nav.select(comp);
+            flush();
+
+            expect(pushSpy).not.toHaveBeenCalled();
+            expect(window.location.search).toBe('');
+        });
+
+        it('should not restore from URL when config.urlState is false', () => {
+            const comp = createComponent({ className: 'A' });
+            setUrl('?component=A');
+            const { url, nav } = setup({ components: [comp] }, { urlState: false });
+
+            url.init();
+
+            expect(nav.activeComponent()).toBeNull();
+        });
+    });
+
+    describe('suppressSync', () => {
+        it('should not re-write URL during restoreFromUrl', () => {
+            const comp = createComponent({ className: 'A' });
+            setUrl('?component=A');
+            const pushSpy = jest.spyOn(window.history, 'pushState');
+            const replaceSpy = jest.spyOn(window.history, 'replaceState');
+            const { url } = setup({ components: [comp] });
+
+            url.init();
+            flush();
+
+            expect(pushSpy).not.toHaveBeenCalled();
+            expect(replaceSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('panel param', () => {
+        it('should restore panel from URL', () => {
+            const comp = createComponent({ className: 'Foo' });
+            setUrl('?component=Foo&panel=events');
+            const { url, panel } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(panel.activePanelId()).toBe('events');
+        });
+
+        it('should write panel to URL when changed (non-default)', () => {
+            const comp = createComponent({ className: 'Foo' });
+            setUrl('?component=Foo');
+            const { url, panel, nav } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            panel.activePanelId.set('a11y');
+            flush();
+
+            expect(window.location.search).toContain('panel=a11y');
+        });
+
+        it('should omit panel from URL when value is default (controls)', () => {
+            const comp = createComponent({ className: 'Foo' });
+            setUrl('?component=Foo&panel=a11y');
+            const { url, panel, nav } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            panel.activePanelId.set('controls');
+            flush();
+
+            expect(window.location.search).not.toContain('panel=');
+        });
+    });
+
+    describe('capture flag', () => {
+        afterEach(() => {
+            document.documentElement.removeAttribute('data-prism-capture');
+            document.getElementById('ng-prism-capture-styles')?.remove();
+        });
+
+        it('should never write the capture flag back to the URL', () => {
+            const comp = createComponent({ className: 'Foo' });
+            setUrl('?component=Foo&capture=1');
+            const { url, nav } = setup({ components: [comp] });
+
+            url.init();
+            nav.select(comp);
+            flush();
+
+            expect(window.location.search).not.toContain(CAPTURE_PARAM);
+        });
+
+        it('should still restore navigation state alongside the capture flag', () => {
+            const comp = createComponent({
+                className: 'Foo',
+                variants: [{ name: 'V1' }, { name: 'V2' }, { name: 'V3' }]
+            });
+            setUrl('?capture=1&component=Foo&variant=2');
+            const { url, nav, renderer } = setup({ components: [comp] });
+
+            url.init();
+
+            expect(nav.activeComponent()).toBe(comp);
+            expect(renderer.activeVariantIndex()).toBe(2);
+        });
+
+        it('should not reintroduce the capture flag on popstate', () => {
+            const comp = createComponent({ className: 'Foo' });
+            setUrl('?component=Foo&capture=1');
+            const { url, nav } = setup({ components: [comp] });
+
+            url.init();
+            window.dispatchEvent(new PopStateEvent('popstate'));
+            nav.select(comp);
+            flush();
+
+            expect(window.location.search).not.toContain(CAPTURE_PARAM);
+        });
+    });
 });

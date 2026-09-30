@@ -5,20 +5,26 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: 'Toolbar',
-  category: 'Components',
-  description:
-    'ToolbarComponent from test-ui-kit/toolbar secondary entry point.',
-  variants: [{ name: 'Default', inputs: { label: 'Toolbar' } }],
+    title: 'Toolbar',
+    category: 'Components',
+    description: 'ToolbarComponent from test-ui-kit/toolbar secondary entry point.',
+    variants: [{ name: 'Default', inputs: { label: 'Toolbar' } }]
 })
 @Component({
-  selector: 'uk-toolbar',
-  standalone: true,
-  imports: [CommonModule, MatToolbarModule, OverlayModule],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<div class="uk">{{ label() }}</div>`,
-  styles: `:host { display: inline-block; } .uk { padding: 8px; }`,
+    selector: 'uk-toolbar',
+    standalone: true,
+    imports: [CommonModule, MatToolbarModule, OverlayModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `<div class="uk">{{ label() }}</div>`,
+    styles: `
+        :host {
+            display: inline-block;
+        }
+        .uk {
+            padding: 8px;
+        }
+    `
 })
 export class ToolbarComponent {
-  readonly label = input<string>('Toolbar');
+    readonly label = input<string>('Toolbar');
 }

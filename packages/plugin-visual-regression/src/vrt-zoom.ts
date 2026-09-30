@@ -36,26 +36,19 @@ export const MAX_FIT_HEIGHT = 400;
  * The numeric steps are deliberately unbounded: asking for 4× means 4×, even
  * when that overflows the stage and scrolls.
  */
-export function frameWidthStyle(
-  width: number | undefined,
-  height: number | undefined,
-  zoom: Zoom
-): Record<string, string> {
-  if (typeof width !== 'number' || !Number.isFinite(width) || width <= 0) {
-    return {};
-  }
+export function frameWidthStyle(width: number | undefined, height: number | undefined, zoom: Zoom): Record<string, string> {
+    if (typeof width !== 'number' || !Number.isFinite(width) || width <= 0) {
+        return {};
+    }
 
-  if (zoom !== 'fit') return { width: `${width * zoom}px` };
+    if (zoom !== 'fit') return { width: `${width * zoom}px` };
 
-  // The height budget expressed as a width, so one `max-width` enforces both.
-  const heightCap =
-    typeof height === 'number' && Number.isFinite(height) && height > 0
-      ? width * (MAX_FIT_HEIGHT / height)
-      : Infinity;
+    // The height budget expressed as a width, so one `max-width` enforces both.
+    const heightCap = typeof height === 'number' && Number.isFinite(height) && height > 0 ? width * (MAX_FIT_HEIGHT / height) : Infinity;
 
-  return {
-    width: 'var(--vrt-fit-basis, 100%)',
-    'min-width': `${width}px`,
-    'max-width': `${Math.round(Math.min(width * MAX_FIT_SCALE, heightCap))}px`,
-  };
+    return {
+        width: 'var(--vrt-fit-basis, 100%)',
+        'min-width': `${width}px`,
+        'max-width': `${Math.round(Math.min(width * MAX_FIT_SCALE, heightCap))}px`
+    };
 }

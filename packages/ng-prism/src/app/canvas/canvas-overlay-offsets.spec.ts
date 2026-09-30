@@ -24,86 +24,73 @@ const TOOLBAR = join(__dirname, 'prism-canvas-toolbar.component.css');
 
 /** The two overlay offsets declared inside the block a selector opens. */
 function offsets(file: string, selector: string): Record<string, string> {
-  const src = readFileSync(file, 'utf-8');
-  const start = src.indexOf(selector);
-  if (start === -1) throw new Error(`selector not found: ${selector}`);
-  const open = src.indexOf('{', start);
-  const close = src.indexOf('}', open);
-  const block = src.slice(open, close);
+    const src = readFileSync(file, 'utf-8');
+    const start = src.indexOf(selector);
+    if (start === -1) throw new Error(`selector not found: ${selector}`);
+    const open = src.indexOf('{', start);
+    const close = src.indexOf('}', open);
+    const block = src.slice(open, close);
 
-  const found: Record<string, string> = {};
-  for (const m of block.matchAll(
-    /(--prism-canvas-overlay-(?:top|inline))\s*:\s*([^;]+);/g
-  )) {
-    found[m[1]] = m[2].trim();
-  }
-  return found;
+    const found: Record<string, string> = {};
+    for (const m of block.matchAll(/(--prism-canvas-overlay-(?:top|inline))\s*:\s*([^;]+);/g)) {
+        found[m[1]] = m[2].trim();
+    }
+    return found;
 }
 
 describe('canvas overlay offsets', () => {
-  it('the stage publishes both offsets, with and without rulers', () => {
-    const base = offsets(RENDERER, '.prism-canvas-stage {');
-    const withRulers = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
+    it('the stage publishes both offsets, with and without rulers', () => {
+        const base = offsets(RENDERER, '.prism-canvas-stage {');
+        const withRulers = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
 
-    expect(Object.keys(base).sort()).toEqual([
-      '--prism-canvas-overlay-inline',
-      '--prism-canvas-overlay-top',
-    ]);
-    expect(Object.keys(withRulers).sort()).toEqual([
-      '--prism-canvas-overlay-inline',
-      '--prism-canvas-overlay-top',
-    ]);
-  });
+        expect(Object.keys(base).sort()).toEqual(['--prism-canvas-overlay-inline', '--prism-canvas-overlay-top']);
+        expect(Object.keys(withRulers).sort()).toEqual(['--prism-canvas-overlay-inline', '--prism-canvas-overlay-top']);
+    });
 
-  it('rulers push the overlays further in, never nearer', () => {
-    const px = (v: string) => Number.parseInt(v, 10);
-    const base = offsets(RENDERER, '.prism-canvas-stage {');
-    const withRulers = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
+    it('rulers push the overlays further in, never nearer', () => {
+        const px = (v: string) => Number.parseInt(v, 10);
+        const base = offsets(RENDERER, '.prism-canvas-stage {');
+        const withRulers = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
 
-    for (const key of Object.keys(base)) {
-      expect(px(withRulers[key])).toBeGreaterThan(px(base[key]));
-    }
-  });
+        for (const key of Object.keys(base)) {
+            expect(px(withRulers[key])).toBeGreaterThan(px(base[key]));
+        }
+    });
 
-  it('the tool rail mirrors the stage exactly when rulers are on', () => {
-    const stage = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
-    const rail = offsets(TOOLBAR, '.prism-toolrail.has-rulers {');
+    it('the tool rail mirrors the stage exactly when rulers are on', () => {
+        const stage = offsets(RENDERER, '.prism-canvas-stage[data-rulers] {');
+        const rail = offsets(TOOLBAR, '.prism-toolrail.has-rulers {');
 
-    expect(rail).toEqual(stage);
-  });
+        expect(rail).toEqual(stage);
+    });
 
-  /**
-   * Two overlays that anchor to the same corner do not tile — they stack, and
-   * the one drawn later wins. That is how the tool rail came to sit on top of
-   * the background pill: both read the same two offsets, one from `right` and
-   * one from `right`. The rail is permanent and the pill is a notice, so the
-   * rail keeps the right corner and the pill takes the left.
-   */
-  it('the rail and the background pill claim opposite corners', () => {
-    const pill = readFileSync(
-      join(__dirname, 'prism-canvas-bg-pill.component.css'),
-      'utf-8'
-    );
-    const rail = readFileSync(TOOLBAR, 'utf-8');
+    /**
+     * Two overlays that anchor to the same corner do not tile — they stack, and
+     * the one drawn later wins. That is how the tool rail came to sit on top of
+     * the background pill: both read the same two offsets, one from `right` and
+     * one from `right`. The rail is permanent and the pill is a notice, so the
+     * rail keeps the right corner and the pill takes the left.
+     */
+    it('the rail and the background pill claim opposite corners', () => {
+        const pill = readFileSync(join(__dirname, 'prism-canvas-bg-pill.component.css'), 'utf-8');
+        const rail = readFileSync(TOOLBAR, 'utf-8');
 
-    expect(pill).toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
-    expect(pill).not.toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
+        expect(pill).toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
+        expect(pill).not.toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
 
-    expect(rail).toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
-    expect(rail).not.toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
-  });
+        expect(rail).toMatch(/right:\s*var\(--prism-canvas-overlay-inline/);
+        expect(rail).not.toMatch(/left:\s*var\(--prism-canvas-overlay-inline/);
+    });
 
-  it('the tool rail falls back to the stage values when rulers are off', () => {
-    const base = offsets(RENDERER, '.prism-canvas-stage {');
-    const src = readFileSync(TOOLBAR, 'utf-8');
+    it('the tool rail falls back to the stage values when rulers are off', () => {
+        const base = offsets(RENDERER, '.prism-canvas-stage {');
+        const src = readFileSync(TOOLBAR, 'utf-8');
 
-    // The rail sits outside the stage, so the custom properties do not reach
-    // it and the fallback in var() is what actually applies with rulers off.
-    for (const [name, value] of Object.entries(base)) {
-      const prop = name.endsWith('top') ? 'top' : 'right';
-      expect(src).toMatch(
-        new RegExp(`${prop}:\\s*var\\(${name},\\s*${value}\\)`)
-      );
-    }
-  });
+        // The rail sits outside the stage, so the custom properties do not reach
+        // it and the fallback in var() is what actually applies with rulers off.
+        for (const [name, value] of Object.entries(base)) {
+            const prop = name.endsWith('top') ? 'top' : 'right';
+            expect(src).toMatch(new RegExp(`${prop}:\\s*var\\(${name},\\s*${value}\\)`));
+        }
+    });
 });

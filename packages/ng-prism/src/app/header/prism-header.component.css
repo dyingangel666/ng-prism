@@ -1,156 +1,153 @@
 .prism-header {
-  height: var(--band-header);
-  display: grid;
-  grid-template-columns: minmax(min-content, var(--sw, 264px)) 1fr auto;
-  align-items: center;
-  padding: 0 14px 0 0;
-  background: var(--prism-bg);
-  border-bottom: 1px solid var(--prism-border);
+    height: var(--band-header);
+    display: grid;
+    grid-template-columns: minmax(min-content, var(--sw, 264px)) 1fr auto;
+    align-items: center;
+    padding: 0 14px 0 0;
+    background: var(--prism-bg);
+    border-bottom: 1px solid var(--prism-border);
 }
 
 .prism-header__brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 16px;
-  cursor: pointer;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .prism-header__logo-default {
-  width: 26px;
-  height: 26px;
-  flex: 0 0 26px;
-  color: var(--prism-primary);
-  filter: drop-shadow(0 0 8px var(--prism-glow-strong));
+    width: 26px;
+    height: 26px;
+    flex: 0 0 26px;
+    color: var(--prism-primary);
+    filter: drop-shadow(0 0 8px var(--prism-glow-strong));
 }
 .prism-header__logo-default img {
-  width: 30px;
+    width: 30px;
 }
 
 .prism-header__logo-img {
-  height: 26px;
-  width: auto;
-  object-fit: contain;
+    height: 26px;
+    width: auto;
+    object-fit: contain;
 }
 
 .prism-header__brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.1;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
 }
 
 .prism-header__brand-name {
-  font-weight: 700;
-  font-size: var(--fs-xl);
-  letter-spacing: -0.01em;
-  background: linear-gradient(
-    90deg,
-    var(--prism-primary),
-    var(--prism-accent) 60%,
-    var(--prism-primary-to)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+    font-weight: 700;
+    font-size: var(--fs-xl);
+    letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--prism-primary), var(--prism-accent) 60%, var(--prism-primary-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 }
 
 .prism-header__brand-sub {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--prism-text-ghost);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--prism-text-ghost);
 }
 
 .prism-header__cmdbar {
-  max-width: 540px;
-  width: 100%;
-  justify-self: center;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 32px;
-  padding: 0 12px;
-  background: var(--prism-input-bg);
-  border: 1px solid var(--prism-border);
-  border-radius: 8px;
-  color: var(--prism-text-muted);
-  font-size: var(--fs-lg);
-  cursor: pointer;
-  transition: border-color var(--dur-fast), background var(--dur-fast);
+    max-width: 540px;
+    width: 100%;
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 32px;
+    padding: 0 12px;
+    background: var(--prism-input-bg);
+    border: 1px solid var(--prism-border);
+    border-radius: 8px;
+    color: var(--prism-text-muted);
+    font-size: var(--fs-lg);
+    cursor: pointer;
+    transition:
+        border-color var(--dur-fast),
+        background var(--dur-fast);
 }
 .prism-header__cmdbar:hover {
-  border-color: var(--prism-border-strong);
-  color: var(--prism-text-2);
+    border-color: var(--prism-border-strong);
+    color: var(--prism-text-2);
 }
 
 .prism-header__cmdbar-text {
-  flex: 1;
-  text-align: left;
+    flex: 1;
+    text-align: left;
 }
 
 .prism-header__cmdbar-shortcut {
-  display: flex;
-  gap: 3px;
+    display: flex;
+    gap: 3px;
 }
 .prism-header__cmdbar-shortcut kbd {
-  font-family: var(--font-mono);
-  font-size: 10.5px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  background: var(--prism-input-bg);
-  border: 1px solid var(--prism-border);
-  color: var(--prism-text-muted);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--prism-input-bg);
+    border: 1px solid var(--prism-border);
+    color: var(--prism-text-muted);
 }
 
 .prism-header__build-pill {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  color: var(--prism-text-ghost);
-  background: var(--prism-input-bg);
-  border: 1px solid var(--prism-border);
-  border-radius: 9999px;
-  padding: 2px 10px;
-  white-space: nowrap;
-  line-height: 1.4;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--prism-text-ghost);
+    background: var(--prism-input-bg);
+    border: 1px solid var(--prism-border);
+    border-radius: 9999px;
+    padding: 2px 10px;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
 .prism-header__actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
 }
 
 .prism-header__widgets {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
 }
 .prism-header__widgets--start {
-  padding-left: 4px;
-  justify-content: flex-start;
+    padding-left: 4px;
+    justify-content: flex-start;
 }
 
 .prism-header__icon-btn {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: var(--prism-text-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  position: relative;
-  transition: all var(--dur-fast);
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: var(--prism-text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--dur-fast);
 }
 .prism-header__icon-btn:hover {
-  background: var(--prism-input-bg);
-  color: var(--prism-text);
+    background: var(--prism-input-bg);
+    color: var(--prism-text);
 }
 
 :focus-visible {
-  outline: 2px solid var(--prism-primary);
-  outline-offset: 2px;
+    outline: 2px solid var(--prism-primary);
+    outline-offset: 2px;
 }
