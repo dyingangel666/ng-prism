@@ -37,6 +37,21 @@ export default [
             'test-workspace',
             'docs',
 
+            // CommonJS/Node-Tooling-Konfiguration und -Skripte: ESLint läuft
+            // hier ohnehin nur über `**/*.ts`- und `**/*.html`-Blöcke, trifft
+            // also für `.cjs`/`.js`/`.mjs`-Dateien nie eine Regel — bislang
+            // ein Zufallszustand statt einer Entscheidung (ein
+            // `/* eslint-disable */` in jest.config.cjs wurde beim Autofix in
+            // Task 3 kommentarlos entfernt, weil es wirkungslos war). Eine
+            // eigene Node-Regelmenge dafür (Rule-Set + `languageOptions` für
+            // CommonJS-Globals) ist für diesen gesamten Plan bewusst nicht
+            // vorgesehen; bis das explizit gewollt ist, werden diese Dateien
+            // ignoriert statt stillschweigend ungeprüft mitgeführt.
+            'jest.preset.js',
+            '**/jest.config.cjs',
+            'eslint.config.mjs',
+            'scripts/check-declared-deps.mjs',
+
             '**/plugin-registry.ts',
             '**/.DS_Store'
         ]
