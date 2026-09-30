@@ -70,7 +70,15 @@ export default [
         rules: {
             'no-case-declarations': 'warn',
             'no-unsafe-optional-chaining': 'warn',
-            '@typescript-eslint/no-unused-vars': 'warn',
+
+            // unused-imports/no-unused-vars deckt denselben Fall ab, autofixt
+            // zusätzlich ungenutzte Imports und respektiert bereits die
+            // `_`-Präfix-Konvention (siehe unten). Mit beiden Regeln aktiv
+            // meldet jeder ungenutzte Wert doppelt, und zwar mit
+            // unterschiedlichen Ignore-Patterns — @typescript-eslint/no-unused-vars
+            // kennt das `_`-Präfix nicht, daher feuert es selbst auf bereits
+            // korrekt benannten Parametern.
+            '@typescript-eslint/no-unused-vars': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off',
             '@typescript-eslint/no-explicit-any': 'off',

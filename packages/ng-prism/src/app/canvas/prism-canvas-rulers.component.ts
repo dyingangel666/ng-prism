@@ -41,12 +41,12 @@ export class PrismCanvasRulersComponent {
 
             requestAnimationFrame(() => {
                 this.paint(zoom);
-                this.observeResize(zoom);
+                this.observeResize();
             });
         });
     }
 
-    private observeResize(zoom: number): void {
+    private observeResize(): void {
         if (this.ro) return;
         const wrap = this.rulerTop()?.nativeElement?.parentElement;
 
