@@ -1,0 +1,6 @@
+# Reine Reformat-Commits — kein inhaltlicher Anteil.
+# Lokal aktivieren mit:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# style: reformat with prettier 3
+c320d559556f1b14e09caf2b0ee6a3bda109630b
