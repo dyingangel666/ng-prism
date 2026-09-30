@@ -117,7 +117,17 @@ export default [
             '@stylistic/type-named-tuple-spacing': ['warn'],
             '@stylistic/array-bracket-newline': ['warn', 'consistent'],
             '@stylistic/array-bracket-spacing': ['warn', 'never'],
-            '@stylistic/array-element-newline': ['warn', 'consistent'],
+
+            // array-element-newline and object-property-newline (below) are
+            // deliberately left OFF. Prettier already governs where arrays
+            // and objects break onto new lines; both rules fight
+            // prettier/prettier over the same decision on the same input
+            // (e.g. an opening bracket sharing a line with the first
+            // element, then breaking later) and neither fixer can win:
+            // `eslint --fix` logs "Circular fixes detected … conflicting
+            // rules in your configuration", mangles the file, and leaves
+            // errors behind. Verified: with both off, the same inputs
+            // converge to Prettier's output in one `--fix` pass.
             '@stylistic/arrow-parens': ['warn', 'always'],
             '@stylistic/arrow-spacing': ['warn', { before: true, after: true }],
             '@stylistic/block-spacing': 'warn',
@@ -134,7 +144,6 @@ export default [
             ],
             '@stylistic/object-curly-newline': ['warn', { consistent: true }],
             '@stylistic/object-curly-spacing': ['warn', 'always'],
-            '@stylistic/object-property-newline': ['warn', { allowAllPropertiesOnSameLine: true }],
             '@stylistic/padded-blocks': ['warn', { blocks: 'never' }],
             '@stylistic/no-floating-decimal': 'warn',
             '@stylistic/eol-last': ['warn', 'always'],
