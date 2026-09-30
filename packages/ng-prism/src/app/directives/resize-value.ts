@@ -28,16 +28,3 @@ export function resizeValue(
 ): number {
   return Math.max(min, Math.min(max, startValue + delta * scale));
 }
-
-/**
- * How far one arrow key moves the value.
- *
- * Only the sign of `scale` carries over. A drag on a centred box changes the
- * width by a multiple of the distance it travels — `2 / zoom` for the viewport
- * grips — but an arrow key is a nudge with an intended size, and scaling it to
- * match would make the keyboard coarser than the mouse on exactly the control
- * where precision is the point.
- */
-export function resizeStep(scale: number, step = 10): number {
-  return scale < 0 ? -step : step;
-}

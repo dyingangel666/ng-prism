@@ -249,6 +249,16 @@ import { parseContentToNodes } from './projectable-content.js';
       .demo-wrap[data-viewport] {
         display: grid;
         justify-items: center;
+        /* flex: none, and it is load-bearing. The stage is a flex container
+           and this is its only item, so the default flex-shrink: 1 lets the
+           box render narrower than the width just asked for whenever the
+           canvas is the smaller of the two — and container-type below drops
+           the automatic minimum size to zero, so nothing stops the shrink.
+           The result is the one failure this whole feature cannot afford:
+           the dimension line states 1024 while every @container rule in the
+           specimen answers whatever the canvas happened to allow. The stage
+           is overflow: auto, so refusing to shrink scrolls instead. */
+        flex: none;
         width: var(--prism-vp-w);
         max-width: none;
         container-type: inline-size;
@@ -273,13 +283,13 @@ import { parseContentToNodes } from './projectable-content.js';
         bottom: 0;
         z-index: 4;
         width: 9px;
-        left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
+        left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
         display: grid;
         background: transparent;
       }
       .vp-grip--end {
         left: auto;
-        right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 13px);
+        right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
       }
 
       /* Handle and guide line occupy the same grid cell — hence the identical
@@ -302,7 +312,7 @@ import { parseContentToNodes } from './projectable-content.js';
         width: 3px;
         height: 34px;
         border-radius: 2px;
-        background: color-mix(in srgb, var(--prism-measure) 60%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
         transition: background var(--dur-fast);
       }
 
@@ -317,7 +327,7 @@ import { parseContentToNodes } from './projectable-content.js';
         justify-self: center;
         align-self: stretch;
         width: 1px;
-        background: color-mix(in srgb, var(--prism-measure) 30%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 75%, transparent);
         transition: background var(--dur-fast);
       }
       .vp-grip:hover::after,
@@ -364,7 +374,7 @@ import { parseContentToNodes } from './projectable-content.js';
         position: relative;
         flex: 1;
         height: 1px;
-        background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 70%, transparent);
       }
 
       /* The end ticks. They are what make the rule read as a measurement of
@@ -376,7 +386,7 @@ import { parseContentToNodes } from './projectable-content.js';
         top: -3px;
         width: 1px;
         height: 7px;
-        background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
+        background: color-mix(in srgb, var(--prism-measure) 90%, transparent);
       }
       .vp-dim__rule:first-child::before {
         left: 0;

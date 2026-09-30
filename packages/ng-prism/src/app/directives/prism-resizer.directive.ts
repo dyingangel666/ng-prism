@@ -1,5 +1,5 @@
 import { Directive, ElementRef, inject, input, output } from '@angular/core';
-import { resizeStep, resizeValue } from './resize-value.js';
+import { resizeValue } from './resize-value.js';
 
 @Directive({
   selector: '[prismResizer]',
@@ -34,7 +34,16 @@ export class PrismResizerDirective {
 
   private readonly el = inject(ElementRef<HTMLElement>);
 
+  /** How far one arrow key moves the value. */
+  private static readonly STEP = 10;
+
   protected onMouseDown(e: MouseEvent): void {
+    // Primary button only. Without this a right-click arms the document-level
+    // listeners below, the context menu takes the pointer so the matching
+    // mouseup never arrives, and the drag stays live afterwards — the value
+    // then follows the cursor with no button held. `preventDefault` does not
+    // suppress `contextmenu`, so the guard has to be here.
+    if (e.button !== 0) return;
     e.preventDefault();
     const startPos = this.axis() === 'x' ? e.clientX : e.clientY;
     const startVal = this.value();
@@ -59,8 +68,19 @@ export class PrismResizerDirective {
     document.addEventListener('mouseup', onUp);
   }
 
+  /**
+   * Keyboard direction is deliberately independent of `scale`.
+   *
+   * `scale` inverts the *pointer* for a grip on the far edge of a centred box,
+   * and carrying that inversion into the keyboard was wrong: two separators
+   * that expose the same `aria-valuenow` answered the same key in opposite
+   * directions, so a screen-reader user heard the announced value travel one
+   * way on one edge and the other way on the other. WAI-ARIA's window-splitter
+   * pattern has ArrowRight and ArrowUp increase the value, whichever edge the
+   * separator sits on, and the value here is the width rather than a position.
+   */
   protected onKeyDown(e: KeyboardEvent): void {
-    const step = resizeStep(this.scale());
+    const step = PrismResizerDirective.STEP;
     const current = this.value();
     let next: number | null = null;
 
@@ -71,6 +91,10 @@ export class PrismResizerDirective {
       if (e.key === 'ArrowUp') next = current + step;
       if (e.key === 'ArrowDown') next = current - step;
     }
+    // Required of a focusable separator by the same pattern, and the only way
+    // to reach either end without holding an arrow key down.
+    if (e.key === 'Home') next = this.min();
+    if (e.key === 'End') next = this.max();
 
     if (next !== null) {
       e.preventDefault();

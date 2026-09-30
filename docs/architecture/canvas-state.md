@@ -42,11 +42,16 @@ real device because finding where a layout gives up is half of what the tool is 
 
 ### The specimen is centred at the container
 
-While constrained, `.demo-wrap` is a grid with `justify-items: center`, so a specimen narrower than
+While constrained, `.demo-wrap` is a grid with `justify-items: center` and `flex: none`, so a specimen narrower than
 the viewport sits in the middle of it rather than against its left edge. Sizing is unchanged by
 this: a block-level specimen shrink-wraps here exactly as it already does at rest inside the
 `inline-block` wrapper, and one that asks for `width: 100%` — the `canvasLayout: 'stretch'` case —
 still receives the whole viewport.
+
+`flex: none` is the other half and is just as load-bearing: the stage is a flex container and `.demo-wrap` is
+its only item, so the default `flex-shrink: 1` would let the box render narrower than the width just asked
+for whenever the canvas is the smaller of the two — and `container-type` drops the automatic minimum size to
+zero, so nothing would stop it. The stage is `overflow: auto`, so refusing to shrink scrolls instead.
 
 Centring at the container rather than with `text-align: center` is deliberate. The specimen is
 created through `ViewContainerRef`, so its host element carries none of the renderer's
@@ -87,5 +92,5 @@ no-op while capture is active — so a capture run cannot corrupt the user's sto
 - **Canvas pill** — `Recommended: <bg> [Reset]` appears in the top-left of the canvas only when `isDeviating()` is true (actionable; the button clears the override and returns to the recommendation).
 - **Tools menu — active state** — the active background button binds to `effective()` and carries the filled `is-on` state. Clicks write to the override when a recommendation exists; otherwise they update the persisted global default (backward-compatible behavior for components without `bg`). The recommended and active buttons can be the same one.
 - **Dimension line** — a horizontal rule spanning the painted width at the top of the stage, in `--prism-measure`, with the value set into a gap at its centre and a short vertical tick at each end. The ticks are what make it read as a measurement of the span between them rather than as a divider laid across the canvas, and they mark the two edges the grips can be dragged to. It is the third resident of the overlay band (pill left, dimension centre, rail right) and reads the same `--prism-canvas-overlay-top` as the others, so enabling rulers moves all three together. Its width carries the same `--prism-vp-w * --zoom` product the grips use, so the three stay locked together.
-- **Edge grips** — one at each edge of the constrained area, each a handle sitting on a faint 1px guide line that runs the full height of the stage. The line is what makes the constrained region legible as a region rather than as two loose handles; it crosses the specimen, so it stays deliberately faint and brightens with the handle on hover, drag and focus. The grips run on `prismResizer` with `scale` `-2 / zoom` and `2 / zoom`: `.demo-wrap` is centred and scaled by the canvas zoom, so an edge moving by `d` changes the width by `2d / zoom`, which keeps the grip under the cursor at any zoom level. Both are keyboard-reachable, step the width by 10px, and expose `aria-valuenow`, `aria-valuemin` and `aria-valuemax` for accessibility.
+- **Edge grips** — one at each edge of the constrained area, each a handle sitting on a faint 1px guide line that runs the full height of the stage. The line is what makes the constrained region legible as a region rather than as two loose handles; it crosses the specimen, so it stays deliberately faint and brightens with the handle on hover, drag and focus. The grips run on `prismResizer` with `scale` `-2 / zoom` and `2 / zoom`: `.demo-wrap` is centred and scaled by the canvas zoom, so an edge moving by `d` changes the width by `2d / zoom`, which keeps the grip under the cursor at any zoom level. Both are keyboard-reachable and expose `aria-valuenow`, `aria-valuemin` and `aria-valuemax`. ArrowRight and ArrowUp widen by 10px on **either** grip and ArrowLeft/ArrowDown narrow, with Home and End jumping to the floor and the ceiling — the pointer inversion that lets the left grip track the cursor is deliberately not carried into the keyboard, because two separators announcing the same `aria-valuenow` must not move it in opposite directions for the same key.
 - **Rail width readout** — a second line under the zoom percentage on the floating toolrail, shown only while the viewport constraint is on. It renders the active width with a `px` suffix (`390px`), since a bare number directly under a `100%` line would read ambiguously.

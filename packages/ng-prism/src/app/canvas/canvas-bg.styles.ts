@@ -48,7 +48,7 @@ export const CANVAS_BG_STYLES = `
   [data-bg="light"] {
     background-color: var(--prism-void-light, #f7f5fc);
     background-image: none;
-    --prism-measure: #006aaa;
+    --prism-measure: #004d8a;
   }
   [data-bg="dark"] {
     background-color: var(--prism-void-dark, #07050f);

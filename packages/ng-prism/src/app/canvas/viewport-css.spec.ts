@@ -191,4 +191,33 @@ describe('viewport CSS invariants', () => {
     expect(tick).toContain('height: 7px');
     expect(tick).toContain('width: 1px');
   });
+
+  it('refuses to shrink below the width it was asked for', () => {
+    // The stage is a flex container and .demo-wrap is its only item, so the
+    // default flex-shrink: 1 renders the box narrower than the requested width
+    // whenever the canvas is the smaller of the two — and container-type drops
+    // the automatic minimum size to zero, so nothing stops it. The failure is
+    // silent and total: the dimension line states 1024 while every @container
+    // rule in the specimen answers whatever the canvas allowed.
+    const constrained = block('.demo-wrap[data-viewport] {');
+    expect(constrained).toMatch(/flex:\s*none|flex-shrink:\s*0/);
+  });
+
+  it('centres each grip on the edge its dimension tick marks', () => {
+    // The guide line is centred in the grip, and the dimension line's end
+    // ticks sit at exactly +/- half the width from the middle. So the grip's
+    // own offset has to be half its width, or the two overlays bracket
+    // different regions — they were 8.5px apart on each side, while the docs
+    // claimed both marked "the two edges the grips can be dragged to".
+    const grip = block('.vp-grip {');
+    const width = /width:\s*(\d+(?:\.\d+)?)px/.exec(grip);
+    const offset = /\/ 2 - (\d+(?:\.\d+)?)px\)/.exec(grip);
+    expect(width).not.toBeNull();
+    expect(offset).not.toBeNull();
+    expect(Number(offset![1])).toBeCloseTo(Number(width![1]) / 2, 5);
+
+    // and the far grip has to use the same offset in the other direction
+    const end = block('.vp-grip--end {');
+    expect(end).toContain(`/ 2 - ${offset![1]}px)`);
+  });
 });

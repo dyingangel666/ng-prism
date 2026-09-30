@@ -81,7 +81,7 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
   '--prism-mark-nominal': '#047857',
   '--prism-mark-attention': '#8f6b00',
   '--prism-mark-critical': '#951226',
-  '--prism-measure': '#006aaa',
+  '--prism-measure': '#004d8a',
   '--prism-spectrum':
     'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))',
 };
