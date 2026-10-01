@@ -22,7 +22,8 @@ The simplest form: provide an HTML element string. ng-prism wraps it as follows:
 ```html
 <!-- generated host wrapper -->
 <button class="btn" appTooltip [appTooltip]="variantValue">
-  Hover me  <!-- or variant content -->
+    Hover me
+    <!-- or variant content -->
 </button>
 ```
 
@@ -49,12 +50,12 @@ When the directive is designed to be applied to a specific Angular component, us
 export class RippleDirective { ... }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `selector` | The host component's element selector |
-| `import.name` | The exported class name |
-| `import.from` | The npm package or path to import from |
-| `inputs` | Static inputs passed to the host component (not reactive) |
+| Field         | Description                                               |
+| ------------- | --------------------------------------------------------- |
+| `selector`    | The host component's element selector                     |
+| `import.name` | The exported class name                                   |
+| `import.from` | The npm package or path to import from                    |
+| `inputs`      | Static inputs passed to the host component (not reactive) |
 
 ng-prism generates a wrapper that looks like:
 
@@ -87,16 +88,16 @@ Inputs whose type cannot be bound via attribute (for example `TemplateRef`, `Ele
 
 ```typescript
 @Showcase({
-  title: 'Highlight',
-  host: '<p>Some text to highlight</p>',
-  variants: [
-    { name: 'Yellow', inputs: { appHighlight: '#fef08a' } },
-    { name: 'Blue',   inputs: { appHighlight: '#bfdbfe' } },
-  ],
+    title: 'Highlight',
+    host: '<p>Some text to highlight</p>',
+    variants: [
+        { name: 'Yellow', inputs: { appHighlight: '#fef08a' } },
+        { name: 'Blue', inputs: { appHighlight: '#bfdbfe' } }
+    ]
 })
 @Directive({ selector: '[appHighlight]' })
 export class HighlightDirective {
-  appHighlight = input('#fef08a');
+    appHighlight = input('#fef08a');
 }
 ```
 
@@ -104,15 +105,15 @@ export class HighlightDirective {
 
 ```typescript
 @Showcase({
-  title: 'Permission Guard',
-  host: '<div>Protected content</div>',
-  variants: [
-    { name: 'Allowed',  inputs: { appPermission: 'admin' } },
-    { name: 'Denied',   inputs: { appPermission: 'guest' } },
-  ],
+    title: 'Permission Guard',
+    host: '<div>Protected content</div>',
+    variants: [
+        { name: 'Allowed', inputs: { appPermission: 'admin' } },
+        { name: 'Denied', inputs: { appPermission: 'guest' } }
+    ]
 })
 @Directive({ selector: '[appPermission]' })
 export class PermissionDirective {
-  appPermission = input.required<string>();
+    appPermission = input.required<string>();
 }
 ```

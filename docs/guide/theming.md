@@ -9,13 +9,13 @@ ng-prism uses CSS custom properties for all visual styling. Override any propert
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0ea5e9',
-    '--prism-primary-from': '#0ea5e9',
-    '--prism-primary-to': '#6366f1',
-    '--prism-bg': '#0f172a',
-    '--prism-font-sans': '"Inter", system-ui, sans-serif',
-  },
+    theme: {
+        '--prism-primary': '#0ea5e9',
+        '--prism-primary-from': '#0ea5e9',
+        '--prism-primary-to': '#6366f1',
+        '--prism-bg': '#0f172a',
+        '--prism-font-sans': '"Inter", system-ui, sans-serif'
+    }
 });
 ```
 
@@ -27,18 +27,18 @@ Use `darkTheme` and `lightTheme` to set values that only apply in one mode:
 
 ```typescript
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0056CE',
-    '--prism-font-sans': "'Inter', system-ui, sans-serif",
-  },
-  darkTheme: {
-    '--prism-bg': '#0a1628',
-    '--prism-bg-surface': '#112240',
-  },
-  lightTheme: {
-    '--prism-bg': '#ffffff',
-    '--prism-bg-surface': '#f5f6f7',
-  },
+    theme: {
+        '--prism-primary': '#0056CE',
+        '--prism-font-sans': "'Inter', system-ui, sans-serif"
+    },
+    darkTheme: {
+        '--prism-bg': '#0a1628',
+        '--prism-bg-surface': '#112240'
+    },
+    lightTheme: {
+        '--prism-bg': '#ffffff',
+        '--prism-bg-surface': '#f5f6f7'
+    }
 });
 ```
 
@@ -50,7 +50,7 @@ For more complex theming (custom fonts, additional utilities, SCSS variables), p
 
 ```typescript
 export default defineConfig({
-  themeStylesheet: 'projects/my-lib-prism/src/theme.scss',
+    themeStylesheet: 'projects/my-lib-prism/src/theme.scss'
 });
 ```
 
@@ -171,10 +171,10 @@ Every band height is expressed as `calc(<px> * var(--density))`. Setting that on
 
 ```css
 prism-shell {
-  --density: 0.8;
+    --density: 0.8;
 } /* compact  */
 prism-shell {
-  --density: 1.25;
+    --density: 1.25;
 } /* spacious */
 ```
 

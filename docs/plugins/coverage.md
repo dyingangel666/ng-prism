@@ -27,11 +27,11 @@ import { defineConfig } from '@ng-prism/core';
 import { coveragePlugin } from '@ng-prism/plugin-coverage';
 
 export default defineConfig({
-  plugins: [
-    coveragePlugin({
-      coveragePath: 'coverage/coverage-summary.json',
-    }),
-  ],
+    plugins: [
+        coveragePlugin({
+            coveragePath: 'coverage/coverage-summary.json'
+        })
+    ]
 });
 ```
 
@@ -52,7 +52,7 @@ coveragePlugin({ thresholds: 90 });
 
 // Per-metric — keys you omit fall back to the default (80)
 coveragePlugin({
-  thresholds: { lines: 95, branches: 70 },
+    thresholds: { lines: 95, branches: 70 }
 });
 ```
 

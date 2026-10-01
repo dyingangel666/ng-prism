@@ -9,12 +9,7 @@ import type { PanelDefinition } from '../../plugin/plugin.types.js';
  * the Playground, so it can never drop out of the visible list and never
  * needs a fallback away from itself.
  */
-export function nextViewId(
-  activeViewId: string,
-  visibleViewPanels: readonly PanelDefinition[]
-): string | null {
-  if (activeViewId === 'renderer') return null;
-  return visibleViewPanels.some((p) => p.id === activeViewId)
-    ? null
-    : 'renderer';
+export function nextViewId(activeViewId: string, visibleViewPanels: readonly PanelDefinition[]): string | null {
+    if (activeViewId === 'renderer') return null;
+    return visibleViewPanels.some((p) => p.id === activeViewId) ? null : 'renderer';
 }

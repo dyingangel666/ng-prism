@@ -11,18 +11,18 @@ Assume you have this button component in your library:
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'lib-button',
-  standalone: true,
-  template: `
-    <button [class]="'btn btn--' + variant()">
-      {{ label() }}
-    </button>
-  `,
+    selector: 'lib-button',
+    standalone: true,
+    template: `
+        <button [class]="'btn btn--' + variant()">
+            {{ label() }}
+        </button>
+    `
 })
 export class ButtonComponent {
-  label = input.required<string>();
-  variant = input<'primary' | 'secondary' | 'danger'>('primary');
-  disabled = input(false);
+    label = input.required<string>();
+    variant = input<'primary' | 'secondary' | 'danger'>('primary');
+    disabled = input(false);
 }
 ```
 
@@ -35,34 +35,33 @@ import { Component, input } from '@angular/core';
 import { Showcase } from '@ng-prism/core'; // ← add this
 
 @Showcase({
-  title: 'Button',
-  category: 'Atoms',
-  description:
-    'The primary action element. Use for form submissions and navigation triggers.',
-  variants: [
-    {
-      name: 'Primary',
-      inputs: { label: 'Save', variant: 'primary' },
-    },
-    {
-      name: 'Secondary',
-      inputs: { label: 'Cancel', variant: 'secondary' },
-    },
-    {
-      name: 'Danger',
-      inputs: { label: 'Delete', variant: 'danger' },
-    },
-  ],
+    title: 'Button',
+    category: 'Atoms',
+    description: 'The primary action element. Use for form submissions and navigation triggers.',
+    variants: [
+        {
+            name: 'Primary',
+            inputs: { label: 'Save', variant: 'primary' }
+        },
+        {
+            name: 'Secondary',
+            inputs: { label: 'Cancel', variant: 'secondary' }
+        },
+        {
+            name: 'Danger',
+            inputs: { label: 'Delete', variant: 'danger' }
+        }
+    ]
 })
 @Component({
-  selector: 'lib-button',
-  standalone: true,
-  template: `...`,
+    selector: 'lib-button',
+    standalone: true,
+    template: `...`
 })
 export class ButtonComponent {
-  label = input.required<string>();
-  variant = input<'primary' | 'secondary' | 'danger'>('primary');
-  disabled = input(false);
+    label = input.required<string>();
+    variant = input<'primary' | 'secondary' | 'danger'>('primary');
+    disabled = input(false);
 }
 ```
 

@@ -1,7 +1,4 @@
-import {
-  VIEWPORT_SNAP_TOLERANCE,
-  VIEWPORT_SNAPS,
-} from '../../shared/viewport.type.js';
+import { VIEWPORT_SNAP_TOLERANCE, VIEWPORT_SNAPS } from '../../shared/viewport.type.js';
 
 /**
  * `width`, pulled onto the nearest preset it comes within `tolerance` of.
@@ -13,21 +10,18 @@ import {
  * is the other half of what this tool is for, and a grid that always snapped
  * would make that impossible.
  */
-export function snapViewportWidth(
-  width: number,
-  snaps: readonly number[] = VIEWPORT_SNAPS,
-  tolerance: number = VIEWPORT_SNAP_TOLERANCE
-): number {
-  let best: number | null = null;
-  let bestDistance = Infinity;
+export function snapViewportWidth(width: number, snaps: readonly number[] = VIEWPORT_SNAPS, tolerance: number = VIEWPORT_SNAP_TOLERANCE): number {
+    let best: number | null = null;
+    let bestDistance = Infinity;
 
-  for (const snap of snaps) {
-    const distance = Math.abs(snap - width);
-    if (distance <= tolerance && distance < bestDistance) {
-      best = snap;
-      bestDistance = distance;
+    for (const snap of snaps) {
+        const distance = Math.abs(snap - width);
+
+        if (distance <= tolerance && distance < bestDistance) {
+            best = snap;
+            bestDistance = distance;
+        }
     }
-  }
 
-  return best ?? width;
+    return best ?? width;
 }

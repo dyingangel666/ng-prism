@@ -8,39 +8,39 @@ import type { NgPrismPlugin } from './plugin.types.js';
 import type { StyleguidePage } from './page.types.js';
 
 interface NgPrismConfig {
-  title?: string;
-  subtitle?: string;
-  logo?: { light?: string; dark?: string };
-  plugins?: NgPrismPlugin[];
-  pages?: StyleguidePage[];
-  appProviders?: Provider[];
-  theme?: Record<string, string>;
-  darkTheme?: Record<string, string>;
-  lightTheme?: Record<string, string>;
-  themeStylesheet?: string;
-  ui?: {
-    header?: Type<unknown>;
-    sidebar?: Type<unknown>;
-    componentHeader?: Type<unknown>;
-    renderer?: Type<unknown>;
-    controlsPanel?: Type<unknown>;
-    eventsPanel?: Type<unknown>;
-    footer?: Type<unknown>;
-  };
-  headless?: boolean;
-  appComponent?: Type<unknown>;
-  urlState?: boolean;
-  persistState?: boolean;
-  buildInfo?: { version?: string; gitHash?: string };
-  a11y?: {
-    thresholds?: {
-      score?: number;
-      critical?: number;
-      serious?: number;
-      moderate?: number;
+    title?: string;
+    subtitle?: string;
+    logo?: { light?: string; dark?: string };
+    plugins?: NgPrismPlugin[];
+    pages?: StyleguidePage[];
+    appProviders?: Provider[];
+    theme?: Record<string, string>;
+    darkTheme?: Record<string, string>;
+    lightTheme?: Record<string, string>;
+    themeStylesheet?: string;
+    ui?: {
+        header?: Type<unknown>;
+        sidebar?: Type<unknown>;
+        componentHeader?: Type<unknown>;
+        renderer?: Type<unknown>;
+        controlsPanel?: Type<unknown>;
+        eventsPanel?: Type<unknown>;
+        footer?: Type<unknown>;
     };
-    reportPath?: string;
-  };
+    headless?: boolean;
+    appComponent?: Type<unknown>;
+    urlState?: boolean;
+    persistState?: boolean;
+    buildInfo?: { version?: string; gitHash?: string };
+    a11y?: {
+        thresholds?: {
+            score?: number;
+            critical?: number;
+            serious?: number;
+            moderate?: number;
+        };
+        reportPath?: string;
+    };
 }
 ```
 
@@ -52,7 +52,7 @@ Array of `NgPrismPlugin` objects to activate. Plugins run in registration order 
 
 ```typescript
 export default defineConfig({
-  plugins: [jsDocPlugin(), figmaPlugin()],
+    plugins: [jsDocPlugin(), figmaPlugin()]
 });
 ```
 
@@ -64,14 +64,14 @@ Array of `StyleguidePage` entries declared in config. Supports `CustomPage` (typ
 
 ```typescript
 export default defineConfig({
-  pages: [
-    {
-      type: 'custom',
-      title: 'Changelog',
-      category: 'Meta',
-      data: { version: '2.1.0' },
-    },
-  ],
+    pages: [
+        {
+            type: 'custom',
+            title: 'Changelog',
+            category: 'Meta',
+            data: { version: '2.1.0' }
+        }
+    ]
 });
 ```
 
@@ -85,10 +85,7 @@ Angular providers added to the Prism app's root injector at bootstrap. Use for l
 
 ```typescript
 export default defineConfig({
-  appProviders: [
-    provideHttpClient(),
-    { provide: API_BASE_URL, useValue: 'http://localhost:3000' },
-  ],
+    appProviders: [provideHttpClient(), { provide: API_BASE_URL, useValue: 'http://localhost:3000' }]
 });
 ```
 
@@ -100,11 +97,11 @@ Map of CSS custom property overrides. Applied on top of the built-in default the
 
 ```typescript
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0ea5e9',
-    '--prism-bg': '#0f172a',
-    '--prism-font-sans': '"Inter", system-ui, sans-serif',
-  },
+    theme: {
+        '--prism-primary': '#0ea5e9',
+        '--prism-bg': '#0f172a',
+        '--prism-font-sans': '"Inter", system-ui, sans-serif'
+    }
 });
 ```
 
@@ -118,7 +115,7 @@ Path to a custom CSS/SCSS file loaded by the Prism app. Relative to the workspac
 
 ```typescript
 export default defineConfig({
-  themeStylesheet: 'projects/my-lib-prism/src/theme.scss',
+    themeStylesheet: 'projects/my-lib-prism/src/theme.scss'
 });
 ```
 
@@ -140,10 +137,10 @@ Replace individual UI sections with custom Angular standalone components. All fi
 
 ```typescript
 export default defineConfig({
-  ui: {
-    header: MyBrandedHeaderComponent,
-    footer: MyFooterComponent,
-  },
+    ui: {
+        header: MyBrandedHeaderComponent,
+        footer: MyFooterComponent
+    }
 });
 ```
 
@@ -167,7 +164,7 @@ Replace the entire application shell with a custom Angular component. When set, 
 
 ```typescript
 export default defineConfig({
-  appComponent: MyCustomShellComponent,
+    appComponent: MyCustomShellComponent
 });
 ```
 
@@ -207,10 +204,10 @@ Both fields are optional — the pill shows whichever values are provided, separ
 
 ```typescript
 export default defineConfig({
-  buildInfo: {
-    version: packageJson.version,
-    gitHash: environment.gitHash,
-  },
+    buildInfo: {
+        version: packageJson.version,
+        gitHash: environment.gitHash
+    }
 });
 ```
 
@@ -230,15 +227,15 @@ Configuration for the library-wide accessibility audit. Drives both:
 
 ```typescript
 export default defineConfig({
-  a11y: {
-    thresholds: {
-      score: 85,
-      critical: 0,
-      serious: 0,
-      moderate: 5,
-    },
-    reportPath: 'reports/a11y.json',
-  },
+    a11y: {
+        thresholds: {
+            score: 85,
+            critical: 0,
+            serious: 0,
+            moderate: 5
+        },
+        reportPath: 'reports/a11y.json'
+    }
 });
 ```
 

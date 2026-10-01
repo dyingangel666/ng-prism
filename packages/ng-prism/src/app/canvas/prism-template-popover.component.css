@@ -1,5 +1,5 @@
 :host {
-  display: contents;
+    display: contents;
 }
 
 /* No position of its own: a popover is in the top layer, where the
@@ -9,21 +9,22 @@
    hang off their triggers. Viewport units, not percentages — a percentage
    here resolves against the position area, not the canvas. */
 .tpl-popover {
-  width: 520px;
-  max-width: calc(100vw - var(--sp-6));
-  max-height: min(420px, calc(100vh - var(--sp-7)));
-  position-anchor: --prism-toolrail;
-  position-area: block-end span-inline-start;
-  position-try-fallbacks: flip-block, flip-inline;
-  inset: auto;
-  margin: var(--sp-2) 0 0 0;
-  background: var(--prism-bg-elevated);
-  border: 1px solid var(--prism-border-strong);
-  border-radius: var(--radius-lg, 10px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45),
-    0 0 0 1px color-mix(in srgb, var(--prism-primary) 10%, transparent);
-  overflow: hidden;
-  animation: tpl-fade-in var(--dur-fast, 0.15s) var(--ease-default, ease-out);
+    inset: auto;
+    width: 520px;
+    max-width: calc(100vw - var(--sp-6));
+    max-height: min(420px, calc(100vh - var(--sp-7)));
+    margin: var(--sp-2) 0 0 0;
+    position-area: block-end span-inline-start;
+    position-anchor: --prism-toolrail;
+    position-try-fallbacks: flip-block, flip-inline;
+    overflow: hidden;
+    background: var(--prism-bg-elevated);
+    border: 1px solid var(--prism-border-strong);
+    border-radius: var(--radius-lg, 10px);
+    box-shadow:
+        0 20px 60px rgb(0 0 0 / 45%),
+        0 0 0 1px color-mix(in srgb, var(--prism-primary) 10%, transparent);
+    animation: tpl-fade-in var(--dur-fast, 0.15s) var(--ease-default, ease-out);
 }
 
 /* display belongs on :popover-open and nowhere else. The UA stylesheet
@@ -33,116 +34,124 @@
    because closing only drops :popover-open and leaves the author rule
    standing. */
 .tpl-popover:popover-open {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes tpl-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .tpl-popover-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px 0 16px;
-  height: 40px;
-  border-bottom: 1px solid var(--prism-border);
-  background: linear-gradient(
-    180deg,
-    var(--prism-bg-surface),
-    var(--prism-bg-elevated)
-  );
-  flex-shrink: 0;
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px 0 16px;
+    background: linear-gradient(180deg, var(--prism-bg-surface), var(--prism-bg-elevated));
+    border-bottom: 1px solid var(--prism-border);
 }
+
 .tpl-popover-head > prism-icon {
-  color: var(--prism-text-muted);
+    color: var(--prism-text-muted);
 }
+
 .tpl-popover-head > span {
-  flex: 1;
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--prism-text-2);
+    flex: 1;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--prism-text-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
 .tpl-popover-copy {
-  height: 26px;
-  padding: 0 10px;
-  font-size: var(--fs-sm);
-  font-family: var(--font-sans);
-  font-weight: 500;
-  color: var(--prism-primary);
-  background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
-  border-radius: var(--radius-sm, 5px);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  transition: background var(--dur-fast);
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    height: 26px;
+    padding: 0 10px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--prism-primary);
+    cursor: pointer;
+    background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    border-radius: var(--radius-sm, 5px);
+    transition: background var(--dur-fast);
 }
+
 .tpl-popover-copy:hover {
-  background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
+    background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
 }
 
 .tpl-popover-close {
-  width: 26px;
-  height: 26px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-sm, 5px);
-  color: var(--prism-text-muted);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  transition: background var(--dur-fast), color var(--dur-fast);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-sm, 5px);
+    transition:
+        background var(--dur-fast),
+        color var(--dur-fast);
 }
+
 .tpl-popover-close:hover {
-  color: var(--prism-text);
-  background: var(--prism-input-bg);
+    color: var(--prism-text);
+    background: var(--prism-input-bg);
 }
 
 .tpl-popover-body {
-  margin: 0;
-  padding: 14px 18px;
-  font-family: var(--font-mono);
-  font-size: var(--fs-md);
-  line-height: 1.7;
-  color: var(--prism-text-2);
-  overflow: auto;
-  background: var(--prism-bg);
-  flex: 1;
-  min-height: 0;
-  white-space: pre;
+    flex: 1;
+    min-height: 0;
+    padding: 14px 18px;
+    margin: 0;
+    overflow: auto;
+    font-family: var(--font-mono);
+    font-size: var(--fs-md);
+    line-height: 1.7;
+    color: var(--prism-text-2);
+    white-space: pre;
+    background: var(--prism-bg);
 }
+
 .tpl-popover-body::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+    width: 6px;
+    height: 6px;
 }
+
 .tpl-popover-body::-webkit-scrollbar-thumb {
-  background: var(--prism-border-strong);
-  border-radius: 3px;
+    background: var(--prism-border-strong);
+    border-radius: 3px;
 }
 
 :host ::ng-deep .tok-tag {
-  color: var(--prism-code-tag);
+    color: var(--prism-code-tag);
 }
+
 :host ::ng-deep .tok-attr {
-  color: var(--prism-code-attr);
+    color: var(--prism-code-attr);
 }
+
 :host ::ng-deep .tok-str {
-  color: var(--prism-code-str);
+    color: var(--prism-code-str);
 }
+
 :host ::ng-deep .tok-com {
-  color: var(--prism-code-com);
-  font-style: italic;
+    font-style: italic;
+    color: var(--prism-code-com);
 }

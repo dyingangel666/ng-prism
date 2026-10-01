@@ -32,14 +32,15 @@ const read = (file: string): string => readFileSync(file, 'utf8');
  * alphabet.
  */
 function expandSelfClosing(template: string): string {
-  return template.replace(/<([a-z][a-z0-9-]*)([^<>]*?)\s*\/>/g, '<$1$2></$1>');
+    return template.replace(/<([a-z][a-z0-9-]*)([^<>]*?)\s*\/>/g, '<$1$2></$1>');
 }
 
 /** The `selector:` of a component source, e.g. `prism-shell`. */
 function selectorOf(source: string): string {
-  const match = /selector:\s*'([^']+)'/.exec(source);
-  if (!match) throw new Error('no selector in component source');
-  return match[1];
+    const match = /selector:\s*'([^']+)'/.exec(source);
+
+    if (!match) throw new Error('no selector in component source');
+    return match[1];
 }
 
 /**
@@ -51,15 +52,15 @@ function selectorOf(source: string): string {
  * globally — the shell's `:host` and the renderer's are different elements.
  */
 function scopeHost(styles: string, selector: string): string {
-  return styles.replace(/:host\b/g, selector);
+    return styles.replace(/:host\b/g, selector);
 }
 
 export interface CaptureDom {
-  /** The shell's own host element — the one the app bootstraps. */
-  host: HTMLElement;
-  shell: Element;
-  stage: Element;
-  demoWrap: Element;
+    /** The shell's own host element — the one the app bootstraps. */
+    host: HTMLElement;
+    shell: Element;
+    stage: Element;
+    demoWrap: Element;
 }
 
 /**
@@ -81,103 +82,97 @@ export interface CaptureDom {
  * produces.
  */
 export function renderCanvasChain(bg = 'transparent'): CaptureDom {
-  const shellSource = read(SHELL_SOURCE);
-  const rendererSource = read(RENDERER_SOURCE);
+    const shellSource = read(SHELL_SOURCE);
+    const rendererSource = read(RENDERER_SOURCE);
 
-  const composed = expandSelfClosing(
-    read(SHELL_TEMPLATE).replace(
-      '<prism-renderer />',
-      `<prism-renderer>${read(RENDERER_TEMPLATE)}</prism-renderer>`
-    )
-  );
-  if (!composed.includes('demo-wrap')) {
-    throw new Error('the renderer template was not spliced into the shell');
-  }
+    const composed = expandSelfClosing(read(SHELL_TEMPLATE).replace('<prism-renderer />', `<prism-renderer>${read(RENDERER_TEMPLATE)}</prism-renderer>`));
 
-  // This fixture injects CANVAS_BG_STYLES below unconditionally — it does not
-  // scan the renderer source for it the way it scans for `demo-wrap` above.
-  // That is only honest for as long as the renderer's own `styles` array
-  // still composes the same constant: if someone drops it from there, the
-  // fixture would keep supplying the rules the real component no longer has,
-  // and capture-transparency.browser.spec.ts would stay green while the app
-  // silently stopped painting every declared background. Guard it the same
-  // way the demo-wrap splice is guarded, so that drift fails loudly instead
-  // of quietly.
-  if (!rendererSource.includes('CANVAS_BG_STYLES')) {
-    throw new Error(
-      'the renderer no longer composes CANVAS_BG_STYLES into its styles'
+    if (!composed.includes('demo-wrap')) {
+        throw new Error('the renderer template was not spliced into the shell');
+    }
+
+    // This fixture injects CANVAS_BG_STYLES below unconditionally — it does not
+    // scan the renderer source for it the way it scans for `demo-wrap` above.
+    // That is only honest for as long as the renderer's own `styles` array
+    // still composes the same constant: if someone drops it from there, the
+    // fixture would keep supplying the rules the real component no longer has,
+    // and capture-transparency.browser.spec.ts would stay green while the app
+    // silently stopped painting every declared background. Guard it the same
+    // way the demo-wrap splice is guarded, so that drift fails loudly instead
+    // of quietly.
+    if (!rendererSource.includes('CANVAS_BG_STYLES')) {
+        throw new Error('the renderer no longer composes CANVAS_BG_STYLES into its styles');
+    }
+
+    // CANVAS_BG_STYLES is imported rather than read out of a file: it is a plain
+    // exported string with no Angular compilation involved, so importing it
+    // cannot drift out of step with the component. It is not run through
+    // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute selectors
+    // with no `:host` in them, so that rewrite has nothing to do.
+    // Placed directly after the renderer's own stylesheet, mirroring its
+    // position as the last entry of the real `styles` array — and ngc emits
+    // `styleUrl` content ahead of inline `styles`, so that is the order the
+    // component ships. `.prism-canvas-stage` and `[data-bg="light"]` are equal
+    // specificity either way — a class selector and an attribute selector both
+    // weigh (0,1,0) — so source order is what decides here too.
+    const style = document.createElement('style');
+
+    style.textContent = [scopeHost(read(RENDERER_STYLES), selectorOf(rendererSource)), CANVAS_BG_STYLES, scopeHost(read(SHELL_STYLES), selectorOf(shellSource))].join(
+        '\n'
     );
-  }
+    document.head.appendChild(style);
 
-  // CANVAS_BG_STYLES is imported rather than read out of a file: it is a plain
-  // exported string with no Angular compilation involved, so importing it
-  // cannot drift out of step with the component. It is not run through
-  // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute selectors
-  // with no `:host` in them, so that rewrite has nothing to do.
-  // Placed directly after the renderer's own stylesheet, mirroring its
-  // position as the last entry of the real `styles` array — and ngc emits
-  // `styleUrl` content ahead of inline `styles`, so that is the order the
-  // component ships. `.prism-canvas-stage` and `[data-bg="light"]` are equal
-  // specificity either way — a class selector and an attribute selector both
-  // weigh (0,1,0) — so source order is what decides here too.
-  const style = document.createElement('style');
-  style.textContent = [
-    scopeHost(read(RENDERER_STYLES), selectorOf(rendererSource)),
-    CANVAS_BG_STYLES,
-    scopeHost(read(SHELL_STYLES), selectorOf(shellSource)),
-  ].join('\n');
-  document.head.appendChild(style);
+    // The real host element, not a bare `<div>`. The app bootstraps
+    // `<prism-shell>` and the template's `div.prism-shell` lives *inside* it, so
+    // a wrapper of any other name would drop a layer out of the chain these
+    // fixtures exist to describe — and a `:host` background added to the shell
+    // would then paint above a capture without a single test noticing.
+    const host = document.createElement(selectorOf(shellSource));
 
-  // The real host element, not a bare `<div>`. The app bootstraps
-  // `<prism-shell>` and the template's `div.prism-shell` lives *inside* it, so
-  // a wrapper of any other name would drop a layer out of the chain these
-  // fixtures exist to describe — and a `:host` background added to the shell
-  // would then paint above a capture without a single test noticing.
-  const host = document.createElement(selectorOf(shellSource));
-  host.innerHTML = composed;
-  document.body.appendChild(host);
+    host.innerHTML = composed;
+    document.body.appendChild(host);
 
-  const shell = host.querySelector('.prism-shell');
-  const stage = host.querySelector('.prism-canvas-stage');
-  const demoWrap = host.querySelector('.demo-wrap');
-  const canvasWrap = host.querySelector('.prism-canvas-wrap');
-  if (!shell || !stage || !demoWrap || !canvasWrap) {
-    throw new Error('canvas markup not found');
-  }
+    const shell = host.querySelector('.prism-shell');
+    const stage = host.querySelector('.prism-canvas-stage');
+    const demoWrap = host.querySelector('.demo-wrap');
+    const canvasWrap = host.querySelector('.prism-canvas-wrap');
 
-  // The canvas tool rail, which the composed template does not carry: it is
-  // declared inside `prism-canvas-toolbar`, and only the renderer's template is
-  // spliced in above. Its host is `display: contents`, so the rail is a child
-  // of `.prism-canvas-wrap` in layout terms — precisely the position capture
-  // mode's structural rule exists to catch, and precisely the position a rail
-  // moved into the renderer or the stage would lose. Added at that level rather
-  // than under a `prism-canvas-toolbar` element so the level-by-level walk in
-  // `capture-layout.browser.spec.ts` asserts the rail itself: jsdom computes no
-  // inherited `display`, so an element nested one level deeper would be visited
-  // by nothing and prove nothing.
-  const toolrail = document.createElement('div');
-  toolrail.className = 'prism-toolrail';
-  canvasWrap.appendChild(toolrail);
+    if (!shell || !stage || !demoWrap || !canvasWrap) {
+        throw new Error('canvas markup not found');
+    }
 
-  // `data-bg` is a binding, so the markup carries no value. Setting the one
-  // the variant resolved to is exactly what the renderer does at runtime.
-  stage.setAttribute('data-bg', bg);
-  document.documentElement.setAttribute('data-prism-capture', '');
+    // The canvas tool rail, which the composed template does not carry: it is
+    // declared inside `prism-canvas-toolbar`, and only the renderer's template is
+    // spliced in above. Its host is `display: contents`, so the rail is a child
+    // of `.prism-canvas-wrap` in layout terms — precisely the position capture
+    // mode's structural rule exists to catch, and precisely the position a rail
+    // moved into the renderer or the stage would lose. Added at that level rather
+    // than under a `prism-canvas-toolbar` element so the level-by-level walk in
+    // `capture-layout.browser.spec.ts` asserts the rail itself: jsdom computes no
+    // inherited `display`, so an element nested one level deeper would be visited
+    // by nothing and prove nothing.
+    const toolrail = document.createElement('div');
 
-  return { host, shell, stage, demoWrap };
+    toolrail.className = 'prism-toolrail';
+    canvasWrap.appendChild(toolrail);
+
+    // `data-bg` is a binding, so the markup carries no value. Setting the one
+    // the variant resolved to is exactly what the renderer does at runtime.
+    stage.setAttribute('data-bg', bg);
+    document.documentElement.setAttribute('data-prism-capture', '');
+
+    return { host, shell, stage, demoWrap };
 }
 
 /** `matches()` throws on a selector jsdom cannot parse; those cannot match. */
 export function matchesSafely(el: Element, selector: string): boolean {
-  try {
-    return el.matches(selector);
-  } catch {
-    return false;
-  }
+    try {
+        return el.matches(selector);
+    } catch {
+        return false;
+    }
 }
 
 export function describeAll(els: Element[]): string[] {
-  return els.map(
-    (el) => `${el.tagName.toLowerCase()}.${el.className || '(no class)'}`
-  );
+    return els.map((el) => `${el.tagName.toLowerCase()}.${el.className || '(no class)'}`);
 }

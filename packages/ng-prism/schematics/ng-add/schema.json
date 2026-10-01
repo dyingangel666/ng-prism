@@ -1,25 +1,25 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ng-prism ng-add Schematic",
-  "description": "Set up ng-prism in an Angular workspace",
-  "type": "object",
-  "properties": {
-    "project": {
-      "type": "string",
-      "description": "The library project to set up ng-prism for",
-      "x-prompt": "Which library project should ng-prism showcase?"
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ng-prism ng-add Schematic",
+    "description": "Set up ng-prism in an Angular workspace",
+    "type": "object",
+    "properties": {
+        "project": {
+            "type": "string",
+            "description": "The library project to set up ng-prism for",
+            "x-prompt": "Which library project should ng-prism showcase?"
+        },
+        "port": {
+            "type": "number",
+            "default": 4400,
+            "description": "Dev server port for the Prism styleguide"
+        },
+        "zoneless": {
+            "type": "boolean",
+            "default": false,
+            "description": "Use zoneless change detection (no zone.js polyfill)"
+        }
     },
-    "port": {
-      "type": "number",
-      "default": 4400,
-      "description": "Dev server port for the Prism styleguide"
-    },
-    "zoneless": {
-      "type": "boolean",
-      "default": false,
-      "description": "Use zoneless change detection (no zone.js polyfill)"
-    }
-  },
-  "required": ["project"],
-  "additionalProperties": false
+    "required": ["project"],
+    "additionalProperties": false
 }

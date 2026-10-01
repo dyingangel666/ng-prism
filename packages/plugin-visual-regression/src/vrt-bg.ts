@@ -10,8 +10,8 @@ import type { VrtVariantResult } from './visual-regression.types.js';
  * the literals are the tokens' own fallbacks.
  */
 const SURFACE: Partial<Record<CanvasBg, string>> = {
-  light: 'var(--prism-void-light, #f7f5fc)',
-  dark: 'var(--prism-void-dark, #07050f)',
+    light: 'var(--prism-void-light, #f7f5fc)',
+    dark: 'var(--prism-void-dark, #07050f)'
 };
 
 /**
@@ -32,12 +32,11 @@ const SURFACE: Partial<Record<CanvasBg, string>> = {
  * inventing a surface the capture deliberately omitted. A report that recorded
  * no background at all is treated the same way.
  */
-export function shotSurfaceStyle(
-  bg: CanvasBg | undefined
-): Record<string, string> {
-  const surface = bg ? SURFACE[bg] : undefined;
-  if (!surface) return {};
-  return { 'background-color': surface, 'background-image': 'none' };
+export function shotSurfaceStyle(bg: CanvasBg | undefined): Record<string, string> {
+    const surface = bg ? SURFACE[bg] : undefined;
+
+    if (!surface) return {};
+    return { 'background-color': surface, 'background-image': 'none' };
 }
 
 /**
@@ -53,10 +52,9 @@ export function shotSurfaceStyle(
  * run captured on, `baselineBg` what the stored baseline was captured on.
  * Runners that do not track the second simply get no note.
  */
-export function bgChange(
-  variant: VrtVariantResult
-): { from: CanvasBg; to: CanvasBg } | null {
-  const { baselineBg, bg } = variant;
-  if (!baselineBg || !bg || baselineBg === bg) return null;
-  return { from: baselineBg, to: bg };
+export function bgChange(variant: VrtVariantResult): { from: CanvasBg; to: CanvasBg } | null {
+    const { baselineBg, bg } = variant;
+
+    if (!baselineBg || !bg || baselineBg === bg) return null;
+    return { from: baselineBg, to: bg };
 }

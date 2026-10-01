@@ -29,12 +29,12 @@ import { defineConfig } from '@ng-prism/core/config';
 import { visualRegressionPlugin } from '@ng-prism/plugin-visual-regression';
 
 export default defineConfig({
-  plugins: [
-    visualRegressionPlugin({
-      reportPath: 'coverage/my-lib/vrt-report.json',
-      assetBaseUrl: 'assets/',
-    }),
-  ],
+    plugins: [
+        visualRegressionPlugin({
+            reportPath: 'coverage/my-lib/vrt-report.json',
+            assetBaseUrl: 'assets/'
+        })
+    ]
 });
 ```
 
@@ -50,30 +50,30 @@ export default defineConfig({
 
 ```jsonc
 {
-  "total": {
-    "auditedVariants": 85,
-    "auditedComponents": 10,
-    "unchanged": 84,
-    "changed": 1,
-    "sizeMismatch": 0,
-    "new": 0,
-    "maxDiffRatio": 0.5,
-    "score": 99
-  },
-  "byVariant": [
-    {
-      "className": "ButtonComponent",
-      "variantName": "Primary",
-      "variantIndex": 0,
-      "status": "changed",
-      "diffRatio": 0.5,
-      "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png",
-      "currentPath": "vrt/current/ButtonComponent/00-primary.png",
-      "diffPath": "vrt/diff/ButtonComponent/00-primary.png",
-      "bg": "light",
-      "baselineBg": "light"
-    }
-  ]
+    "total": {
+        "auditedVariants": 85,
+        "auditedComponents": 10,
+        "unchanged": 84,
+        "changed": 1,
+        "sizeMismatch": 0,
+        "new": 0,
+        "maxDiffRatio": 0.5,
+        "score": 99
+    },
+    "byVariant": [
+        {
+            "className": "ButtonComponent",
+            "variantName": "Primary",
+            "variantIndex": 0,
+            "status": "changed",
+            "diffRatio": 0.5,
+            "baselinePath": "vrt/baseline/ButtonComponent/00-primary.png",
+            "currentPath": "vrt/current/ButtonComponent/00-primary.png",
+            "diffPath": "vrt/diff/ButtonComponent/00-primary.png",
+            "bg": "light",
+            "baselineBg": "light"
+        }
+    ]
 }
 ```
 

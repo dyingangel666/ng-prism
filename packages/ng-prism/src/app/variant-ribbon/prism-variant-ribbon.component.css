@@ -1,111 +1,119 @@
 :host {
-  display: block;
-  flex-shrink: 0;
+    display: block;
+    flex-shrink: 0;
 }
 
 .variant-ribbon {
-  display: flex;
-  align-items: center;
-  padding: 0 var(--sp-5);
-  background: var(--prism-bg);
-  border-bottom: 1px solid var(--prism-border);
-  height: var(--band-rail);
+    display: flex;
+    align-items: center;
+    height: var(--band-rail);
+    padding: 0 var(--sp-5);
+    background: var(--prism-bg);
+    border-bottom: 1px solid var(--prism-border);
 }
 
 .variant-ribbon-tabs {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 100%;
-  overflow-x: auto;
-  scrollbar-width: none;
+    display: flex;
+    flex: 1;
+    gap: 2px;
+    align-items: center;
+    min-width: 0;
+    height: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
+
 .variant-ribbon-tabs::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .v-tab {
-  position: relative;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--prism-text-muted);
-  white-space: nowrap;
-  transition: color var(--dur-fast);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-sans);
+    position: relative;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 100%;
+    padding: 0 14px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--prism-text-muted);
+    white-space: nowrap;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color var(--dur-fast);
 }
+
 /* Colour as position, not assignment: each tab shows the slice of one
    broken spectrum that corresponds to where it sits in the sequence. Nine
    arbitrary hues used to say nothing at all; this says "you are here". */
 .v-tab::after {
-  content: '';
-  position: absolute;
-  left: var(--sp-3);
-  right: var(--sp-3);
-  bottom: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--prism-spectrum);
-  background-size: calc(var(--n) * 100%) 100%;
-  background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0;
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-default);
+    position: absolute;
+    right: var(--sp-3);
+    bottom: 0;
+    left: var(--sp-3);
+    height: 2px;
+    content: '';
+    background: var(--prism-spectrum);
+    background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0;
+    background-size: calc(var(--n) * 100%) 100%;
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity var(--dur-fast) var(--ease-default);
 }
+
 .v-tab:hover {
-  color: var(--prism-text-2);
+    color: var(--prism-text-2);
 }
+
 .v-tab--active {
-  color: var(--prism-text);
+    color: var(--prism-text);
 }
+
 .v-tab--active::after {
-  opacity: 1;
+    opacity: 1;
 }
+
 .v-tab:hover::after {
-  opacity: 0.4;
+    opacity: 0.4;
 }
 
 .variant-ribbon-right {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding-left: 12px;
-  margin-left: 12px;
-  border-left: 1px solid var(--prism-border);
-  height: 24px;
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+    align-items: center;
+    height: 24px;
+    padding-left: 12px;
+    margin-left: 12px;
+    border-left: 1px solid var(--prism-border);
 }
 
 .tool-btn {
-  height: 24px;
-  width: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-sm);
-  color: var(--prism-text-muted);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: all var(--dur-fast);
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    transition: all var(--dur-fast);
 }
+
 .tool-btn:hover:not(:disabled) {
-  color: var(--prism-text);
-  background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
+    color: var(--prism-text);
+    background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
 }
+
 .tool-btn:disabled {
-  opacity: 0.3;
-  cursor: default;
+    cursor: default;
+    opacity: 0.3;
 }
 
 :focus-visible {
-  outline: 2px solid var(--prism-primary);
-  outline-offset: 2px;
+    outline: 2px solid var(--prism-primary);
+    outline-offset: 2px;
 }

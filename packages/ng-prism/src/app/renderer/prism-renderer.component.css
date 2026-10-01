@@ -1,21 +1,20 @@
 :host {
-  display: block;
-  min-height: 0;
-  flex: 1;
+    display: block;
+    flex: 1;
+    min-height: 0;
 }
 
 .prism-canvas-stage {
-  position: relative;
-  overflow: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  min-height: 200px;
-  height: 100%;
-  background-color: var(--prism-stage);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 200px;
+    padding: 32px;
+    overflow: auto;
 
-  /* The edge is outline + shadow, never border and never extra padding.
+    /* The edge is outline + shadow, never border and never extra padding.
    plugin-visual-regression screenshots .demo-wrap, which is centred in
    this element; a border would shrink the content box by 2px and move
    that centre, shifting all 15 baselines in test-workspace/vrt/baseline
@@ -26,57 +25,67 @@
    They do still paint, and outline-offset is negative, so the line lands
    inside the box: CAPTURE_STYLES in prism-capture.service.ts sets both
    to none, which is only safe because neither is load-bearing here. */
-  outline: 1px solid var(--prism-stage-edge);
-  outline-offset: -1px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 8px 24px -12px rgba(0, 0, 0, 0.18);
-  transition: filter var(--dur-base);
-  --prism-canvas-overlay-top: 12px;
-  --prism-canvas-overlay-inline: 20px;
+    outline: 1px solid var(--prism-stage-edge);
+    outline-offset: -1px;
+    background-color: var(--prism-stage);
+    box-shadow:
+        0 1px 3px rgb(0 0 0 / 10%),
+        0 8px 24px -12px rgb(0 0 0 / 18%);
+    transition: filter var(--dur-base);
+
+    --prism-canvas-overlay-top: 12px;
+    --prism-canvas-overlay-inline: 20px;
 }
+
 .prism-canvas-stage[data-rulers] {
-  --prism-canvas-overlay-top: 28px;
-  --prism-canvas-overlay-inline: 28px;
+    --prism-canvas-overlay-top: 28px;
+    --prism-canvas-overlay-inline: 28px;
 }
 
 .stage-crosshair {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity var(--dur-base);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur-base);
 }
+
 .stage-crosshair.visible {
-  opacity: 1;
+    opacity: 1;
 }
+
 .stage-crosshair::before,
 .stage-crosshair::after {
-  content: '';
-  position: absolute;
-  background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
+    position: absolute;
+    content: '';
+    background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
 }
+
 .stage-crosshair::before {
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 1px;
+    top: 50%;
+    right: 0;
+    left: 0;
+    height: 1px;
 }
+
 .stage-crosshair::after {
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 1px;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
 }
 
 .demo-wrap {
-  position: relative;
-  display: inline-block;
-  transform: scale(var(--zoom, 1));
-  transition: transform 0.18s;
+    position: relative;
+    display: inline-block;
+    transform: scale(var(--zoom, 1));
+    transition: transform 0.18s;
 }
+
 .demo-wrap[data-canvas-layout='stretch'] {
-  display: block;
-  width: 100%;
-  max-width: 800px;
+    display: block;
+    width: 100%;
+    max-width: 800px;
 }
 
 /* max-width: none rather than min(800px, var(--prism-vp-w)): an explicitly
@@ -111,16 +120,9 @@
    for width: 100% — the canvasLayout: 'stretch' case — keeps getting the
    whole viewport. */
 .demo-wrap[data-viewport] {
-  display: grid;
-  /* safe center, not bare center. Centring is right while the specimen
-     fits and wrong the moment it does not: bare centring spills an
-     over-wide specimen equally past both edges, where a real viewport of
-     that width clips at zero and scrolls in one direction. The safe
-     keyword falls back to start exactly when the item overflows, which
-     is the browser making a case distinction CSS cannot otherwise
-     express. */
-  justify-items: safe center;
-  /* flex: none, and it is load-bearing. The stage is a flex container
+    display: grid;
+
+    /* flex: none, and it is load-bearing. The stage is a flex container
      and this is its only item, so the default flex-shrink: 1 lets the
      box render narrower than the width just asked for whenever the
      canvas is the smaller of the two — and container-type below drops
@@ -129,10 +131,19 @@
      the dimension line states 1024 while every @container rule in the
      specimen answers whatever the canvas happened to allow. The stage
      is overflow: auto, so refusing to shrink scrolls instead. */
-  flex: none;
-  width: var(--prism-vp-w);
-  max-width: none;
-  container-type: inline-size;
+    flex: none;
+
+    /* safe center, not bare center. Centring is right while the specimen
+     fits and wrong the moment it does not: bare centring spills an
+     over-wide specimen equally past both edges, where a real viewport of
+     that width clips at zero and scrolls in one direction. The safe
+     keyword falls back to start exactly when the item overflows, which
+     is the browser making a case distinction CSS cannot otherwise
+     express. */
+    justify-items: safe center;
+    width: var(--prism-vp-w);
+    max-width: none;
+    container-type: inline-size;
 }
 
 /* Both grips derive their position arithmetically, because .demo-wrap is
@@ -149,25 +160,27 @@
    -2 / zoom on the left, not the flat ±2 a permanent zoom of 1 would
    need. */
 .vp-grip {
-  position: absolute;
-  top: var(--prism-canvas-overlay-top, 12px);
-  bottom: 0;
-  z-index: 4;
-  width: 9px;
-  left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
-  display: grid;
-  background: transparent;
-  /* The element is the guide line's full-height track and nothing else
+    position: absolute;
+    top: var(--prism-canvas-overlay-top, 12px);
+    bottom: 0;
+    left: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
+    z-index: 4;
+    display: grid;
+    width: 9px;
+
+    /* The element is the guide line's full-height track and nothing else
      may be clickable about it. It runs from the overlay band to the
      bottom of the stage at z-index 4, straight over prism-canvas-bg-pill
      at z-index 2, so leaving it hit-testable made part of the pill's
      Reset button unreachable whenever a viewport was on. Only the bar
      below takes pointer events back. */
-  pointer-events: none;
+    pointer-events: none;
+    background: transparent;
 }
+
 .vp-grip--end {
-  left: auto;
-  right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
+    right: calc(50% - var(--prism-vp-w) * var(--zoom, 1) / 2 - 4.5px);
+    left: auto;
 }
 
 /* The part you grab, and the only part of the grip that takes pointer
@@ -182,19 +195,18 @@
    in the tools menu answers — the same widths are reachable there, and
    both grips take Home/End and the arrow keys. */
 .vp-grip__bar {
-  grid-area: 1 / 1;
-  justify-self: center;
-  align-self: center;
-  z-index: 1;
-  pointer-events: auto;
-  box-sizing: content-box;
-  width: 3px;
-  height: 34px;
-  padding: 5px 3px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
-  background-clip: content-box;
-  transition: background var(--dur-fast);
+    z-index: 1;
+    box-sizing: content-box;
+    grid-area: 1 / 1;
+    place-self: center center;
+    width: 3px;
+    height: 34px;
+    padding: 5px 3px;
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--prism-measure) 80%, transparent);
+    background-clip: content-box;
+    border-radius: 2px;
+    transition: background var(--dur-fast);
 }
 
 /* The edge itself, carried the whole height of the stage. Without it a
@@ -203,34 +215,37 @@
    region rather than as two loose handles. Faint on purpose — it crosses
    the specimen, so it has to stay readable as chrome. */
 .vp-grip::after {
-  content: '';
-  grid-area: 1 / 1;
-  justify-self: center;
-  align-self: stretch;
-  width: 1px;
-  background: color-mix(in srgb, var(--prism-measure) 75%, transparent);
-  transition: background var(--dur-fast);
+    grid-area: 1 / 1;
+    place-self: stretch center;
+    width: 1px;
+    content: '';
+    background: color-mix(in srgb, var(--prism-measure) 75%, transparent);
+    transition: background var(--dur-fast);
 }
+
 .vp-grip:hover::after,
 .vp-grip.active::after,
 .vp-grip:focus-visible::after {
-  background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
+    background: color-mix(in srgb, var(--prism-measure) 55%, transparent);
 }
+
 .vp-grip:hover .vp-grip__bar,
 .vp-grip.active .vp-grip__bar,
 .vp-grip:focus-visible .vp-grip__bar {
-  background: var(--prism-measure);
-  background-clip: content-box;
+    background: var(--prism-measure);
+    background-clip: content-box;
 }
+
 /* The ring goes on the bar, not on the host: the host is the full-height
    track, and outlining that would draw a rule the length of the stage
    for a control 34px tall. */
 .vp-grip:focus-visible {
-  outline: none;
+    outline: none;
 }
+
 .vp-grip:focus-visible .vp-grip__bar {
-  outline: 2px solid var(--prism-primary);
-  outline-offset: 1px;
+    outline: 2px solid var(--prism-primary);
+    outline-offset: 1px;
 }
 
 /* The third resident of the overlay band: pill left, dimension centre,
@@ -243,50 +258,52 @@
    states which distance the number measures, and that is the whole
    claim this overlay makes. */
 .vp-dim {
-  position: absolute;
-  top: var(--prism-canvas-overlay-top, 12px);
-  left: 50%;
-  width: calc(var(--prism-vp-w) * var(--zoom, 1));
-  transform: translateX(-50%);
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  pointer-events: none;
+    position: absolute;
+    top: var(--prism-canvas-overlay-top, 12px);
+    left: 50%;
+    z-index: 4;
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+    width: calc(var(--prism-vp-w) * var(--zoom, 1));
+    pointer-events: none;
+    transform: translateX(-50%);
 }
 
 /* Two halves with the value in the gap, rather than one rule behind it:
    a line running under the digits would need a background plate to stay
    readable, and the plate is the badge this replaced. */
 .vp-dim__rule {
-  position: relative;
-  flex: 1;
-  height: 1px;
-  background: color-mix(in srgb, var(--prism-measure) 70%, transparent);
+    position: relative;
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--prism-measure) 70%, transparent);
 }
 
 /* The end ticks. They are what make the rule read as a measurement of
    the span between them instead of as a divider laid across the canvas,
    and they mark the two edges the grips can be dragged to. */
 .vp-dim__rule::before {
-  content: '';
-  position: absolute;
-  top: -3px;
-  width: 1px;
-  height: 7px;
-  background: color-mix(in srgb, var(--prism-measure) 90%, transparent);
+    position: absolute;
+    top: -3px;
+    width: 1px;
+    height: 7px;
+    content: '';
+    background: color-mix(in srgb, var(--prism-measure) 90%, transparent);
 }
+
 .vp-dim__rule:first-child::before {
-  left: 0;
+    left: 0;
 }
+
 .vp-dim__rule:last-child::before {
-  right: 0;
+    right: 0;
 }
 
 .vp-dim__v {
-  flex: none;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--prism-measure);
-  white-space: nowrap;
+    flex: none;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--prism-measure);
+    white-space: nowrap;
 }

@@ -79,8 +79,7 @@ When a variant _does_ have an opinion, declare it. `light` and `dark` are absolu
 ```
 
 ```js
-const skip = (component, variant) =>
-  variant.meta?.['vrt']?.skip ?? component.meta?.['vrt']?.skip ?? false;
+const skip = (component, variant) => variant.meta?.['vrt']?.skip ?? component.meta?.['vrt']?.skip ?? false;
 ```
 
 Build-time plugin hooks write into the same `meta`, so plugin output (for example the Coverage plugin's per-component numbers) is visible here too.
@@ -105,14 +104,7 @@ await page.goto(url.toString(), { waitUntil: 'load' });
 `data-prism-rendered` appears on `.demo-wrap` once the component instance has been created:
 
 ```js
-await page.waitForFunction(
-  ([expected]) =>
-    document
-      .querySelector('.demo-wrap')
-      ?.getAttribute('data-prism-rendered')
-      ?.startsWith(expected),
-  [`${comp.className}:`]
-);
+await page.waitForFunction(([expected]) => document.querySelector('.demo-wrap')?.getAttribute('data-prism-rendered')?.startsWith(expected), [`${comp.className}:`]);
 ```
 
 > **The marker means "instantiated", not "visually settled".** Fonts may still be swapping and transitions may still be running when it appears. For anything pixel-sensitive, see [Visual Regression](guide/visual-regression.md).
@@ -152,16 +144,14 @@ The mode is a single switch: there is nothing else to configure, and no config c
 While active, the document element carries a marker attribute:
 
 ```js
-await page.evaluate(() =>
-  document.documentElement.hasAttribute('data-prism-capture')
-);
+await page.evaluate(() => document.documentElement.hasAttribute('data-prism-capture'));
 ```
 
 You can hook your own rules onto it, for example to neutralise something specific to your library:
 
 ```css
 [data-prism-capture] .my-lib-live-clock {
-  visibility: hidden;
+    visibility: hidden;
 }
 ```
 

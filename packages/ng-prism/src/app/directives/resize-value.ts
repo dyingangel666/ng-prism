@@ -19,12 +19,6 @@
  * box has to change the CSS width by `2·dx / zoom` to keep the grip under the
  * cursor — the sign says which edge is being held.
  */
-export function resizeValue(
-  startValue: number,
-  delta: number,
-  scale: number,
-  min: number,
-  max: number
-): number {
-  return Math.max(min, Math.min(max, startValue + delta * scale));
+export function resizeValue(startValue: number, delta: number, scale: number, min: number, max: number): number {
+    return Math.max(min, Math.min(max, startValue + delta * scale));
 }

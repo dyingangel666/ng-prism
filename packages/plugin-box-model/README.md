@@ -12,10 +12,10 @@ npm install @ng-prism/plugin-box-model
 
 ### Peer Dependencies
 
-| Package | Version |
-|---|---|
+| Package          | Version    |
+| ---------------- | ---------- |
 | `@ng-prism/core` | `>=21.0.0` |
-| `@angular/core` | `>=20.0.0` |
+| `@angular/core`  | `>=20.0.0` |
 
 ## Setup
 
@@ -25,7 +25,7 @@ import { defineConfig } from '@ng-prism/core/config';
 import { boxModelPlugin } from '@ng-prism/plugin-box-model';
 
 export default defineConfig({
-  plugins: [boxModelPlugin()],
+    plugins: [boxModelPlugin()]
 });
 ```
 
@@ -33,10 +33,10 @@ export default defineConfig({
 
 - Adds a **Box Model** panel to the styleguide
 - Shows an interactive overlay on the rendered component displaying:
-  - Content dimensions (width x height)
-  - Padding values (top, right, bottom, left)
-  - Border widths
-  - Margin values
+    - Content dimensions (width x height)
+    - Padding values (top, right, bottom, left)
+    - Border widths
+    - Margin values
 - Updates live when inputs change via the Controls panel
 - Color-coded layers (content, padding, border, margin)
 

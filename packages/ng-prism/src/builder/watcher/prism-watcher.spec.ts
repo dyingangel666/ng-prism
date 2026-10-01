@@ -1,265 +1,266 @@
-jest.mock('chokidar', () => ({
-  __esModule: true,
-  default: { watch: jest.fn() },
-}));
-
 import chokidar from 'chokidar';
 import { createChangeHandler, startWatcher } from './prism-watcher.js';
+
+jest.mock('chokidar', () => ({
+    __esModule: true,
+    default: { watch: jest.fn() }
+}));
 
 const mockChokidarWatch = chokidar.watch as jest.Mock;
 
 function createLogger() {
-  return {
-    info: jest.fn(),
-    error: jest.fn(),
-  };
+    return {
+        info: jest.fn(),
+        error: jest.fn()
+    };
 }
 
 describe('startWatcher', () => {
-  function makeMockWatcher() {
-    const w = { on: jest.fn(), close: jest.fn() };
-    w.on.mockReturnValue(w);
-    return w;
-  }
+    function makeMockWatcher() {
+        const w = { on: jest.fn(), close: jest.fn() };
 
-  beforeEach(() => {
-    mockChokidarWatch.mockReset();
-  });
+        w.on.mockReturnValue(w);
+        return w;
+    }
 
-  it('should pass ignorePaths to chokidar ignored option', () => {
-    const mockWatcher = makeMockWatcher();
-    mockChokidarWatch.mockReturnValue(mockWatcher);
-    const logger = createLogger();
-    const handle = startWatcher({
-      entryPoint: '/some/lib',
-      ignorePaths: ['/some/lib/ng-prism-cache'],
-      onRebuild: jest.fn().mockResolvedValue(undefined),
-      logger,
+    beforeEach(() => {
+        mockChokidarWatch.mockReset();
     });
 
-    const [, watchOptions] = mockChokidarWatch.mock.calls[0];
-    expect(Array.isArray(watchOptions.ignored)).toBe(true);
-    expect(watchOptions.ignored).toContain('/some/lib/ng-prism-cache');
+    it('should pass ignorePaths to chokidar ignored option', () => {
+        const mockWatcher = makeMockWatcher();
 
-    handle.close();
-  });
+        mockChokidarWatch.mockReturnValue(mockWatcher);
+        const logger = createLogger();
+        const handle = startWatcher({
+            entryPoint: '/some/lib',
+            ignorePaths: ['/some/lib/ng-prism-cache'],
+            onRebuild: jest.fn().mockResolvedValue(undefined),
+            logger
+        });
 
-  it('should only include default ignore pattern when ignorePaths is not provided', () => {
-    const mockWatcher = makeMockWatcher();
-    mockChokidarWatch.mockReturnValue(mockWatcher);
-    const logger = createLogger();
-    const handle = startWatcher({
-      entryPoint: '/some/lib',
-      onRebuild: jest.fn().mockResolvedValue(undefined),
-      logger,
+        const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+
+        expect(Array.isArray(watchOptions.ignored)).toBe(true);
+        expect(watchOptions.ignored).toContain('/some/lib/ng-prism-cache');
+
+        handle.close();
     });
 
-    const [, watchOptions] = mockChokidarWatch.mock.calls[0];
-    expect(Array.isArray(watchOptions.ignored)).toBe(true);
-    expect(watchOptions.ignored).toHaveLength(1);
-    expect(watchOptions.ignored[0]).toBeInstanceOf(RegExp);
+    it('should only include default ignore pattern when ignorePaths is not provided', () => {
+        const mockWatcher = makeMockWatcher();
 
-    handle.close();
-  });
+        mockChokidarWatch.mockReturnValue(mockWatcher);
+        const logger = createLogger();
+        const handle = startWatcher({
+            entryPoint: '/some/lib',
+            onRebuild: jest.fn().mockResolvedValue(undefined),
+            logger
+        });
+
+        const [, watchOptions] = mockChokidarWatch.mock.calls[0];
+
+        expect(Array.isArray(watchOptions.ignored)).toBe(true);
+        expect(watchOptions.ignored).toHaveLength(1);
+        expect(watchOptions.ignored[0]).toBeInstanceOf(RegExp);
+
+        handle.close();
+    });
 });
 
 describe('createChangeHandler', () => {
-  beforeEach(() => jest.useFakeTimers());
-  afterEach(() => jest.useRealTimers());
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
 
-  it('should call onRebuild after debounce period', async () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should call onRebuild after debounce period', async () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('foo.ts');
-    expect(onRebuild).not.toHaveBeenCalled();
+        handler.handleChange('foo.ts');
+        expect(onRebuild).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
 
-    expect(onRebuild).toHaveBeenCalledTimes(1);
-    expect(logger.info).toHaveBeenCalledWith(
-      'ng-prism: Change detected, re-scanning...'
-    );
+        expect(onRebuild).toHaveBeenCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledWith('ng-prism: Change detected, re-scanning...');
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should debounce rapid changes into a single rebuild', async () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should debounce rapid changes into a single rebuild', async () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('a.ts');
-    jest.advanceTimersByTime(50);
-    handler.handleChange('b.ts');
-    jest.advanceTimersByTime(50);
-    handler.handleChange('c.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
+        handler.handleChange('a.ts');
+        jest.advanceTimersByTime(50);
+        handler.handleChange('b.ts');
+        jest.advanceTimersByTime(50);
+        handler.handleChange('c.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
 
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should ignore non-matching file extensions', () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should ignore non-matching file extensions', () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('readme.md');
-    handler.handleChange('image.png');
-    handler.handleChange('data.json');
+        handler.handleChange('readme.md');
+        handler.handleChange('image.png');
+        handler.handleChange('data.json');
 
-    jest.advanceTimersByTime(200);
+        jest.advanceTimersByTime(200);
 
-    expect(onRebuild).not.toHaveBeenCalled();
+        expect(onRebuild).not.toHaveBeenCalled();
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should ignore style and asset changes that cannot affect the manifest', () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should ignore style and asset changes that cannot affect the manifest', () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('button.component.scss');
-    handler.handleChange('global.css');
-    handler.handleChange('icon.svg');
-    handler.handleChange('template.html');
+        handler.handleChange('button.component.scss');
+        handler.handleChange('global.css');
+        handler.handleChange('icon.svg');
+        handler.handleChange('template.html');
 
-    jest.advanceTimersByTime(200);
+        jest.advanceTimersByTime(200);
 
-    expect(onRebuild).not.toHaveBeenCalled();
+        expect(onRebuild).not.toHaveBeenCalled();
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should handle null filename (triggers rebuild)', async () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should handle null filename (triggers rebuild)', async () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange(null);
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
+        handler.handleChange(null);
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
 
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should not crash when onRebuild throws', async () => {
-    const onRebuild = jest.fn().mockRejectedValue(new Error('scan failed'));
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should not crash when onRebuild throws', async () => {
+        const onRebuild = jest.fn().mockRejectedValue(new Error('scan failed'));
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('foo.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    await Promise.resolve();
+        handler.handleChange('foo.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        await Promise.resolve();
 
-    expect(logger.error).toHaveBeenCalledWith(
-      'ng-prism: Re-scan failed — scan failed'
-    );
+        expect(logger.error).toHaveBeenCalledWith('ng-prism: Re-scan failed — scan failed');
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should queue changes that arrive during a rebuild and run another rebuild after completion', async () => {
-    const resolvers: Array<() => void> = [];
-    const onRebuild = jest.fn().mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          resolvers.push(resolve);
-        })
-    );
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should queue changes that arrive during a rebuild and run another rebuild after completion', async () => {
+        const resolvers: Array<() => void> = [];
+        const onRebuild = jest.fn().mockImplementation(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('first.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        handler.handleChange('first.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    handler.handleChange('second.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        handler.handleChange('second.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    resolvers[0]();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(2);
+        resolvers[0]();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(2);
 
-    resolvers[1]();
-    await Promise.resolve();
+        resolvers[1]();
+        await Promise.resolve();
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should coalesce multiple changes during a rebuild into a single follow-up rebuild', async () => {
-    const resolvers: Array<() => void> = [];
-    const onRebuild = jest.fn().mockImplementation(
-      () =>
-        new Promise<void>((resolve) => {
-          resolvers.push(resolve);
-        })
-    );
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should coalesce multiple changes during a rebuild into a single follow-up rebuild', async () => {
+        const resolvers: Array<() => void> = [];
+        const onRebuild = jest.fn().mockImplementation(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('first.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        handler.handleChange('first.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    handler.handleChange('second.ts');
-    jest.advanceTimersByTime(100);
-    handler.handleChange('third.ts');
-    jest.advanceTimersByTime(100);
-    handler.handleChange('fourth.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(1);
+        handler.handleChange('second.ts');
+        jest.advanceTimersByTime(100);
+        handler.handleChange('third.ts');
+        jest.advanceTimersByTime(100);
+        handler.handleChange('fourth.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(1);
 
-    resolvers[0]();
-    await Promise.resolve();
-    await Promise.resolve();
-    expect(onRebuild).toHaveBeenCalledTimes(2);
+        resolvers[0]();
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(onRebuild).toHaveBeenCalledTimes(2);
 
-    resolvers[1]();
-    await Promise.resolve();
+        resolvers[1]();
+        await Promise.resolve();
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 
-  it('should not rebuild after dispose', () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should not rebuild after dispose', () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('foo.ts');
-    handler.dispose();
-    jest.advanceTimersByTime(200);
+        handler.handleChange('foo.ts');
+        handler.dispose();
+        jest.advanceTimersByTime(200);
 
-    expect(onRebuild).not.toHaveBeenCalled();
-  });
+        expect(onRebuild).not.toHaveBeenCalled();
+    });
 
-  it('should log re-scan complete on success', async () => {
-    const onRebuild = jest.fn().mockResolvedValue(undefined);
-    const logger = createLogger();
-    const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
+    it('should log re-scan complete on success', async () => {
+        const onRebuild = jest.fn().mockResolvedValue(undefined);
+        const logger = createLogger();
+        const handler = createChangeHandler({ onRebuild, logger, debounceMs: 100 });
 
-    handler.handleChange('foo.ts');
-    jest.advanceTimersByTime(100);
-    await Promise.resolve();
-    await Promise.resolve();
+        handler.handleChange('foo.ts');
+        jest.advanceTimersByTime(100);
+        await Promise.resolve();
+        await Promise.resolve();
 
-    expect(logger.info).toHaveBeenCalledWith('ng-prism: Re-scan complete.');
+        expect(logger.info).toHaveBeenCalledWith('ng-prism: Re-scan complete.');
 
-    handler.dispose();
-  });
+        handler.dispose();
+    });
 });

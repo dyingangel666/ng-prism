@@ -1,18 +1,17 @@
-@if (panelState.activeTab() === 'keyboard') { @for (badge of badges(); track
-badge.index) {
-<div
-  class="prism-a11y-kbd-ov__highlight"
-  [style.left.px]="badge.x"
-  [style.top.px]="badge.y"
-  [style.width.px]="badge.width"
-  [style.height.px]="badge.height"
-  [title]="badge.name || badge.role"
-></div>
-<div
-  class="prism-a11y-kbd-ov__badge"
-  [style.left.px]="badge.x - 10"
-  [style.top.px]="badge.y - 10"
->
-  {{ badge.index }}
-</div>
-} }
+@if (panelState.activeTab() === 'keyboard') {
+    @for (badge of badges(); track badge.index) {
+        <div
+            class="prism-a11y-kbd-ov__highlight"
+            [style.left.px]="badge.x"
+            [style.top.px]="badge.y"
+            [style.width.px]="badge.width"
+            [style.height.px]="badge.height"
+            [title]="badge.name || badge.role"></div>
+        <div
+            class="prism-a11y-kbd-ov__badge"
+            [style.left.px]="badge.x - 10"
+            [style.top.px]="badge.y - 10">
+            {{ badge.index }}
+        </div>
+    }
+}

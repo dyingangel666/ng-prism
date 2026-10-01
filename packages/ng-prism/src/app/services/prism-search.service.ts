@@ -4,39 +4,39 @@ import { PrismManifestService } from './prism-manifest.service.js';
 
 @Injectable({ providedIn: 'root' })
 export class PrismSearchService {
-  private readonly manifestService = inject(PrismManifestService);
+    private readonly manifestService = inject(PrismManifestService);
 
-  readonly query = signal('');
+    readonly query = signal('');
 
-  readonly filteredComponents = computed(() => {
-    const q = this.query().toLowerCase().trim();
-    const all = this.manifestService.components();
-    if (!q) return all;
-    return all.filter((comp) => {
-      const config = comp.meta.showcaseConfig;
-      return (
-        config.title.toLowerCase().includes(q) ||
-        (config.category?.toLowerCase().includes(q) ?? false) ||
-        (config.tags?.some((t) => t.toLowerCase().includes(q)) ?? false)
-      );
+    readonly filteredComponents = computed(() => {
+        const q = this.query().toLowerCase().trim();
+        const all = this.manifestService.components();
+
+        if (!q) return all;
+        return all.filter((comp) => {
+            const config = comp.meta.showcaseConfig;
+
+            return (
+                config.title.toLowerCase().includes(q) ||
+                (config.category?.toLowerCase().includes(q) ?? false) ||
+                (config.tags?.some((t) => t.toLowerCase().includes(q)) ?? false)
+            );
+        });
     });
-  });
 
-  readonly filteredPages = computed<StyleguidePage[]>(() => {
-    const q = this.query().toLowerCase().trim();
-    const all = this.manifestService.pages();
-    if (!q) return all;
-    return all.filter((page) =>
-      page.title.toLowerCase().includes(q) ||
-      (page.category?.toLowerCase().includes(q) ?? false),
-    );
-  });
+    readonly filteredPages = computed<StyleguidePage[]>(() => {
+        const q = this.query().toLowerCase().trim();
+        const all = this.manifestService.pages();
 
-  search(q: string): void {
-    this.query.set(q);
-  }
+        if (!q) return all;
+        return all.filter((page) => page.title.toLowerCase().includes(q) || (page.category?.toLowerCase().includes(q) ?? false));
+    });
 
-  clear(): void {
-    this.query.set('');
-  }
+    search(q: string): void {
+        this.query.set(q);
+    }
+
+    clear(): void {
+        this.query.set('');
+    }
 }

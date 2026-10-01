@@ -1,16 +1,16 @@
 {
-  "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "types": ["node"]
-  },
-  "files": [],
-  "include": [],
-  "references": [
-    {
-      "path": "./tsconfig.typecheck.json"
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "types": ["node"]
     },
-    {
-      "path": "./tsconfig.spec.json"
-    }
-  ]
+    "files": [],
+    "include": [],
+    "references": [
+        {
+            "path": "./tsconfig.typecheck.json"
+        },
+        {
+            "path": "./tsconfig.spec.json"
+        }
+    ]
 }

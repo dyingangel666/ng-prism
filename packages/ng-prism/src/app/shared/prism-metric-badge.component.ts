@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 
 /**
@@ -26,20 +21,20 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
  * consumer passes, for the hover tooltip.
  */
 @Component({
-  selector: 'prism-metric-badge',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent],
-  templateUrl: './prism-metric-badge.component.html',
-  styleUrl: './prism-metric-badge.component.css',
+    selector: 'prism-metric-badge',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismIconComponent],
+    templateUrl: './prism-metric-badge.component.html',
+    styleUrl: './prism-metric-badge.component.css'
 })
 export class PrismMetricBadgeComponent {
-  readonly icon = input.required<string>();
-  readonly value = input.required<string>();
-  readonly label = input.required<string>();
-  readonly title = input<string>('');
-  readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
+    readonly icon = input.required<string>();
+    readonly value = input.required<string>();
+    readonly label = input.required<string>();
+    readonly title = input<string>('');
+    readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
 
-  /** "label: value" — the accessible name, so the figure is never dropped. */
-  readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
+    /** "label: value" — the accessible name, so the figure is never dropped. */
+    readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
 }

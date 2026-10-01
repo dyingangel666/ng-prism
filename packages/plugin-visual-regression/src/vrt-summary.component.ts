@@ -1,14 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
-import {
-  formatPercent,
-  summarySegments,
-  type VrtSummary,
-} from './vrt-summarize.js';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { formatPercent, summarySegments, type VrtSummary } from './vrt-summarize.js';
 
 /**
  * The run's headline, sitting above the variant list.
@@ -30,39 +21,40 @@ import {
  * rather than printing a dash under a bar that already says so.
  */
 @Component({
-  selector: 'prism-vrt-summary',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './vrt-summary.component.html',
-  styleUrl: './vrt-summary.component.css',
+    selector: 'prism-vrt-summary',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './vrt-summary.component.html',
+    styleUrl: './vrt-summary.component.css'
 })
 export class VrtSummaryComponent {
-  readonly summary = input.required<VrtSummary>();
+    readonly summary = input.required<VrtSummary>();
 
-  protected readonly segments = computed(() => summarySegments(this.summary()));
+    protected readonly segments = computed(() => summarySegments(this.summary()));
 
-  protected readonly maxDiff = computed(() => {
-    const ratio = this.summary().maxDiffRatio;
-    if (ratio === null) return null;
-    return {
-      value: formatPercent(ratio),
-      tone: ratio > 0 ? 'danger' : 'success',
-    };
-  });
+    protected readonly maxDiff = computed(() => {
+        const ratio = this.summary().maxDiffRatio;
 
-  /**
-   * The bar's content as a sentence.
-   *
-   * The slices are the only place the per-status breakdown is shown, and they
-   * are colour and proportion — nothing a screen reader can read. Each slice
-   * carries a `title` for a pointer; this carries the same thing for everyone
-   * else.
-   */
-  protected readonly barLabel = computed(() =>
-    this.segments().length === 0
-      ? 'No variants'
-      : this.segments()
-          .map((segment) => `${segment.count} ${segment.label.toLowerCase()}`)
-          .join(', ')
-  );
+        if (ratio === null) return null;
+        return {
+            value: formatPercent(ratio),
+            tone: ratio > 0 ? 'danger' : 'success'
+        };
+    });
+
+    /**
+     * The bar's content as a sentence.
+     *
+     * The slices are the only place the per-status breakdown is shown, and they
+     * are colour and proportion — nothing a screen reader can read. Each slice
+     * carries a `title` for a pointer; this carries the same thing for everyone
+     * else.
+     */
+    protected readonly barLabel = computed(() =>
+        this.segments().length === 0
+            ? 'No variants'
+            : this.segments()
+                  .map((segment) => `${segment.count} ${segment.label.toLowerCase()}`)
+                  .join(', ')
+    );
 }

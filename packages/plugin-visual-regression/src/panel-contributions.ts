@@ -1,8 +1,4 @@
-import type {
-  NavigationDecorationDefinition,
-  PanelBadge,
-  RuntimeComponent,
-} from '@ng-prism/core/plugin';
+import type { NavigationDecorationDefinition, PanelBadge, RuntimeComponent } from '@ng-prism/core/plugin';
 import type { VrtComponentMeta } from './visual-regression.types.js';
 import { isReviewStatus } from './vrt-summarize.js';
 
@@ -18,17 +14,14 @@ import { isReviewStatus } from './vrt-summarize.js';
  */
 
 function componentMeta(component: RuntimeComponent): VrtComponentMeta | null {
-  return (
-    (component.meta?.showcaseConfig?.meta?.['visualRegression'] as
-      | VrtComponentMeta
-      | undefined) ?? null
-  );
+    return (component.meta?.showcaseConfig?.meta?.['visualRegression'] as VrtComponentMeta | undefined) ?? null;
 }
 
 /** True when the plugin recorded at least one result for this component. */
 export function hasResults(component: RuntimeComponent): boolean {
-  const meta = componentMeta(component);
-  return Boolean(meta?.found && meta.variants.length > 0);
+    const meta = componentMeta(component);
+
+    return Boolean(meta?.found && meta.variants.length > 0);
 }
 
 /**
@@ -47,19 +40,21 @@ export function hasResults(component: RuntimeComponent): boolean {
  * of one allocates a group per call and filters the list five times over.
  */
 export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
-  const meta = componentMeta(component);
-  if (!meta?.found) return null;
+    const meta = componentMeta(component);
 
-  let count = 0;
-  let changed = false;
-  for (const variant of meta.variants) {
-    if (!isReviewStatus(variant.status)) continue;
-    count++;
-    if (variant.status === 'changed') changed = true;
-  }
-  if (count === 0) return null;
+    if (!meta?.found) return null;
 
-  return { text: String(count), variant: changed ? 'danger' : 'warn' };
+    let count = 0;
+    let changed = false;
+
+    for (const variant of meta.variants) {
+        if (!isReviewStatus(variant.status)) continue;
+        count++;
+        if (variant.status === 'changed') changed = true;
+    }
+    if (count === 0) return null;
+
+    return { text: String(count), variant: changed ? 'danger' : 'warn' };
 }
 
 /**
@@ -67,13 +62,14 @@ export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
  * head shows, so the sidebar and the head cannot disagree about a component.
  */
 export const VRT_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
-  id: 'visual-regression',
-  icon: 'camera',
-  order: 20,
-  badge: (component) => {
-    const meta = componentMeta(component);
-    if (!meta?.found || !meta.summary) return null;
-    if (meta.summary.variant === 'ok') return null;
-    return { variant: meta.summary.variant, label: meta.summary.label };
-  },
+    id: 'visual-regression',
+    icon: 'camera',
+    order: 20,
+    badge: (component) => {
+        const meta = componentMeta(component);
+
+        if (!meta?.found || !meta.summary) return null;
+        if (meta.summary.variant === 'ok') return null;
+        return { variant: meta.summary.variant, label: meta.summary.label };
+    }
 };

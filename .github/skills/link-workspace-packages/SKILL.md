@@ -121,7 +121,7 @@ npm install @org/data-access @org/ui --workspace @org/dashboard
 
 - Symlinks appear in `<consumer>/node_modules/@org/<package>`
 - **Hoisting differs by manager:**
-  - npm/bun: hoist shared deps to root `node_modules`
-  - pnpm: no hoisting (strict isolation, prevents phantom deps)
-  - yarn berry: uses Plug'n'Play by default (no `node_modules`)
+    - npm/bun: hoist shared deps to root `node_modules`
+    - pnpm: no hoisting (strict isolation, prevents phantom deps)
+    - yarn berry: uses Plug'n'Play by default (no `node_modules`)
 - Root `package.json` should have `"private": true` to prevent accidental publish

@@ -9,71 +9,69 @@ export default defineConfig({ plugins: [] });
 
 const logCalls: Array<{ method: string; msg: string }> = [];
 const captureLogger = {
-  info: (msg: string) => logCalls.push({ method: 'info', msg }),
-  debug: () => {},
-  warn: () => {},
-  error: () => {},
-  fatal: () => {},
+    info: (msg: string) => logCalls.push({ method: 'info', msg }),
+    debug: () => {},
+    warn: () => {},
+    error: () => {},
+    fatal: () => {}
 };
 
 const mockContext = {
-  engine: {},
-  schematic: {},
-  description: {},
-  strategy: 0,
-  logger: captureLogger,
-  addTask: () => {},
-  interactive: false,
+    engine: {},
+    schematic: {},
+    description: {},
+    strategy: 0,
+    logger: captureLogger,
+    addTask: () => {},
+    interactive: false
 } as unknown as SchematicContext;
 
 async function run(tree: Tree, options: { configPath?: string } = {}) {
-  return firstValueFrom(callRule(ngAdd(options), tree, mockContext));
+    return firstValueFrom(callRule(ngAdd(options), tree, mockContext));
 }
 
 describe('plugin-figma ng-add', () => {
-  beforeEach(() => {
-    logCalls.length = 0;
-  });
+    beforeEach(() => {
+        logCalls.length = 0;
+    });
 
-  it('adds figmaPlugin import + call to empty config', async () => {
-    const tree = Tree.empty();
-    tree.create('ng-prism.config.ts', EMPTY_CONFIG);
+    it('adds figmaPlugin import + call to empty config', async () => {
+        const tree = Tree.empty();
 
-    const result = await run(tree);
-    const content = result.read('ng-prism.config.ts')!.toString('utf-8');
+        tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
-    expect(content).toContain(
-      `import { figmaPlugin } from '@ng-prism/plugin-figma';`
-    );
-    expect(content).toContain('plugins: [figmaPlugin()]');
-  });
+        const result = await run(tree);
+        const content = result.read('ng-prism.config.ts')!.toString('utf-8');
 
-  it('is idempotent on re-run', async () => {
-    const tree = Tree.empty();
-    tree.create('ng-prism.config.ts', EMPTY_CONFIG);
+        expect(content).toContain(`import { figmaPlugin } from '@ng-prism/plugin-figma';`);
+        expect(content).toContain('plugins: [figmaPlugin()]');
+    });
 
-    const first = await run(tree);
-    const afterFirst = first.read('ng-prism.config.ts')!.toString('utf-8');
-    const second = await run(first);
-    const afterSecond = second.read('ng-prism.config.ts')!.toString('utf-8');
+    it('is idempotent on re-run', async () => {
+        const tree = Tree.empty();
 
-    expect(afterSecond).toBe(afterFirst);
-  });
+        tree.create('ng-prism.config.ts', EMPTY_CONFIG);
 
-  it('throws when ng-prism.config.ts is missing', async () => {
-    const tree = Tree.empty();
-    await expect(run(tree)).rejects.toThrow(
-      /Run "ng add @ng-prism\/core" first/
-    );
-  });
+        const first = await run(tree);
+        const afterFirst = first.read('ng-prism.config.ts')!.toString('utf-8');
+        const second = await run(first);
+        const afterSecond = second.read('ng-prism.config.ts')!.toString('utf-8');
 
-  it('logs optional peers hint after successful inject', async () => {
-    const tree = Tree.empty();
-    tree.create('ng-prism.config.ts', EMPTY_CONFIG);
-    await run(tree);
+        expect(afterSecond).toBe(afterFirst);
+    });
 
-    expect(logCalls.some((c) => c.msg.includes('html2canvas pixelmatch'))).toBe(
-      true
-    );
-  });
+    it('throws when ng-prism.config.ts is missing', async () => {
+        const tree = Tree.empty();
+
+        await expect(run(tree)).rejects.toThrow(/Run "ng add @ng-prism\/core" first/);
+    });
+
+    it('logs optional peers hint after successful inject', async () => {
+        const tree = Tree.empty();
+
+        tree.create('ng-prism.config.ts', EMPTY_CONFIG);
+        await run(tree);
+
+        expect(logCalls.some((c) => c.msg.includes('html2canvas pixelmatch'))).toBe(true);
+    });
 });

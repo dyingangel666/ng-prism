@@ -1,164 +1,182 @@
 .perf-body {
-  padding: 20px 24px;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  align-content: start;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-content: start;
+    padding: 20px 24px;
 }
+
 .perf-body--4col {
-  grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr);
 }
 
 .perf-card {
-  padding: 16px;
-  background: var(--prism-bg-surface);
-  border: 1px solid var(--prism-border);
-  border-radius: 10px;
+    padding: 16px;
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border);
+    border-radius: 10px;
 }
+
 .perf-card--block {
-  display: block;
+    display: block;
 }
+
 .perf-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
 }
+
 .perf-card-name {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--prism-text-ghost);
-  font-weight: 700;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--prism-text-ghost);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
+
 .perf-card-status {
-  font-size: 10px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 3px;
 }
+
 .perf-card-status.good {
-  background: color-mix(in srgb, var(--prism-success) 15%, transparent);
-  color: var(--prism-success);
+    color: var(--prism-success);
+    background: color-mix(in srgb, var(--prism-success) 15%, transparent);
 }
+
 .perf-card-status.warn {
-  background: color-mix(in srgb, var(--prism-warn) 15%, transparent);
-  color: var(--prism-warn);
+    color: var(--prism-warn);
+    background: color-mix(in srgb, var(--prism-warn) 15%, transparent);
 }
+
 .perf-card-status.crit {
-  background: color-mix(in srgb, var(--prism-danger) 15%, transparent);
-  color: var(--prism-danger);
+    color: var(--prism-danger);
+    background: color-mix(in srgb, var(--prism-danger) 15%, transparent);
 }
+
 .perf-card-val {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--prism-text);
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
+    display: flex;
+    gap: 4px;
+    align-items: baseline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--prism-text);
+    letter-spacing: -0.02em;
 }
+
 .perf-card-val span {
-  font-size: 13px;
-  color: var(--prism-text-muted);
-  font-weight: 500;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--prism-text-muted);
 }
+
 .perf-card-sub {
-  font-size: 11px;
-  color: var(--prism-text-muted);
-  margin-top: 4px;
-  font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--prism-text-muted);
 }
 
 .perf-detail {
-  padding: 0 24px 16px;
+    padding: 0 24px 16px;
 }
+
 .perf-detail--last {
-  padding-bottom: 20px;
+    padding-bottom: 20px;
 }
 
 .perf-bars {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  gap: 10px;
-  align-items: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  margin-top: 8px;
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
 }
+
 .perf-bar-label {
-  color: var(--prism-text-muted);
+    color: var(--prism-text-muted);
 }
+
 .perf-bar-track {
-  height: 8px;
-  background: var(--prism-input-bg);
-  border-radius: 4px;
-  overflow: hidden;
+    height: 8px;
+    overflow: hidden;
+    background: var(--prism-input-bg);
+    border-radius: 4px;
 }
+
 .perf-bar-fill {
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--prism-primary-from),
-    var(--prism-primary-to)
-  );
-  border-radius: 4px;
+    height: 100%;
+    background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
+    border-radius: 4px;
 }
+
 .perf-bar-val {
-  color: var(--prism-primary);
+    color: var(--prism-primary);
 }
 
 .perf-thresholds {
-  margin-top: 10px;
-  font-size: 11px;
-  color: var(--prism-text-muted);
-  font-family: 'JetBrains Mono', monospace;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--prism-text-muted);
 }
+
 .perf-thresholds--warn {
-  color: var(--prism-warn);
+    color: var(--prism-warn);
 }
+
 .perf-thresholds--crit {
-  color: var(--prism-danger);
+    color: var(--prism-danger);
 }
 
 .perf-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
 }
+
 .perf-chip {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  padding: 4px 10px;
-  background: var(--prism-input-bg);
-  color: var(--prism-text-2);
-  border: 1px solid var(--prism-border);
-  border-radius: 5px;
+    padding: 4px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--prism-text-2);
+    background: var(--prism-input-bg);
+    border: 1px solid var(--prism-border);
+    border-radius: 5px;
 }
+
 .perf-chip.angular {
-  background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
-  color: var(--prism-primary);
-  border-color: color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    color: var(--prism-primary);
+    background: color-mix(in srgb, var(--prism-primary) 10%, transparent);
+    border-color: color-mix(in srgb, var(--prism-primary) 25%, transparent);
 }
 
 .perf-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 100%;
-  min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 180px;
 }
+
 .perf-empty-text {
-  font-size: 12px;
-  color: var(--prism-text-ghost);
+    font-size: 12px;
+    color: var(--prism-text-ghost);
 }
+
 .perf-empty-hint {
-  font-size: 11px;
-  color: var(--prism-text-ghost);
-  opacity: 0.6;
+    font-size: 11px;
+    color: var(--prism-text-ghost);
+    opacity: 0.6;
 }

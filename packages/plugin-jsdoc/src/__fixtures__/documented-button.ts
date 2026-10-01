@@ -11,23 +11,23 @@ import { Component, input, output } from '@angular/core';
  */
 @Component({ selector: 'doc-button', standalone: true, template: '' })
 export class DocumentedButtonComponent {
-  /** Button label text */
-  readonly label = input<string>('Click');
+    /** Button label text */
+    readonly label = input<string>('Click');
 
-  /**
-   * Visual variant.
-   * @since 1.1.0
-   * @deprecated Prefer using semantic tokens
-   */
-  readonly variant = input<'filled' | 'outlined'>('filled');
+    /**
+     * Visual variant.
+     * @since 1.1.0
+     * @deprecated Prefer using semantic tokens
+     */
+    readonly variant = input<'filled' | 'outlined'>('filled');
 
-  /** Emits when clicked */
-  readonly clicked = output<void>();
+    /** Emits when clicked */
+    readonly clicked = output<void>();
 }
 
 @Component({ selector: 'undocumented-button', standalone: true, template: '' })
 export class UndocumentedButtonComponent {
-  readonly label = input<string>('');
+    readonly label = input<string>('');
 }
 
 /**
@@ -45,5 +45,5 @@ export class UndocumentedButtonComponent {
  */
 @Component({ selector: 'doc-loading', standalone: true, template: '' })
 export class DocumentedLoadingComponent {
-  readonly size = input<'small' | 'large'>('large');
+    readonly size = input<'small' | 'large'>('large');
 }

@@ -10,8 +10,8 @@ The in-memory manifest produced after the builder scan and loaded at app bootstr
 
 ```typescript
 interface RuntimeManifest {
-  components: RuntimeComponent[];
-  pages?: StyleguidePage[];
+    components: RuntimeComponent[];
+    pages?: StyleguidePage[];
 }
 ```
 
@@ -23,8 +23,8 @@ A single entry in the runtime manifest, combining scan metadata with the actual 
 
 ```typescript
 interface RuntimeComponent {
-  meta: ScannedComponent;
-  type: Type<unknown>;
+    meta: ScannedComponent;
+    type: Type<unknown>;
 }
 ```
 
@@ -36,18 +36,18 @@ The raw data extracted from a `@Showcase`-annotated component by the TypeScript 
 
 ```typescript
 interface ScannedComponent {
-  className: string;
-  filePath: string;
-  showcaseConfig: ShowcaseConfig;
-  inputs: InputMeta[];
-  outputs: OutputMeta[];
-  componentMeta: {
-    selector: string;
-    standalone: boolean;
-    isDirective: boolean;
-  };
-  importPath?: string;
-  meta?: Record<string, unknown>;
+    className: string;
+    filePath: string;
+    showcaseConfig: ShowcaseConfig;
+    inputs: InputMeta[];
+    outputs: OutputMeta[];
+    componentMeta: {
+        selector: string;
+        standalone: boolean;
+        isDirective: boolean;
+    };
+    importPath?: string;
+    meta?: Record<string, unknown>;
 }
 ```
 
@@ -72,20 +72,13 @@ Describes a single `input()` signal as extracted by the scanner.
 
 ```typescript
 interface InputMeta {
-  name: string;
-  type:
-    | 'string'
-    | 'number'
-    | 'boolean'
-    | 'union'
-    | 'array'
-    | 'object'
-    | 'unknown';
-  rawType?: string;
-  values?: string[];
-  defaultValue?: unknown;
-  required: boolean;
-  doc?: string;
+    name: string;
+    type: 'string' | 'number' | 'boolean' | 'union' | 'array' | 'object' | 'unknown';
+    rawType?: string;
+    values?: string[];
+    defaultValue?: unknown;
+    required: boolean;
+    doc?: string;
 }
 ```
 
@@ -107,8 +100,8 @@ Describes a single `output()` signal.
 
 ```typescript
 interface OutputMeta {
-  name: string;
-  doc?: string;
+    name: string;
+    doc?: string;
 }
 ```
 
@@ -140,12 +133,12 @@ A data-only page processed through the build pipeline. Requires a plugin panel t
 
 ```typescript
 interface CustomPage {
-  type: 'custom';
-  title: string;
-  category?: string;
-  categoryOrder?: number;
-  order?: number;
-  data: Record<string, unknown>;
+    type: 'custom';
+    title: string;
+    category?: string;
+    categoryOrder?: number;
+    order?: number;
+    data: Record<string, unknown>;
 }
 ```
 
@@ -155,12 +148,12 @@ A free-form Angular component rendered as a sidebar page. Registered via `provid
 
 ```typescript
 interface ComponentPage {
-  type: 'component';
-  title: string;
-  category?: string;
-  categoryOrder?: number;
-  order?: number;
-  component: Type<unknown>;
+    type: 'component';
+    title: string;
+    category?: string;
+    categoryOrder?: number;
+    order?: number;
+    component: Type<unknown>;
 }
 ```
 
@@ -170,10 +163,10 @@ Use the `componentPage()` helper to create entries with TypeScript type safety:
 import { componentPage } from '@ng-prism/core';
 
 componentPage({
-  title: 'Button Patterns',
-  category: 'Atoms',
-  order: 99,
-  component: ButtonPatternsPageComponent,
+    title: 'Button Patterns',
+    category: 'Atoms',
+    order: 99,
+    component: ButtonPatternsPageComponent
 });
 ```
 
@@ -184,9 +177,7 @@ componentPage({
 Discriminated union used in `PrismNavigationService.categoryTree()` and `PrismNavigationService.activeItem`.
 
 ```typescript
-type NavigationItem =
-  | { kind: 'component'; data: RuntimeComponent }
-  | { kind: 'page'; data: StyleguidePage };
+type NavigationItem = { kind: 'component'; data: RuntimeComponent } | { kind: 'page'; data: StyleguidePage };
 ```
 
 ---
@@ -195,13 +186,13 @@ type NavigationItem =
 
 ```typescript
 interface Variant<T = unknown> {
-  name: string;
-  inputs?: Partial<InputsOf<T>>;
-  content?: string | Record<string, string>;
-  description?: string;
-  meta?: Record<string, unknown>;
-  bg?: CanvasBg;
-  canvasLayout?: CanvasLayout;
+    name: string;
+    inputs?: Partial<InputsOf<T>>;
+    content?: string | Record<string, string>;
+    description?: string;
+    meta?: Record<string, unknown>;
+    bg?: CanvasBg;
+    canvasLayout?: CanvasLayout;
 }
 ```
 
@@ -240,11 +231,11 @@ type InputsOf<T>;
 import { booleanAttribute, input, model, output } from '@angular/core';
 
 class FooComponent {
-  label = input.required<string>();
-  count = input<number>(0);
-  active = input(false, { transform: booleanAttribute });
-  selected = model<string>('');
-  closed = output<void>();
+    label = input.required<string>();
+    count = input<number>(0);
+    active = input(false, { transform: booleanAttribute });
+    selected = model<string>('');
+    closed = output<void>();
 }
 
 // InputsOf<FooComponent> ≡
@@ -264,9 +255,9 @@ class FooComponent {
 
 ```typescript
 interface DirectiveHost {
-  selector: string;
-  import: { name: string; from: string };
-  inputs?: Record<string, unknown>;
+    selector: string;
+    import: { name: string; from: string };
+    inputs?: Record<string, unknown>;
 }
 ```
 
@@ -343,7 +334,7 @@ The build-time manifest written to disk by the builder. Contains JSON-serializab
 
 ```typescript
 interface PrismManifest {
-  components: ScannedComponent[];
-  pages?: StyleguidePage[];
+    components: ScannedComponent[];
+    pages?: StyleguidePage[];
 }
 ```

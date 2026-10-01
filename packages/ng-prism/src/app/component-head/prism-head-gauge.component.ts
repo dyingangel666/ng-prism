@@ -1,10 +1,5 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
-import { summarizeMetrics, type HeadMetric } from './head-metrics.js';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { type HeadMetric, summarizeMetrics } from './head-metrics.js';
 import { PrismStatComponent } from './prism-stat.component.js';
 
 /**
@@ -21,22 +16,21 @@ import { PrismStatComponent } from './prism-stat.component.js';
  * the five @if branches it replaces and keeps the colour rule in one place.
  */
 @Component({
-  selector: 'prism-head-gauge',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismStatComponent],
-  templateUrl: './prism-head-gauge.component.html',
-  styleUrl: './prism-head-gauge.component.css',
+    selector: 'prism-head-gauge',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismStatComponent],
+    templateUrl: './prism-head-gauge.component.html',
+    styleUrl: './prism-head-gauge.component.css'
 })
 export class PrismHeadGaugeComponent {
-  readonly metrics = input.required<readonly HeadMetric[]>();
-  protected readonly summary = computed(() => summarizeMetrics(this.metrics()));
-  protected readonly ariaLabel = computed(() => {
-    const s = this.summary();
-    return s.worst === null
-      ? `${s.measured} metrics, all within threshold`
-      : `${s.worst.label} ${s.worst.value}${
-          s.others > 0 ? `, ${s.others} more deviating` : ''
-        }`;
-  });
+    readonly metrics = input.required<readonly HeadMetric[]>();
+    protected readonly summary = computed(() => summarizeMetrics(this.metrics()));
+    protected readonly ariaLabel = computed(() => {
+        const s = this.summary();
+
+        return s.worst === null
+            ? `${s.measured} metrics, all within threshold`
+            : `${s.worst.label} ${s.worst.value}${s.others > 0 ? `, ${s.others} more deviating` : ''}`;
+    });
 }

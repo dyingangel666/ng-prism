@@ -15,16 +15,16 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
  * and card without the card closing is its own problem.
  */
 @Component({
-  selector: 'prism-head-info',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent],
-  templateUrl: './prism-head-info.component.html',
-  styleUrl: './prism-head-info.component.css',
+    selector: 'prism-head-info',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismIconComponent],
+    templateUrl: './prism-head-info.component.html',
+    styleUrl: './prism-head-info.component.css'
 })
 export class PrismHeadInfoComponent {
-  readonly selector = input.required<string>();
-  readonly description = input<string | undefined>(undefined);
-  readonly tags = input<readonly string[]>([]);
-  readonly variantCount = input<number>(0);
+    readonly selector = input.required<string>();
+    readonly description = input<string | undefined>(undefined);
+    readonly tags = input<readonly string[]>([]);
+    readonly variantCount = input<number>(0);
 }

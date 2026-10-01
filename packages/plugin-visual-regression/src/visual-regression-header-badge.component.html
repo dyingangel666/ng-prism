@@ -1,9 +1,8 @@
 @if (data(); as d) {
-<prism-metric-badge
-  icon="camera"
-  label="Library visual regression"
-  [value]="d.score + '%'"
-  [variant]="d.variant"
-  [title]="d.title"
-/>
+    <prism-metric-badge
+        icon="camera"
+        label="Library visual regression"
+        [value]="d.score + '%'"
+        [variant]="d.variant"
+        [title]="d.title" />
 }

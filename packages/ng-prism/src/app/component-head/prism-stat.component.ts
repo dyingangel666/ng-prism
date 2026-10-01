@@ -8,14 +8,14 @@ import type { MetricVariant } from './head-metrics.js';
  * rather than restyled — it duplicated the caption directly beneath it.
  */
 @Component({
-  selector: 'prism-stat',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './prism-stat.component.html',
-  styleUrl: './prism-stat.component.css',
+    selector: 'prism-stat',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    templateUrl: './prism-stat.component.html',
+    styleUrl: './prism-stat.component.css'
 })
 export class PrismStatComponent {
-  readonly label = input.required<string>();
-  readonly value = input.required<string | number>();
-  readonly variant = input<MetricVariant>('ok');
+    readonly label = input.required<string>();
+    readonly value = input.required<string | number>();
+    readonly variant = input<MetricVariant>('ok');
 }

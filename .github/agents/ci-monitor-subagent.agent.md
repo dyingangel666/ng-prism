@@ -37,9 +37,9 @@ When `expectedCommitSha` or `previousCipeUrl` is provided, you must detect wheth
 
 ```json
 {
-  "branch": "string (optional, defaults to current git branch)",
-  "select": "string (optional, comma-separated field names)",
-  "pageToken": "number (optional, 0-based pagination for long strings)"
+    "branch": "string (optional, defaults to current git branch)",
+    "select": "string (optional, comma-separated field names)",
+    "pageToken": "number (optional, 0-based pagination for long strings)"
 }
 ```
 
@@ -47,26 +47,26 @@ When `expectedCommitSha` or `previousCipeUrl` is provided, you must detect wheth
 
 ```json
 {
-  "cipeStatus": "NOT_STARTED | IN_PROGRESS | SUCCEEDED | FAILED | CANCELED | TIMED_OUT",
-  "cipeUrl": "string",
-  "branch": "string",
-  "commitSha": "string | null",
-  "failedTaskIds": "string[]",
-  "verifiedTaskIds": "string[]",
-  "selfHealingEnabled": "boolean",
-  "selfHealingStatus": "NOT_STARTED | IN_PROGRESS | COMPLETED | FAILED | NOT_EXECUTABLE | null",
-  "verificationStatus": "NOT_STARTED | IN_PROGRESS | COMPLETED | FAILED | NOT_EXECUTABLE | null",
-  "userAction": "NONE | APPLIED | REJECTED | APPLIED_LOCALLY | APPLIED_AUTOMATICALLY | null",
-  "failureClassification": "string | null",
-  "taskOutputSummary": "string | null",
-  "suggestedFixReasoning": "string | null",
-  "suggestedFixDescription": "string | null",
-  "suggestedFix": "string | null",
-  "shortLink": "string | null",
-  "couldAutoApplyTasks": "boolean | null",
-  "confidence": "number | null",
-  "confidenceReasoning": "string | null",
-  "hints": "string[]"
+    "cipeStatus": "NOT_STARTED | IN_PROGRESS | SUCCEEDED | FAILED | CANCELED | TIMED_OUT",
+    "cipeUrl": "string",
+    "branch": "string",
+    "commitSha": "string | null",
+    "failedTaskIds": "string[]",
+    "verifiedTaskIds": "string[]",
+    "selfHealingEnabled": "boolean",
+    "selfHealingStatus": "NOT_STARTED | IN_PROGRESS | COMPLETED | FAILED | NOT_EXECUTABLE | null",
+    "verificationStatus": "NOT_STARTED | IN_PROGRESS | COMPLETED | FAILED | NOT_EXECUTABLE | null",
+    "userAction": "NONE | APPLIED | REJECTED | APPLIED_LOCALLY | APPLIED_AUTOMATICALLY | null",
+    "failureClassification": "string | null",
+    "taskOutputSummary": "string | null",
+    "suggestedFixReasoning": "string | null",
+    "suggestedFixDescription": "string | null",
+    "suggestedFix": "string | null",
+    "shortLink": "string | null",
+    "couldAutoApplyTasks": "boolean | null",
+    "confidence": "number | null",
+    "confidenceReasoning": "string | null",
+    "hints": "string[]"
 }
 ```
 
@@ -82,16 +82,16 @@ When `expectedCommitSha` or `previousCipeUrl` is provided, you must detect wheth
 
 ```yaml
 WAIT_FIELDS:
-  'cipeUrl,commitSha,cipeStatus'
-  # Minimal fields for detecting new CI Attempt
+    'cipeUrl,commitSha,cipeStatus'
+    # Minimal fields for detecting new CI Attempt
 
 LIGHT_FIELDS:
-  'cipeStatus,cipeUrl,branch,commitSha,selfHealingStatus,verificationStatus,userAction,failedTaskIds,verifiedTaskIds,selfHealingEnabled,failureClassification,couldAutoApplyTasks,shortLink,confidence,confidenceReasoning,hints'
-  # Status fields for determining actionable state (includes hints for contextual guidance)
+    'cipeStatus,cipeUrl,branch,commitSha,selfHealingStatus,verificationStatus,userAction,failedTaskIds,verifiedTaskIds,selfHealingEnabled,failureClassification,couldAutoApplyTasks,shortLink,confidence,confidenceReasoning,hints'
+    # Status fields for determining actionable state (includes hints for contextual guidance)
 
 HEAVY_FIELDS:
-  'taskOutputSummary,suggestedFix,suggestedFixReasoning,suggestedFixDescription'
-  # Large content fields - fetch only when returning to main agent
+    'taskOutputSummary,suggestedFix,suggestedFixReasoning,suggestedFixDescription'
+    # Large content fields - fetch only when returning to main agent
 ```
 
 ## Initial Poll
@@ -108,21 +108,21 @@ feedback on CI state, even if it's NOT_STARTED.
 
 1. **Immediately after waking from sleep**, before calling `ci_information`:
 
-   ```
-   IF main agent has moved on (CI already passed or new cycle started):
-     → Output: "[ci-monitor-subagent] Stale instance detected. Exiting."
-     → Return immediately with status: stale_exit
-     → Do NOT continue polling
-   ```
+    ```
+    IF main agent has moved on (CI already passed or new cycle started):
+      → Output: "[ci-monitor-subagent] Stale instance detected. Exiting."
+      → Return immediately with status: stale_exit
+      → Do NOT continue polling
+    ```
 
 2. **After each `ci_information` call**, check for early exit:
 
-   ```
-   IF cipeStatus == 'SUCCEEDED':
-     → CI passed while we were sleeping
-     → Return immediately with status: ci_success
-     → Do NOT continue to next poll iteration
-   ```
+    ```
+    IF cipeStatus == 'SUCCEEDED':
+      → CI passed while we were sleeping
+      → Return immediately with status: ci_success
+      → Do NOT continue to next poll iteration
+    ```
 
 ### Why Stale Instances Happen
 
@@ -150,11 +150,11 @@ Normal polling - process whatever CI Attempt is returned by `ci_information`. If
 
 1. Start a **new-CI-Attempt timeout** timer (default: 10 minutes, configurable via main agent)
 2. On each poll of `ci_information`:
-   - Check if CI Attempt is NEW:
-     - `cipeUrl` differs from `previousCipeUrl` → **new CI Attempt detected**
-     - `commitSha` matches `expectedCommitSha` → **correct CI Attempt detected**
-   - If still OLD CI Attempt: **ignore all status fields**, just wait and poll again
-   - Do NOT return `fix_available`, `ci_success`, etc. based on old CI Attempt!
+    - Check if CI Attempt is NEW:
+        - `cipeUrl` differs from `previousCipeUrl` → **new CI Attempt detected**
+        - `commitSha` matches `expectedCommitSha` → **correct CI Attempt detected**
+    - If still OLD CI Attempt: **ignore all status fields**, just wait and poll again
+    - Do NOT return `fix_available`, `ci_success`, etc. based on old CI Attempt!
 3. Output wait status (see below)
 4. If `newCipeTimeout` reached → return `no_new_cipe`
 
@@ -253,19 +253,19 @@ Merge response into `accumulated_state` after each poll.
 
 1. **Check if CI already succeeded:**
 
-   ```
-   IF cipeStatus == 'SUCCEEDED':
-     → Return immediately with ci_success
-     → Do NOT sleep, do NOT continue polling
-   ```
+    ```
+    IF cipeStatus == 'SUCCEEDED':
+      → Return immediately with ci_success
+      → Do NOT sleep, do NOT continue polling
+    ```
 
 2. **If in wait mode, verify we're still relevant:**
 
-   ```
-   IF expectedCommitSha provided AND current commitSha matches AND cipeStatus == 'SUCCEEDED':
-     → Our expected CI Attempt ran and passed
-     → Return immediately with ci_success
-   ```
+    ```
+    IF expectedCommitSha provided AND current commitSha matches AND cipeStatus == 'SUCCEEDED':
+      → Our expected CI Attempt ran and passed
+      → Return immediately with ci_success
+    ```
 
 This prevents continuing to poll after CI has already completed.
 

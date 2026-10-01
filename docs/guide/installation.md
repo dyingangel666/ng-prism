@@ -261,7 +261,7 @@ npm install @ng-prism/core
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  plugins: [],
+    plugins: []
 });
 ```
 
@@ -274,7 +274,7 @@ import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'; // generat
 import config from './prism.config.js';
 
 bootstrapApplication(PrismShellComponent, {
-  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],
+    providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)]
 });
 ```
 
@@ -282,11 +282,11 @@ The import specifier `prism-manifest/<prism-project>` is resolved via a wildcard
 
 ```jsonc
 {
-  "compilerOptions": {
-    "paths": {
-      "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+    "compilerOptions": {
+        "paths": {
+            "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+        }
     }
-  }
 }
 ```
 

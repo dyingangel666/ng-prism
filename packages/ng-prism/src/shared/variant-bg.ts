@@ -44,8 +44,8 @@ export const DEFAULT_VARIANT_BG: CanvasBg = 'transparent';
  * `decorator/`, which already imports from this folder.
  */
 export interface VariantBgSource {
-  bg?: CanvasBg;
-  variants?: readonly { bg?: CanvasBg }[];
+    bg?: CanvasBg;
+    variants?: readonly { bg?: CanvasBg }[];
 }
 
 /**
@@ -61,11 +61,8 @@ export interface VariantBgSource {
  * than rendering nothing, so reporting `null` here would describe a state that
  * cannot occur.
  */
-export function declaredVariantBg(
-  config: VariantBgSource,
-  variantIndex: number
-): CanvasBg | null {
-  return config.variants?.[variantIndex]?.bg ?? config.bg ?? null;
+export function declaredVariantBg(config: VariantBgSource, variantIndex: number): CanvasBg | null {
+    return config.variants?.[variantIndex]?.bg ?? config.bg ?? null;
 }
 
 /**
@@ -75,9 +72,6 @@ export function declaredVariantBg(
  * on "nothing declared" — and the one capture mode paints, so the value
  * reported by `__PRISM_MANIFEST__` and the pixels in the capture agree.
  */
-export function resolveVariantBg(
-  config: VariantBgSource,
-  variantIndex: number
-): CanvasBg {
-  return declaredVariantBg(config, variantIndex) ?? DEFAULT_VARIANT_BG;
+export function resolveVariantBg(config: VariantBgSource, variantIndex: number): CanvasBg {
+    return declaredVariantBg(config, variantIndex) ?? DEFAULT_VARIANT_BG;
 }

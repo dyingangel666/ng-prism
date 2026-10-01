@@ -53,8 +53,8 @@ Disable each layer independently:
 
 ```typescript
 export default defineConfig({
-  urlState: false, // disables URL sync
-  persistState: false, // disables sessionStorage for controls + a11y
+    urlState: false, // disables URL sync
+    persistState: false // disables sessionStorage for controls + a11y
 });
 ```
 

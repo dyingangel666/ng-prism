@@ -1,67 +1,69 @@
 :host {
-  display: inline-flex;
+    display: inline-flex;
 }
 
 .score-ring {
-  position: relative;
-  width: 128px;
-  height: 128px;
+    position: relative;
+    width: 128px;
+    height: 128px;
 }
+
 :host-context(.compact) .score-ring,
 :host([style*='width:18px']) .score-ring {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .score-ring svg {
-  transform: rotate(-90deg);
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
 }
 
 .score-ring circle {
-  fill: none;
-  stroke-width: 10;
+    fill: none;
+    stroke-width: 10;
 }
+
 .track {
-  stroke: var(--prism-input-bg);
+    stroke: var(--prism-input-bg);
 }
+
 .gradient-start {
-  stop-color: var(--prism-primary);
+    stop-color: var(--prism-primary);
 }
+
 .gradient-end {
-  stop-color: var(--prism-accent);
+    stop-color: var(--prism-accent);
 }
+
 .fill {
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
 }
 
 .score-val {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
 }
+
 .score-num {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  background: linear-gradient(
-    135deg,
-    var(--prism-primary),
-    var(--prism-accent)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-family: var(--font-mono);
+    font-family: var(--font-mono);
+    font-size: 30px;
+    font-weight: 700;
+    color: transparent;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--prism-primary), var(--prism-accent));
+    background-clip: text;
 }
+
 .score-max {
-  font-size: 11px;
-  color: var(--prism-text-ghost);
-  font-weight: 500;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--prism-text-ghost);
 }

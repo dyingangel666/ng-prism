@@ -108,22 +108,17 @@ await page.waitForFunction(() => globalThis.__PRISM_MANIFEST__ !== undefined);
 const manifest = await page.evaluate(() => globalThis.__PRISM_MANIFEST__);
 
 for (const comp of manifest.components) {
-  for (const variant of comp.variants) {
-    const url = new URL(baseUrl);
-    url.searchParams.set('component', comp.className);
-    if (variant.index > 0)
-      url.searchParams.set('variant', String(variant.index));
-    await page.goto(url.toString(), { waitUntil: 'load' });
-    await page.waitForFunction(
-      ([expected]) =>
-        document
-          .querySelector('.demo-wrap')
-          ?.getAttribute('data-prism-rendered')
-          ?.startsWith(expected),
-      [`${comp.className}:`]
-    );
-    // inject axe-core, run against .demo-wrap, collect violations…
-  }
+    for (const variant of comp.variants) {
+        const url = new URL(baseUrl);
+        url.searchParams.set('component', comp.className);
+        if (variant.index > 0) url.searchParams.set('variant', String(variant.index));
+        await page.goto(url.toString(), { waitUntil: 'load' });
+        await page.waitForFunction(
+            ([expected]) => document.querySelector('.demo-wrap')?.getAttribute('data-prism-rendered')?.startsWith(expected),
+            [`${comp.className}:`]
+        );
+        // inject axe-core, run against .demo-wrap, collect violations…
+    }
 }
 ```
 
@@ -133,31 +128,31 @@ The file must match this JSON shape:
 
 ```json
 {
-  "total": {
-    "score": 92,
-    "violations": 3,
-    "critical": 0,
-    "serious": 0,
-    "moderate": 2,
-    "minor": 1,
-    "passes": 145,
-    "incomplete": 0,
-    "auditedComponents": 18,
-    "auditedVariants": 47
-  },
-  "components": {
-    "ButtonComponent": {
-      "score": 100,
-      "violations": 0,
-      "critical": 0,
-      "serious": 0,
-      "moderate": 0,
-      "minor": 0,
-      "passes": 12,
-      "incomplete": 0
-    }
-  },
-  "generatedAt": "2026-06-01T10:00:00.000Z"
+    "total": {
+        "score": 92,
+        "violations": 3,
+        "critical": 0,
+        "serious": 0,
+        "moderate": 2,
+        "minor": 1,
+        "passes": 145,
+        "incomplete": 0,
+        "auditedComponents": 18,
+        "auditedVariants": 47
+    },
+    "components": {
+        "ButtonComponent": {
+            "score": 100,
+            "violations": 0,
+            "critical": 0,
+            "serious": 0,
+            "moderate": 0,
+            "minor": 0,
+            "passes": 12,
+            "incomplete": 0
+        }
+    },
+    "generatedAt": "2026-06-01T10:00:00.000Z"
 }
 ```
 
@@ -170,15 +165,15 @@ The file must match this JSON shape:
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  a11y: {
-    reportPath: 'a11y-report.json', // relative to workspace root (default)
-    thresholds: {
-      score: 85,
-      critical: 0,
-      serious: 0,
-      moderate: 5,
-    },
-  },
+    a11y: {
+        reportPath: 'a11y-report.json', // relative to workspace root (default)
+        thresholds: {
+            score: 85,
+            critical: 0,
+            serious: 0,
+            moderate: 5
+        }
+    }
 });
 ```
 

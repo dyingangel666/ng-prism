@@ -1,8 +1,4 @@
-import type {
-  PanelBadge,
-  PanelDefinition,
-  RuntimeComponent,
-} from '../../../plugin/plugin.types.js';
+import type { PanelBadge, PanelDefinition, RuntimeComponent } from '../../../plugin/plugin.types.js';
 import { deriveA11ySummary } from '../a11y/a11y-summary.js';
 import type { A11yScoreResult, A11yThresholds } from '../a11y/a11y.types.js';
 
@@ -21,9 +17,9 @@ import type { A11yScoreResult, A11yThresholds } from '../a11y/a11y.types.js';
  * icon in the sidebar next to a red badge on the tab for the same component.
  */
 export interface PanelBadgeContext {
-  inputCount: number;
-  a11yResult: A11yScoreResult | null;
-  a11yThresholds: A11yThresholds;
+    inputCount: number;
+    a11yResult: A11yScoreResult | null;
+    a11yThresholds: A11yThresholds;
 }
 
 /**
@@ -38,33 +34,28 @@ export interface PanelBadgeContext {
  * always present stops being a signal, so every branch here has a way to say
  * "nothing worth reporting" rather than falling back to a zero.
  */
-export function resolvePanelBadge(
-  panel: PanelDefinition,
-  component: RuntimeComponent | null,
-  context: PanelBadgeContext
-): PanelBadge | null {
-  if (panel.badge) {
-    // No component means no subject to report on; calling the hook with a
-    // placeholder would invite it to invent a number.
-    return component ? panel.badge(component) : null;
-  }
+export function resolvePanelBadge(panel: PanelDefinition, component: RuntimeComponent | null, context: PanelBadgeContext): PanelBadge | null {
+    if (panel.badge) {
+        // No component means no subject to report on; calling the hook with a
+        // placeholder would invite it to invent a number.
+        return component ? panel.badge(component) : null;
+    }
 
-  if (panel.id === 'controls') {
-    return context.inputCount > 0
-      ? { text: String(context.inputCount), variant: 'default' }
-      : null;
-  }
+    if (panel.id === 'controls') {
+        return context.inputCount > 0 ? { text: String(context.inputCount), variant: 'default' } : null;
+    }
 
-  if (panel.id === 'a11y') {
-    // `=== null` rather than a falsy check: a score of 0 is a real, and the
-    // most urgent, thing to show.
-    const result = context.a11yResult;
-    if (result === null) return null;
-    return {
-      text: String(result.score),
-      variant: deriveA11ySummary(result, context.a11yThresholds).variant,
-    };
-  }
+    if (panel.id === 'a11y') {
+        // `=== null` rather than a falsy check: a score of 0 is a real, and the
+        // most urgent, thing to show.
+        const result = context.a11yResult;
 
-  return null;
+        if (result === null) return null;
+        return {
+            text: String(result.score),
+            variant: deriveA11ySummary(result, context.a11yThresholds).variant
+        };
+    }
+
+    return null;
 }

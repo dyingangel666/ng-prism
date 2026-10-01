@@ -8,7 +8,7 @@ The scanner is created via `createScanner()` in `src/builder/scanner/scanner.ts`
 
 ```typescript
 const scanner = createScanner({
-  entryPoint: 'packages/my-lib/src/index.ts',
+    entryPoint: 'packages/my-lib/src/index.ts'
 });
 const manifest = scanner.scan();
 ```
@@ -21,19 +21,19 @@ Each `scan()` call creates or reuses a `ts.Program`, resolves all exports from t
 
 ```typescript
 export function createScanner(options: CreateScannerOptions): Scanner {
-  let previousProgram: ts.Program | undefined;
+    let previousProgram: ts.Program | undefined;
 
-  return {
-    scan() {
-      const { program, exports } = resolveEntryPointExports(
-        options.entryPoint,
-        compilerOptions,
-        previousProgram,  // ← reused on next scan
-      );
-      previousProgram = program;
-      // ...
-    },
-  };
+    return {
+        scan() {
+            const { program, exports } = resolveEntryPointExports(
+                options.entryPoint,
+                compilerOptions,
+                previousProgram // ← reused on next scan
+            );
+            previousProgram = program;
+            // ...
+        }
+    };
 }
 ```
 
@@ -97,15 +97,15 @@ Detected by `findDecorator(member, 'Input')`. The `required` field is read from 
 
 `mapType()` converts a `ts.Type` to the `InputMeta.type` enum:
 
-| TypeScript type | Normalized `type` | Notes |
-|-----------------|-------------------|-------|
-| `string` / string literal | `'string'` | |
-| `number` | `'number'` | |
-| `boolean` | `'boolean'` | Includes `true \| false` union |
-| `'a' \| 'b'` (string literals only) | `'union'` | `values` array populated |
-| Array types | `'array'` | Detected via `checker.isArrayType()` |
-| Object / interface | `'object'` | `ts.TypeFlags.Object` |
-| Everything else | `'unknown'` | |
+| TypeScript type                     | Normalized `type` | Notes                                |
+| ----------------------------------- | ----------------- | ------------------------------------ |
+| `string` / string literal           | `'string'`        |                                      |
+| `number`                            | `'number'`        |                                      |
+| `boolean`                           | `'boolean'`       | Includes `true \| false` union       |
+| `'a' \| 'b'` (string literals only) | `'union'`         | `values` array populated             |
+| Array types                         | `'array'`         | Detected via `checker.isArrayType()` |
+| Object / interface                  | `'object'`        | `ts.TypeFlags.Object`                |
+| Everything else                     | `'unknown'`       |                                      |
 
 `rawType` is the original TypeScript type string produced by `checker.typeToString()`, used by plugins and displayed in the JSDoc panel.
 

@@ -35,9 +35,7 @@ export const VIEWPORT_SNAP_TOLERANCE = 8;
  * them. Rendered as the "Width" group in the canvas tools menu, exactly like
  * the zoom chooser next to it.
  */
-export const VIEWPORT_SNAPS: readonly number[] = [
-  320, 390, 480, 640, 768, 1024,
-];
+export const VIEWPORT_SNAPS: readonly number[] = [320, 390, 480, 640, 768, 1024];
 
 /**
  * `width` brought inside the legal range and onto a whole pixel.
@@ -52,5 +50,5 @@ export const VIEWPORT_SNAPS: readonly number[] = [
  * the sub-pixel arithmetic it is.
  */
 export function clampViewportWidth(width: number): number {
-  return Math.round(Math.max(VIEWPORT_MIN, Math.min(VIEWPORT_MAX, width)));
+    return Math.round(Math.max(VIEWPORT_MIN, Math.min(VIEWPORT_MAX, width)));
 }

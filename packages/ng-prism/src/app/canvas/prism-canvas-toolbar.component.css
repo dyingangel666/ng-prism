@@ -1,5 +1,5 @@
 :host {
-  display: contents;
+    display: contents;
 }
 
 /* Canvas overlays sit at --prism-canvas-overlay-*, which the stage grows
@@ -15,87 +15,92 @@
    renderer in the shell, so an equal z-index let the rulers paint over
    the buttons. */
 .prism-toolrail {
-  position: absolute;
-  top: var(--prism-canvas-overlay-top, 12px);
-  right: var(--prism-canvas-overlay-inline, 20px);
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-1);
-  padding: var(--sp-2);
-  border: 1px solid var(--prism-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--prism-bg-elevated);
-  box-shadow: 0 4px 16px -6px rgba(0, 0, 0, 0.4);
-  anchor-name: --prism-toolrail;
+    position: absolute;
+    top: var(--prism-canvas-overlay-top, 12px);
+    right: var(--prism-canvas-overlay-inline, 20px);
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+    align-items: center;
+    padding: var(--sp-2);
+    anchor-name: --prism-toolrail;
+    background: var(--prism-bg-elevated);
+    border: 1px solid var(--prism-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px -6px rgb(0 0 0 / 40%);
 }
+
 .prism-toolrail.has-rulers {
-  --prism-canvas-overlay-top: 28px;
-  --prism-canvas-overlay-inline: 28px;
+    --prism-canvas-overlay-top: 28px;
+    --prism-canvas-overlay-inline: 28px;
 }
 
 .prism-toolrail__zoom {
-  width: 100%;
-  padding-bottom: var(--sp-1);
-  border-bottom: 1px solid var(--prism-border);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--prism-text-ghost);
-  text-align: center;
+    width: 100%;
+    padding-bottom: var(--sp-1);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--prism-text-ghost);
+    text-align: center;
+    border-bottom: 1px solid var(--prism-border);
 }
 
 /* The one number on this rail that is not a percentage, so it takes the
    measurement colour the theme already reserves for rulers and guides
    rather than a second neutral that would read as a second zoom. */
 .prism-toolrail__vp {
-  display: block;
-  color: var(--prism-measure);
+    display: block;
+    color: var(--prism-measure);
 }
 
 .prism-toolrail__btn {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--prism-text-muted);
-  cursor: pointer;
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-xs);
 }
+
 .prism-toolrail__btn:hover {
-  color: var(--prism-text);
+    color: var(--prism-text);
 }
+
 .prism-toolrail__btn:focus-visible {
-  outline: 2px solid var(--prism-primary);
-  outline-offset: 1px;
+    outline: 2px solid var(--prism-primary);
+    outline-offset: 1px;
 }
+
 .prism-toolrail__btn.is-on {
-  background: color-mix(in srgb, var(--prism-primary) 18%, transparent);
-  color: var(--prism-text);
+    color: var(--prism-text);
+    background: color-mix(in srgb, var(--prism-primary) 18%, transparent);
 }
+
 .prism-toolrail__sep {
-  width: 14px;
-  height: 1px;
-  background: var(--prism-border);
-  margin: var(--sp-1) 0;
+    width: 14px;
+    height: 1px;
+    margin: var(--sp-1) 0;
+    background: var(--prism-border);
 }
 
 .prism-toolmenu {
-  margin: 0;
-  padding: var(--sp-3);
-  border: 1px solid var(--prism-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--prism-bg-elevated);
-  box-shadow: 0 8px 28px -10px rgba(0, 0, 0, 0.45);
-  gap: var(--sp-2);
-  position-anchor: --prism-toolrail;
-  position-area: inline-start;
-  position-try-fallbacks: flip-inline;
-  inset: auto;
-  margin-inline-end: var(--sp-2);
+    inset: auto;
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+    margin: 0;
+    margin-inline-end: var(--sp-2);
+    position-area: inline-start;
+    position-anchor: --prism-toolrail;
+    position-try-fallbacks: flip-inline;
+    background: var(--prism-bg-elevated);
+    border: 1px solid var(--prism-border-strong);
+    border-radius: var(--radius-md);
+    box-shadow: 0 8px 28px -10px rgb(0 0 0 / 45%);
 }
 
 /* display belongs on :popover-open and nowhere else — see the note in
@@ -103,36 +108,40 @@
    rule outranks the UA's [popover]:not(:popover-open) { display: none }
    and pins the menu open. */
 .prism-toolmenu:popover-open {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .prism-toolmenu__lbl {
-  font-size: var(--fs-xs);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--prism-text-ghost);
+    font-size: var(--fs-xs);
+    color: var(--prism-text-ghost);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
+
 .prism-toolmenu__row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1);
 }
+
 .prism-toolmenu__row button {
-  padding: 2px var(--sp-3);
-  border: 1px solid var(--prism-border);
-  border-radius: var(--radius-xs);
-  background: transparent;
-  font-size: var(--fs-md);
-  color: var(--prism-text-2);
-  cursor: pointer;
-  white-space: nowrap;
+    padding: 2px var(--sp-3);
+    font-size: var(--fs-md);
+    color: var(--prism-text-2);
+    white-space: nowrap;
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--prism-border);
+    border-radius: var(--radius-xs);
 }
+
 .prism-toolmenu__row button.is-on {
-  background: color-mix(in srgb, var(--prism-primary) 16%, transparent);
-  border-color: color-mix(in srgb, var(--prism-primary) 38%, transparent);
-  color: var(--prism-text);
+    color: var(--prism-text);
+    background: color-mix(in srgb, var(--prism-primary) 16%, transparent);
+    border-color: color-mix(in srgb, var(--prism-primary) 38%, transparent);
 }
+
 .prism-toolmenu__row button.is-rec {
-  border-color: color-mix(in srgb, var(--prism-primary) 30%, transparent);
+    border-color: color-mix(in srgb, var(--prism-primary) 30%, transparent);
 }

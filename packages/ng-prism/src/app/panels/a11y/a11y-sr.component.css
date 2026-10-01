@@ -1,59 +1,59 @@
 :host {
-  display: block;
-  height: 100%;
-  overflow: auto;
+    display: block;
+    height: 100%;
+    overflow: auto;
 }
 
 .sr-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-  color: var(--prism-text-muted);
-  font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    font-size: 13px;
+    color: var(--prism-text-muted);
 }
 
 .sr-body {
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px 20px;
 }
 
 .sr-line {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--prism-bg-surface);
-  border: 1px solid var(--prism-border);
-  border-radius: 8px;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border);
+    border-radius: 8px;
 }
 
 .sr-step {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--prism-text-ghost);
-  font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--prism-text-ghost);
 }
 
 .sr-text {
-  font-size: 13px;
-  color: var(--prism-text);
-  line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--prism-text);
 }
 
 .sr-name {
-  color: var(--prism-primary);
-  font-weight: 600;
-  font-style: normal;
+    font-style: normal;
+    font-weight: 600;
+    color: var(--prism-primary);
 }
 
 .sr-text code {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--prism-text-muted);
-  padding: 1px 5px;
-  background: var(--prism-input-bg);
-  border-radius: var(--radius-xs);
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--prism-text-muted);
+    background: var(--prism-input-bg);
+    border-radius: var(--radius-xs);
 }

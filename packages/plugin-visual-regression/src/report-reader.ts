@@ -1,10 +1,5 @@
 import { readFileSync, statSync } from 'node:fs';
-import {
-  isVrtStatus,
-  type VrtReport,
-  type VrtTotals,
-  type VrtVariantResult,
-} from './visual-regression.types.js';
+import { isVrtStatus, type VrtReport, type VrtTotals, type VrtVariantResult } from './visual-regression.types.js';
 
 const cache = new Map<string, { mtime: number; data: VrtReport }>();
 
@@ -16,17 +11,19 @@ const warnedStatuses = new Set<string>();
  * rebuild picks up a fresh run without re-parsing on every scanned component.
  */
 function loadReport(reportPath: string): VrtReport | null {
-  try {
-    const mtime = statSync(reportPath).mtimeMs;
-    const cached = cache.get(reportPath);
-    if (cached && cached.mtime === mtime) return cached.data;
+    try {
+        const mtime = statSync(reportPath).mtimeMs;
+        const cached = cache.get(reportPath);
 
-    const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as VrtReport;
-    cache.set(reportPath, { mtime, data: parsed });
-    return parsed;
-  } catch {
-    return null;
-  }
+        if (cached && cached.mtime === mtime) return cached.data;
+
+        const parsed = JSON.parse(readFileSync(reportPath, 'utf-8')) as VrtReport;
+
+        cache.set(reportPath, { mtime, data: parsed });
+        return parsed;
+    } catch {
+        return null;
+    }
 }
 
 /**
@@ -50,52 +47,49 @@ function loadReport(reportPath: string): VrtReport | null {
  * totals, absent from the list. Dropping it here keeps the two agreeing, and
  * the warning below is what keeps the drop from being the silent kind.
  */
-export function readVariantsForComponent(
-  reportPath: string,
-  className: string
-): VrtVariantResult[] {
-  const entries: unknown = loadReport(reportPath)?.byVariant;
-  if (!Array.isArray(entries)) return [];
+export function readVariantsForComponent(reportPath: string, className: string): VrtVariantResult[] {
+    const entries: unknown = loadReport(reportPath)?.byVariant;
 
-  return entries
-    .filter(
-      (entry): entry is VrtVariantResult =>
-        isRecord(entry) && entry['className'] === className
-    )
-    .filter((entry) => {
-      if (isVrtStatus(entry.status)) return true;
-      warnUnknownStatus(reportPath, entry);
-      return false;
-    })
-    .sort((a, b) => variantIndexOf(a) - variantIndexOf(b));
+    if (!Array.isArray(entries)) return [];
+
+    return entries
+        .filter((entry): entry is VrtVariantResult => isRecord(entry) && entry['className'] === className)
+        .filter((entry) => {
+            if (isVrtStatus(entry.status)) return true;
+            warnUnknownStatus(reportPath, entry);
+            return false;
+        })
+        .sort((a, b) => variantIndexOf(a) - variantIndexOf(b));
 }
 
 function warnUnknownStatus(reportPath: string, entry: VrtVariantResult): void {
-  const status = String(entry.status);
-  if (warnedStatuses.has(status)) return;
-  warnedStatuses.add(status);
-  console.warn(
-    `ng-prism/plugin-visual-regression: ${reportPath} reports an unknown ` +
-      `status ${JSON.stringify(entry.status)} (first seen on ` +
-      `${entry.className}). Those variants are left out of the panel.`
-  );
+    const status = String(entry.status);
+
+    if (warnedStatuses.has(status)) return;
+    warnedStatuses.add(status);
+    console.warn(
+        `ng-prism/plugin-visual-regression: ${reportPath} reports an unknown ` +
+            `status ${JSON.stringify(entry.status)} (first seen on ` +
+            `${entry.className}). Those variants are left out of the panel.`
+    );
 }
 
 export function readTotals(reportPath: string): VrtTotals | null {
-  const total: unknown = loadReport(reportPath)?.total;
-  return isRecord(total) ? (total as unknown as VrtTotals) : null;
+    const total: unknown = loadReport(reportPath)?.total;
+
+    return isRecord(total) ? (total as unknown as VrtTotals) : null;
 }
 
 export function clearReportCache(): void {
-  cache.clear();
-  warnedStatuses.clear();
+    cache.clear();
+    warnedStatuses.clear();
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 /** Missing or non-numeric indices sort first rather than poisoning the sort. */
 function variantIndexOf(variant: VrtVariantResult): number {
-  return typeof variant.variantIndex === 'number' ? variant.variantIndex : 0;
+    return typeof variant.variantIndex === 'number' ? variant.variantIndex : 0;
 }
