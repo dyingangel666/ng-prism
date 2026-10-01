@@ -21,3 +21,30 @@
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+# Linting and formatting
+
+The full picture is in `CONTRIBUTING.md` → _Linting and formatting_. Three things
+are easy to get wrong and are worth repeating here:
+
+- **Use `npm run lint:fix` / `npm run check:fix` to fix, never `nx run-many -t lint --fix`.**
+  This is the one deliberate exception to the "always go through nx" rule above.
+  The `lint` target is cached but declares no outputs, so a cache hit replays an
+  empty result while the files it was supposed to rewrite stay untouched — the
+  command reports success on a tree it never fixed. The npm scripts call
+  `scripts/fix-until-stable.mjs` directly, which additionally loops to a fixed
+  point, because neither `eslint --fix` nor `stylelint --fix` converges in one
+  pass. Checking (`npm run lint`, `npm run check`, the pre-push hook) stays on
+  nx, where caching is correct.
+
+- **Severity does not decide whether a run fails — `--max-warnings 0` does.**
+  Every lint target carries it via `nx.json`'s `targetDefaults`. A `warn` rule
+  is just as blocking as an `error`; the severity only controls how loud the
+  finding looks in the editor.
+
+- **Formatting is not a separate step for `.ts` and Angular templates.** Prettier
+  runs as the `prettier/prettier` ESLint rule there, so one `eslint --fix` covers
+  formatting and rules together. `nx format:write` remains responsible for
+  everything else (`.json`, `.md`, `.yml`, `.scss`, `.css`, `.js`/`.mjs`/`.cjs`,
+  and the three standalone `.html` documents). The pre-commit hook does both for
+  staged files, so a normal commit needs no manual formatting run.
