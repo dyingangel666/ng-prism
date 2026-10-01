@@ -1,6 +1,5 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
-import { ButtonComponent } from 'test-lib';
-import { TooltipDirective } from 'test-lib';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ButtonComponent, TooltipDirective } from 'test-lib';
 
 @Component({
     selector: 'prism-button-tooltip-page',

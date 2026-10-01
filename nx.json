@@ -10,7 +10,7 @@
             "!{projectRoot}/src/test-setup.[jt]s",
             "!{projectRoot}/test-setup.[jt]s"
         ],
-        "sharedGlobals": []
+        "sharedGlobals": ["{workspaceRoot}/.prettierrc", "{workspaceRoot}/.prettierignore"]
     },
     "plugins": [
         {
@@ -47,6 +47,11 @@
         }
     },
     "targetDefaults": {
+        "lint": {
+            "options": {
+                "args": ["--max-warnings", "0"]
+            }
+        },
         "test": {
             "dependsOn": ["^build"]
         }

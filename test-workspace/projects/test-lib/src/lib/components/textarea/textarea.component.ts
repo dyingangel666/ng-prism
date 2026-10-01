@@ -133,6 +133,7 @@ export class TextareaComponent {
      */
     onInput(event: Event): void {
         const val = (event.target as HTMLTextAreaElement).value;
+
         this.value.set(val);
         this.valueChanged.emit(val);
     }

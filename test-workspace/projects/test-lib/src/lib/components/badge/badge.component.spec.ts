@@ -7,6 +7,7 @@ describe('BadgeComponent', () => {
 
     it('should export BadgeVariantType variants', () => {
         const variants: BadgeVariantType[] = ['default', 'success', 'warning', 'error', 'info'];
+
         expect(variants).toHaveLength(5);
     });
 });

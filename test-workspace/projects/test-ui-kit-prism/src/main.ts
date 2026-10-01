@@ -1,7 +1,7 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { enablePrismHmr, PrismShellComponent, providePrism } from '@ng-prism/core';
-import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/test-ui-kit-prism';
 import config from 'ng-prism.config';
+import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/test-ui-kit-prism';
 
 const hot = (
     import.meta as ImportMeta & {

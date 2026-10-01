@@ -90,6 +90,7 @@ export class AvatarComponent {
 
     protected readonly initials = computed(() => {
         const n = this.name();
+
         if (!n) return '';
         return n
             .split(' ')

@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({

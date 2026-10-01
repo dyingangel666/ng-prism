@@ -1,12 +1,29 @@
-# Reine Reformat-Commits — kein inhaltlicher Anteil.
+# Commits, deren Diff ganz ueberwiegend Reformatierung ist. `git blame` soll
+# durch sie hindurch auf den Autor der Zeile zeigen, nicht auf die
+# Umformatierung.
+#
+# "Ueberwiegend", nicht "ausschliesslich": zwei der drei tragen einen kleinen
+# inhaltlichen Anteil, der hier benannt statt verschwiegen wird.
+#
 # Lokal aktivieren mit:
 #   git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 # style: reformat with prettier 3
+# Rein mechanisch. Token-Aequivalenz wurde geprueft: beide Fassungen jeder
+# geaenderten .ts/.css/.json normalisiert und verglichen, 498 von 506
+# identisch, die restlichen 8 der beabsichtigte Prettier-Versionssprung.
 c320d559556f1b14e09caf2b0ee6a3bda109630b
 
 # style: apply eslint autofix
+# Inhaltlicher Anteil: zwei ungenutzte Type-only-Imports in Spec-Dateien
+# entfernt (kein Side-Effect-Import im Baum), Imports ueber 253 Dateien
+# umsortiert, und aus sieben jest.config.cjs je ein wirkungsloses
+# `/* eslint-disable */` entfernt.
 8f95d65029ff83f02efac794a5ec8a4e610f4a95
 
 # style: apply stylelint autofix
+# Inhaltlicher Anteil: `-webkit-background-clip: text` an zwei Stellen
+# entfernt (property-no-vendor-prefix; autoprefixer setzt den Prefix im
+# Angular-Build je nach browserslist des Consumers wieder), `word-wrap` zu
+# `overflow-wrap`, und align-self/justify-self zu `place-self` gefaltet.
 dcbd0ab21287dd3526d26ced16d83fbe4a2ec247

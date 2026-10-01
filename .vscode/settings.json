@@ -1,15 +1,32 @@
 {
     "editor.formatOnSave": false,
     "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit",
-        "source.fixAll.stylelint": "explicit"
+        "source.fixAll.eslint": "explicit"
     },
     "eslint.validate": ["typescript", "html"],
     "stylelint.validate": ["css"],
-    "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
-    "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
-    "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
-    "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
-    "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true },
-    "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode", "editor.formatOnSave": true }
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[markdown]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    }
 }

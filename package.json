@@ -8,9 +8,9 @@
         "build:all": "nx build ng-prism && nx run-many -t build --projects='plugin-box-model,plugin-figma,plugin-jsdoc,plugin-perf,plugin-coverage,plugin-visual-regression'",
         "test": "nx test ng-prism",
         "check": "nx format:check && node scripts/check-declared-deps.mjs && npm run style && nx run-many -t lint test build typecheck",
-        "check:fix": "nx run-many -t lint --fix && nx format:write && npm run style:fix",
+        "check:fix": "npm run lint:fix && nx format:write && npm run style:fix",
         "lint": "nx run-many -t lint",
-        "lint:fix": "nx run-many -t lint --fix",
+        "lint:fix": "node scripts/fix-until-stable.mjs eslint .",
         "publish": "./scripts/publish.sh",
         "verdaccio": "nx run ng-prism-workspace:local-registry",
         "test:workspace:kill": "lsof -ti :4400 | xargs kill -9 2>/dev/null || echo 'No process on port 4400'",
@@ -31,8 +31,12 @@
         "packages/*"
     ],
     "lint-staged": {
-        "*.{ts,html}": [
+        "*.ts": [
             "node scripts/fix-until-stable.mjs eslint"
+        ],
+        "*.html": [
+            "node scripts/fix-until-stable.mjs eslint",
+            "prettier --write --ignore-unknown"
         ],
         "*.{json,md,yml,js,mjs,cjs}": [
             "prettier --write --ignore-unknown"
@@ -70,6 +74,7 @@
         "eslint-plugin-import": "^2.32.0",
         "eslint-plugin-prettier": "^5.5.6",
         "eslint-plugin-unused-imports": "^4.4.1",
+        "globals": "^14.0.0",
         "highlight.js": "^11.11.1",
         "html2canvas": "^1.4.1",
         "husky": "^9.1.7",
@@ -134,9 +139,13 @@
                     "{workspaceRoot}/scripts/**/*.mjs",
                     "{workspaceRoot}/jest.config.ts",
                     "{workspaceRoot}/eslint.config.mjs",
+                    "{workspaceRoot}/.prettierrc",
+                    "{workspaceRoot}/.prettierignore",
                     {
                         "externalDependencies": [
-                            "eslint"
+                            "eslint",
+                            "prettier",
+                            "eslint-plugin-prettier"
                         ]
                     }
                 ]

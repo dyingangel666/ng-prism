@@ -4,6 +4,7 @@ import { SliderComponent } from './slider.component';
 
 function createSlider(): SliderComponent {
     const injector = Injector.create({ providers: [] });
+
     return runInInjectionContext(injector, () => new SliderComponent());
 }
 
@@ -20,6 +21,7 @@ describe('SliderComponent', () => {
     it('onInput() should write the numeric value and emit it', () => {
         const component = createSlider();
         let emitted: number | undefined;
+
         component.valueChanged.subscribe((v: number) => {
             emitted = v;
         });
@@ -32,6 +34,7 @@ describe('SliderComponent', () => {
 
     it('reset() should move the value to the midpoint of the default range', () => {
         const component = createSlider();
+
         component.value.set(10);
 
         component.reset();
@@ -41,9 +44,11 @@ describe('SliderComponent', () => {
 
     it('reset() should round the midpoint of an odd range', () => {
         const component = createSlider();
+
         setInput(component, 'min', 1);
         setInput(component, 'max', 6);
         let emitted: number | undefined;
+
         component.valueChanged.subscribe((v: number) => {
             emitted = v;
         });

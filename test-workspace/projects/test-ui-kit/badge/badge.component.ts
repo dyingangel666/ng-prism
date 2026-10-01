@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MatBadgeModule } from '@angular/material/badge';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { MatBadgeModule } from '@angular/material/badge';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({

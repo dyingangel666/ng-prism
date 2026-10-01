@@ -130,6 +130,7 @@ export class TabsComponent {
      */
     selectTab(tabId: string): void {
         const tab = this.tabs().find((t) => t.id === tabId);
+
         if (tab?.disabled) return;
         this.activeTabId.set(tabId);
         this.tabChanged.emit(tabId);

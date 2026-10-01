@@ -5,6 +5,7 @@ import { ChipComponent } from './chip.component';
 function createChip(label = 'Angular'): ChipComponent {
     const injector = Injector.create({ providers: [] });
     const component = runInInjectionContext(injector, () => new ChipComponent());
+
     setInput(component, 'label', label);
     return component;
 }
@@ -17,6 +18,7 @@ describe('ChipComponent', () => {
     it('remove() should emit the label', () => {
         const component = createChip('TypeScript');
         let emitted: string | undefined;
+
         component.removed.subscribe((label: string) => {
             emitted = label;
         });
@@ -28,8 +30,10 @@ describe('ChipComponent', () => {
 
     it('remove() should stay silent while disabled', () => {
         const component = createChip();
+
         setInput(component, 'disabled', true);
         let emitted: string | undefined;
+
         component.removed.subscribe((label: string) => {
             emitted = label;
         });

@@ -113,6 +113,7 @@ export class SliderComponent {
      */
     onInput(event: Event): void {
         const val = Number((event.target as HTMLInputElement).value);
+
         this.value.set(val);
         this.valueChanged.emit(val);
     }
@@ -120,6 +121,7 @@ export class SliderComponent {
     /** Resets the slider value to the midpoint between min and max. */
     reset(): void {
         const mid = Math.round((this.min() + this.max()) / 2);
+
         this.value.set(mid);
         this.valueChanged.emit(mid);
     }

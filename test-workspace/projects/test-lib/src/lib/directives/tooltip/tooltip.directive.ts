@@ -49,6 +49,7 @@ export class TooltipDirective implements OnDestroy {
         if (this.tooltipElement) return;
 
         const host = this.el.nativeElement as HTMLElement;
+
         host.style.position = 'relative';
 
         this.tooltipElement = this.renderer.createElement('div') as HTMLElement;
