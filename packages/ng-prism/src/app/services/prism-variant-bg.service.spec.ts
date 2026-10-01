@@ -1,10 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import type { CanvasBg } from '../../shared/canvas-bg.type.js';
-import {
-  DEFAULT_VARIANT_BG,
-  resolveVariantBg,
-} from '../../shared/variant-bg.js';
+import { DEFAULT_VARIANT_BG, resolveVariantBg } from '../../shared/variant-bg.js';
 import { PRISM_MANIFEST } from '../tokens/prism-tokens.js';
 import { PrismCanvasService } from './prism-canvas.service.js';
 import { PrismManifestService } from './prism-manifest.service.js';
@@ -12,223 +9,201 @@ import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 import { PrismVariantBgService } from './prism-variant-bg.service.js';
 
-function makeComponent(
-  bg?: CanvasBg,
-  variants?: { name: string; bg?: CanvasBg }[]
-): RuntimeComponent {
-  return {
-    type: class {} as unknown as RuntimeComponent['type'],
-    meta: {
-      className: 'TestComp',
-      filePath: '',
-      showcaseConfig: { title: 'Test', bg, variants },
-      inputs: [],
-      outputs: [],
-      componentMeta: { selector: 'test', standalone: true, isDirective: false },
-    },
-  };
+function makeComponent(bg?: CanvasBg, variants?: { name: string; bg?: CanvasBg }[]): RuntimeComponent {
+    return {
+        type: class {} as unknown as RuntimeComponent['type'],
+        meta: {
+            className: 'TestComp',
+            filePath: '',
+            showcaseConfig: { title: 'Test', bg, variants },
+            inputs: [],
+            outputs: [],
+            componentMeta: { selector: 'test', standalone: true, isDirective: false }
+        }
+    };
 }
 
-function activate(
-  manifestService: PrismManifestService,
-  nav: PrismNavigationService,
-  comp: RuntimeComponent
-): void {
-  manifestService.updateManifest({ components: [comp], pages: [] });
-  nav.activeItem.set({ kind: 'component', data: comp });
+function activate(manifestService: PrismManifestService, nav: PrismNavigationService, comp: RuntimeComponent): void {
+    manifestService.updateManifest({ components: [comp], pages: [] });
+    nav.activeItem.set({ kind: 'component', data: comp });
 }
 
 describe('PrismVariantBgService', () => {
-  let canvas: PrismCanvasService;
-  let nav: PrismNavigationService;
-  let renderer: PrismRendererService;
-  let manifestService: PrismManifestService;
-  let service: PrismVariantBgService;
+    let canvas: PrismCanvasService;
+    let nav: PrismNavigationService;
+    let renderer: PrismRendererService;
+    let manifestService: PrismManifestService;
+    let service: PrismVariantBgService;
 
-  beforeEach(() => {
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } },
-      ],
+    beforeEach(() => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [{ provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } }]
+        });
+        canvas = TestBed.inject(PrismCanvasService);
+        nav = TestBed.inject(PrismNavigationService);
+        renderer = TestBed.inject(PrismRendererService);
+        manifestService = TestBed.inject(PrismManifestService);
+        canvas.setBg('dots');
+        service = TestBed.inject(PrismVariantBgService);
     });
-    canvas = TestBed.inject(PrismCanvasService);
-    nav = TestBed.inject(PrismNavigationService);
-    renderer = TestBed.inject(PrismRendererService);
-    manifestService = TestBed.inject(PrismManifestService);
-    canvas.setBg('dots');
-    service = TestBed.inject(PrismVariantBgService);
-  });
 
-  it('returns null recommended when no bg is declared', () => {
-    activate(manifestService, nav, makeComponent());
-    TestBed.flushEffects();
-    expect(service.recommended()).toBeNull();
-    expect(service.effective()).toBe('dots');
-  });
+    it('returns null recommended when no bg is declared', () => {
+        activate(manifestService, nav, makeComponent());
+        TestBed.flushEffects();
+        expect(service.recommended()).toBeNull();
+        expect(service.effective()).toBe('dots');
+    });
 
-  it('returns component-level bg when no variant overrides', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    expect(service.recommended()).toBe('dark');
-    expect(service.effective()).toBe('dark');
-  });
+    it('returns component-level bg when no variant overrides', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        expect(service.recommended()).toBe('dark');
+        expect(service.effective()).toBe('dark');
+    });
 
-  it('returns variant-level bg, overriding component-level', () => {
-    activate(
-      manifestService,
-      nav,
-      makeComponent('dark', [{ name: 'Light variant', bg: 'light' }])
-    );
-    renderer.activeVariantIndex.set(0);
-    TestBed.flushEffects();
-    expect(service.recommended()).toBe('light');
-    expect(service.effective()).toBe('light');
-  });
+    it('returns variant-level bg, overriding component-level', () => {
+        activate(manifestService, nav, makeComponent('dark', [{ name: 'Light variant', bg: 'light' }]));
+        renderer.activeVariantIndex.set(0);
+        TestBed.flushEffects();
+        expect(service.recommended()).toBe('light');
+        expect(service.effective()).toBe('light');
+    });
 
-  it('respects override and leaves canvas.bg() untouched', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    service.setOverride('plain');
-    expect(service.effective()).toBe('plain');
-    expect(canvas.bg()).toBe('dots');
-  });
+    it('respects override and leaves canvas.bg() untouched', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        service.setOverride('plain');
+        expect(service.effective()).toBe('plain');
+        expect(canvas.bg()).toBe('dots');
+    });
 
-  it('clears override on variant switch', () => {
-    const comp = makeComponent(undefined, [
-      { name: 'A', bg: 'dark' },
-      { name: 'B', bg: 'light' },
-    ]);
-    activate(manifestService, nav, comp);
-    renderer.activeVariantIndex.set(0);
-    TestBed.flushEffects();
-    service.setOverride('plain');
-    expect(service.effective()).toBe('plain');
+    it('clears override on variant switch', () => {
+        const comp = makeComponent(undefined, [
+            { name: 'A', bg: 'dark' },
+            { name: 'B', bg: 'light' }
+        ]);
 
-    renderer.activeVariantIndex.set(1);
-    TestBed.flushEffects();
-    expect(service.effective()).toBe('light');
-  });
+        activate(manifestService, nav, comp);
+        renderer.activeVariantIndex.set(0);
+        TestBed.flushEffects();
+        service.setOverride('plain');
+        expect(service.effective()).toBe('plain');
 
-  it('clears override on component switch', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    service.setOverride('plain');
+        renderer.activeVariantIndex.set(1);
+        TestBed.flushEffects();
+        expect(service.effective()).toBe('light');
+    });
 
-    activate(manifestService, nav, makeComponent('light'));
-    TestBed.flushEffects();
-    expect(service.effective()).toBe('light');
-  });
+    it('clears override on component switch', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        service.setOverride('plain');
 
-  it('clearOverride() resets override to null', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    service.setOverride('plain');
-    service.clearOverride();
-    expect(service.effective()).toBe('dark');
-  });
+        activate(manifestService, nav, makeComponent('light'));
+        TestBed.flushEffects();
+        expect(service.effective()).toBe('light');
+    });
 
-  it('isDeviating is true only when override differs from recommended', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
+    it('clearOverride() resets override to null', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        service.setOverride('plain');
+        service.clearOverride();
+        expect(service.effective()).toBe('dark');
+    });
 
-    expect(service.isDeviating()).toBe(false);
+    it('isDeviating is true only when override differs from recommended', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
 
-    service.setOverride('dark');
-    expect(service.isDeviating()).toBe(false);
+        expect(service.isDeviating()).toBe(false);
 
-    service.setOverride('light');
-    expect(service.isDeviating()).toBe(true);
+        service.setOverride('dark');
+        expect(service.isDeviating()).toBe(false);
 
-    service.clearOverride();
-    expect(service.isDeviating()).toBe(false);
-  });
+        service.setOverride('light');
+        expect(service.isDeviating()).toBe(true);
+
+        service.clearOverride();
+        expect(service.isDeviating()).toBe(false);
+    });
 });
 
 describe('PrismVariantBgService in capture mode', () => {
-  let nav: PrismNavigationService;
-  let manifestService: PrismManifestService;
-  let service: PrismVariantBgService;
+    let nav: PrismNavigationService;
+    let manifestService: PrismManifestService;
+    let service: PrismVariantBgService;
 
-  beforeEach(() => {
-    // The URL has to be set before the injector builds PrismCaptureService,
-    // which reads the flag once at construction time.
-    window.history.replaceState({}, '', '/?capture=1');
-    TestBed.resetTestingModule();
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } },
-      ],
+    beforeEach(() => {
+        // The URL has to be set before the injector builds PrismCaptureService,
+        // which reads the flag once at construction time.
+        window.history.replaceState({}, '', '/?capture=1');
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [{ provide: PRISM_MANIFEST, useValue: { components: [], pages: [] } }]
+        });
+        nav = TestBed.inject(PrismNavigationService);
+        manifestService = TestBed.inject(PrismManifestService);
+        service = TestBed.inject(PrismVariantBgService);
     });
-    nav = TestBed.inject(PrismNavigationService);
-    manifestService = TestBed.inject(PrismManifestService);
-    service = TestBed.inject(PrismVariantBgService);
-  });
 
-  afterEach(() => {
-    window.history.replaceState({}, '', '/');
-    document.documentElement.removeAttribute('data-prism-capture');
-    document.getElementById('ng-prism-capture-styles')?.remove();
-  });
+    afterEach(() => {
+        window.history.replaceState({}, '', '/');
+        document.documentElement.removeAttribute('data-prism-capture');
+        document.getElementById('ng-prism-capture-styles')?.remove();
+    });
 
-  it('falls back to the tooling default when no bg is declared', () => {
-    activate(manifestService, nav, makeComponent());
-    TestBed.flushEffects();
-    // Not the canvas default: `dots` resolves to `--prism-bg-surface`, a theme
-    // token, so an undeclared component would be captured on whichever theme
-    // the runner's browser started in. `DEFAULT_VARIANT_BG` is the same value
-    // the discovery manifest reports, so the two cannot disagree.
-    expect(service.effective()).toBe(DEFAULT_VARIANT_BG);
-    expect(service.effective()).toBe('transparent');
-  });
+    it('falls back to the tooling default when no bg is declared', () => {
+        activate(manifestService, nav, makeComponent());
+        TestBed.flushEffects();
+        // Not the canvas default: `dots` resolves to `--prism-bg-surface`, a theme
+        // token, so an undeclared component would be captured on whichever theme
+        // the runner's browser started in. `DEFAULT_VARIANT_BG` is the same value
+        // the discovery manifest reports, so the two cannot disagree.
+        expect(service.effective()).toBe(DEFAULT_VARIANT_BG);
+        expect(service.effective()).toBe('transparent');
+    });
 
-  it('matches what the discovery manifest reports for the variant', () => {
-    // The manifest's promise and the painted surface are the same resolution,
-    // reached through one shared function.
-    const comp = makeComponent('dark', [
-      { name: 'A' },
-      { name: 'B', bg: 'plain' },
-    ]);
-    activate(manifestService, nav, comp);
+    it('matches what the discovery manifest reports for the variant', () => {
+        // The manifest's promise and the painted surface are the same resolution,
+        // reached through one shared function.
+        const comp = makeComponent('dark', [{ name: 'A' }, { name: 'B', bg: 'plain' }]);
 
-    for (const index of [0, 1]) {
-      TestBed.inject(PrismRendererService).activeVariantIndex.set(index);
-      TestBed.flushEffects();
-      expect(service.effective()).toBe(
-        resolveVariantBg(comp.meta.showcaseConfig, index)
-      );
-    }
-  });
+        activate(manifestService, nav, comp);
 
-  it('keeps a component-level bg', () => {
-    // Deliberately not `checker`: that is the fallback, so declaring it could
-    // not tell "honoured the declaration" from "fell through to the default".
-    activate(manifestService, nav, makeComponent('plain'));
-    TestBed.flushEffects();
-    expect(service.effective()).toBe('plain');
-  });
+        for (const index of [0, 1]) {
+            TestBed.inject(PrismRendererService).activeVariantIndex.set(index);
+            TestBed.flushEffects();
+            expect(service.effective()).toBe(resolveVariantBg(comp.meta.showcaseConfig, index));
+        }
+    });
 
-  it('keeps a variant-level bg', () => {
-    activate(
-      manifestService,
-      nav,
-      makeComponent('dots', [{ name: 'Dark', bg: 'dark' }])
-    );
-    TestBed.flushEffects();
-    expect(service.effective()).toBe('dark');
-  });
+    it('keeps a component-level bg', () => {
+        // Deliberately not `checker`: that is the fallback, so declaring it could
+        // not tell "honoured the declaration" from "fell through to the default".
+        activate(manifestService, nav, makeComponent('plain'));
+        TestBed.flushEffects();
+        expect(service.effective()).toBe('plain');
+    });
 
-  it('ignores a manual user override', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    service.setOverride('light');
-    // Session UI state must not decide what a baseline looks like.
-    expect(service.effective()).toBe('dark');
-  });
+    it('keeps a variant-level bg', () => {
+        activate(manifestService, nav, makeComponent('dots', [{ name: 'Dark', bg: 'dark' }]));
+        TestBed.flushEffects();
+        expect(service.effective()).toBe('dark');
+    });
 
-  it('still reports the declared recommendation', () => {
-    activate(manifestService, nav, makeComponent('dark'));
-    TestBed.flushEffects();
-    expect(service.recommended()).toBe('dark');
-  });
+    it('ignores a manual user override', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        service.setOverride('light');
+        // Session UI state must not decide what a baseline looks like.
+        expect(service.effective()).toBe('dark');
+    });
+
+    it('still reports the declared recommendation', () => {
+        activate(manifestService, nav, makeComponent('dark'));
+        TestBed.flushEffects();
+        expect(service.recommended()).toBe('dark');
+    });
 });

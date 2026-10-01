@@ -1,0 +1,17 @@
+<div class="json-editor">
+    <div class="json-overlay">
+        <pre
+            class="json-pre"
+            #preEl><code [innerHTML]="highlightedHtml()"></code></pre>
+        <textarea
+            #textareaEl
+            class="json-input"
+            [value]="displayText()"
+            (input)="onInput($any($event.target).value)"
+            (scroll)="syncScroll()"
+            spellcheck="false"></textarea>
+    </div>
+    @if (parseError()) {
+        <span class="json-error">Invalid JSON</span>
+    }
+</div>

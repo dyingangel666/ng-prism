@@ -1,0 +1,307 @@
+:host {
+    display: block;
+    min-width: 0;
+    height: 100%;
+}
+
+/* Fills the viewer column rather than growing with its content, so the
+   stage gets whatever height is left over instead of the panel scrolling.
+   The toolbar then stays put while a large capture scrolls inside the
+   stage, which is the one place scrolling belongs here. */
+.vrt-cmp {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    height: 100%;
+    padding: 14px 16px;
+}
+
+.vrt-cmp__bar {
+    display: flex;
+    flex: none;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--prism-border);
+}
+
+.vrt-cmp__right {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding-bottom: 7px;
+}
+
+/* Mode switching is the same act as the a11y panel's sub-tabs, so it gets
+   the same underline treatment rather than a third kind of button. */
+.vrt-cmp__modes {
+    display: flex;
+    gap: 2px;
+}
+
+.vrt-cmp__mode {
+    position: relative;
+    padding: 6px 11px 8px;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition: color var(--dur-fast);
+}
+
+.vrt-cmp__mode:hover {
+    color: var(--prism-text-2);
+}
+
+.vrt-cmp__mode--active {
+    color: var(--prism-text);
+}
+
+.vrt-cmp__mode--active::after {
+    position: absolute;
+    right: 6px;
+    bottom: -1px;
+    left: 6px;
+    height: 2px;
+    content: '';
+    background: var(--prism-primary);
+    border-radius: 1px;
+}
+
+.vrt-cmp__meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--prism-text-muted);
+}
+
+.vrt-cmp__meta > span + span::before {
+    margin-right: 8px;
+    color: var(--prism-text-ghost);
+    content: '·';
+}
+
+.vrt-cmp__ratio {
+    color: var(--prism-success);
+}
+
+.vrt-cmp__ratio[data-hot] {
+    color: var(--prism-danger);
+}
+
+.vrt-cmp__zooms {
+    display: flex;
+    gap: 1px;
+    padding: 2px;
+    background: var(--prism-input-bg);
+    border-radius: var(--radius-md);
+}
+
+.vrt-cmp__zoom {
+    padding: 3px 8px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    transition:
+        color var(--dur-fast),
+        background var(--dur-fast);
+}
+
+.vrt-cmp__zoom:hover {
+    color: var(--prism-text-2);
+}
+
+.vrt-cmp__zoom--active {
+    color: var(--prism-text);
+    background: var(--prism-bg-elevated);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 18%);
+}
+
+.vrt-cmp__stage {
+    display: flex;
+
+    /* Takes the leftover height, but only down to a floor — below that the
+     viewer column scrolls instead, because a stage squashed to nothing is
+     not a comparison. */
+    flex: 1;
+    min-width: 0;
+    min-height: 140px;
+    padding: 14px;
+
+    /* overflow-safe centring: justify-content would clip the left edge of an
+     image wider than the stage, margin auto scrolls to it instead. */
+    overflow: auto;
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border);
+    border-radius: var(--radius-lg);
+
+    /* How wide one frame may grow under the fit zoom. Side by side there are
+     two of them, so each gets half the stage minus the gap. This is an
+     inherited custom property rather than flex-grow, because a growing
+     flex item ignores its own width -- which is exactly what the explicit
+     zoom steps set. */
+    --vrt-gap: 16px;
+    --vrt-fit-basis: 100%;
+}
+
+.vrt-cmp__stage--split {
+    gap: var(--vrt-gap);
+
+    --vrt-fit-basis: calc((100% - var(--vrt-gap)) / 2);
+}
+
+/* auto margins rather than the stage centring its children: with
+   overflow:auto on the stage, centring clips the leading edge of
+   anything larger than it, while auto margins scroll to it. */
+.vrt-cmp__frame {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 8px;
+    margin: auto;
+}
+
+.vrt-cmp__stage--split .vrt-cmp__frame {
+    margin: auto 0;
+}
+
+figure.vrt-cmp__frame figcaption {
+    font-size: var(--fs-sm);
+    color: var(--prism-text-muted);
+}
+
+/* A checkerboard makes transparent regions of a PNG legible. */
+.vrt-cmp__shot {
+    position: relative;
+    overflow: hidden;
+    background-image:
+        linear-gradient(45deg, var(--prism-border) 25%, transparent 25%), linear-gradient(-45deg, var(--prism-border) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--prism-border) 75%), linear-gradient(-45deg, transparent 75%, var(--prism-border) 75%);
+    background-position:
+        0 0,
+        0 6px,
+        6px -6px,
+        -6px 0;
+    background-size: 12px 12px;
+    border: 1px solid var(--prism-border);
+    border-radius: var(--radius-sm);
+}
+
+.vrt-cmp__img {
+    display: block;
+    width: 100%;
+    height: auto;
+
+    /* Zooming a diff is only useful if the pixels stay pixels. */
+    image-rendering: pixelated;
+}
+
+.vrt-cmp__wipe-top {
+    position: absolute;
+    inset: 0;
+}
+
+.vrt-cmp__wipe-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    margin-left: -1px;
+    pointer-events: none;
+    background: var(--prism-primary);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--prism-void) 45%, transparent);
+}
+
+.vrt-cmp__slider {
+    width: 100%;
+    margin: 0;
+    appearance: none;
+    cursor: ew-resize;
+    background: none;
+}
+
+.vrt-cmp__slider::-webkit-slider-runnable-track {
+    height: 4px;
+    background: var(--prism-input-bg);
+    border-radius: 2px;
+}
+
+.vrt-cmp__slider::-moz-range-track {
+    height: 4px;
+    background: var(--prism-input-bg);
+    border-radius: 2px;
+}
+
+.vrt-cmp__slider::-webkit-slider-thumb {
+    width: 13px;
+    height: 13px;
+    margin-top: -4.5px;
+    appearance: none;
+    background: var(--prism-primary);
+    border: 2px solid var(--prism-bg-elevated);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--prism-border-strong);
+}
+
+.vrt-cmp__slider::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    background: var(--prism-primary);
+    border: 2px solid var(--prism-bg-elevated);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--prism-border-strong);
+}
+
+.vrt-cmp__legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--fs-sm);
+    color: var(--prism-text-muted);
+}
+
+.vrt-cmp__note {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    font-size: var(--fs-md);
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border);
+    border-left: 3px solid var(--prism-text-muted);
+    border-radius: var(--radius-md);
+}
+
+.vrt-cmp__note b {
+    font-weight: 600;
+    color: var(--prism-text);
+}
+
+.vrt-cmp__note span {
+    color: var(--prism-text-muted);
+}
+
+.vrt-cmp__note--warn {
+    border-left-color: var(--prism-warn);
+}
+
+/* Matches the panel shell's own inline code, so a background name reads
+   the same wherever it appears. */
+.vrt-cmp__note code {
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    background: var(--prism-input-bg);
+    border-radius: var(--radius-xs);
+}

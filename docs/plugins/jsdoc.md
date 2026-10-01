@@ -26,7 +26,7 @@ import { defineConfig } from '@ng-prism/core';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({
-  plugins: [jsDocPlugin()],
+    plugins: [jsDocPlugin()]
 });
 ```
 
@@ -65,14 +65,14 @@ JSDoc on individual `input()` and `output()` signal declarations is extracted in
 
 ```typescript
 export class ButtonComponent {
-  /** Text displayed inside the button. */
-  label = input.required<string>();
+    /** Text displayed inside the button. */
+    label = input.required<string>();
 
-  /** Visual style variant. */
-  variant = input<'primary' | 'secondary' | 'danger'>('primary');
+    /** Visual style variant. */
+    variant = input<'primary' | 'secondary' | 'danger'>('primary');
 
-  /** Emitted when the button is clicked. */
-  clicked = output<MouseEvent>();
+    /** Emitted when the button is clicked. */
+    clicked = output<MouseEvent>();
 }
 ```
 

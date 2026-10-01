@@ -1,0 +1,6 @@
+<button
+    class="ctl-toggle"
+    [class.on]="value()"
+    (click)="valueChange.emit(!value())"
+    role="switch"
+    [attr.aria-checked]="value()"></button>

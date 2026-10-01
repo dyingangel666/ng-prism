@@ -82,8 +82,8 @@ Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/ng-prism-cache/<
 
 ```typescript
 export interface PrismPipelineState {
-  scanner: Scanner | undefined;
-  lastEntrySetKey: string | undefined;
+    scanner: Scanner | undefined;
+    lastEntrySetKey: string | undefined;
 }
 ```
 

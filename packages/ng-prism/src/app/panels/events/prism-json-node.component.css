@@ -1,0 +1,78 @@
+:host {
+    display: inline;
+    font-family: var(--prism-font-mono, monospace);
+    font-size: 12px;
+}
+
+.json-expandable {
+    display: inline-flex;
+    gap: 2px;
+    align-items: baseline;
+    cursor: pointer;
+    user-select: none;
+}
+
+.json-expandable:hover .json-summary {
+    opacity: 0.8;
+}
+
+.json-chevron {
+    flex-shrink: 0;
+    width: 10px;
+    font-size: 10px;
+    color: var(--prism-text-muted);
+}
+
+.json-summary {
+    color: var(--prism-text-muted);
+}
+
+.json-children {
+    display: block;
+    padding-left: 16px;
+    margin: 2px 0;
+    border-left: 1px solid var(--prism-border);
+}
+
+.json-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    align-items: baseline;
+    padding: 1px 0;
+}
+
+.json-key {
+    color: var(--prism-text-muted);
+}
+
+.json-index {
+    font-style: italic;
+    color: var(--prism-text-muted);
+}
+
+.json-colon {
+    color: var(--prism-text-muted);
+}
+
+.json-brace {
+    color: var(--prism-text-muted);
+}
+
+.json-string {
+    color: var(--prism-code-attr);
+}
+
+.json-number {
+    color: var(--prism-warn);
+}
+
+.json-boolean {
+    color: var(--prism-primary);
+}
+
+.json-null,
+.json-undefined {
+    font-style: italic;
+    color: var(--prism-text-muted);
+}

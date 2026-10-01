@@ -20,9 +20,10 @@ const SLASH = '/'.charCodeAt(0);
  * of the intent than a regex was.
  */
 function withoutTrailingSlashes(base: string): string {
-  let end = base.length;
-  while (end > 0 && base.charCodeAt(end - 1) === SLASH) end--;
-  return base.slice(0, end);
+    let end = base.length;
+
+    while (end > 0 && base.charCodeAt(end - 1) === SLASH) end--;
+    return base.slice(0, end);
 }
 
 /**
@@ -37,14 +38,12 @@ function withoutTrailingSlashes(base: string): string {
  * still relative to wherever the styleguide is served from, so it is joined to
  * the base like any other path (without doubling the separator).
  */
-export function resolveAssetUrl(
-  baseUrl: string,
-  path: string | undefined
-): string | undefined {
-  if (!path) return undefined;
-  if (ABSOLUTE.test(path)) return path;
-  if (!baseUrl) return path;
+export function resolveAssetUrl(baseUrl: string, path: string | undefined): string | undefined {
+    if (!path) return undefined;
+    if (ABSOLUTE.test(path)) return path;
+    if (!baseUrl) return path;
 
-  const base = withoutTrailingSlashes(baseUrl);
-  return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
+    const base = withoutTrailingSlashes(baseUrl);
+
+    return path.startsWith('/') ? `${base}${path}` : `${base}/${path}`;
 }

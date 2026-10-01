@@ -1,21 +1,19 @@
 import { Component, input } from '@angular/core';
 
 function Showcase(config: Record<string, unknown>): ClassDecorator {
-  return () => {};
+    return () => {};
 }
 
 @Showcase({
-  title: 'Pill',
-  category: 'Atoms',
-  variants: [
-    { name: 'Default', inputs: { label: 'Tag' } },
-  ],
+    title: 'Pill',
+    category: 'Atoms',
+    variants: [{ name: 'Default', inputs: { label: 'Tag' } }]
 })
 @Component({
-  selector: 'ui-pill',
-  standalone: true,
-  template: `<span>{{ label() }}</span>`,
+    selector: 'ui-pill',
+    standalone: true,
+    template: `<span>{{ label() }}</span>`
 })
 export class PillComponent {
-  label = input<string>('');
+    label = input<string>('');
 }

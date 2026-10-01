@@ -1,0 +1,44 @@
+/* --prism-ruler-size is bound from the host rather than declared here. The
+   gutter width is also the canvas size the two rulers are painted at, so R in
+   the component is the one place it may be written down. */
+:host {
+    display: contents;
+}
+
+.ruler-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.ruler {
+    position: absolute;
+}
+
+.ruler--top {
+    top: 0;
+    right: 0;
+    left: var(--prism-ruler-size);
+    height: var(--prism-ruler-size);
+}
+
+.ruler--left {
+    top: var(--prism-ruler-size);
+    bottom: 0;
+    left: 0;
+    width: var(--prism-ruler-size);
+}
+
+.ruler-corner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: var(--prism-ruler-size);
+    height: var(--prism-ruler-size);
+    background: var(--prism-bg);
+    border-right: 1px solid var(--prism-border);
+    border-bottom: 1px solid var(--prism-border);
+}

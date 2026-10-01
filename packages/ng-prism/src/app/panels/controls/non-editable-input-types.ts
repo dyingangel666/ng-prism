@@ -8,18 +8,13 @@ import type { InputMeta } from '../../../plugin/plugin.types.js';
  * the JsonControl — which would otherwise crash on `undefined`/non-serializable
  * defaults and presents a misleading editor to the developer anyway.
  */
-const NON_EDITABLE_TYPE_NAMES = [
-  'TemplateRef',
-  'ElementRef',
-  'ViewContainerRef',
-] as const;
+const NON_EDITABLE_TYPE_NAMES = ['TemplateRef', 'ElementRef', 'ViewContainerRef'] as const;
 
-const NON_EDITABLE_TYPE_PATTERN = new RegExp(
-  `\\b(?:${NON_EDITABLE_TYPE_NAMES.join('|')})\\b`
-);
+const NON_EDITABLE_TYPE_PATTERN = new RegExp(`\\b(?:${NON_EDITABLE_TYPE_NAMES.join('|')})\\b`);
 
 export function isNonEditableInputType(input: InputMeta): boolean {
-  const raw = input.rawType;
-  if (!raw) return false;
-  return NON_EDITABLE_TYPE_PATTERN.test(raw);
+    const raw = input.rawType;
+
+    if (!raw) return false;
+    return NON_EDITABLE_TYPE_PATTERN.test(raw);
 }

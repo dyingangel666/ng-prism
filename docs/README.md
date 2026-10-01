@@ -34,22 +34,22 @@ import { Showcase } from '@ng-prism/core';
 import { Component, input } from '@angular/core';
 
 @Showcase({
-  title: 'Button',
-  category: 'Atoms',
-  description: 'The primary action button.',
-  variants: [
-    { name: 'Primary', inputs: { label: 'Save', variant: 'primary' } },
-    { name: 'Danger', inputs: { label: 'Delete', variant: 'danger' } },
-  ],
+    title: 'Button',
+    category: 'Atoms',
+    description: 'The primary action button.',
+    variants: [
+        { name: 'Primary', inputs: { label: 'Save', variant: 'primary' } },
+        { name: 'Danger', inputs: { label: 'Delete', variant: 'danger' } }
+    ]
 })
 @Component({
-  selector: 'lib-button',
-  standalone: true,
-  template: `<button [class]="variant()">{{ label() }}</button>`,
+    selector: 'lib-button',
+    standalone: true,
+    template: `<button [class]="variant()">{{ label() }}</button>`
 })
 export class ButtonComponent {
-  label = input.required<string>();
-  variant = input<'primary' | 'danger'>('primary');
+    label = input.required<string>();
+    variant = input<'primary' | 'danger'>('primary');
 }
 ```
 

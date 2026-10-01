@@ -1,216 +1,64 @@
-import {
-  Component,
-  ElementRef,
-  inject,
-  computed,
-  effect,
-  viewChild,
-  viewChildren,
-  ChangeDetectionStrategy,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, viewChild, viewChildren } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 import { PrismNavigationService } from '../services/prism-navigation.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { spectrumSlot } from './spectrum.js';
 
 @Component({
-  selector: 'prism-variant-ribbon',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent],
-  template: `
-    @if (variants().length > 0) {
-    <nav class="variant-ribbon">
-      <div class="variant-ribbon-tabs" #tabsContainer>
-        @for (v of variants(); track v.name; let i = $index) {
-        <button
-          #tabButton
-          class="v-tab"
-          [class.v-tab--active]="rendererService.activeVariantIndex() === i"
-          [style.--i]="slot(i).i"
-          [style.--n]="slot(i).n"
-          (click)="rendererService.selectVariant(i)"
-        >
-          {{ v.name }}
-        </button>
-        }
-      </div>
-      <div class="variant-ribbon-right">
-        <button
-          class="tool-btn"
-          title="Previous variant"
-          aria-label="Previous variant"
-          [disabled]="rendererService.activeVariantIndex() === 0"
-          (click)="prev()"
-        >
-          <prism-icon
-            name="chevron-right"
-            [size]="14"
-            style="transform: rotate(180deg)"
-          />
-        </button>
-        <button
-          class="tool-btn"
-          title="Next variant"
-          aria-label="Next variant"
-          [disabled]="
-            rendererService.activeVariantIndex() >= variants().length - 1
-          "
-          (click)="next()"
-        >
-          <prism-icon name="chevron-right" [size]="14" />
-        </button>
-      </div>
-    </nav>
-    }
-  `,
-  styles: `
-    :host { display: block; flex-shrink: 0; }
-
-    .variant-ribbon {
-      display: flex;
-      align-items: center;
-      padding: 0 var(--sp-5);
-      background: var(--prism-bg);
-      border-bottom: 1px solid var(--prism-border);
-      height: var(--band-rail);
-    }
-
-    .variant-ribbon-tabs {
-      flex: 1;
-      min-width: 0;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      height: 100%;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .variant-ribbon-tabs::-webkit-scrollbar { display: none; }
-
-    .v-tab {
-      position: relative;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 14px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--prism-text-muted);
-      white-space: nowrap;
-      transition: color var(--dur-fast);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: var(--font-sans);
-    }
-    /* Colour as position, not assignment: each tab shows the slice of one
-       broken spectrum that corresponds to where it sits in the sequence. Nine
-       arbitrary hues used to say nothing at all; this says "you are here". */
-    .v-tab::after {
-      content: '';
-      position: absolute;
-      left: var(--sp-3);
-      right: var(--sp-3);
-      bottom: 0;
-      height: 2px;
-      border-radius: 2px;
-      background: var(--prism-spectrum);
-      background-size: calc(var(--n) * 100%) 100%;
-      background-position: calc(var(--i) / (var(--n) - 1) * 100%) 0;
-      opacity: 0;
-      transition: opacity var(--dur-fast) var(--ease-default);
-    }
-    .v-tab:hover { color: var(--prism-text-2); }
-    .v-tab--active { color: var(--prism-text); }
-    .v-tab--active::after { opacity: 1; }
-    .v-tab:hover::after { opacity: 0.4; }
-
-    .variant-ribbon-right {
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-left: 12px;
-      margin-left: 12px;
-      border-left: 1px solid var(--prism-border);
-      height: 24px;
-    }
-
-    .tool-btn {
-      height: 24px;
-      width: 24px;
-      display: grid;
-      place-items: center;
-      border-radius: var(--radius-sm);
-      color: var(--prism-text-muted);
-      background: none;
-      border: none;
-      cursor: pointer;
-      transition: all var(--dur-fast);
-    }
-    .tool-btn:hover:not(:disabled) {
-      color: var(--prism-text);
-      background: color-mix(in srgb, var(--prism-primary) 8%, transparent);
-    }
-    .tool-btn:disabled {
-      opacity: 0.3;
-      cursor: default;
-    }
-
-    :focus-visible {
-      outline: 2px solid var(--prism-primary);
-      outline-offset: 2px;
-    }
-  `,
+    selector: 'prism-variant-ribbon',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismIconComponent],
+    templateUrl: './prism-variant-ribbon.component.html',
+    styleUrl: './prism-variant-ribbon.component.css'
 })
 export class PrismVariantRibbonComponent {
-  private readonly navigationService = inject(PrismNavigationService);
-  protected readonly rendererService = inject(PrismRendererService);
+    private readonly navigationService = inject(PrismNavigationService);
+    protected readonly rendererService = inject(PrismRendererService);
 
-  private readonly tabsContainer =
-    viewChild<ElementRef<HTMLElement>>('tabsContainer');
-  private readonly tabButtons =
-    viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
+    private readonly tabsContainer = viewChild<ElementRef<HTMLElement>>('tabsContainer');
+    private readonly tabButtons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
 
-  protected readonly variants = computed(() => {
-    const comp = this.navigationService.activeComponent();
-    return comp?.meta.showcaseConfig.variants ?? [];
-  });
+    protected readonly variants = computed(() => {
+        const comp = this.navigationService.activeComponent();
 
-  constructor() {
-    effect(() => {
-      const idx = this.rendererService.activeVariantIndex();
-      const container = this.tabsContainer()?.nativeElement;
-      const button = this.tabButtons()[idx]?.nativeElement;
-      if (!container || !button) return;
-
-      const buttonLeft = button.offsetLeft;
-      const buttonRight = buttonLeft + button.offsetWidth;
-      const viewLeft = container.scrollLeft;
-      const viewRight = viewLeft + container.clientWidth;
-
-      if (buttonLeft < viewLeft) {
-        container.scrollLeft = buttonLeft;
-      } else if (buttonRight > viewRight) {
-        container.scrollLeft = buttonRight - container.clientWidth;
-      }
+        return comp?.meta.showcaseConfig.variants ?? [];
     });
-  }
 
-  protected slot(index: number): { i: number; n: number } {
-    return spectrumSlot(index, this.variants().length);
-  }
+    constructor() {
+        effect(() => {
+            const idx = this.rendererService.activeVariantIndex();
+            const container = this.tabsContainer()?.nativeElement;
+            const button = this.tabButtons()[idx]?.nativeElement;
 
-  protected prev(): void {
-    const idx = this.rendererService.activeVariantIndex();
-    if (idx > 0) this.rendererService.selectVariant(idx - 1);
-  }
+            if (!container || !button) return;
 
-  protected next(): void {
-    const idx = this.rendererService.activeVariantIndex();
-    if (idx < this.variants().length - 1)
-      this.rendererService.selectVariant(idx + 1);
-  }
+            const buttonLeft = button.offsetLeft;
+            const buttonRight = buttonLeft + button.offsetWidth;
+            const viewLeft = container.scrollLeft;
+            const viewRight = viewLeft + container.clientWidth;
+
+            if (buttonLeft < viewLeft) {
+                container.scrollLeft = buttonLeft;
+            } else if (buttonRight > viewRight) {
+                container.scrollLeft = buttonRight - container.clientWidth;
+            }
+        });
+    }
+
+    protected slot(index: number): { i: number; n: number } {
+        return spectrumSlot(index, this.variants().length);
+    }
+
+    protected prev(): void {
+        const idx = this.rendererService.activeVariantIndex();
+
+        if (idx > 0) this.rendererService.selectVariant(idx - 1);
+    }
+
+    protected next(): void {
+        const idx = this.rendererService.activeVariantIndex();
+
+        if (idx < this.variants().length - 1) this.rendererService.selectVariant(idx + 1);
+    }
 }

@@ -15,10 +15,8 @@ import type { VrtThresholds } from './visual-regression.types.js';
  */
 export const DEFAULT_VRT_THRESHOLDS: VrtThresholds = { score: 100 };
 
-export function resolveVrtThresholds(
-  input?: number | Partial<VrtThresholds>
-): VrtThresholds {
-  if (input === undefined) return { ...DEFAULT_VRT_THRESHOLDS };
-  if (typeof input === 'number') return { score: input };
-  return { ...DEFAULT_VRT_THRESHOLDS, ...input };
+export function resolveVrtThresholds(input?: number | Partial<VrtThresholds>): VrtThresholds {
+    if (input === undefined) return { ...DEFAULT_VRT_THRESHOLDS };
+    if (typeof input === 'number') return { score: input };
+    return { ...DEFAULT_VRT_THRESHOLDS, ...input };
 }

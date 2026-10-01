@@ -1,0 +1,54 @@
+@if (boxStyles(); as styles) {
+    <div
+        class="prism-bm__box prism-bm__box--margin"
+        [style.left]="styles.margin.left"
+        [style.top]="styles.margin.top"
+        [style.width]="styles.margin.width"
+        [style.height]="styles.margin.height">
+        @if (labelMargin('top')) {
+            <span class="prism-bm__label prism-bm__label--top">{{ labelMargin('top') }}</span>
+        }
+        @if (labelMargin('right')) {
+            <span class="prism-bm__label prism-bm__label--right">{{ labelMargin('right') }}</span>
+        }
+        @if (labelMargin('bottom')) {
+            <span class="prism-bm__label prism-bm__label--bottom">{{ labelMargin('bottom') }}</span>
+        }
+        @if (labelMargin('left')) {
+            <span class="prism-bm__label prism-bm__label--left">{{ labelMargin('left') }}</span>
+        }
+    </div>
+    <div
+        class="prism-bm__box prism-bm__box--border"
+        [style.left]="styles.border.left"
+        [style.top]="styles.border.top"
+        [style.width]="styles.border.width"
+        [style.height]="styles.border.height"></div>
+    <div
+        class="prism-bm__box prism-bm__box--padding"
+        [style.left]="styles.padding.left"
+        [style.top]="styles.padding.top"
+        [style.width]="styles.padding.width"
+        [style.height]="styles.padding.height">
+        @if (labelPadding('top')) {
+            <span class="prism-bm__label prism-bm__label--top">{{ labelPadding('top') }}</span>
+        }
+        @if (labelPadding('right')) {
+            <span class="prism-bm__label prism-bm__label--right">{{ labelPadding('right') }}</span>
+        }
+        @if (labelPadding('bottom')) {
+            <span class="prism-bm__label prism-bm__label--bottom">{{ labelPadding('bottom') }}</span>
+        }
+        @if (labelPadding('left')) {
+            <span class="prism-bm__label prism-bm__label--left">{{ labelPadding('left') }}</span>
+        }
+    </div>
+    <div
+        class="prism-bm__box prism-bm__box--content"
+        [style.left]="styles.content.left"
+        [style.top]="styles.content.top"
+        [style.width]="styles.content.width"
+        [style.height]="styles.content.height">
+        <span class="prism-bm__size">{{ contentSize() }}</span>
+    </div>
+}

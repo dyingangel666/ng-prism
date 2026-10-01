@@ -26,16 +26,16 @@ import { defineConfig } from '@ng-prism/core';
 import { perfPlugin } from '@ng-prism/plugin-perf';
 
 export default defineConfig({
-  plugins: [
-    perfPlugin({
-      thresholds: {
-        renderWarnMs: 5,
-        renderCritMs: 16,
-        bundleWarnKb: 20,
-        bundleCritKb: 50,
-      },
-    }),
-  ],
+    plugins: [
+        perfPlugin({
+            thresholds: {
+                renderWarnMs: 5,
+                renderCritMs: 16,
+                bundleWarnKb: 20,
+                bundleCritKb: 50
+            }
+        })
+    ]
 });
 ```
 
@@ -58,10 +58,10 @@ Color-coded warning and critical thresholds for each metric:
 
 ```typescript
 perfPlugin({
-  bundle: {
-    maxTreeDepth: 5, // limit import tree analysis depth
-    excludeImports: ['rxjs'], // skip certain packages from analysis
-  },
+    bundle: {
+        maxTreeDepth: 5, // limit import tree analysis depth
+        excludeImports: ['rxjs'] // skip certain packages from analysis
+    }
 });
 ```
 
@@ -69,10 +69,10 @@ perfPlugin({
 
 ```typescript
 perfPlugin({
-  render: {
-    bufferSize: 50, // number of samples to keep in the rolling window
-    autoStart: true, // start profiling immediately on panel open
-  },
+    render: {
+        bufferSize: 50, // number of samples to keep in the rolling window
+        autoStart: true // start profiling immediately on panel open
+    }
 });
 ```
 
@@ -80,9 +80,9 @@ perfPlugin({
 
 ```typescript
 perfPlugin({
-  memory: {
-    gcDelayMs: 200, // delay after forced GC before measuring baseline
-  },
+    memory: {
+        gcDelayMs: 200 // delay after forced GC before measuring baseline
+    }
 });
 ```
 

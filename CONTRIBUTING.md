@@ -47,10 +47,10 @@ npm install
 #### 2. Verify the core builds and tests
 
 ```bash
-npm run check       # Format check + test + build + typecheck for all packages
+npm run check       # Format + declared-deps check + style + lint + test + build + typecheck for all packages
 ```
 
-This is the same gate CI runs (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
+CI runs these same steps (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
 
 #### 3. Start the local registry (separate terminal)
 
@@ -225,19 +225,139 @@ Use a descriptive branch name with a prefix:
 
 ### 3. Run the Check Suite
 
-Before opening a PR, run the same checks CI runs on GitHub:
+Before opening a PR, run the checks CI runs on GitHub:
 
 ```bash
-npm run check       # nx format:check + test + build + typecheck for all packages
+npm run check       # nx format:check + check-declared-deps + stylelint + lint + test + build + typecheck for all packages
 ```
 
-If `format:check` fails, auto-fix with:
+CI runs step for step the same list. The one difference is that CI appends
+`e2e-ci` to the final `nx run-many`, a target no project currently defines —
+it predates this toolchain and is skipped silently, so it changes nothing
+either way.
+
+If `check` fails on formatting, lint, or style, auto-fix what can be auto-fixed with:
 
 ```bash
-npm run check:fix   # nx format:write — rewrites mis-formatted files in place
+npm run check:fix   # eslint --fix, then nx format:write, then stylelint --fix
 ```
 
-Then commit the formatting fixes.
+Then commit the fixes. `check:fix` and `lint:fix` both route through
+`scripts/fix-until-stable.mjs`, the same script the pre-commit hook uses: it
+reruns a tool until the files stop changing, because neither `eslint --fix` nor
+`stylelint --fix` reliably converges in one pass (`import/order` needs two on
+some files; `property-no-vendor-prefix` against `order/properties-order` leaves
+a duplicate declaration that only the second pass clears). It gives up after 5
+passes — a sign of misconfiguration rather than a reason to raise the limit.
+
+`lint:fix` deliberately does **not** go through `nx run-many`. The `lint` target
+is cached but declares no outputs, so a cache hit replays an empty result while
+the files it was supposed to rewrite stay untouched — the command would report
+success on a tree it never fixed. Fixing is not a cacheable operation; linting
+is, which is why `npm run lint` and the pre-push hook still use Nx.
+
+### Linting and formatting
+
+Three tools with clearly separated responsibilities:
+
+| File type                                     | Formatted by                        | Linted by                                                      |
+| --------------------------------------------- | ----------------------------------- | -------------------------------------------------------------- |
+| `.ts`                                         | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
+| Angular templates (`.html` under `packages/`) | Prettier, running as an ESLint rule | ESLint (angular-eslint template rules)                         |
+| `index.html` (docsify page, app shells)       | Prettier                            | — (see below)                                                  |
+| `.css`, `.scss`                               | Prettier                            | Stylelint                                                      |
+| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | — (except `scripts/**/*.mjs`*)                                 |
+
+This covers `test-workspace/` as well. It is not a side project: its components
+are the input the scanner is developed against, and leaving them outside the
+toolchain meant a file could be committed unformatted and only fail later in
+CI's `nx format:check`. Nx infers `lint` targets for `test-lib`, `test-ui-kit`
+and `test-workspace` from the same root `eslint.config.mjs` as everything else.
+
+The three standalone `.html` documents — `docs/index.html` and the two app
+shells under `test-workspace/projects/*-prism/src/` — are reached by Prettier
+only. ESLint has no parser for a complete HTML document (the angular-eslint
+template parser is for templates, not documents), so they run through the
+Prettier entry in `lint-staged` instead. Inline `template:` strings, by
+contrast, _are_ linted: `angular.processInlineTemplates` extracts them as
+virtual `.html` files, which is why they match the template rules above.
+
+\* `scripts/**/*.mjs` is linted too — plain `eslint:recommended`, no Angular or
+`@stylistic` rules, since it's Node code with no browser or Angular surface.
+The same applies to `test-workspace/*.mjs`, the two measurement scripts.
+Nothing infers a `lint` target for the workspace root automatically (Nx only
+does that for a root project with a standalone `src`/`lib`), so it runs from
+an explicit `lint` target declared on `ng-prism-workspace` in `package.json`'s
+`nx.targets`, scoped to `eslint scripts jest.config.ts` — which is also how
+`jest.config.ts` itself ends up linted. `nx run-many -t lint` picks it up like
+any other project's `lint` target, so `npm run lint`, `npm run check`, and CI
+all reach it.
+
+Stylelint covers `.scss` as well — the eight partials under
+`test-workspace/projects/test-lib/src/lib/styles/`. They need their own parser
+and rule set (`@use`, `@mixin` and `//` comments are not CSS), which
+`stylelint-config-standard-scss` supplies through an `overrides` entry in
+`.stylelintrc.cjs`. One rule is narrowed there: `scss/dollar-variable-empty-line-before`
+forbids a blank line between consecutive `$` variables, and its autofix
+collapsed the deliberate grouping in `_variables.scss` into one undivided
+block. Between two variables the rule is therefore set to `ignore`; everywhere
+else it applies unchanged.
+
+Every target runs `eslint … --max-warnings 0` (set once in `nx.json`'s
+`targetDefaults`). Without it the `warn` severities in `eslint.config.mjs` could
+not fail anything: `eslint` exits 0 with warnings, so a `warn`-level finding
+would have passed the pre-push hook and CI alike. Severity therefore expresses
+how loud a finding is in the editor, not whether it blocks.
+
+Prettier does not run separately for TypeScript and HTML — it runs as an
+ESLint rule via `eslint-plugin-prettier`. One `eslint --fix` therefore handles
+formatting and rules in a single pass, and no two tools rewrite the same file
+one after another.
+
+When a fix pass is needed, the order is always **ESLint, then Prettier, then
+Stylelint** — `stylelint-config-recess-order` reorders properties, and Prettier
+would otherwise touch the result again. `npm run check:fix` does this for you.
+
+A pre-commit hook runs the three tools on staged files, and a pre-push hook
+lints every package plus the workspace root (`scripts/` and `jest.config.ts`,
+see above) — Nx serves the unchanged ones from cache, so this costs little
+more than linting only what changed, and it cannot pick the wrong base.
+
+Editor setup: VS Code picks up `.vscode/settings.json` automatically — it is
+tracked in git on purpose, via a negation rule in `.gitignore` (`.vscode/*` is
+ignored, then `!.vscode/settings.json` un-ignores this one file). Install the
+recommended extensions when prompted.
+
+WebStorm and IntelliJ have no equivalent: `/.idea` is gitignored wholesale, so
+none of its settings can travel with the repo. Enable these three manually, on
+each machine:
+
+- **ESLint** — Languages & Frameworks → JavaScript → Code Quality Tools →
+  ESLint: "Automatic ESLint configuration", check "Run eslint --fix on save",
+  pattern `**/*.{ts,html}`
+- **Prettier** — Languages & Frameworks → JavaScript → Prettier: check "Run on
+  save", pattern `**/*.{json,css,md,yml,js,cjs,mjs}`
+- **Stylelint** — Languages & Frameworks → Style Sheets → Stylelint: leave
+  "Run stylelint --fix on save" **off**, and set the pattern to `**/*.css` so
+  you still get the diagnostics inline.
+
+Neither editor fixes `.css` on save, and that is deliberate rather than an
+omission. A single `stylelint --fix` pass does not converge —
+`property-no-vendor-prefix` against `order/properties-order` leaves behind a
+duplicate declaration that only a second pass clears — and no editor offers a
+"repeat until stable" save action. Both would also have to guarantee that
+Prettier runs before Stylelint, which neither can order reliably. So the editors
+show Stylelint's findings and Prettier formats the file; the actual fixing
+happens at commit time, where `lint-staged` runs Prettier first and then loops
+`scripts/fix-until-stable.mjs` until the file stops changing. That is the
+guarantee — the editor is convenience.
+
+Two of the three wholesale reformats during the linting rollout carry a small
+amount of real change alongside the formatting; `.git-blame-ignore-revs` names
+exactly what, per commit. To keep `git blame` pointing at the author of a line
+rather than at the reformat, tell git to skip those commits:
+
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 For fast iteration on a single package during development, run targets directly:
 
@@ -274,6 +394,12 @@ Push your branch and open a PR against `main`. See [Pull Request Process](#pull-
 - Use Signal-based APIs: `input()`, `output()`, `signal()`, `computed()`
 - Do **not** use legacy `@Input()` / `@Output()` decorators
 - Use `inject()` instead of constructor injection
+- Keep template and styles in sibling files — `templateUrl: './x.component.html'`
+  and `styleUrl: './x.component.css'`, never inline `template:` or `styles:`
+- Stylesheets under `packages/` are plain **`.css`**, not `.scss`. These packages
+  are built with bare `ngc`, which has no style preprocessor: it inlines a
+  referenced file verbatim, so SCSS syntax would reach the browser unchanged and
+  be silently dropped.
 
 ### General
 

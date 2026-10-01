@@ -4,6 +4,7 @@
 
 - Angular 20+ workspace (tested against 20, 21, 22)
 - Node.js 20+, npm 10+
+- Angular CLI and Nx workspaces are both supported — see [Nx Workspaces](#nx-workspaces)
 
 ## Automatic Setup — `ng add`
 
@@ -24,12 +25,17 @@ After running, your workspace contains:
 
 ```
 projects/
-  my-lib-prism/
+  my-lib-prism/          ← generated showcase app
     src/
-      main.ts          ← bootstraps the Prism app
-      prism.config.ts  ← your configuration file
-    angular.json       ← builder targets added here
+      main.ts            ← bootstraps the Prism app
+      index.html
+    tsconfig.app.json
+ng-prism.config.ts       ← your configuration file (workspace root)
+angular.json             ← prism / prism-build targets added to my-lib
+tsconfig.json            ← path mappings added here
 ```
+
+The showcase app is placed next to the library it documents, so a library in `libs/` yields a showcase app in `libs/` too. See [Nx Workspaces](#nx-workspaces) for how that plays out there.
 
 The schematic also adds a `strip-showcase` npm script to your `package.json`. This strips `@Showcase` decorators from compiled library output before publishing. See [Publishing Libraries](guide/library-publishing.md) for details.
 
@@ -40,6 +46,36 @@ ng run my-lib:prism        # or whatever the schematic named it
 ```
 
 The showcase opens at `http://localhost:4400`.
+
+## Nx Workspaces
+
+ng-prism works in Nx workspaces that define projects through per-project `project.json` files. Run the schematic through Nx rather than the Angular CLI:
+
+```bash
+npx nx g @ng-prism/core:ng-add --project=my-lib
+```
+
+`ng add @ng-prism/core` does **not** work here — the Angular CLI refuses to run outside a workspace it recognises, and an Nx workspace has no root `angular.json`. Nx's generator bridge supplies the workspace configuration to the schematic and writes the result back into the relevant `project.json` files, converting `architect` to `targets` and `builder` to `executor` along the way.
+
+The schematic adapts to the workspace it finds:
+
+| Aspect              | Angular CLI                           | Nx                                                  |
+| ------------------- | ------------------------------------- | --------------------------------------------------- |
+| Showcase app root   | next to the library, e.g. `projects/` | `apps/` when present, otherwise next to the library |
+| Application builder | `@angular-devkit/build-angular`       | `@angular/build` when it is a direct dependency     |
+| Path mappings       | `tsconfig.json`                       | `tsconfig.base.json`                                |
+| Targets             | `architect` / `builder`               | `targets` / `executor`                              |
+
+The app root also honours `workspaceLayout.appsDir` in `nx.json` when you have configured one. Existing path mappings are never overwritten, so the `my-lib` → `src/index.ts` mapping Nx generated for your library stays as it is.
+
+Run the targets the usual way:
+
+```bash
+npx nx run my-lib:prism          # dev server on :4400
+npx nx run my-lib:prism-build    # production build
+```
+
+> If Nx reports `Cannot find target 'prism'` straight after running the schematic, its project graph is stale — `npx nx reset` clears it.
 
 ## Zoneless Mode (optional, recommended)
 
@@ -176,6 +212,8 @@ The schematic also adds a separate **showcase app project** (`my-lib-prism`) to 
 }
 ```
 
+> The builder package is picked to match your workspace: `@angular/build` when it is a direct dependency (typical for Nx and newer Angular workspaces), otherwise `@angular-devkit/build-angular`. Both expose the same `:application` and `:dev-server` builders.
+
 The configuration split is intentional:
 
 - `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
@@ -223,7 +261,7 @@ npm install @ng-prism/core
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  plugins: [],
+    plugins: []
 });
 ```
 
@@ -236,7 +274,7 @@ import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/my-lib-prism'; // generat
 import config from './prism.config.js';
 
 bootstrapApplication(PrismShellComponent, {
-  providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)],
+    providers: [providePrism(PRISM_RUNTIME_MANIFEST, config)]
 });
 ```
 
@@ -244,17 +282,17 @@ The import specifier `prism-manifest/<prism-project>` is resolved via a wildcard
 
 ```jsonc
 {
-  "compilerOptions": {
-    "paths": {
-      "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+    "compilerOptions": {
+        "paths": {
+            "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
+        }
     }
-  }
 }
 ```
 
 The schematic adds both the path mapping and a workspace-wide `ng-prism-cache/` entry in `.gitignore` automatically.
 
-**5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above.
+**5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above. In an Nx workspace they go into the library's `project.json` under `targets`, with `executor` instead of `builder` — see [Nx Workspaces](#nx-workspaces).
 
 ## Adding Plugins
 
@@ -275,10 +313,11 @@ See [Plugin Overview](plugins/overview.md) for details on what each plugin provi
 
 ## Peer Dependencies
 
-Some features require additional peer dependencies:
+Nothing has to be installed by hand:
 
-| Package    | Required for                    |
-| ---------- | ------------------------------- |
-| `axe-core` | Built-in accessibility auditing |
+| Package                           | Provided by                               |
+| --------------------------------- | ----------------------------------------- |
+| `axe-core`                        | ships as a dependency of `@ng-prism/core` |
+| `highlight.js`, `ngx-highlightjs` | installed by `ng add @ng-prism/core`      |
 
-> **Note:** `highlight.js` and `ngx-highlightjs` are installed automatically by `ng add @ng-prism/core` — no manual step needed.
+`axe-core` powers the built-in [accessibility panel](guide/accessibility.md) and is loaded lazily, so it costs nothing until you open that panel.

@@ -1,6 +1,33 @@
-# Add files here to ignore them from prettier formatting
-/dist
-/coverage
+# Compiled output. Per-package, therefore `**/`, not root-anchored: `nx
+# build` writes to packages/*/dist, and Jest writes coverage to
+# packages/*/test-output/jest/coverage. Same distinction eslint.config.mjs's
+# ignores block makes (dist/out-tsc/coverage there too), applied here for
+# the same reason.
+**/dist
+**/out-tsc
+
+# Nx — only ever created at the workspace root, so root-anchored is correct.
 /.nx/cache
 /.nx/workspace-data
+
+# Verdaccio's local registry storage — package.json's `local-registry`
+# target writes to tmp/local-registry/storage, a root-only path, unlike
+# dist/out-tsc/coverage above.
+/tmp
+
+# Generiert
+**/plugin-registry.ts
+# Always join(workspaceRoot, 'ng-prism-cache') — never per-package, so
+# root-anchored is correct (see eslint.config.mjs's ignores block).
+/ng-prism-cache
+
+# Coverage
+**/coverage
+# Written only by `npm run test:coverage` to this one fixed path, read by the
+# coverage plugin — not a per-package pattern, so root-anchored is correct.
 /test-workspace/coverage
+
+# Lokale Notizen (global gitignored) — only ever at the workspace root.
+/.claude
+/.superpowers
+/.posts

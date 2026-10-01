@@ -108,22 +108,17 @@ await page.waitForFunction(() => globalThis.__PRISM_MANIFEST__ !== undefined);
 const manifest = await page.evaluate(() => globalThis.__PRISM_MANIFEST__);
 
 for (const comp of manifest.components) {
-  for (const variant of comp.variants) {
-    const url = new URL(baseUrl);
-    url.searchParams.set('component', comp.className);
-    if (variant.index > 0)
-      url.searchParams.set('variant', String(variant.index));
-    await page.goto(url.toString(), { waitUntil: 'load' });
-    await page.waitForFunction(
-      ([expected]) =>
-        document
-          .querySelector('.demo-wrap')
-          ?.getAttribute('data-prism-rendered')
-          ?.startsWith(expected),
-      [`${comp.className}:`]
-    );
-    // inject axe-core, run against .demo-wrap, collect violations…
-  }
+    for (const variant of comp.variants) {
+        const url = new URL(baseUrl);
+        url.searchParams.set('component', comp.className);
+        if (variant.index > 0) url.searchParams.set('variant', String(variant.index));
+        await page.goto(url.toString(), { waitUntil: 'load' });
+        await page.waitForFunction(
+            ([expected]) => document.querySelector('.demo-wrap')?.getAttribute('data-prism-rendered')?.startsWith(expected),
+            [`${comp.className}:`]
+        );
+        // inject axe-core, run against .demo-wrap, collect violations…
+    }
 }
 ```
 
@@ -133,31 +128,31 @@ The file must match this JSON shape:
 
 ```json
 {
-  "total": {
-    "score": 92,
-    "violations": 3,
-    "critical": 0,
-    "serious": 0,
-    "moderate": 2,
-    "minor": 1,
-    "passes": 145,
-    "incomplete": 0,
-    "auditedComponents": 18,
-    "auditedVariants": 47
-  },
-  "components": {
-    "ButtonComponent": {
-      "score": 100,
-      "violations": 0,
-      "critical": 0,
-      "serious": 0,
-      "moderate": 0,
-      "minor": 0,
-      "passes": 12,
-      "incomplete": 0
-    }
-  },
-  "generatedAt": "2026-06-01T10:00:00.000Z"
+    "total": {
+        "score": 92,
+        "violations": 3,
+        "critical": 0,
+        "serious": 0,
+        "moderate": 2,
+        "minor": 1,
+        "passes": 145,
+        "incomplete": 0,
+        "auditedComponents": 18,
+        "auditedVariants": 47
+    },
+    "components": {
+        "ButtonComponent": {
+            "score": 100,
+            "violations": 0,
+            "critical": 0,
+            "serious": 0,
+            "moderate": 0,
+            "minor": 0,
+            "passes": 12,
+            "incomplete": 0
+        }
+    },
+    "generatedAt": "2026-06-01T10:00:00.000Z"
 }
 ```
 
@@ -170,15 +165,15 @@ The file must match this JSON shape:
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  a11y: {
-    reportPath: 'a11y-report.json', // relative to workspace root (default)
-    thresholds: {
-      score: 85,
-      critical: 0,
-      serious: 0,
-      moderate: 5,
-    },
-  },
+    a11y: {
+        reportPath: 'a11y-report.json', // relative to workspace root (default)
+        thresholds: {
+            score: 85,
+            critical: 0,
+            serious: 0,
+            moderate: 5
+        }
+    }
 });
 ```
 
@@ -231,18 +226,14 @@ This requires your audit script to be able to _not_ fail: write the report befor
 
 > Note that `&&` chains in an npm script have the same problem as sequential CI steps: `build && audit && build` stops at the first non-zero exit.
 
-## Peer Dependency
+## Dependencies
 
-`axe-core` must be installed in your workspace:
+`axe-core` ships as a dependency of `@ng-prism/core`, so there is nothing to install. It is loaded lazily — the audit engine is only fetched when you open the A11y panel, so it costs nothing in a styleguide you never audit.
 
-```bash
-npm install axe-core
-```
-
-Add it to `allowedCommonJsDependencies` in your prism app's `angular.json` build options to suppress the CommonJS warning:
+The `ng add` schematic already lists it in `allowedCommonJsDependencies` for the generated showcase app. If you set the app up by hand, add it yourself to silence the CommonJS optimization-bailout warning, since axe-core ships as UMD:
 
 ```json
-"allowedCommonJsDependencies": ["axe-core"]
+"allowedCommonJsDependencies": ["highlight.js", "axe-core"]
 ```
 
 ## How It Works

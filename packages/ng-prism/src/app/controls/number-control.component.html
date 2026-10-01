@@ -1,0 +1,5 @@
+<input
+    type="number"
+    class="ctl-number"
+    [value]="value()"
+    (input)="valueChange.emit($any($event.target).valueAsNumber || 0)" />

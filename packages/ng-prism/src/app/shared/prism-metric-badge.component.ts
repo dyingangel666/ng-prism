@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { PrismIconComponent } from '../icons/prism-icon.component.js';
 
 /**
@@ -26,73 +21,20 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
  * consumer passes, for the hover tooltip.
  */
 @Component({
-  selector: 'prism-metric-badge',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PrismIconComponent],
-  template: `
-    <span
-      class="metric-badge"
-      role="img"
-      [class.metric-badge--ok]="variant() === 'ok'"
-      [class.metric-badge--warn]="variant() === 'warn'"
-      [class.metric-badge--danger]="variant() === 'danger'"
-      [attr.title]="title() || label()"
-      [attr.aria-label]="accessibleName()"
-    >
-      <prism-icon [name]="icon()" [size]="12" aria-hidden="true" />
-      <span class="metric-badge__value">{{ value() }}</span>
-    </span>
-  `,
-  styles: `
-    :host { display: inline-flex; align-items: center; }
-
-    .metric-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--sp-2);
-      height: 20px;
-      padding: 0 var(--sp-3) 0 var(--sp-2);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--prism-border);
-      background: var(--prism-input-bg);
-      color: var(--prism-text-muted);
-      font-family: var(--font-mono);
-      font-size: var(--fs-xs);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-    .metric-badge__value { color: var(--prism-text); font-weight: 600; }
-
-    .metric-badge--ok {
-      color: var(--prism-mark-nominal);
-      border-color: color-mix(in srgb, var(--prism-mark-nominal) 35%, transparent);
-      background: color-mix(in srgb, var(--prism-mark-nominal) 10%, transparent);
-    }
-    .metric-badge--ok .metric-badge__value { color: var(--prism-mark-nominal); }
-
-    .metric-badge--warn {
-      color: var(--prism-mark-attention);
-      border-color: color-mix(in srgb, var(--prism-mark-attention) 35%, transparent);
-      background: color-mix(in srgb, var(--prism-mark-attention) 10%, transparent);
-    }
-    .metric-badge--warn .metric-badge__value { color: var(--prism-mark-attention); }
-
-    .metric-badge--danger {
-      color: var(--prism-mark-critical);
-      border-color: color-mix(in srgb, var(--prism-mark-critical) 40%, transparent);
-      background: color-mix(in srgb, var(--prism-mark-critical) 10%, transparent);
-    }
-    .metric-badge--danger .metric-badge__value { color: var(--prism-mark-critical); }
-  `,
+    selector: 'prism-metric-badge',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [PrismIconComponent],
+    templateUrl: './prism-metric-badge.component.html',
+    styleUrl: './prism-metric-badge.component.css'
 })
 export class PrismMetricBadgeComponent {
-  readonly icon = input.required<string>();
-  readonly value = input.required<string>();
-  readonly label = input.required<string>();
-  readonly title = input<string>('');
-  readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
+    readonly icon = input.required<string>();
+    readonly value = input.required<string>();
+    readonly label = input.required<string>();
+    readonly title = input<string>('');
+    readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
 
-  /** "label: value" — the accessible name, so the figure is never dropped. */
-  readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
+    /** "label: value" — the accessible name, so the figure is never dropped. */
+    readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
 }

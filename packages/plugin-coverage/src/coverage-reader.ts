@@ -1,136 +1,114 @@
 import { readFileSync, statSync } from 'node:fs';
-import type {
-  CoverageData,
-  CoverageThresholds,
-  IstanbulSummary,
-} from './coverage.types.js';
+import type { CoverageData, CoverageThresholds, IstanbulSummary } from './coverage.types.js';
 
 const EMPTY_METRIC = { total: 0, covered: 0, skipped: 0, pct: 0 };
 
 const EMPTY_COVERAGE: CoverageData = {
-  score: 0,
-  statements: { ...EMPTY_METRIC },
-  branches: { ...EMPTY_METRIC },
-  functions: { ...EMPTY_METRIC },
-  lines: { ...EMPTY_METRIC },
-  found: false,
+    score: 0,
+    statements: { ...EMPTY_METRIC },
+    branches: { ...EMPTY_METRIC },
+    functions: { ...EMPTY_METRIC },
+    lines: { ...EMPTY_METRIC },
+    found: false
 };
 
 const cache = new Map<string, { mtime: number; data: IstanbulSummary }>();
 
 function normalizePath(p: string): string {
-  return p.replace(/\\/g, '/');
+    return p.replace(/\\/g, '/');
 }
 
 function loadSummary(coveragePath: string): IstanbulSummary | null {
-  try {
-    const mtime = statSync(coveragePath).mtimeMs;
-    const cached = cache.get(coveragePath);
-    if (cached && cached.mtime === mtime) return cached.data;
+    try {
+        const mtime = statSync(coveragePath).mtimeMs;
+        const cached = cache.get(coveragePath);
 
-    const raw = readFileSync(coveragePath, 'utf-8');
-    const parsed = JSON.parse(raw) as IstanbulSummary;
-    cache.set(coveragePath, { mtime, data: parsed });
-    return parsed;
-  } catch {
-    return null;
-  }
-}
+        if (cached && cached.mtime === mtime) return cached.data;
 
-function findEntry(
-  summary: IstanbulSummary,
-  componentPath: string
-): string | undefined {
-  const normalizedComponent = normalizePath(componentPath);
-  const keys = Object.keys(summary).filter((k) => k !== 'total');
+        const raw = readFileSync(coveragePath, 'utf-8');
+        const parsed = JSON.parse(raw) as IstanbulSummary;
 
-  for (const key of keys) {
-    const normalizedKey = normalizePath(key);
-    if (normalizedKey === normalizedComponent) return key;
-  }
-
-  for (const key of keys) {
-    const normalizedKey = normalizePath(key);
-    if (
-      normalizedKey.endsWith(normalizedComponent) ||
-      normalizedComponent.endsWith(normalizedKey)
-    ) {
-      return key;
+        cache.set(coveragePath, { mtime, data: parsed });
+        return parsed;
+    } catch {
+        return null;
     }
-  }
-
-  const componentSuffix = normalizedComponent.split('/').slice(-3).join('/');
-  for (const key of keys) {
-    if (normalizePath(key).endsWith(componentSuffix)) return key;
-  }
-
-  return undefined;
 }
 
-export function readCoverageForFile(
-  coveragePath: string,
-  componentFilePath: string
-): CoverageData {
-  const summary = loadSummary(coveragePath);
-  if (!summary) return { ...EMPTY_COVERAGE };
+function findEntry(summary: IstanbulSummary, componentPath: string): string | undefined {
+    const normalizedComponent = normalizePath(componentPath);
+    const keys = Object.keys(summary).filter((k) => k !== 'total');
 
-  const entryKey = findEntry(summary, componentFilePath);
-  if (!entryKey) return { ...EMPTY_COVERAGE };
+    for (const key of keys) {
+        const normalizedKey = normalizePath(key);
 
-  const entry = summary[entryKey];
-  const score = Math.round(
-    (entry.statements.pct +
-      entry.branches.pct +
-      entry.functions.pct +
-      entry.lines.pct) /
-      4
-  );
+        if (normalizedKey === normalizedComponent) return key;
+    }
 
-  return {
-    score,
-    statements: { ...entry.statements },
-    branches: { ...entry.branches },
-    functions: { ...entry.functions },
-    lines: { ...entry.lines },
-    found: true,
-  };
+    for (const key of keys) {
+        const normalizedKey = normalizePath(key);
+
+        if (normalizedKey.endsWith(normalizedComponent) || normalizedComponent.endsWith(normalizedKey)) {
+            return key;
+        }
+    }
+
+    const componentSuffix = normalizedComponent.split('/').slice(-3).join('/');
+
+    for (const key of keys) {
+        if (normalizePath(key).endsWith(componentSuffix)) return key;
+    }
+
+    return undefined;
+}
+
+export function readCoverageForFile(coveragePath: string, componentFilePath: string): CoverageData {
+    const summary = loadSummary(coveragePath);
+
+    if (!summary) return { ...EMPTY_COVERAGE };
+
+    const entryKey = findEntry(summary, componentFilePath);
+
+    if (!entryKey) return { ...EMPTY_COVERAGE };
+
+    const entry = summary[entryKey];
+    const score = Math.round((entry.statements.pct + entry.branches.pct + entry.functions.pct + entry.lines.pct) / 4);
+
+    return {
+        score,
+        statements: { ...entry.statements },
+        branches: { ...entry.branches },
+        functions: { ...entry.functions },
+        lines: { ...entry.lines },
+        found: true
+    };
 }
 
 export function readTotalCoverage(coveragePath: string): CoverageData {
-  const summary = loadSummary(coveragePath);
-  if (!summary) return { ...EMPTY_COVERAGE };
+    const summary = loadSummary(coveragePath);
 
-  const total = summary['total'];
-  if (!total) return { ...EMPTY_COVERAGE };
+    if (!summary) return { ...EMPTY_COVERAGE };
 
-  const score = Math.round(
-    (total.statements.pct +
-      total.branches.pct +
-      total.functions.pct +
-      total.lines.pct) /
-      4
-  );
+    const total = summary['total'];
 
-  return {
-    score,
-    statements: { ...total.statements },
-    branches: { ...total.branches },
-    functions: { ...total.functions },
-    lines: { ...total.lines },
-    found: true,
-  };
+    if (!total) return { ...EMPTY_COVERAGE };
+
+    const score = Math.round((total.statements.pct + total.branches.pct + total.functions.pct + total.lines.pct) / 4);
+
+    return {
+        score,
+        statements: { ...total.statements },
+        branches: { ...total.branches },
+        functions: { ...total.functions },
+        lines: { ...total.lines },
+        found: true
+    };
 }
 
 export function averageThreshold(thresholds: CoverageThresholds): number {
-  return Math.round(
-    (thresholds.lines +
-      thresholds.branches +
-      thresholds.functions +
-      thresholds.statements) /
-      4
-  );
+    return Math.round((thresholds.lines + thresholds.branches + thresholds.functions + thresholds.statements) / 4);
 }
 
 export function clearCoverageCache(): void {
-  cache.clear();
+    cache.clear();
 }

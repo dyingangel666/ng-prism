@@ -44,9 +44,9 @@ Parse any overrides from `$ARGUMENTS` and merge with defaults.
 1. **Check `nx.json`** at workspace root for `nxCloudId` or `nxCloudAccessToken`
 2. **If `nx.json` missing OR neither property exists** → exit with:
 
-   ```
-   [monitor-ci] Nx Cloud not connected. Unlock 70% faster CI and auto-fix broken PRs with https://nx.dev/nx-cloud
-   ```
+    ```
+    [monitor-ci] Nx Cloud not connected. Unlock 70% faster CI and auto-fix broken PRs with https://nx.dev/nx-cloud
+    ```
 
 3. **If connected** → continue to main loop
 
@@ -131,15 +131,15 @@ When verifiable (non-e2e) unverified tasks exist:
 
 1. **Detect package manager:**
 
-   - `pnpm-lock.yaml` exists → `pnpm nx`
-   - `yarn.lock` exists → `yarn nx`
-   - Otherwise → `npx nx`
+    - `pnpm-lock.yaml` exists → `pnpm nx`
+    - `yarn.lock` exists → `yarn nx`
+    - Otherwise → `npx nx`
 
 2. **Run verifiable tasks in parallel:**
 
-   - Spawn `general` subagents to run each task concurrently
-   - Each subagent runs: `<pm> nx run <taskId>`
-   - Collect pass/fail results from all subagents
+    - Spawn `general` subagents to run each task concurrently
+    - Each subagent runs: `<pm> nx run <taskId>`
+    - Collect pass/fail results from all subagents
 
 3. **Evaluate results:**
 
@@ -150,26 +150,26 @@ When verifiable (non-e2e) unverified tasks exist:
 
 1. **Apply-locally + enhance flow:**
 
-   - Run `nx-cloud apply-locally <shortLink>`
-   - Enhance the code to fix failing tasks
-   - Run failing tasks again to verify fix
-   - If still failing → increment `local_verify_count`, loop back to enhance
-   - If passing → commit and push, record `expected_commit_sha`, spawn subagent in wait mode
+    - Run `nx-cloud apply-locally <shortLink>`
+    - Enhance the code to fix failing tasks
+    - Run failing tasks again to verify fix
+    - If still failing → increment `local_verify_count`, loop back to enhance
+    - If passing → commit and push, record `expected_commit_sha`, spawn subagent in wait mode
 
 2. **Track attempts** (wraps step 4):
 
-   - Increment `local_verify_count` after each enhance cycle
-   - If `local_verify_count >= local_verify_attempts` (default: 3):
+    - Increment `local_verify_count` after each enhance cycle
+    - If `local_verify_count >= local_verify_attempts` (default: 3):
 
-     - Get code in commit-able state
-     - Commit and push with message indicating local verification failed
-     - Report to user:
+        - Get code in commit-able state
+        - Commit and push with message indicating local verification failed
+        - Report to user:
 
-       ```
-       [monitor-ci] Local verification failed after <N> attempts. Pushed to CI for final validation. Failed: <taskIds>
-       ```
+            ```
+            [monitor-ci] Local verification failed after <N> attempts. Pushed to CI for final validation. Failed: <taskIds>
+            ```
 
-     - Record `expected_commit_sha`, spawn subagent in wait mode (let CI be final judge)
+        - Record `expected_commit_sha`, spawn subagent in wait mode (let CI be final judge)
 
 #### Commit Message Format
 
@@ -225,10 +225,10 @@ When the fix needs enhancement (use `nx-cloud apply-locally`, NOT reject):
 3. Stage only the files you modified: `git add <file1> <file2> ...`
 4. Commit and push:
 
-   ```bash
-   git commit -m "fix: resolve <failedTaskIds>"
-   git push origin $(git branch --show-current)
-   ```
+    ```bash
+    git commit -m "fix: resolve <failedTaskIds>"
+    git push origin $(git branch --show-current)
+    ```
 
 5. Loop to poll for new CI Attempt
 
@@ -241,10 +241,10 @@ When the fix is completely wrong:
 3. Stage only the files you modified: `git add <file1> <file2> ...`
 4. Commit and push:
 
-   ```bash
-   git commit -m "fix: resolve <failedTaskIds>"
-   git push origin $(git branch --show-current)
-   ```
+    ```bash
+    git commit -m "fix: resolve <failedTaskIds>"
+    git push origin $(git branch --show-current)
+    ```
 
 5. Loop to poll for new CI Attempt
 
@@ -264,28 +264,28 @@ This means the expected CI Attempt was never created - CI likely failed before N
 
 1. **Report to user:**
 
-   ```
-   [monitor-ci] No CI attempt for <sha> after 10 min. Check CI provider for pre-Nx failures (install, checkout, auth). Last CI attempt: <previousCipeUrl>
-   ```
+    ```
+    [monitor-ci] No CI attempt for <sha> after 10 min. Check CI provider for pre-Nx failures (install, checkout, auth). Last CI attempt: <previousCipeUrl>
+    ```
 
 2. **If user configured auto-fix attempts** (e.g., `--auto-fix-workflow`):
 
-   - Detect package manager: check for `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`
-   - Run install to update lockfile:
+    - Detect package manager: check for `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`
+    - Run install to update lockfile:
 
-     ```bash
-     pnpm install   # or npm install / yarn install
-     ```
+        ```bash
+        pnpm install   # or npm install / yarn install
+        ```
 
-   - If lockfile changed:
+    - If lockfile changed:
 
-     ```bash
-     git add pnpm-lock.yaml  # or appropriate lockfile
-     git commit -m "chore: update lockfile"
-     git push origin $(git branch --show-current)
-     ```
+        ```bash
+        git add pnpm-lock.yaml  # or appropriate lockfile
+        git commit -m "chore: update lockfile"
+        git push origin $(git branch --show-current)
+        ```
 
-   - Record new commit SHA, loop to poll with `expectedCommitSha`
+    - Record new commit SHA, loop to poll with `expectedCommitSha`
 
 3. **Otherwise:** Exit with `no_new_cipe` status, providing guidance for user to investigate
 
@@ -302,34 +302,34 @@ This means the CI Attempt was created but no Nx tasks were recorded before it fa
 
 1. **Report to user:**
 
-   ```
-   [monitor-ci] CI failed but no Nx tasks were recorded.
-   [monitor-ci] CI Attempt URL: <cipeUrl>
-   [monitor-ci]
-   [monitor-ci] This usually indicates an infrastructure issue. Attempting retry...
-   ```
+    ```
+    [monitor-ci] CI failed but no Nx tasks were recorded.
+    [monitor-ci] CI Attempt URL: <cipeUrl>
+    [monitor-ci]
+    [monitor-ci] This usually indicates an infrastructure issue. Attempting retry...
+    ```
 
 2. **Create empty commit to retry CI:**
 
-   ```bash
-   git commit --allow-empty -m "chore: retry ci [monitor-ci]"
-   git push origin $(git branch --show-current)
-   ```
+    ```bash
+    git commit --allow-empty -m "chore: retry ci [monitor-ci]"
+    git push origin $(git branch --show-current)
+    ```
 
 3. **Record `expected_commit_sha`, spawn subagent in wait mode**
 
 4. **If retry also returns `cipe_no_tasks`:**
 
-   - Exit with failure
-   - Provide guidance:
+    - Exit with failure
+    - Provide guidance:
 
-     ```
-     [monitor-ci] Retry failed. Please check:
-     [monitor-ci]   1. Nx Cloud UI: <cipeUrl>
-     [monitor-ci]   2. CI provider logs (GitHub Actions, GitLab CI, etc.)
-     [monitor-ci]   3. CI job timeout settings
-     [monitor-ci]   4. Memory/resource limits
-     ```
+        ```
+        [monitor-ci] Retry failed. Please check:
+        [monitor-ci]   1. Nx Cloud UI: <cipeUrl>
+        [monitor-ci]   2. CI provider logs (GitHub Actions, GitLab CI, etc.)
+        [monitor-ci]   3. CI job timeout settings
+        [monitor-ci]   4. Memory/resource limits
+        ```
 
 ## Exit Conditions
 
@@ -403,9 +403,9 @@ After spawning the background subagent, enter a monitoring loop:
 1. **Every 60 seconds**, check the subagent output using `TaskOutput(task_id, block=false)`
 2. **Parse new lines** since your last check — look for `[ci-monitor]` and `⚡` prefixed lines
 3. **Relay to user** based on verbosity:
-   - `minimal`: Only relay `⚡` critical transition lines
-   - `medium`: Relay all `[ci-monitor]` status lines
-   - `verbose`: Relay all subagent output
+    - `minimal`: Only relay `⚡` critical transition lines
+    - `medium`: Relay all `[ci-monitor]` status lines
+    - `verbose`: Relay all subagent output
 4. **Continue** until `TaskOutput` returns a completed status
 5. When complete, proceed to Step 3 with the final subagent response
 
@@ -476,8 +476,8 @@ After actions that should trigger a new CI Attempt, record state before looping:
 Not all cycles are equal. Only count cycles the monitor itself triggered toward `--max-cycles`:
 
 1. **After subagent returns**, check `agent_triggered`:
-   - `agent_triggered == true` → this cycle was triggered by the monitor → `cycle_count++`
-   - `agent_triggered == false` → this cycle was human-initiated or a first observation → do NOT increment `cycle_count`
+    - `agent_triggered == true` → this cycle was triggered by the monitor → `cycle_count++`
+    - `agent_triggered == false` → this cycle was human-initiated or a first observation → do NOT increment `cycle_count`
 2. **Reset** `agent_triggered = false`
 3. **After Step 3a** (when the monitor takes an action that triggers a new CI Attempt) → set `agent_triggered = true`
 

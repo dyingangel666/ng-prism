@@ -23,9 +23,9 @@ If you installed ng-prism via `ng add @ng-prism/core`, a `strip-showcase` npm sc
 
 ```json
 {
-  "scripts": {
-    "strip-showcase": "ng-prism-strip dist/my-lib"
-  }
+    "scripts": {
+        "strip-showcase": "ng-prism-strip dist/my-lib"
+    }
 }
 ```
 
@@ -48,9 +48,9 @@ If you didn't use `ng add`, add the script yourself:
 
 ```json
 {
-  "scripts": {
-    "strip-showcase": "ng-prism-strip dist/my-lib"
-  }
+    "scripts": {
+        "strip-showcase": "ng-prism-strip dist/my-lib"
+    }
 }
 ```
 
@@ -62,12 +62,12 @@ In an Nx workspace, you can add a target to `project.json`:
 
 ```json
 {
-  "targets": {
-    "strip-showcase": {
-      "command": "npx ng-prism-strip dist/packages/my-lib",
-      "dependsOn": ["build"]
+    "targets": {
+        "strip-showcase": {
+            "command": "npx ng-prism-strip dist/packages/my-lib",
+            "dependsOn": ["build"]
+        }
     }
-  }
 }
 ```
 
@@ -108,11 +108,11 @@ This should return no results. If it does, check that `ng-prism-strip` ran on th
 
 The transformer handles three decorator forms that TypeScript/ng-packagr can emit:
 
-| Form | Example | Source |
-|------|---------|--------|
-| Lowered call | `Showcase({...})(MyComp);` | ng-packagr fesm2022 |
-| `__decorate` | `__decorate([Showcase({...})], MyComp)` | Legacy tsc |
-| Native decorator | `@Showcase({...}) class MyComp` | TC39 decorators |
+| Form             | Example                                 | Source              |
+| ---------------- | --------------------------------------- | ------------------- |
+| Lowered call     | `Showcase({...})(MyComp);`              | ng-packagr fesm2022 |
+| `__decorate`     | `__decorate([Showcase({...})], MyComp)` | Legacy tsc          |
+| Native decorator | `@Showcase({...}) class MyComp`         | TC39 decorators     |
 
 It removes the decorator calls and cleans up the corresponding import statements. Files without `@Showcase` are left untouched.
 

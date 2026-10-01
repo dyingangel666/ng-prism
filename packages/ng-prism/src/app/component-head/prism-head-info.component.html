@@ -1,0 +1,32 @@
+<button
+    class="info-btn"
+    type="button"
+    popovertarget="prism-head-info"
+    title="Component details"
+    aria-label="Component details">
+    <prism-icon
+        name="info"
+        [size]="13" />
+</button>
+
+<div
+    popover
+    id="prism-head-info"
+    class="info-card"
+    role="dialog"
+    aria-label="Component details">
+    <code class="info-card__selector">&lt;{{ selector() }}&gt;</code>
+    @if (description()) {
+        <p class="info-card__desc">{{ description() }}</p>
+    }
+    @if (variantCount() > 0) {
+        <p class="info-card__meta"> {{ variantCount() }} {{ variantCount() === 1 ? 'variant' : 'variants' }} </p>
+    }
+    @if (tags().length) {
+        <div class="info-card__tags">
+            @for (tag of tags(); track tag) {
+                <span class="info-card__tag">{{ tag }}</span>
+            }
+        </div>
+    }
+</div>

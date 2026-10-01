@@ -1,0 +1,56 @@
+.ev-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.ev-body {
+    flex: 1;
+    padding: 6px 0;
+    overflow-y: auto;
+}
+
+.ev {
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 20px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    border-bottom: 1px solid var(--prism-border);
+}
+
+.ev:hover {
+    background: color-mix(in srgb, var(--prism-primary) 3%, transparent);
+}
+
+.ev-time {
+    font-size: 11px;
+    color: var(--prism-text-ghost);
+}
+
+.ev-idx {
+    font-size: 11px;
+    color: var(--prism-text-muted);
+}
+
+.ev-name {
+    font-weight: 500;
+    color: var(--prism-primary);
+}
+
+.ev-args {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--prism-text-2);
+    white-space: nowrap;
+}
+
+.ev-empty {
+    padding: 16px 20px;
+    margin: 0;
+    font-size: 13px;
+    color: var(--prism-text-ghost);
+}

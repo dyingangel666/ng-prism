@@ -10,22 +10,12 @@ import type { CoverageSummary, CoverageThresholds } from './coverage.types.js';
  */
 /** The single number the badge compares against — the mean of the four metrics. */
 export function avgThreshold(thresholds: CoverageThresholds): number {
-  return Math.round(
-    (thresholds.lines +
-      thresholds.branches +
-      thresholds.functions +
-      thresholds.statements) /
-      4
-  );
+    return Math.round((thresholds.lines + thresholds.branches + thresholds.functions + thresholds.statements) / 4);
 }
 
-export function deriveCoverageSummary(
-  score: number,
-  thresholds: CoverageThresholds
-): CoverageSummary {
-  const avg = avgThreshold(thresholds);
-  const variant: CoverageSummary['variant'] =
-    score >= avg ? 'ok' : score >= avg * 0.75 ? 'warn' : 'danger';
+export function deriveCoverageSummary(score: number, thresholds: CoverageThresholds): CoverageSummary {
+    const avg = avgThreshold(thresholds);
+    const variant: CoverageSummary['variant'] = score >= avg ? 'ok' : score >= avg * 0.75 ? 'warn' : 'danger';
 
-  return { variant, label: `Coverage: ${score}% (target ${avg}%)` };
+    return { variant, label: `Coverage: ${score}% (target ${avg}%)` };
 }

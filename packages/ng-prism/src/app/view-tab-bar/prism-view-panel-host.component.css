@@ -1,0 +1,7 @@
+.prism-view-panel-host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: auto;
+    background: var(--prism-bg-elevated);
+}

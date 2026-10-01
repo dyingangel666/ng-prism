@@ -11,9 +11,9 @@ import { defineConfig } from '@ng-prism/core';
 import { MyHeaderComponent } from './ui/my-header.component.js';
 
 export default defineConfig({
-  ui: {
-    header: MyHeaderComponent,
-  },
+    ui: {
+        header: MyHeaderComponent
+    }
 });
 ```
 
@@ -37,34 +37,30 @@ import { Component, inject } from '@angular/core';
 import { PrismSearchService } from '@ng-prism/core';
 
 @Component({
-  selector: 'app-my-header',
-  standalone: true,
-  template: `
-    <header class="my-header">
-      <img src="assets/logo.svg" alt="My Library" />
-      <input
-        type="search"
-        placeholder="Search components…"
-        (input)="search.search($any($event.target).value)"
-      />
-    </header>
-  `,
-  styles: [
-    `
-      .my-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0 1.5rem;
-        height: var(--prism-header-height);
-        background: var(--prism-bg-surface);
-        border-bottom: 1px solid var(--prism-border);
-      }
+    selector: 'app-my-header',
+    standalone: true,
+    template: `
+        <header class="my-header">
+            <img src="assets/logo.svg" alt="My Library" />
+            <input type="search" placeholder="Search components…" (input)="search.search($any($event.target).value)" />
+        </header>
     `,
-  ],
+    styles: [
+        `
+            .my-header {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 0 1.5rem;
+                height: var(--prism-header-height);
+                background: var(--prism-bg-surface);
+                border-bottom: 1px solid var(--prism-border);
+            }
+        `
+    ]
 })
 export class MyHeaderComponent {
-  readonly search = inject(PrismSearchService);
+    readonly search = inject(PrismSearchService);
 }
 ```
 
@@ -72,7 +68,7 @@ Register it:
 
 ```typescript
 export default defineConfig({
-  ui: { header: MyHeaderComponent },
+    ui: { header: MyHeaderComponent }
 });
 ```
 
@@ -87,31 +83,30 @@ import { Component, inject } from '@angular/core';
 import { PrismNavigationService, PrismManifestService } from '@ng-prism/core';
 
 @Component({
-  selector: 'app-my-sidebar',
-  standalone: true,
-  template: `
-    @for (entry of nav.categoryTree() | keyvalue; track entry.key) {
-    <h4>{{ entry.key }}</h4>
-    @for (item of entry.value; track item.data) {
-    <button (click)="selectItem(item)">
-      {{ itemLabel(item) }}
-    </button>
-    } }
-  `,
+    selector: 'app-my-sidebar',
+    standalone: true,
+    template: `
+        @for (entry of nav.categoryTree() | keyvalue; track entry.key) {
+            <h4>{{ entry.key }}</h4>
+            @for (item of entry.value; track item.data) {
+                <button (click)="selectItem(item)">
+                    {{ itemLabel(item) }}
+                </button>
+            }
+        }
+    `
 })
 export class MySidebarComponent {
-  readonly nav = inject(PrismNavigationService);
+    readonly nav = inject(PrismNavigationService);
 
-  selectItem(item: any) {
-    if (item.kind === 'component') this.nav.select(item.data);
-    else this.nav.selectPage(item.data);
-  }
+    selectItem(item: any) {
+        if (item.kind === 'component') this.nav.select(item.data);
+        else this.nav.selectPage(item.data);
+    }
 
-  itemLabel(item: any): string {
-    return item.kind === 'component'
-      ? item.data.meta.showcaseConfig.title
-      : item.data.title;
-  }
+    itemLabel(item: any): string {
+        return item.kind === 'component' ? item.data.meta.showcaseConfig.title : item.data.title;
+    }
 }
 ```
 
@@ -129,7 +124,7 @@ Replace the entire application shell with your own Angular component. When `appC
 
 ```typescript
 export default defineConfig({
-  appComponent: MyCustomShellComponent,
+    appComponent: MyCustomShellComponent
 });
 ```
 

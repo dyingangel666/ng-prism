@@ -1,0 +1,121 @@
+.layout-menu {
+    position: relative;
+}
+
+.layout-menu__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    color: var(--prism-text-muted);
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--prism-border);
+    border-radius: var(--prism-radius-sm);
+    transition:
+        border-color 0.15s,
+        color 0.15s,
+        background 0.15s;
+}
+
+.layout-menu__trigger:hover,
+.layout-menu__trigger--active {
+    color: var(--prism-text);
+    background: var(--prism-bg-surface);
+    border-color: var(--prism-border-strong);
+}
+
+.layout-menu__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+}
+
+.layout-menu__dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 50;
+    min-width: 240px;
+    padding: 4px;
+    background: var(--prism-bg-elevated);
+    border: 1px solid var(--prism-border-strong);
+    border-radius: var(--prism-radius);
+    box-shadow: 0 8px 32px rgb(0 0 0 / 40%);
+}
+
+.layout-menu__item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+    padding: 7px 10px;
+    font-family: var(--prism-font-sans);
+    font-size: 13px;
+    color: var(--prism-text);
+    text-align: left;
+    cursor: pointer;
+    background: none;
+    border: none;
+    border-radius: var(--prism-radius-sm);
+    transition: background 0.1s;
+}
+
+.layout-menu__item:hover {
+    background: var(--prism-bg-surface);
+}
+
+.layout-menu__check {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: transparent;
+    border: 1px solid var(--prism-border-strong);
+    border-radius: 3px;
+}
+
+.layout-menu__check--on {
+    color: white;
+    background: var(--prism-primary);
+    border-color: var(--prism-primary);
+}
+
+.layout-menu__icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: var(--prism-text-muted);
+}
+
+.layout-menu__label {
+    flex: 1;
+}
+
+.layout-menu__kbd {
+    display: flex;
+    gap: 2px;
+    opacity: 0.6;
+}
+
+kbd {
+    padding: 1px 4px;
+    font-family: var(--prism-font-sans);
+    font-size: 11px;
+    color: var(--prism-text-muted);
+    background: var(--prism-bg-surface);
+    border: 1px solid var(--prism-border-strong);
+    border-radius: 3px;
+}
+
+.layout-menu__divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--prism-border);
+}

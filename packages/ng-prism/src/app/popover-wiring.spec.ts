@@ -19,108 +19,113 @@ import { join } from 'node:path';
  * scoped to where a rename or a duplicate would actually happen.
  */
 const TEMPLATES = [
-  'component-head/prism-head-info.component.ts',
-  'component-head/prism-head-gauge.component.ts',
-  'canvas/prism-canvas-toolbar.component.ts',
-  'canvas/prism-template-popover.component.ts',
+    'component-head/prism-head-info.component',
+    'component-head/prism-head-gauge.component',
+    'canvas/prism-canvas-toolbar.component',
+    'canvas/prism-template-popover.component'
 ];
 
-function read(relative: string): string {
-  return readFileSync(join(__dirname, relative), 'utf-8');
+/** The markup of a component, named without its extension. */
+function readTemplate(stem: string): string {
+    return readFileSync(join(__dirname, `${stem}.html`), 'utf-8');
+}
+
+/** The stylesheet of a component, named without its extension. */
+function readStyles(stem: string): string {
+    return readFileSync(join(__dirname, `${stem}.css`), 'utf-8');
 }
 
 function popoverTargets(src: string): string[] {
-  return [...src.matchAll(/popovertarget="([^"]+)"/g)].map((m) => m[1]);
+    return [...src.matchAll(/popovertarget="([^"]+)"/g)].map((m) => m[1]);
 }
 
 function popoverIds(src: string): Set<string> {
-  const ids = new Set<string>();
-  for (const tag of src.matchAll(/<[a-z][^>]*>/gi)) {
-    const text = tag[0];
-    if (!/\spopover(\s|=|>)/.test(text)) continue;
-    const id = /\sid="([^"]+)"/.exec(text)?.[1];
-    if (id) ids.add(id);
-  }
-  return ids;
+    const ids = new Set<string>();
+
+    for (const tag of src.matchAll(/<[a-z][^>]*>/gi)) {
+        const text = tag[0];
+
+        if (!/\spopover(\s|=|>)/.test(text)) continue;
+        const id = /\sid="([^"]+)"/.exec(text)?.[1];
+
+        if (id) ids.add(id);
+    }
+    return ids;
 }
 
-const declaredByFile = new Map(
-  TEMPLATES.map((relative) => [relative, popoverIds(read(relative))])
-);
-const declaredUnion = new Set(
-  [...declaredByFile.values()].flatMap((ids) => [...ids])
-);
+const declaredByFile = new Map(TEMPLATES.map((stem) => [stem, popoverIds(readTemplate(stem))]));
+const declaredUnion = new Set([...declaredByFile.values()].flatMap((ids) => [...ids]));
 
 describe('popover wiring', () => {
-  it.each(TEMPLATES)(
-    '%s targets only popovers declared somewhere in the package',
-    (relative) => {
-      const src = read(relative);
-      const targets = popoverTargets(src);
-      expect(targets.length).toBeGreaterThan(0);
-      for (const target of targets) {
-        expect(declaredUnion).toContain(target);
-      }
-    }
-  );
+    it.each(TEMPLATES)('%s targets only popovers declared somewhere in the package', (stem) => {
+        const targets = popoverTargets(readTemplate(stem));
 
-  it('gives every popover a unique id across the package', () => {
-    const seen = new Map<string, string>();
-    for (const [relative, ids] of declaredByFile) {
-      for (const id of ids) {
-        expect(seen.has(id)).toBe(false);
-        seen.set(id, relative);
-      }
-    }
-  });
+        expect(targets.length).toBeGreaterThan(0);
+        for (const target of targets) {
+            expect(declaredUnion).toContain(target);
+        }
+    });
 
-  /**
-   * The regression this guards actually shipped: three of the four popovers
-   * carried `display: flex` on their base rule.
-   *
-   * The UA stylesheet hides a closed popover with
-   * `[popover]:not(:popover-open) { display: none }`. That is a user-agent
-   * rule, so any author `display` on the same element outranks it — the panel
-   * renders permanently, and neither Escape nor light-dismiss can put it away,
-   * because closing only drops `:popover-open` and leaves the author rule
-   * standing. It looks like a broken popover and reads like a broken script,
-   * but it is entirely a cascade problem.
-   *
-   * jsdom has no Popover API, so the behaviour cannot be exercised. The
-   * stylesheet contract can: `display` may appear on `<class>:popover-open`
-   * and must not appear in the base block of the popover's own class.
-   */
-  const popoverClasses = (src: string): string[] =>
-    [...src.matchAll(/<[a-z][^>]*>/gi)]
-      .filter((m) => /\spopover(\s|=|>)/.test(m[0]))
-      .map((m) => /\sclass="([^"]+)"/.exec(m[0])?.[1]?.split(/\s+/)[0])
-      .filter((c): c is string => Boolean(c));
+    it('gives every popover a unique id across the package', () => {
+        const seen = new Map<string, string>();
 
-  /** The declaration block of `.<cls> { … }`, or null when there is none. */
-  const baseBlock = (src: string, cls: string): string | null => {
-    const start = src.indexOf(`.${cls} {`);
-    if (start === -1) return null;
-    const end = src.indexOf('}', start);
-    return end === -1 ? null : src.slice(start, end);
-  };
+        for (const [stem, ids] of declaredByFile) {
+            for (const id of ids) {
+                expect(seen.has(id)).toBe(false);
+                seen.set(id, stem);
+            }
+        }
+    });
 
-  it.each(TEMPLATES)(
-    '%s keeps display off every popover base rule',
-    (relative) => {
-      const src = read(relative);
-      const classes = popoverClasses(src);
-      expect(classes.length).toBeGreaterThan(0);
+    /**
+     * The regression this guards actually shipped: three of the four popovers
+     * carried `display: flex` on their base rule.
+     *
+     * The UA stylesheet hides a closed popover with
+     * `[popover]:not(:popover-open) { display: none }`. That is a user-agent
+     * rule, so any author `display` on the same element outranks it — the panel
+     * renders permanently, and neither Escape nor light-dismiss can put it away,
+     * because closing only drops `:popover-open` and leaves the author rule
+     * standing. It looks like a broken popover and reads like a broken script,
+     * but it is entirely a cascade problem.
+     *
+     * jsdom has no Popover API, so the behaviour cannot be exercised. The
+     * stylesheet contract can: `display` may appear on `<class>:popover-open`
+     * and must not appear in the base block of the popover's own class.
+     */
+    const popoverClasses = (src: string): string[] =>
+        [...src.matchAll(/<[a-z][^>]*>/gi)]
+            .filter((m) => /\spopover(\s|=|>)/.test(m[0]))
+            .map((m) => /\sclass="([^"]+)"/.exec(m[0])?.[1]?.split(/\s+/)[0])
+            .filter((c): c is string => Boolean(c));
 
-      for (const cls of classes) {
-        const block = baseBlock(src, cls);
-        if (block === null) continue;
-        // The base rule must stay silent about display. A popover that needs a
-        // layout other than the element's default states it on
-        // `.<cls>:popover-open`, which only matches while the popover is open
-        // and therefore cannot pin it there. A popover that is happy with the
-        // default — a plain block for a div — needs no display rule at all.
-        expect(block).not.toMatch(/\bdisplay\s*:/);
-      }
-    }
-  );
+    /** The declaration block of `.<cls> { … }`, or null when there is none. */
+    const baseBlock = (src: string, cls: string): string | null => {
+        const start = src.indexOf(`.${cls} {`);
+
+        if (start === -1) return null;
+        const end = src.indexOf('}', start);
+
+        return end === -1 ? null : src.slice(start, end);
+    };
+
+    it.each(TEMPLATES)('%s keeps display off every popover base rule', (stem) => {
+        const classes = popoverClasses(readTemplate(stem));
+
+        expect(classes.length).toBeGreaterThan(0);
+
+        const styles = readStyles(stem);
+
+        for (const cls of classes) {
+            const block = baseBlock(styles, cls);
+
+            if (block === null) continue;
+            // The base rule must stay silent about display. A popover that needs a
+            // layout other than the element's default states it on
+            // `.<cls>:popover-open`, which only matches while the popover is open
+            // and therefore cannot pin it there. A popover that is happy with the
+            // default — a plain block for a div — needs no display rule at all.
+            expect(block).not.toMatch(/\bdisplay\s*:/);
+        }
+    });
 });

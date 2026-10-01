@@ -9,13 +9,13 @@ ng-prism uses CSS custom properties for all visual styling. Override any propert
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0ea5e9',
-    '--prism-primary-from': '#0ea5e9',
-    '--prism-primary-to': '#6366f1',
-    '--prism-bg': '#0f172a',
-    '--prism-font-sans': '"Inter", system-ui, sans-serif',
-  },
+    theme: {
+        '--prism-primary': '#0ea5e9',
+        '--prism-primary-from': '#0ea5e9',
+        '--prism-primary-to': '#6366f1',
+        '--prism-bg': '#0f172a',
+        '--prism-font-sans': '"Inter", system-ui, sans-serif'
+    }
 });
 ```
 
@@ -27,18 +27,18 @@ Use `darkTheme` and `lightTheme` to set values that only apply in one mode:
 
 ```typescript
 export default defineConfig({
-  theme: {
-    '--prism-primary': '#0056CE',
-    '--prism-font-sans': "'Inter', system-ui, sans-serif",
-  },
-  darkTheme: {
-    '--prism-bg': '#0a1628',
-    '--prism-bg-surface': '#112240',
-  },
-  lightTheme: {
-    '--prism-bg': '#ffffff',
-    '--prism-bg-surface': '#f5f6f7',
-  },
+    theme: {
+        '--prism-primary': '#0056CE',
+        '--prism-font-sans': "'Inter', system-ui, sans-serif"
+    },
+    darkTheme: {
+        '--prism-bg': '#0a1628',
+        '--prism-bg-surface': '#112240'
+    },
+    lightTheme: {
+        '--prism-bg': '#ffffff',
+        '--prism-bg-surface': '#f5f6f7'
+    }
 });
 ```
 
@@ -50,7 +50,7 @@ For more complex theming (custom fonts, additional utilities, SCSS variables), p
 
 ```typescript
 export default defineConfig({
-  themeStylesheet: 'projects/my-lib-prism/src/theme.scss',
+    themeStylesheet: 'projects/my-lib-prism/src/theme.scss'
 });
 ```
 
@@ -119,15 +119,15 @@ These tokens are set once and do not change between dark/light mode.
 
 Introduced alongside the panel-tab and canvas-tool redesign — these are additive, not replacements for anything above.
 
-| Property                 | Default (dark)                                                                               | Default (light)                 | Description                                                                                                                                                                                                                                                                 |
-| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--prism-mark-nominal`   | `#34d399`                                                                                    | `#047857`                       | Green role for a value inside its thresholds — same consumers as `--prism-mark-attention`, `ok` variant. Used where the element renders anyway (status chip, header badge, gauge chip, readout row), never to add an element that would otherwise not be there.             |
-| `--prism-mark-attention` | `#e8a33d`                                                                                    | `#8f6b00`                       | Amber role for a value past its warning threshold — used by the sidebar's health dot, `PrismMetricBadgeComponent`'s `warn` variant, the component head's status chip, the head gauge, and `PrismStatComponent`'s `warn` dot.                                                |
-| `--prism-mark-critical`  | `#e5484d`                                                                                    | `#951226`                       | Red role for a value past its critical threshold — same consumers as `--prism-mark-attention`, `danger`/`critical` variant.                                                                                                                                                 |
-| `--prism-measure`        | `#22d3ee`                                                                                    | `#0b93ad`                       | Reserved role for measurement and dimension UI (rulers, guides, box-model-style overlays). Not yet drawn from by ng-prism core itself — declared so a plugin can adopt one consistent "this is a measurement, not a status" colour instead of picking its own.              |
-| `--prism-stage`          | `#16122b`                                                                                    | `#ffffff`                       | Background colour of `.prism-canvas-stage`, independent of the variant's `bg` (`dots`/`plain`/`light`/`dark`/etc. paint on top of it).                                                                                                                                      |
-| `--prism-stage-edge`     | `rgba(255,255,255,0.10)`                                                                     | `rgba(28,21,48,0.14)`           | The stage's boundary colour. Applied via `outline` + `box-shadow`, never `border` — a border would shrink the content box by its width and shift where `.demo-wrap` centres, moving every visual-regression baseline the day someone reached for the more obvious property. |
-| `--prism-spectrum`       | `linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))` | same shape, light-theme colours | The gradient the variant ribbon reads a per-tab slice from (via `--i`/`--n` custom properties on each tab) so each variant's underline shows _where it sits in the sequence_ rather than an arbitrary per-index hue.                                                        |
+| Property                 | Default (dark)                                                                               | Default (light)                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--prism-mark-nominal`   | `#34d399`                                                                                    | `#047857`                       | Green role for a value inside its thresholds — same consumers as `--prism-mark-attention`, `ok` variant. Used where the element renders anyway (status chip, header badge, gauge chip, readout row), never to add an element that would otherwise not be there.                                                                                                                                                                                                                                                        |
+| `--prism-mark-attention` | `#e8a33d`                                                                                    | `#8f6b00`                       | Amber role for a value past its warning threshold — used by the sidebar's health dot, `PrismMetricBadgeComponent`'s `warn` variant, the component head's status chip, the head gauge, and `PrismStatComponent`'s `warn` dot.                                                                                                                                                                                                                                                                                           |
+| `--prism-mark-critical`  | `#e5484d`                                                                                    | `#951226`                       | Red role for a value past its critical threshold — same consumers as `--prism-mark-attention`, `danger`/`critical` variant.                                                                                                                                                                                                                                                                                                                                                                                            |
+| `--prism-measure`        | `#41bcff`                                                                                    | `#004d8a`                       | The "this is a measurement, not a status" role. Core paints the canvas viewport constraint with it — the edge grips, their guide lines, the dimension line and the rail's width readout — and plugins drawing measurement or dimension UI should reach for it rather than picking their own. Note that `.prism-canvas-stage` re-points this token on the two absolute backgrounds (`bg: 'light'` and `bg: 'dark'`), because those grounds do not follow the theme; an override set here still applies everywhere else. |
+| `--prism-stage`          | `#16122b`                                                                                    | `#ffffff`                       | Background colour of `.prism-canvas-stage`, independent of the variant's `bg` (`dots`/`plain`/`light`/`dark`/etc. paint on top of it).                                                                                                                                                                                                                                                                                                                                                                                 |
+| `--prism-stage-edge`     | `rgba(255,255,255,0.10)`                                                                     | `rgba(28,21,48,0.14)`           | The stage's boundary colour. Applied via `outline` + `box-shadow`, never `border` — a border would shrink the content box by its width and shift where `.demo-wrap` centres, moving every visual-regression baseline the day someone reached for the more obvious property.                                                                                                                                                                                                                                            |
+| `--prism-spectrum`       | `linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))` | same shape, light-theme colours | The gradient the variant ribbon reads a per-tab slice from (via `--i`/`--n` custom properties on each tab) so each variant's underline shows _where it sits in the sequence_ rather than an arbitrary per-index hue.                                                                                                                                                                                                                                                                                                   |
 
 > **Writing your own semantic colours?** Two floors are enforced by
 > `semantic-colours.spec.ts` and worth matching in a custom theme: each colour
@@ -171,10 +171,10 @@ Every band height is expressed as `calc(<px> * var(--density))`. Setting that on
 
 ```css
 prism-shell {
-  --density: 0.8;
+    --density: 0.8;
 } /* compact  */
 prism-shell {
-  --density: 1.25;
+    --density: 1.25;
 } /* spacious */
 ```
 

@@ -148,8 +148,8 @@ import { chromium } from 'playwright';
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  viewport: { width: 1400, height: 900 },
-  deviceScaleFactor: 1,
+    viewport: { width: 1400, height: 900 },
+    deviceScaleFactor: 1
 });
 const page = await context.newPage();
 
@@ -159,38 +159,28 @@ await page.waitForFunction(() => globalThis.__PRISM_MANIFEST__ !== undefined);
 const manifest = await page.evaluate(() => globalThis.__PRISM_MANIFEST__);
 
 for (const comp of manifest.components) {
-  for (const variant of comp.variants) {
-    // 2. Navigate, in capture mode.
-    const url = new URL(baseUrl);
-    url.searchParams.set('component', comp.className);
-    if (variant.index > 0)
-      url.searchParams.set('variant', String(variant.index));
-    url.searchParams.set('capture', '1');
-    await page.goto(url.toString(), { waitUntil: 'load' });
+    for (const variant of comp.variants) {
+        // 2. Navigate, in capture mode.
+        const url = new URL(baseUrl);
+        url.searchParams.set('component', comp.className);
+        if (variant.index > 0) url.searchParams.set('variant', String(variant.index));
+        url.searchParams.set('capture', '1');
+        await page.goto(url.toString(), { waitUntil: 'load' });
 
-    // 3. Wait for the component instance…
-    await page.waitForFunction(
-      ([expected]) =>
-        document
-          .querySelector('.demo-wrap')
-          ?.getAttribute('data-prism-rendered')
-          ?.startsWith(expected),
-      [`${comp.className}:`]
-    );
+        // 3. Wait for the component instance…
+        await page.waitForFunction(
+            ([expected]) => document.querySelector('.demo-wrap')?.getAttribute('data-prism-rendered')?.startsWith(expected),
+            [`${comp.className}:`]
+        );
 
-    // 4. …and then for the page to settle.
-    await page.evaluate(() => document.fonts.ready);
+        // 4. …and then for the page to settle.
+        await page.evaluate(() => document.fonts.ready);
 
-    // 5. Capture. `variant.bg` is the surface it was captured on — record it
-    //    with the baseline so a background change is not read as a regression.
-    const png = await page.locator('.demo-wrap').screenshot();
-    await compareAgainstBaseline(
-      comp.className,
-      variant.index,
-      png,
-      variant.bg
-    );
-  }
+        // 5. Capture. `variant.bg` is the surface it was captured on — record it
+        //    with the baseline so a background change is not read as a regression.
+        const png = await page.locator('.demo-wrap').screenshot();
+        await compareAgainstBaseline(comp.className, variant.index, png, variant.bg);
+    }
 }
 
 await browser.close();

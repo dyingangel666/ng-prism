@@ -1,0 +1,33 @@
+<div
+    class="aria-tree-line"
+    [class.aria-tree-line--hidden]="node().hidden">
+    <span
+        class="indent"
+        [style.width.px]="depth() * 20">
+        @if (depth() > 0) {
+            {{ isLast() ? '└─' : '├─' }}
+        }
+    </span>
+    @if (node().children.length) {
+        <button
+            class="tree-toggle"
+            (click)="toggleExpanded()">
+            {{ expanded() ? '▾' : '▸' }}
+        </button>
+    }
+    <span class="role">{{ node().role }}</span>
+    @if (node().name) {
+        <span class="name">"{{ node().name }}"</span>
+    }
+    @for (entry of stateEntries(); track entry.key) {
+        <span class="attr">[{{ entry.label }}]</span>
+    }
+</div>
+@if (expanded() && node().children.length) {
+    @for (child of node().children; track child.element; let last = $last) {
+        <prism-a11y-tree-node
+            [node]="child"
+            [depth]="depth() + 1"
+            [isLast]="last" />
+    }
+}

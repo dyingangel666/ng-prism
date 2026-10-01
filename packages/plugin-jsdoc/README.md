@@ -28,7 +28,7 @@ import { defineConfig } from '@ng-prism/core/config';
 import { jsDocPlugin } from '@ng-prism/plugin-jsdoc';
 
 export default defineConfig({
-  plugins: [jsDocPlugin()],
+    plugins: [jsDocPlugin()]
 });
 ```
 
@@ -37,10 +37,10 @@ export default defineConfig({
 - Extracts class-level JSDoc description
 - Extracts per-input and per-output JSDoc comments
 - Renders an **API** panel with:
-  - Component description
-  - Inputs table (name, type, default, description)
-  - Outputs table (name, description)
-  - Supported tags: `@deprecated`, `@since`, `@see`, `@example`
+    - Component description
+    - Inputs table (name, type, default, description)
+    - Outputs table (name, description)
+    - Supported tags: `@deprecated`, `@since`, `@see`, `@example`
 
 ## Markdown Support
 

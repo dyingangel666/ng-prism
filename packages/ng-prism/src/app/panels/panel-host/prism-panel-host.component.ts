@@ -1,369 +1,182 @@
 import { NgComponentOutlet } from '@angular/common';
-import {
-  Component,
-  computed,
-  effect,
-  EnvironmentInjector,
-  inject,
-  signal,
-  type Type,
-  ChangeDetectionStrategy,
-  untracked,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, EnvironmentInjector, inject, signal, type Type, untracked } from '@angular/core';
+import type { NgPrismConfig, PanelDefinition, RuntimeManifest } from '../../../plugin/plugin.types.js';
 import { PrismIconComponent } from '../../icons/prism-icon.component.js';
-import { BUILTIN_PANELS } from '../builtin-panels.js';
-import { A11yAuditService } from '../a11y/a11y-audit.service.js';
 import { PrismNavigationService } from '../../services/prism-navigation.service.js';
 import { PrismPanelService } from '../../services/prism-panel.service.js';
 import { PrismPluginService } from '../../services/prism-plugin.service.js';
 import { PrismRendererService } from '../../services/prism-renderer.service.js';
-import { resolveA11yThresholds } from '../a11y/a11y-thresholds.js';
 import { PRISM_CONFIG, PRISM_MANIFEST } from '../../tokens/prism-tokens.js';
+import { A11yAuditService } from '../a11y/a11y-audit.service.js';
+import { resolveA11yThresholds } from '../a11y/a11y-thresholds.js';
 import type { A11yCoreConfig, A11yManifestMeta } from '../a11y/a11y.types.js';
-import type {
-  NgPrismConfig,
-  PanelDefinition,
-  RuntimeManifest,
-} from '../../../plugin/plugin.types.js';
+import { BUILTIN_PANELS } from '../builtin-panels.js';
 import { resolvePanelBadge } from './panel-badge.js';
 
 type RenderedPanelEntry = {
-  id: string;
-  component: Type<unknown>;
-  injector: EnvironmentInjector | null;
-  keepAlive: boolean;
+    id: string;
+    component: Type<unknown>;
+    injector: EnvironmentInjector | null;
+    keepAlive: boolean;
 };
 
 @Component({
-  selector: 'prism-panel-host',
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgComponentOutlet, PrismIconComponent],
-  template: `
-    <div class="panel">
-      <nav class="panel-tabs" role="tablist">
-        @for (panel of allPanels(); track panel.id) {
-        <button
-          class="p-tab"
-          [class.p-tab--active]="panelService.activePanelId() === panel.id"
-          (click)="panelService.activePanelId.set(panel.id)"
-          role="tab"
-          [attr.aria-selected]="panelService.activePanelId() === panel.id"
-          [attr.aria-controls]="
-            panelService.activePanelId() === panel.id
-              ? 'panel-' + panel.id
-              : null
-          "
-        >
-          @if (panel.icon) {
-          <prism-icon [name]="panel.icon" [size]="13" />
-          }
-          {{ panel.label }}
-          @if (panelBadge(panel); as badge) { @if (badge.variant !== 'ok') {
-          <span
-            class="p-tab-badge"
-            [class.warn]="badge.variant === 'warn'"
-            [class.danger]="badge.variant === 'danger'"
-            >{{ badge.text }}</span
-          >
-          } }
-        </button>
-        }
-      </nav>
-      <div
-        class="panel-body"
-        [id]="'panel-' + panelService.activePanelId()"
-        role="tabpanel"
-      >
-        @for (entry of renderedPanelsArray(); track entry.id) {
-        <div
-          class="panel-pane"
-          [hidden]="entry.id !== panelService.activePanelId()"
-        >
-          <ng-container
-            *ngComponentOutlet="
-              entry.component;
-              inputs: panelInputs();
-              injector: entry.injector ?? envInjector
-            "
-          />
-        </div>
-        }
-      </div>
-    </div>
-  `,
-  styles: `
-    .panel {
-      background: var(--prism-bg-elevated);
-      border-top: 1px solid var(--prism-border);
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-      height: 100%;
-    }
-
-    .panel-tabs {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      padding: 0 16px;
-      height: 40px;
-      border-bottom: 1px solid var(--prism-border);
-      background: var(--prism-bg);
-      overflow-x: auto;
-      scrollbar-width: none;
-      flex-shrink: 0;
-    }
-    .panel-tabs::-webkit-scrollbar { display: none; }
-
-    .p-tab {
-      position: relative;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 0 12px;
-      font-size: var(--fs-md);
-      font-weight: 500;
-      color: var(--prism-text-muted);
-      white-space: nowrap;
-      transition: color var(--dur-fast);
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: var(--font-sans);
-    }
-    .p-tab:hover { color: var(--prism-text-2); }
-    .p-tab--active { color: var(--prism-text); }
-    .p-tab--active::after {
-      content: '';
-      position: absolute;
-      left: 8px;
-      right: 8px;
-      bottom: -1px;
-      height: 2px;
-      background: linear-gradient(90deg, var(--prism-primary-from), var(--prism-primary-to));
-      border-radius: 1px;
-    }
-
-    .p-tab-badge {
-      min-width: 16px;
-      height: 16px;
-      padding: 0 5px;
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--prism-primary) 18%, transparent);
-      color: var(--prism-primary);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      display: grid;
-      place-items: center;
-    }
-    .p-tab-badge.warn {
-      background: color-mix(in srgb, var(--prism-warn) 18%, transparent);
-      color: var(--prism-warn);
-    }
-    .p-tab-badge.danger {
-      background: color-mix(in srgb, var(--prism-danger) 18%, transparent);
-      color: var(--prism-danger);
-    }
-
-    .panel-tabs-right {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      padding-left: 10px;
-    }
-
-    .icon-btn {
-      width: 28px;
-      height: 28px;
-      display: grid;
-      place-items: center;
-      border-radius: var(--radius-sm);
-      color: var(--prism-text-muted);
-      background: none;
-      border: none;
-      cursor: pointer;
-      transition: all var(--dur-fast);
-    }
-    .icon-btn:hover {
-      background: var(--prism-input-bg);
-      color: var(--prism-text);
-    }
-
-    .panel-body {
-      flex: 1;
-      min-height: 0;
-      overflow: auto;
-      background: var(--prism-bg-elevated);
-    }
-    .panel-body::-webkit-scrollbar { width: 8px; height: 8px; }
-    .panel-body::-webkit-scrollbar-thumb { background: var(--prism-border-strong); border-radius: 4px; }
-
-    .panel-pane { height: 100%; }
-    .panel-pane[hidden] { display: none; }
-
-    :focus-visible {
-      outline: 2px solid var(--prism-primary);
-      outline-offset: 2px;
-    }
-  `,
+    selector: 'prism-panel-host',
+    standalone: true,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgComponentOutlet, PrismIconComponent],
+    templateUrl: './prism-panel-host.component.html',
+    styleUrl: './prism-panel-host.component.css'
 })
 export class PrismPanelHostComponent {
-  private readonly pluginService = inject(PrismPluginService);
-  private readonly nav = inject(PrismNavigationService);
-  protected readonly panelService = inject(PrismPanelService);
-  protected readonly envInjector = inject(EnvironmentInjector);
-  private readonly auditService = inject(A11yAuditService);
-  private readonly rendererService = inject(PrismRendererService);
-  private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
-  private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
+    private readonly pluginService = inject(PrismPluginService);
+    private readonly nav = inject(PrismNavigationService);
+    protected readonly panelService = inject(PrismPanelService);
+    protected readonly envInjector = inject(EnvironmentInjector);
+    private readonly auditService = inject(A11yAuditService);
+    private readonly rendererService = inject(PrismRendererService);
+    private readonly manifest = inject<RuntimeManifest>(PRISM_MANIFEST);
+    private readonly config = inject<NgPrismConfig>(PRISM_CONFIG);
 
-  /**
-   * The configured thresholds, resolved the way the a11y header badge resolves
-   * them: the build step's numbers as the base, the app config on top. Both
-   * are static for the session, so this is computed once rather than per tab.
-   */
-  private readonly a11yThresholds = computed(() => {
-    const meta = this.manifest.meta?.['a11y'] as A11yManifestMeta | undefined;
-    return resolveA11yThresholds({
-      ...meta?.thresholds,
-      ...this.config.a11y?.thresholds,
-    });
-  });
+    /**
+     * The configured thresholds, resolved the way the a11y header badge resolves
+     * them: the build step's numbers as the base, the app config on top. Both
+     * are static for the session, so this is computed once rather than per tab.
+     */
+    private readonly a11yThresholds = computed(() => {
+        const meta = this.manifest.meta?.['a11y'] as A11yManifestMeta | undefined;
 
-  private readonly inputCount = computed(() => {
-    const comp = this.nav.activeComponent();
-    return comp?.meta.inputs.length ?? 0;
-  });
-
-  protected panelBadge(panel: PanelDefinition) {
-    return resolvePanelBadge(panel, this.nav.activeComponent(), {
-      inputCount: this.inputCount(),
-      a11yResult: this.auditService.scoreResult(),
-      a11yThresholds: this.a11yThresholds(),
-    });
-  }
-
-  private readonly builtInPanels = BUILTIN_PANELS;
-
-  protected readonly allPanels = computed(() => {
-    const comp = this.nav.activeComponent();
-    const panels = [
-      ...this.builtInPanels.filter((p) => p.placement !== 'view'),
-      ...this.pluginService.addonPanels(),
-    ];
-    if (!comp) return panels;
-    return panels.filter((p) => !p.isVisible || p.isVisible(comp));
-  });
-
-  protected readonly panelInputs = computed(() => ({
-    activeComponent: this.nav.activeComponent(),
-  }));
-
-  private readonly lazyCache = new Map<string, Type<unknown>>();
-
-  private readonly renderedPanels = signal<Map<string, RenderedPanelEntry>>(
-    new Map()
-  );
-  protected readonly renderedPanelsArray = computed(() =>
-    Array.from(this.renderedPanels().values())
-  );
-
-  constructor() {
-    effect(() => {
-      const element = this.rendererService.renderedElement();
-      const comp = this.nav.activeComponent() as any;
-      this.rendererService.inputValues();
-      this.rendererService.activeVariantIndex();
-
-      if (!element || !comp) {
-        this.auditService.clear();
-        return;
-      }
-
-      const a11yConfig: A11yCoreConfig | undefined =
-        comp.meta?.showcaseConfig?.meta?.['a11y'];
-      if (a11yConfig?.disable === true) {
-        this.auditService.clear();
-        return;
-      }
-
-      this.auditService.scheduleAudit(element, a11yConfig);
+        return resolveA11yThresholds({
+            ...meta?.thresholds,
+            ...this.config.a11y?.thresholds
+        });
     });
 
-    effect(() => {
-      const activeId = this.panelService.activePanelId();
-      const panels = this.allPanels();
+    private readonly inputCount = computed(() => {
+        const comp = this.nav.activeComponent();
 
-      untracked(() => {
-        const panel = panels.find((p) => p.id === activeId) ?? null;
-        if (panel) {
-          this.ensurePanelLoaded(panel);
-        }
-        this.pruneRenderedPanels(panels, panel ? activeId : null);
-      });
+        return comp?.meta.inputs.length ?? 0;
     });
-  }
 
-  private ensurePanelLoaded(panel: PanelDefinition): void {
-    if (this.renderedPanels().has(panel.id)) return;
-
-    if (panel.component) {
-      this.addRenderedPanel(panel, panel.component);
-      return;
+    protected panelBadge(panel: PanelDefinition) {
+        return resolvePanelBadge(panel, this.nav.activeComponent(), {
+            inputCount: this.inputCount(),
+            a11yResult: this.auditService.scoreResult(),
+            a11yThresholds: this.a11yThresholds()
+        });
     }
 
-    if (panel.loadComponent) {
-      const cached = this.lazyCache.get(panel.id);
-      if (cached) {
-        this.addRenderedPanel(panel, cached);
-        return;
-      }
+    private readonly builtInPanels = BUILTIN_PANELS;
 
-      panel.loadComponent().then((comp) => {
-        this.lazyCache.set(panel.id, comp);
+    protected readonly allPanels = computed(() => {
+        const comp = this.nav.activeComponent();
+        const panels = [...this.builtInPanels.filter((p) => p.placement !== 'view'), ...this.pluginService.addonPanels()];
+
+        if (!comp) return panels;
+        return panels.filter((p) => !p.isVisible || p.isVisible(comp));
+    });
+
+    protected readonly panelInputs = computed(() => ({
+        activeComponent: this.nav.activeComponent()
+    }));
+
+    private readonly lazyCache = new Map<string, Type<unknown>>();
+
+    private readonly renderedPanels = signal<Map<string, RenderedPanelEntry>>(new Map());
+    protected readonly renderedPanelsArray = computed(() => Array.from(this.renderedPanels().values()));
+
+    constructor() {
+        effect(() => {
+            const element = this.rendererService.renderedElement();
+            const comp = this.nav.activeComponent() as any;
+
+            this.rendererService.inputValues();
+            this.rendererService.activeVariantIndex();
+
+            if (!element || !comp) {
+                this.auditService.clear();
+                return;
+            }
+
+            const a11yConfig: A11yCoreConfig | undefined = comp.meta?.showcaseConfig?.meta?.['a11y'];
+
+            if (a11yConfig?.disable === true) {
+                this.auditService.clear();
+                return;
+            }
+
+            this.auditService.scheduleAudit(element, a11yConfig);
+        });
+
+        effect(() => {
+            const activeId = this.panelService.activePanelId();
+            const panels = this.allPanels();
+
+            untracked(() => {
+                const panel = panels.find((p) => p.id === activeId) ?? null;
+
+                if (panel) {
+                    this.ensurePanelLoaded(panel);
+                }
+                this.pruneRenderedPanels(panels, panel ? activeId : null);
+            });
+        });
+    }
+
+    private ensurePanelLoaded(panel: PanelDefinition): void {
         if (this.renderedPanels().has(panel.id)) return;
-        this.addRenderedPanel(panel, comp);
-      });
+
+        if (panel.component) {
+            this.addRenderedPanel(panel, panel.component);
+            return;
+        }
+
+        if (panel.loadComponent) {
+            const cached = this.lazyCache.get(panel.id);
+
+            if (cached) {
+                this.addRenderedPanel(panel, cached);
+                return;
+            }
+
+            panel.loadComponent().then((comp) => {
+                this.lazyCache.set(panel.id, comp);
+                if (this.renderedPanels().has(panel.id)) return;
+                this.addRenderedPanel(panel, comp);
+            });
+        }
     }
-  }
 
-  private addRenderedPanel(
-    panel: PanelDefinition,
-    component: Type<unknown>
-  ): void {
-    const next = new Map(this.renderedPanels());
-    next.set(panel.id, {
-      id: panel.id,
-      component,
-      injector: this.panelService.getInjector(panel.id),
-      keepAlive: panel.keepAlive === true,
-    });
-    this.renderedPanels.set(next);
-  }
+    private addRenderedPanel(panel: PanelDefinition, component: Type<unknown>): void {
+        const next = new Map(this.renderedPanels());
 
-  private pruneRenderedPanels(
-    visiblePanels: PanelDefinition[],
-    activeId: string | null
-  ): void {
-    const current = this.renderedPanels();
-    if (current.size === 0) return;
-
-    const visibleIds = new Set(visiblePanels.map((p) => p.id));
-    const next = new Map(current);
-    let changed = false;
-    for (const [id, entry] of current) {
-      const isVisible = visibleIds.has(id);
-      const isActive = id === activeId;
-      if (!isVisible || (!isActive && !entry.keepAlive)) {
-        next.delete(id);
-        changed = true;
-      }
+        next.set(panel.id, {
+            id: panel.id,
+            component,
+            injector: this.panelService.getInjector(panel.id),
+            keepAlive: panel.keepAlive === true
+        });
+        this.renderedPanels.set(next);
     }
-    if (changed) this.renderedPanels.set(next);
-  }
+
+    private pruneRenderedPanels(visiblePanels: PanelDefinition[], activeId: string | null): void {
+        const current = this.renderedPanels();
+
+        if (current.size === 0) return;
+
+        const visibleIds = new Set(visiblePanels.map((p) => p.id));
+        const next = new Map(current);
+        let changed = false;
+
+        for (const [id, entry] of current) {
+            const isVisible = visibleIds.has(id);
+            const isActive = id === activeId;
+
+            if (!isVisible || (!isActive && !entry.keepAlive)) {
+                next.delete(id);
+                changed = true;
+            }
+        }
+        if (changed) this.renderedPanels.set(next);
+    }
 }

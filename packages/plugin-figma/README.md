@@ -32,7 +32,7 @@ import { defineConfig } from '@ng-prism/core/config';
 import { figmaPlugin } from '@ng-prism/plugin-figma';
 
 export default defineConfig({
-  plugins: [figmaPlugin()],
+    plugins: [figmaPlugin()]
 });
 ```
 
@@ -45,19 +45,19 @@ import { Component, input, output } from '@angular/core';
 import { Showcase } from '@ng-prism/core';
 
 @Showcase({
-  title: 'Button',
-  category: 'Inputs',
-  meta: {
-    figma: 'https://www.figma.com/file/abc123/my-design',
-  },
+    title: 'Button',
+    category: 'Inputs',
+    meta: {
+        figma: 'https://www.figma.com/file/abc123/my-design'
+    }
 })
 @Component({
-  selector: 'my-button',
-  standalone: true,
-  template: `<button>{{ label() }}</button>`,
+    selector: 'my-button',
+    standalone: true,
+    template: `<button>{{ label() }}</button>`
 })
 export class ButtonComponent {
-  label = input('Button');
+    label = input('Button');
 }
 ```
 

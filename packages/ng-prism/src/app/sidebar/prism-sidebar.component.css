@@ -1,0 +1,262 @@
+.prism-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.sb-filter {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 30px;
+    padding: 0 10px;
+    margin: 12px;
+    color: var(--prism-text-muted);
+    background: var(--prism-input-bg);
+    border: 1px solid var(--prism-border);
+    border-radius: 6px;
+}
+
+.sb-filter input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-sans);
+    font-size: var(--fs-md);
+    color: var(--prism-text);
+    outline: none;
+    background: transparent;
+    border: 0;
+}
+
+.sb-filter input::placeholder {
+    color: var(--prism-text-muted);
+}
+
+.sb-filter kbd {
+    padding: 1px 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--prism-text-ghost);
+    border: 1px solid var(--prism-border);
+    border-radius: 3px;
+}
+
+.sb-scroll {
+    flex: 1;
+    padding: 10px 0 16px;
+    padding-top: 0;
+    overflow-y: auto;
+}
+
+.sb-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sb-scroll::-webkit-scrollbar-thumb {
+    background: var(--prism-border-strong);
+    border-radius: 4px;
+}
+
+.sb-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sb-pinned {
+    padding: 0 0 10px;
+    margin-bottom: 4px;
+    border-top: 1px solid var(--prism-border);
+    border-bottom: 1px solid var(--prism-border);
+}
+
+.sb-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 6px;
+    margin-top: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--prism-text-ghost);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+}
+
+.sb-section-head-l {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.sb-section-icon {
+    color: var(--prism-primary);
+}
+
+.sb-pinned-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px 6px;
+    margin-top: 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--prism-text-ghost);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+}
+
+.sb-pinned-head-l {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.sb-pinned-pin {
+    color: var(--prism-accent);
+}
+
+.sb-group {
+    margin-bottom: 4px;
+}
+
+.sb-group-head {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    width: 100%;
+    padding: 8px 14px 6px;
+    font-family: var(--font-sans);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--prism-text-ghost);
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    border: none;
+}
+
+.sb-group-head prism-icon {
+    color: var(--prism-text-ghost);
+    transition: transform var(--dur-fast);
+}
+
+.sb-group--collapsed .sb-group-head prism-icon {
+    transform: rotate(-90deg);
+}
+
+.sb-group-chip {
+    width: 6px;
+    height: 6px;
+    background: var(--prism-text-ghost);
+    border-radius: 2px;
+}
+
+.sb-group-count {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--prism-text-ghost);
+}
+
+.sb-group-count--warn {
+    color: var(--prism-mark-attention);
+}
+
+.sb-group-count--danger {
+    color: var(--prism-mark-critical);
+}
+
+.sb-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    height: 30px;
+    padding: 0 14px 0 28px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--prism-text-2);
+    text-align: left;
+    cursor: pointer;
+    background: none;
+    border: none;
+    transition:
+        background var(--dur-fast),
+        color var(--dur-fast);
+}
+
+.sb-item:hover {
+    color: var(--prism-text);
+    background: color-mix(in srgb, var(--prism-primary) 5%, transparent);
+}
+
+.sb-item--active {
+    font-weight: 500;
+    background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
+}
+
+.sb-item-icon {
+    flex: 0 0 12px;
+    opacity: 0.7;
+}
+
+.sb-item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Fixed width sized for the three built-in decoration sources (a11y,
+   plugin-coverage, plugin-visual-regression) at 11px each plus two
+   --sp-1 gaps, with a little headroom. navigationDecorations is an open
+   extension point, so a fourth mark from a third-party plugin is
+   clipped via overflow: hidden rather than allowed to grow the gutter —
+   the point of a fixed-width gutter is that rows never shift
+   horizontally as you scan the list. */
+.sb-item-health {
+    display: flex;
+    flex: none;
+    gap: var(--sp-1);
+    align-items: center;
+    justify-content: flex-end;
+    width: 40px;
+    overflow: hidden;
+}
+
+/* Outline, not fill, and full saturation only for danger. The mechanism
+   behind these marks is already deviation-driven: decorateItem returns
+   null for a clean component and every source bails out at variant === 'ok'.
+   What made them read as wallpaper was the drawing: a filled shape at full
+   saturation, one per row, in a repo where deviating is the normal case. */
+.sb-health {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 2;
+}
+
+.sb-health--warn {
+    color: color-mix(in srgb, var(--prism-mark-attention) 80%, transparent);
+}
+
+.sb-health--danger {
+    color: var(--prism-mark-critical);
+}
+
+.sb-item--deprecated .sb-item-name {
+    color: var(--prism-text-ghost);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    opacity: 0.7;
+}
+
+:focus-visible {
+    outline: 2px solid var(--prism-primary);
+    outline-offset: 2px;
+}

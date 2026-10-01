@@ -1,9 +1,9 @@
 /** Where one variant tab sits on the spectrum rail. */
 export interface SpectrumSlot {
-  /** Zero-based position. */
-  i: number;
-  /** Total positions, never below 2. */
-  n: number;
+    /** Zero-based position. */
+    i: number;
+    /** Total positions, never below 2. */
+    n: number;
 }
 
 /**
@@ -17,7 +17,8 @@ export interface SpectrumSlot {
  * spectrum, which is also what it should look like.
  */
 export function spectrumSlot(index: number, count: number): SpectrumSlot {
-  const n = count < 2 ? 2 : count;
-  const i = index < 0 ? 0 : index > n - 1 ? n - 1 : index;
-  return { i, n };
+    const n = count < 2 ? 2 : count;
+    const i = index < 0 ? 0 : index > n - 1 ? n - 1 : index;
+
+    return { i, n };
 }

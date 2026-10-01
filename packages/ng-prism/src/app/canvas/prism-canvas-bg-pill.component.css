@@ -1,0 +1,66 @@
+/* Top left, opposite the tool rail. Both used to claim the right corner and
+   the rail won, hiding a notice whose whole job is to be noticed. The rail
+   is permanent and the notice is not, so the permanent thing keeps the
+   corner it sits in and this moves. Nothing else occupies the left corner:
+   the zoom badge that used to live here was a duplicate of the readout the
+   rail carries. */
+:host {
+    position: absolute;
+    top: var(--prism-canvas-overlay-top, 12px);
+    left: var(--prism-canvas-overlay-inline, 20px);
+    z-index: 2;
+    pointer-events: none;
+    transition:
+        top var(--dur-base),
+        left var(--dur-base);
+}
+
+.prism-bg-pill {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 4px 4px 10px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-xs);
+    color: var(--prism-text-muted);
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--prism-bg-elevated) 90%, transparent);
+    border: 1px solid var(--prism-border);
+    border-radius: 999px;
+    backdrop-filter: blur(8px);
+    animation: fade-in var(--dur-base) ease-out;
+}
+
+.label {
+    letter-spacing: 0.02em;
+}
+
+.reset {
+    height: 22px;
+    padding: 0 10px;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: 500;
+    color: var(--prism-text);
+    cursor: pointer;
+    background: color-mix(in srgb, var(--prism-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--prism-primary) 25%, transparent);
+    border-radius: 999px;
+    transition: background var(--dur-fast);
+}
+
+.reset:hover {
+    background: color-mix(in srgb, var(--prism-primary) 20%, transparent);
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

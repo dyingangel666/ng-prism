@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        // Jest selbst liegt im Repo-Root, nicht hier: jest.config.cjs greift
+        // ueber ../node_modules darauf zu. @types/jest wird von dort
+        // aufgeloest, deshalb steht es nicht in test-workspace/package.json.
+        "types": ["jest", "node"]
+    },
+    // tsconfig.json schliesst *.spec.ts aus, damit nicht die Workspace-Config
+    // die Specs beansprucht (sie bringt keine Test-Typen mit). `exclude` wird
+    // an erweiternde Configs vererbt, also muss es hier ausdruecklich geleert
+    // werden — sonst waere diese Datei leer und meldete faelschlich 0 Fehler.
+    "exclude": [],
+    "include": ["projects/**/*.spec.ts", "projects/**/*.d.ts"]
+}

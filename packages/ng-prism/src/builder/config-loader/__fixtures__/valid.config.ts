@@ -1,4 +1,4 @@
 export default {
-  plugins: [{ name: 'test-plugin' }],
-  theme: { '--prism-primary': '#ff0000' },
+    plugins: [{ name: 'test-plugin' }],
+    theme: { '--prism-primary': '#ff0000' }
 };

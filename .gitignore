@@ -49,14 +49,13 @@ Thumbs.db
 
 test-output
 
-# test-workspace: Angular CLI Workspace zum lokalen Testen
-# Nur .gitkeep und angular.json committen, nicht node_modules etc.
+# test-workspace: Angular CLI Workspace zum lokalen Testen. Die Quellen der
+# Test-Libs und der beiden Prism-Apps sind committet, Generiertes nicht.
 test-workspace/node_modules
 test-workspace/dist
 test-workspace/.angular
 test-workspace/.env
 test-workspace/package-lock.json
-test-workspace/projects/test-lib-prism/
 test-workspace/ng-prism.config.ts
 # Von `npm run test:coverage` erzeugt, vom Coverage-Plugin gelesen.
 # Nicht committen: enthaelt absolute Pfade der erzeugenden Maschine.

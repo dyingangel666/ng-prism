@@ -1,0 +1,132 @@
+<!-- Anchored in .prism-canvas-wrap, deliberately absolute and not fixed:
+     a viewport-fixed rail would float over the sidebar and the panel, stay
+     put while those are resized, and sit on top of running text in the API
+     view where it has no business being. -->
+<div
+    class="prism-toolrail"
+    [class.has-rulers]="canvas.rulers()">
+    <span class="prism-toolrail__zoom">
+        {{ Math.round(canvas.zoom() * 100) }}%
+        @if (canvas.viewportWidth() !== null) {
+            <span class="prism-toolrail__vp">{{ canvas.viewportWidth() }}px</span>
+        }
+    </span>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.guides()"
+        (click)="canvas.toggleGuides()"
+        title="Toggle guides"
+        aria-label="Toggle guides"
+        [attr.aria-pressed]="canvas.guides()">
+        <prism-icon
+            name="crosshair"
+            [size]="14" />
+    </button>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.rulers()"
+        (click)="canvas.toggleRulers()"
+        title="Toggle rulers"
+        aria-label="Toggle rulers"
+        [attr.aria-pressed]="canvas.rulers()">
+        <prism-icon
+            name="move"
+            [size]="14" />
+    </button>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
+        [class.is-on]="canvas.viewportWidth() !== null"
+        (click)="canvas.toggleViewport()"
+        title="Toggle viewport width"
+        aria-label="Toggle viewport width"
+        [attr.aria-pressed]="canvas.viewportWidth() !== null">
+        <prism-icon
+            name="ruler-dimension"
+            [size]="14" />
+    </button>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
+        popovertarget="prism-tools"
+        title="Canvas, zoom and width"
+        aria-label="Canvas, zoom and width">
+        <prism-icon
+            name="sliders-horizontal"
+            [size]="14" />
+    </button>
+
+    <span class="prism-toolrail__sep"></span>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
+        popovertarget="prism-template"
+        title="Toggle Angular template"
+        aria-label="Toggle Angular template">
+        <prism-icon
+            name="code"
+            [size]="14" />
+    </button>
+</div>
+
+<!-- Only the three choosers. The toggles stay outside: you flip guides,
+     rulers and the viewport constraint constantly while working, and a
+     toggle two clicks deep is the classic mistake. What you only ever
+     set may live in a menu. -->
+<div
+    popover
+    id="prism-tools"
+    class="prism-toolmenu"
+    role="dialog"
+    aria-label="Canvas, zoom and width">
+    <span class="prism-toolmenu__lbl">Canvas</span>
+    <div class="prism-toolmenu__row">
+        @for (bg of bgs; track bg) {
+            <button
+                type="button"
+                [class.is-on]="variantBg.effective() === bg"
+                [class.is-rec]="variantBg.recommended() === bg"
+                [attr.title]="bgTitle(bg)"
+                (click)="setBg(bg)">
+                {{ capitalize(bg) }}
+            </button>
+        }
+    </div>
+
+    <span class="prism-toolmenu__lbl">Zoom</span>
+    <div class="prism-toolmenu__row">
+        @for (z of zooms; track z.value) {
+            <button
+                type="button"
+                [class.is-on]="canvas.zoom() === z.value"
+                (click)="canvas.setZoom(z.value)">
+                {{ z.label }}
+            </button>
+        }
+    </div>
+
+    <span class="prism-toolmenu__lbl">Width</span>
+    <div class="prism-toolmenu__row">
+        <button
+            type="button"
+            [class.is-on]="canvas.viewportWidth() === null"
+            (click)="canvas.setViewportWidth(null)">
+            Auto
+        </button>
+        @for (w of viewports; track w) {
+            <button
+                type="button"
+                [class.is-on]="canvas.viewportWidth() === w"
+                (click)="canvas.setViewportWidth(w)">
+                {{ w }}
+            </button>
+        }
+    </div>
+</div>

@@ -1,0 +1,41 @@
+<!-- A native popover: the platform owns open, light-dismiss and Escape, so
+     there is no visibility signal, no document click listener and no key
+     handler here. The id is what the rail's button names in its
+     popovertarget. -->
+<div
+    popover
+    id="prism-template"
+    class="tpl-popover"
+    role="dialog"
+    aria-label="Angular template">
+    <div class="tpl-popover-head">
+        <prism-icon
+            name="code"
+            [size]="13" />
+        <span>Angular Template</span>
+        <button
+            type="button"
+            class="tpl-popover-copy"
+            (click)="copy()"
+            [title]="copied() ? 'Copied!' : 'Copy to clipboard'">
+            <prism-icon
+                [name]="copied() ? 'shield-check' : 'copy'"
+                [size]="12" />
+            {{ copied() ? 'Copied' : 'Copy' }}
+        </button>
+        <button
+            type="button"
+            class="tpl-popover-close"
+            popovertarget="prism-template"
+            popovertargetaction="hide"
+            aria-label="Close"
+            title="Close (Esc)">
+            <prism-icon
+                name="x"
+                [size]="13" />
+        </button>
+    </div>
+    <pre
+        class="tpl-popover-body"
+        [innerHTML]="highlighted()"></pre>
+</div>

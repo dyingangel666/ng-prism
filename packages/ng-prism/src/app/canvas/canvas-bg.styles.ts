@@ -30,13 +30,30 @@ export const CANVAS_BG_STYLES = `
      absolute rather than a theme token, which is what makes them the values
      to declare for a screenshot baseline. "dots" already exists for anyone
      who wants the grid. */
+  /* These two also re-point --prism-measure, and that is not decoration.
+     Every other canvas overlay is drawn in a theme colour over a theme
+     surface, so the two move together. These two backgrounds are absolute:
+     "light" stays near-white while the app runs the dark theme, and "dark"
+     stays near-black while it runs the light one. The measurement colour
+     picked for one theme is then sitting on the other theme's ground —
+     measured, the dark theme's blue reaches 1.8:1 on the light background,
+     which is a viewport overlay you cannot see. Pinning the colour to the
+     ground rather than to the theme is what makes "always visible" true
+     instead of true-in-the-common-case.
+
+     Literal values because this file is theme-independent by construction —
+     it is the one place that already hard-codes the two absolute grounds
+     below, for the same reason. Keep them in step with --prism-measure in
+     prism-default-theme.ts; semantic-colours.spec.ts fails if they drift. */
   [data-bg="light"] {
     background-color: var(--prism-void-light, #f7f5fc);
     background-image: none;
+    --prism-measure: #004d8a;
   }
   [data-bg="dark"] {
     background-color: var(--prism-void-dark, #07050f);
     background-image: none;
+    --prism-measure: #41bcff;
   }
 
   /* "transparent" shares the checkerboard on purpose. The two say the same

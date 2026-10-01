@@ -43,7 +43,7 @@ you look at in the test workspace? Screenshots help for anything UI-facing.
 
 ## Checklist
 
-- [ ] `npm run check` passes clean (format, test, build, typecheck — same gate as CI)
+- [ ] `npm run check` passes clean (format, declared deps, style, lint, test, build, typecheck — the same steps CI runs)
 - [ ] PR title follows the conventional commit format (`feat: …`, `fix: …`, …)
 - [ ] Tests cover the new behaviour or the fixed bug
 - [ ] Docs under `docs/` are updated if public API or behaviour changed

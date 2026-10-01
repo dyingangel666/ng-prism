@@ -22,17 +22,17 @@ import { Component } from '@angular/core';
 import { ButtonComponent } from 'my-lib';
 
 @Component({
-  selector: 'app-button-patterns',
-  standalone: true,
-  imports: [ButtonComponent],
-  template: `
-    <h2>Button Patterns</h2>
-    <section>
-      <lib-button label="Primary Action" variant="primary" />
-      <lib-button label="Secondary" variant="secondary" />
-      <lib-button label="Danger" variant="danger" [disabled]="true" />
-    </section>
-  `,
+    selector: 'app-button-patterns',
+    standalone: true,
+    imports: [ButtonComponent],
+    template: `
+        <h2>Button Patterns</h2>
+        <section>
+            <lib-button label="Primary Action" variant="primary" />
+            <lib-button label="Secondary" variant="secondary" />
+            <lib-button label="Danger" variant="danger" [disabled]="true" />
+        </section>
+    `
 })
 export class ButtonPatternsPageComponent {}
 ```
@@ -50,19 +50,19 @@ import config from './prism.config.js';
 import { ButtonPatternsPageComponent } from './pages/button-patterns.page.js';
 
 bootstrapApplication(PrismShellComponent, {
-  providers: [
-    providePrism(PRISM_RUNTIME_MANIFEST, config, {
-      componentPages: [
-        componentPage({
-          title: 'Button Patterns',
-          category: 'Atoms',
-          categoryOrder: 1,
-          order: 99,
-          component: ButtonPatternsPageComponent,
-        }),
-      ],
-    }),
-  ],
+    providers: [
+        providePrism(PRISM_RUNTIME_MANIFEST, config, {
+            componentPages: [
+                componentPage({
+                    title: 'Button Patterns',
+                    category: 'Atoms',
+                    categoryOrder: 1,
+                    order: 99,
+                    component: ButtonPatternsPageComponent
+                })
+            ]
+        })
+    ]
 });
 ```
 
@@ -117,24 +117,22 @@ import { Component, inject, computed } from '@angular/core';
 import { PrismRendererService } from '@ng-prism/core';
 
 @Component({
-  selector: 'app-data-table-demo',
-  standalone: true,
-  template: ` <lib-data-table [rows]="rows()" [loading]="loading()" /> `,
+    selector: 'app-data-table-demo',
+    standalone: true,
+    template: ` <lib-data-table [rows]="rows()" [loading]="loading()" /> `
 })
 export class DataTableDemoComponent {
-  private readonly renderer = inject(PrismRendererService);
+    private readonly renderer = inject(PrismRendererService);
 
-  readonly rows = computed(() => {
-    const rowCount = (this.renderer.inputValues()['rowCount'] as number) ?? 0;
-    return Array.from({ length: rowCount }, (_, i) => ({
-      id: i,
-      name: `Row ${i}`,
-    }));
-  });
+    readonly rows = computed(() => {
+        const rowCount = (this.renderer.inputValues()['rowCount'] as number) ?? 0;
+        return Array.from({ length: rowCount }, (_, i) => ({
+            id: i,
+            name: `Row ${i}`
+        }));
+    });
 
-  readonly loading = computed(
-    () => (this.renderer.inputValues()['loading'] as boolean) ?? false
-  );
+    readonly loading = computed(() => (this.renderer.inputValues()['loading'] as boolean) ?? false);
 }
 ```
 
@@ -146,14 +144,14 @@ For pages that don't require Angular components (e.g. static data rendered by a 
 import { defineConfig } from '@ng-prism/core';
 
 export default defineConfig({
-  pages: [
-    {
-      type: 'custom',
-      title: 'Changelog',
-      category: 'Meta',
-      data: { version: '2.1.0', entries: [] },
-    },
-  ],
+    pages: [
+        {
+            type: 'custom',
+            title: 'Changelog',
+            category: 'Meta',
+            data: { version: '2.1.0', entries: [] }
+        }
+    ]
 });
 ```
 

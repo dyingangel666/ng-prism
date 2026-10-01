@@ -1,0 +1,19 @@
+@if (showOverlay()) {
+    @for (badge of badges(); track badge.index) {
+        @if (badge.isActive) {
+            <div
+                class="prism-a11y-sr-ov__focus"
+                [style.left.px]="badge.x"
+                [style.top.px]="badge.y"
+                [style.width.px]="badge.width"
+                [style.height.px]="badge.height"></div>
+        }
+        <div
+            class="prism-a11y-sr-ov__badge"
+            [class.prism-a11y-sr-ov__badge--active]="badge.isActive"
+            [style.left.px]="badge.x - 10"
+            [style.top.px]="badge.y - 10">
+            {{ badge.index }}
+        </div>
+    }
+}

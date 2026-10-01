@@ -10,19 +10,15 @@ import * as nodeEntry from './index.js';
  * "No matching export" — a build error with no type error to point at it.
  */
 describe('entry point parity', () => {
-  it('exports the same symbols from the node and browser entries', () => {
-    expect(Object.keys(browserEntry).sort()).toEqual(
-      Object.keys(nodeEntry).sort()
-    );
-  });
+    it('exports the same symbols from the node and browser entries', () => {
+        expect(Object.keys(browserEntry).sort()).toEqual(Object.keys(nodeEntry).sort());
+    });
 
-  it('exports the threshold helpers from both entries', () => {
-    // The build-time hooks cannot be reached from a browser bundle, so these
-    // live in their own module rather than being re-exported through the
-    // Node-only plugin entry.
-    expect(browserEntry.DEFAULT_VRT_THRESHOLDS).toEqual(
-      nodeEntry.DEFAULT_VRT_THRESHOLDS
-    );
-    expect(browserEntry.resolveVrtThresholds(90)).toEqual({ score: 90 });
-  });
+    it('exports the threshold helpers from both entries', () => {
+        // The build-time hooks cannot be reached from a browser bundle, so these
+        // live in their own module rather than being re-exported through the
+        // Node-only plugin entry.
+        expect(browserEntry.DEFAULT_VRT_THRESHOLDS).toEqual(nodeEntry.DEFAULT_VRT_THRESHOLDS);
+        expect(browserEntry.resolveVrtThresholds(90)).toEqual({ score: 90 });
+    });
 });

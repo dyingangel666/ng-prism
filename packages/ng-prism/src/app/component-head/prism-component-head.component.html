@@ -1,0 +1,28 @@
+@if (comp(); as c) {
+    <section class="comp-head">
+        <span class="comp-crumb">{{ category() }}</span>
+        <h1 class="comp-title">{{ c.meta.showcaseConfig.title }}</h1>
+
+        <prism-head-info
+            [selector]="c.meta.componentMeta.selector"
+            [description]="c.meta.showcaseConfig.description"
+            [tags]="c.meta.showcaseConfig.tags ?? []"
+            [variantCount]="variantCount()" />
+
+        @if (statusBadge(); as badge) {
+            <span
+                class="comp-status comp-status--{{ status() }}"
+                [attr.title]="badge.tooltip">
+                <span
+                    class="comp-status-mark"
+                    aria-hidden="true"></span>
+                {{ badge.label }}
+            </span>
+        }
+
+        <span class="comp-spacer"></span>
+
+        <prism-head-gauge [metrics]="metrics()" />
+        <span class="comp-head-end"><ng-content select="[headEnd]" /></span>
+    </section>
+}

@@ -1,0 +1,78 @@
+:host {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.prism-bm__box {
+    position: absolute;
+    box-sizing: border-box;
+}
+
+.prism-bm__box--margin {
+    outline: 1px solid rgb(245 158 11 / 50%);
+    background: rgb(245 158 11 / 20%);
+}
+
+.prism-bm__box--border {
+    background: rgb(234 179 8 / 30%);
+}
+
+.prism-bm__box--padding {
+    outline: 1px solid rgb(16 185 129 / 40%);
+    background: rgb(16 185 129 / 20%);
+}
+
+.prism-bm__box--content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(59 130 246 / 25%);
+}
+
+.prism-bm__label {
+    position: absolute;
+    padding: 0 3px;
+    font-family: monospace;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #1f2937;
+    white-space: nowrap;
+    background: rgb(255 255 255 / 80%);
+    border-radius: 2px;
+}
+
+.prism-bm__label--top {
+    top: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.prism-bm__label--bottom {
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.prism-bm__label--left {
+    top: 50%;
+    left: 2px;
+    transform: translateY(-50%);
+}
+
+.prism-bm__label--right {
+    top: 50%;
+    right: 2px;
+    transform: translateY(-50%);
+}
+
+.prism-bm__size {
+    padding: 1px 5px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #1e3a5f;
+    white-space: nowrap;
+    background: rgb(255 255 255 / 85%);
+    border-radius: 3px;
+}

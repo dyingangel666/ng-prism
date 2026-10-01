@@ -1,0 +1,5 @@
+<div class="prism-view-panel-host">
+    @if (resolvedComponent()) {
+        <ng-container *ngComponentOutlet="resolvedComponent(); inputs: panelInputs(); injector: activeInjector()" />
+    }
+</div>
