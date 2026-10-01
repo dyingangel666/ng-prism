@@ -47,5 +47,36 @@ module.exports = {
                 ignorePseudoElements: ['ng-deep']
             }
         ]
-    }
+    },
+
+    // SCSS braucht einen eigenen Parser (postcss-scss) und eigene Regeln:
+    // @use/@mixin/@include sind fuer at-rule-no-unknown unbekannt, und `//`
+    // haelt no-invalid-double-slash-comments fuer kaputtes CSS.
+    // stylelint-config-standard-scss bringt beides mit und ersetzt die
+    // betroffenen Regeln durch ihre scss/-Entsprechungen.
+    overrides: [
+        {
+            files: ['**/*.scss'],
+            extends: ['stylelint-config-standard-scss', 'stylelint-config-recess-order'],
+            rules: {
+                // stylelint-config-standard-scss setzt hier
+                // `except: ['after-dollar-variable']`, verlangt zwischen zwei
+                // aufeinanderfolgenden $-Variablen also, dass KEINE Leerzeile
+                // steht — und der Autofix entfernt sie. In _variables.scss
+                // trennen genau diese Leerzeilen die Gruppen (base, accent,
+                // success, error, font); der Autofix hat sie in einem Lauf
+                // alle sieben eingezogen und daraus eine Wand aus 40 Zeilen
+                // gemacht. Die Gruppierung ist Absicht, also wird der Fall
+                // auf `ignore` gestellt: zwischen zwei Variablen ist beides
+                // erlaubt, ueberall sonst gilt die Regel unveraendert.
+                'scss/dollar-variable-empty-line-before': [
+                    'always',
+                    {
+                        except: ['first-nested'],
+                        ignore: ['after-comment', 'inside-single-line-block', 'after-dollar-variable']
+                    }
+                ]
+            }
+        }
+    ]
 };

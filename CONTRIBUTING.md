@@ -265,7 +265,7 @@ Three tools with clearly separated responsibilities:
 | `.ts`                                         | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
 | Angular templates (`.html` under `packages/`) | Prettier, running as an ESLint rule | ESLint (angular-eslint template rules)                         |
 | `index.html` (docsify page, app shells)       | Prettier                            | — (see below)                                                  |
-| `.css`                                        | Prettier                            | Stylelint                                                      |
+| `.css`, `.scss`                               | Prettier                            | Stylelint                                                      |
 | `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | — (except `scripts/**/*.mjs`*)                                 |
 
 This covers `test-workspace/` as well. It is not a side project: its components
@@ -292,6 +292,16 @@ an explicit `lint` target declared on `ng-prism-workspace` in `package.json`'s
 `jest.config.ts` itself ends up linted. `nx run-many -t lint` picks it up like
 any other project's `lint` target, so `npm run lint`, `npm run check`, and CI
 all reach it.
+
+Stylelint covers `.scss` as well — the eight partials under
+`test-workspace/projects/test-lib/src/lib/styles/`. They need their own parser
+and rule set (`@use`, `@mixin` and `//` comments are not CSS), which
+`stylelint-config-standard-scss` supplies through an `overrides` entry in
+`.stylelintrc.cjs`. One rule is narrowed there: `scss/dollar-variable-empty-line-before`
+forbids a blank line between consecutive `$` variables, and its autofix
+collapsed the deliberate grouping in `_variables.scss` into one undivided
+block. Between two variables the rule is therefore set to `ignore`; everywhere
+else it applies unchanged.
 
 Every target runs `eslint … --max-warnings 0` (set once in `nx.json`'s
 `targetDefaults`). Without it the `warn` severities in `eslint.config.mjs` could

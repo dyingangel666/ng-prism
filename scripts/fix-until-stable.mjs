@@ -99,7 +99,11 @@ async function fixWithStylelint() {
         let result;
 
         try {
-            result = await stylelint.lint({ files: targets, fix: true, allowEmptyInput: true });
+            // `formatter: 'string'` ist Absicht: die Node-API von Stylelint
+            // formatiert `report` sonst als JSON, und bei einem Fund staende
+            // hier eine Wand aus Rohdaten statt der Meldung, die die CLI
+            // ausgeben wuerde.
+            result = await stylelint.lint({ files: targets, fix: true, allowEmptyInput: true, formatter: 'string' });
         } catch (err) {
             // Ein Fehler hier heißt meist: Stylelint selbst kam mit einer
             // Datei nicht zurecht (z.B. ein Syntaxfehler), den kein Autofix

@@ -22,8 +22,8 @@
         "test:workspace:clean": "cd test-workspace && rm -rf node_modules package-lock.json ng-prism.config.ts && git checkout -- angular.json package.json",
         "test:workspace:reset": "npm run test:workspace:clean && npm run test:workspace:setup && npm run test:workspace:install",
         "check:deps": "node scripts/check-declared-deps.mjs",
-        "style": "stylelint --allow-empty-input '**/*.css'",
-        "style:fix": "stylelint --allow-empty-input --fix '**/*.css'",
+        "style": "stylelint --allow-empty-input '**/*.{css,scss}'",
+        "style:fix": "stylelint --allow-empty-input --fix '**/*.{css,scss}'",
         "prepare": "husky"
     },
     "private": true,
@@ -41,7 +41,7 @@
         "*.{json,md,yml,js,mjs,cjs}": [
             "prettier --write --ignore-unknown"
         ],
-        "*.css": [
+        "*.{css,scss}": [
             "prettier --write --ignore-unknown",
             "node scripts/fix-until-stable.mjs stylelint"
         ]
@@ -92,6 +92,7 @@
         "stylelint": "^17.15.0",
         "stylelint-config-recess-order": "^7.8.0",
         "stylelint-config-standard": "^40.0.0",
+        "stylelint-config-standard-scss": "^17.0.0",
         "stylelint-order": "^7.0.1",
         "ts-jest": "^29.4.0",
         "ts-node": "10.9.1",

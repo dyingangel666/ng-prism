@@ -3,11 +3,11 @@ out-tsc
 node_modules
 coverage
 .nx
+# Angulars Build-Cache — entsteht pro Angular-Workspace, hier unter
+# test-workspace/.angular.
+.angular
 # Root-verankert, wie der /tmp- und /ng-prism-cache-Eintrag in
 # .prettierignore: Verdaccios Storage liegt unter tmp/local-registry/,
 # der Prism-Cache unter <workspaceRoot>/ng-prism-cache.
 /tmp
 ng-prism-cache
-# Enthaelt keine .css — die Styles der Test-Libs sind .scss, und stylelint
-# laeuft hier nur ueber '**/*.css'.
-test-workspace
