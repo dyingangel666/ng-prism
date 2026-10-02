@@ -18,7 +18,8 @@ module.exports = {
                 'prism-url-state\\.service\\.spec\\.ts$',
                 'prism-persistence\\.service\\.spec\\.ts$',
                 'prism-variant-bg\\.service\\.spec\\.ts$',
-                'prism-canvas-bg-pill\\.component\\.spec\\.ts$'
+                'prism-canvas-bg-pill\\.component\\.spec\\.ts$',
+                'prism-measure\\.service\\.spec\\.ts$'
             ],
             transform: {
                 '^.+\\.[mc]?[tj]s$': ['@swc/jest', swcJestConfig]
@@ -39,7 +40,8 @@ module.exports = {
                 '**/prism-url-state.service.spec.ts',
                 '**/prism-persistence.service.spec.ts',
                 '**/prism-variant-bg.service.spec.ts',
-                '**/prism-canvas-bg-pill.component.spec.ts'
+                '**/prism-canvas-bg-pill.component.spec.ts',
+                '**/prism-measure.service.spec.ts'
             ],
             setupFiles: ['<rootDir>/src/test-setup-browser.ts'],
             transform: {
