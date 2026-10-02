@@ -54,6 +54,19 @@
     <button
         type="button"
         class="prism-toolrail__btn"
+        [class.is-on]="canvas.measure()"
+        (click)="canvas.toggleMeasure()"
+        title="Toggle measure tool"
+        aria-label="Toggle measure tool"
+        [attr.aria-pressed]="canvas.measure()">
+        <prism-icon
+            name="ruler"
+            [size]="14" />
+    </button>
+
+    <button
+        type="button"
+        class="prism-toolrail__btn"
         popovertarget="prism-tools"
         title="Canvas, zoom and width"
         aria-label="Canvas, zoom and width">

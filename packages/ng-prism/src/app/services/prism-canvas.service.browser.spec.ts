@@ -139,4 +139,32 @@ describe('PrismCanvasService', () => {
             expect(service.viewportWidth()).toBe(768);
         });
     });
+
+    describe('measure toggle', () => {
+        it('should start with the measure tool off', () => {
+            expect(createService().measure()).toBe(false);
+        });
+
+        it('should toggle the measure tool', () => {
+            const service = createService();
+
+            service.toggleMeasure();
+            expect(service.measure()).toBe(true);
+        });
+
+        it('should persist the measure toggle', () => {
+            const service = createService();
+
+            service.toggleMeasure();
+
+            const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Record<string, unknown>;
+
+            expect(stored['measure']).toBe(true);
+        });
+
+        it('should restore the measure toggle from storage', () => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ measure: true }));
+            expect(createService().measure()).toBe(true);
+        });
+    });
 });

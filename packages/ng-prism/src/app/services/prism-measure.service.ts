@@ -1,5 +1,6 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
 import type { Measurement, MeasurePoint } from '../../shared/measure.type.js';
+import { PrismCanvasService } from './prism-canvas.service.js';
 import { PrismNavigationService } from './prism-navigation.service.js';
 import { PrismRendererService } from './prism-renderer.service.js';
 
@@ -15,6 +16,7 @@ import { PrismRendererService } from './prism-renderer.service.js';
 export class PrismMeasureService {
     private readonly navigation = inject(PrismNavigationService);
     private readonly renderer = inject(PrismRendererService);
+    private readonly canvas = inject(PrismCanvasService);
 
     private readonly _draft = signal<Measurement | null>(null);
     private readonly _pins = signal<readonly Measurement[]>([]);
@@ -36,6 +38,13 @@ export class PrismMeasureService {
             this.navigation.activeComponent();
             this.renderer.activeVariantIndex();
             this.clearAll();
+        });
+
+        // Hangs off the toggle, not the variant, which is why it calls
+        // `suspend()` instead of `clearAll()`.
+        effect(() => {
+            if (this.canvas.measure()) return;
+            this.suspend();
         });
     }
 

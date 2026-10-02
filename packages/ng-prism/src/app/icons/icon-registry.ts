@@ -35,6 +35,7 @@ const ICONS: Record<string, string> = {
     move: '<path d="M12 2v20M2 12h20m-16-4-4 4 4 4m12-8 4 4-4 4M8 8l-4 4 4 4"/>',
     crosshair: '<circle cx="12" cy="12" r="10"/><path d="M22 12h-4M6 12H2m10-6V2m0 20v-4"/>',
     'ruler-dimension': '<path d="M4 4v16M20 4v16M8 12h8m-2-2 2 2-2 2m-4-4-2 2 2 2"/>',
+    ruler: '<path d="M3 9.5 9.5 3a1.5 1.5 0 0 1 2.1 0l9.4 9.4a1.5 1.5 0 0 1 0 2.1L14.5 21a1.5 1.5 0 0 1-2.1 0L3 11.6a1.5 1.5 0 0 1 0-2.1Z"/><path d="m7 9 2 2m2-6 2 2m2 2 2 2m-8 4 2 2"/>',
     copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
     'maximize-2': '<path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/>',
     eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
