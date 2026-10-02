@@ -1,0 +1,39 @@
+.pin-row {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    padding: var(--sp-2) var(--sp-3);
+    overflow-x: auto;
+    background: var(--prism-bg-surface);
+    border-top: 1px solid var(--prism-border);
+}
+
+.pin-chip {
+    display: inline-flex;
+    gap: var(--sp-1);
+    align-items: center;
+    padding: var(--sp-1) var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--prism-measure);
+    white-space: nowrap;
+    border: 1px solid var(--prism-border-strong);
+    border-radius: var(--radius-xs);
+}
+
+.pin-chip__x {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    opacity: 0.6;
+}
+
+.pin-chip__x:hover,
+.pin-chip__x:focus-visible {
+    opacity: 1;
+}
