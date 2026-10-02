@@ -123,15 +123,20 @@ describe('PrismMeasureService', () => {
     it('should drop the draft but keep the pins when the tool is switched off', () => {
         // Spec §9. The toggle is a mode, not a reset: an accidental click on the
         // rail must not cost the whole measurement work. The running measurement,
-        // on the other hand, has no meaning without a pointer anymore.
+        // on the other hand, has no meaning without a pointer anymore, and neither
+        // does the hover anchor: once the overlay that renders it is gone, the
+        // anchored element has nothing left to refer to, so it leaves with the
+        // draft rather than surviving with the pins.
         service.beginDraft(pt(0, 0));
         service.updateDraft(pt(1, 0));
         service.commitDraft();
         service.beginDraft(pt(5, 5));
+        service.setHoverAnchor(document.createElement('div'));
 
         service.suspend();
 
         expect(service.draft()).toBeNull();
+        expect(service.hoverAnchor()).toBeNull();
         expect(service.pins()).toHaveLength(1);
     });
 });
