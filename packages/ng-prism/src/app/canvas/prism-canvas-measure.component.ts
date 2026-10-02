@@ -4,6 +4,7 @@ import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { formatMeasure, labelPlacement, measureDistance, tickEndpoints, toLocal, toScreen, type Vec } from './measure-geometry.js';
+import { type Box, quadSpans } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
 /**
@@ -158,6 +159,62 @@ export class PrismCanvasMeasureComponent {
         });
     });
 
+    /**
+     * The up-to-four spans between the alt-hover anchor and the element
+     * currently under the pointer.
+     *
+     * `quadSpans` already drops a side with nothing to say, so an anchor and
+     * target that merely overlap correctly renders nothing at all — see its
+     * doc on `measure-quad.ts`.
+     */
+    protected readonly hoverLines = computed<RenderedLine[]>(() => {
+        const anchorEl = this.measure.hoverAnchor();
+        const targetEl = this.hoverTarget();
+
+        if (!anchorEl || !targetEl || anchorEl === targetEl) return [];
+
+        const zoom = this.canvas.zoom();
+
+        // Same dependency-only read that `lines` above makes on
+        // `geometryTick`. `boxOf` reads `getBoundingClientRect()`, which is
+        // not itself reactive: holding the pointer still over an unchanged
+        // target does not re-set `hoverTarget` to a new value, so without
+        // this a scroll or a resize during that hold would leave the readout
+        // stale.
+        this.geometryTick();
+
+        const a = this.boxOf(anchorEl);
+        const t = this.boxOf(targetEl);
+        const centre = { x: (t.left + t.right) / 2, y: (t.top + t.bottom) / 2 };
+
+        return quadSpans(a, t).map(({ a: p, b: q, value }) => ({
+            a: p,
+            b: q,
+            tickA: tickEndpoints(p, q, 'a'),
+            tickB: tickEndpoints(p, q, 'b'),
+            label: labelPlacement(p, q, centre),
+            // No unit: four `px` values in a tight space would be noise, the
+            // same reasoning `formatMeasure`'s doc gives for the four-sided
+            // readout. Divided by zoom because these boxes come from
+            // `getBoundingClientRect` and so arrive in screen pixels — unlike
+            // the drag measurement's points, which are already
+            // `.demo-wrap`-local CSS pixels.
+            text: formatMeasure(value / (zoom || 1)),
+            pinned: false,
+            echoes: []
+        }));
+    });
+
+    /** The element under the pointer while alt-hovering, `null` otherwise. */
+    private readonly hoverTarget = signal<Element | null>(null);
+
+    /** An element's current screen rectangle, as a {@link Box}. */
+    private boxOf(element: Element): Box {
+        const r = element.getBoundingClientRect();
+
+        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+    }
+
     private specimenCentre(): Vec {
         const r = this.renderer.renderedElement()?.getBoundingClientRect();
 
@@ -185,10 +242,23 @@ export class PrismCanvasMeasureComponent {
     constructor() {
         const host = this.el.nativeElement;
         const down = (e: PointerEvent): void => {
+            // Held Alt: fix the element under the pointer as the hover
+            // anchor instead of starting a drag measurement.
+            if (e.altKey) {
+                this.measure.setHoverAnchor(elementUnderPoint(e.clientX, e.clientY, this.renderer.renderedElement()));
+                return;
+            }
             this.measure.beginDraft(this.pointAt(e.clientX, e.clientY));
             host.setPointerCapture(e.pointerId);
         };
         const move = (e: PointerEvent): void => {
+            // Held Alt: track the element under the pointer as the hover
+            // target instead of updating a drag measurement in progress.
+            if (e.altKey) {
+                this.hoverTarget.set(elementUnderPoint(e.clientX, e.clientY, this.renderer.renderedElement()));
+                return;
+            }
+            this.hoverTarget.set(null);
             if (!this.measure.draft()) return;
             this.measure.updateDraft(this.pointAt(e.clientX, e.clientY));
         };

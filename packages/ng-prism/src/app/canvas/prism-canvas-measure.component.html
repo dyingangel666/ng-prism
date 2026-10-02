@@ -28,10 +28,46 @@
             }
         </g>
     }
+    @for (l of hoverLines(); track $index) {
+        <g [class.is-pinned]="l.pinned">
+            <line
+                [attr.x1]="l.a.x"
+                [attr.y1]="l.a.y"
+                [attr.x2]="l.b.x"
+                [attr.y2]="l.b.y" />
+            <line
+                [attr.x1]="l.tickA[0].x"
+                [attr.y1]="l.tickA[0].y"
+                [attr.x2]="l.tickA[1].x"
+                [attr.y2]="l.tickA[1].y" />
+            <line
+                [attr.x1]="l.tickB[0].x"
+                [attr.y1]="l.tickB[0].y"
+                [attr.x2]="l.tickB[1].x"
+                [attr.y2]="l.tickB[1].y" />
+            @for (e of l.echoes; track $index) {
+                <line
+                    class="m-echo"
+                    [attr.x1]="e[0].x"
+                    [attr.y1]="e[0].y"
+                    [attr.x2]="e[1].x"
+                    [attr.y2]="e[1].y" />
+            }
+        </g>
+    }
 </svg>
 
 <div class="m-labels">
     @for (l of lines(); track $index) {
+        <span
+            class="m-label"
+            [class.is-pinned]="l.pinned"
+            [style.left.px]="l.label.x"
+            [style.top.px]="l.label.y">
+            {{ l.text }}
+        </span>
+    }
+    @for (l of hoverLines(); track $index) {
         <span
             class="m-label"
             [class.is-pinned]="l.pinned"

@@ -1,4 +1,4 @@
-import { quadDistances } from './measure-quad.js';
+import { quadDistances, quadSpans } from './measure-quad.js';
 
 const card = { left: 148, top: 64, right: 368, bottom: 260 };
 
@@ -66,5 +66,34 @@ describe('quadDistances', () => {
             left: 0,
             contained: false
         });
+    });
+});
+
+describe('quadSpans', () => {
+    const anchor = { left: 0, top: 0, right: 200, bottom: 100 };
+    const target = { left: 16, top: 16, right: 184, bottom: 84 };
+
+    it('should produce one span per non-zero side', () => {
+        expect(quadSpans(anchor, target)).toHaveLength(4);
+    });
+
+    it('should run each span between the two edges it measures', () => {
+        const top = quadSpans(anchor, target).find((s) => s.side === 'top');
+
+        // Centered above the target, from the anchor edge to the target edge.
+        expect(top).toEqual({ a: { x: 100, y: 0 }, b: { x: 100, y: 16 }, value: 16, side: 'top' });
+    });
+
+    it('should drop a side whose distance is zero', () => {
+        // A measurement line of length 0 is not "0 px" but nothing: two
+        // flush edges have no distance that could be drawn.
+        const flush = { left: 0, top: 16, right: 200, bottom: 84 };
+        const sides = quadSpans(anchor, flush).map((s) => s.side);
+
+        expect(sides).toEqual(['top', 'bottom']);
+    });
+
+    it('should produce no spans when the boxes are flush on every side', () => {
+        expect(quadSpans(anchor, anchor)).toEqual([]);
     });
 });
