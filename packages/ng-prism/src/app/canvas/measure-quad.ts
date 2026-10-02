@@ -28,6 +28,12 @@ export interface QuadResult {
  * Partial overlap counts as "not contained": there, exactly one side would
  * go negative, and one negative inset next to three positive ones reads as a
  * measurement fault rather than as the statement "sticks out".
+ *
+ * A target that overlaps the anchor on both axes — the partial-overlap case
+ * above included — reports zero on every side, because there is no gap on
+ * either axis to put a number on. A caller that draws one measurement line
+ * per non-zero side will then correctly draw no lines at all for that pair;
+ * that is the intended reading, not a bug to chase down.
  */
 export function quadDistances(anchor: Box, target: Box): QuadResult {
     const contained = target.left >= anchor.left && target.top >= anchor.top && target.right <= anchor.right && target.bottom <= anchor.bottom;

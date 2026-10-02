@@ -56,6 +56,15 @@ describe('quadDistances', () => {
         // misleading here, because `right` would go negative and look like a distance.
         const overhang = { left: 300, top: 100, right: 420, bottom: 160 };
 
-        expect(quadDistances(card, overhang).contained).toBe(false);
+        // The boxes overlap on both axes, so there is no gap to report on any
+        // side: a target that sticks out is not at a distance from the
+        // anchor, it is inside it on that axis. All four sides come back 0.
+        expect(quadDistances(card, overhang)).toEqual({
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            contained: false
+        });
     });
 });
