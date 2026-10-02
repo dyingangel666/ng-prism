@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { MEASURE_SNAP_TOLERANCE, type MeasurePoint } from '../../shared/measure.type.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
@@ -64,6 +64,36 @@ export function echoFor(point: MeasurePoint, screen: Vec): [Vec, Vec] | null {
           ];
 }
 
+/**
+ * Wires the two triggers that tell `lines` its drawn geometry might be
+ * stale, and returns how to undo them.
+ *
+ * A `ResizeObserver` on `stage` and `wrap` covers window resize, panel
+ * resize, and the specimen itself changing size. Resize alone is not enough
+ * because scrolling moves the specimen without resizing anything — a
+ * `ResizeObserver` does not fire on scroll — so `stage` also gets its own
+ * `scroll` listener. Dropping either one leaves the lines drawn at a screen
+ * position the specimen has since left, which is the worst impression a
+ * measuring tool can make.
+ *
+ * Takes the `ResizeObserver` constructor as a parameter instead of reading
+ * the global directly so the wiring stays testable without a real one:
+ * jsdom does not implement `ResizeObserver` at all, the same gap
+ * `elementFromPoint` has above.
+ */
+export function watchGeometry(stage: Element, wrap: Element | null, onChange: () => void, ResizeObserverCtor: typeof ResizeObserver = ResizeObserver): () => void {
+    const ro = new ResizeObserverCtor(onChange);
+
+    ro.observe(stage);
+    if (wrap) ro.observe(wrap);
+    stage.addEventListener('scroll', onChange);
+
+    return () => {
+        ro.disconnect();
+        stage.removeEventListener('scroll', onChange);
+    };
+}
+
 @Component({
     selector: 'prism-canvas-measure',
     standalone: true,
@@ -78,6 +108,18 @@ export class PrismCanvasMeasureComponent {
     private readonly renderer = inject(PrismRendererService);
     protected readonly measure = inject(PrismMeasureService);
 
+    /**
+     * Bumped whenever geometry `lines` depends on might have moved without
+     * touching zoom, pins or the draft — see {@link watchGeometry} below.
+     *
+     * `getBoundingClientRect()` inside `origin()` and `specimenCentre()` is
+     * not itself a reactive signal: without an explicit nudge like this one,
+     * nothing would tell `lines` to re-run after a scroll or a resize, and
+     * the drawn lines would stay put while the specimen moves out from under
+     * them.
+     */
+    private readonly geometryTick = signal(0);
+
     /** Origin and zoom the projection runs from. */
     private origin(): Vec {
         const wrap = this.el.nativeElement.parentElement?.querySelector('.demo-wrap');
@@ -88,6 +130,13 @@ export class PrismCanvasMeasureComponent {
 
     protected readonly lines = computed<RenderedLine[]>(() => {
         const zoom = this.canvas.zoom();
+
+        // Read for the dependency, not the value — the same way
+        // prism-canvas-rulers.component.ts forces a dependency on
+        // themeService.theme() without using it. This is what makes a
+        // scroll or a resize re-run this computed.
+        this.geometryTick();
+
         const origin = this.origin();
         const centre = this.specimenCentre();
         const all = [...this.measure.pins().map((m) => ({ m, pinned: true })), ...(this.measure.draft() ? [{ m: this.measure.draft()!, pinned: false }] : [])];
@@ -152,6 +201,18 @@ export class PrismCanvasMeasureComponent {
             host.removeEventListener('pointerdown', down);
             host.removeEventListener('pointermove', move);
             host.removeEventListener('pointerup', up);
+        });
+
+        // Deferred the same way box-model-overlay.component.ts defers its
+        // own read of `parentElement`: the host is not reliably attached to
+        // its final place in the stage yet while the constructor is running.
+        afterNextRender(() => {
+            const stage = host.parentElement;
+
+            if (!stage) return;
+            const wrap = stage.querySelector('.demo-wrap');
+
+            this.destroyRef.onDestroy(watchGeometry(stage, wrap, () => this.geometryTick.update((v) => v + 1)));
         });
     }
 }

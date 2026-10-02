@@ -1,4 +1,4 @@
-import { echoFor, elementUnderPoint } from './prism-canvas-measure.component.js';
+import { echoFor, elementUnderPoint, watchGeometry } from './prism-canvas-measure.component.js';
 
 describe('elementUnderPoint', () => {
     let root: HTMLElement;
@@ -80,5 +80,81 @@ describe('echoFor', () => {
         // A free point has no edge it sits on — an echo there would claim a
         // snap that never happened.
         expect(echoFor({ x: 0, y: 0, snap: null }, at)).toBeNull();
+    });
+});
+
+describe('watchGeometry', () => {
+    // jsdom does not implement ResizeObserver at all. watchGeometry takes the
+    // constructor as a parameter for exactly this reason, so the fake below
+    // is passed explicitly rather than patched onto the global — there is
+    // nothing here that depends on a real one existing.
+    class FakeResizeObserver {
+        static instances: FakeResizeObserver[] = [];
+        readonly observed: Element[] = [];
+        disconnected = false;
+
+        constructor(private readonly callback: ResizeObserverCallback) {
+            FakeResizeObserver.instances.push(this);
+        }
+
+        observe(target: Element): void {
+            this.observed.push(target);
+        }
+
+        unobserve(): void {}
+
+        disconnect(): void {
+            this.disconnected = true;
+        }
+    }
+
+    let stage: HTMLElement;
+    let wrap: HTMLElement;
+
+    beforeEach(() => {
+        FakeResizeObserver.instances = [];
+        stage = document.createElement('div');
+        wrap = document.createElement('div');
+        stage.appendChild(wrap);
+        document.body.appendChild(stage);
+    });
+
+    afterEach(() => {
+        stage.remove();
+    });
+
+    it('should observe the stage and .demo-wrap', () => {
+        watchGeometry(stage, wrap, () => {}, FakeResizeObserver as unknown as typeof ResizeObserver);
+
+        expect(FakeResizeObserver.instances[0]?.observed).toEqual([stage, wrap]);
+    });
+
+    it('should observe only the stage when there is no .demo-wrap', () => {
+        watchGeometry(stage, null, () => {}, FakeResizeObserver as unknown as typeof ResizeObserver);
+
+        expect(FakeResizeObserver.instances[0]?.observed).toEqual([stage]);
+    });
+
+    it('should call onChange on scroll', () => {
+        // A ResizeObserver does not fire on scroll — this is the trigger
+        // that would be silently missing if it were left out as supposedly
+        // redundant with the observer.
+        const onChange = jest.fn();
+
+        watchGeometry(stage, wrap, onChange, FakeResizeObserver as unknown as typeof ResizeObserver);
+        stage.dispatchEvent(new Event('scroll'));
+
+        expect(onChange).toHaveBeenCalledTimes(1);
+    });
+
+    it('should disconnect the observer and remove the scroll listener on teardown', () => {
+        const onChange = jest.fn();
+        const teardown = watchGeometry(stage, wrap, onChange, FakeResizeObserver as unknown as typeof ResizeObserver);
+
+        teardown();
+        stage.dispatchEvent(new Event('scroll'));
+
+        expect(FakeResizeObserver.instances[0]?.disconnected).toBe(true);
+        expect(onChange).not.toHaveBeenCalled();
     });
 });
