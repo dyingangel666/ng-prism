@@ -25,10 +25,19 @@ export function resolveOverlay(
     activePanelId: string,
     options: {
         captureActive: boolean;
+        /**
+         * True while the measuring tool is running.
+         *
+         * A bridge for now: once the tool can attribute a measured pixel gap
+         * to the CSS property that produced it, the box-model plugin has
+         * nothing left that it alone can do, and the competition for the
+         * pointer dissolves. See Spec §13.
+         */
+        measureActive: boolean;
         cache: ReadonlyMap<string, Type<unknown>>;
     }
 ): OverlayResolution {
-    if (options.captureActive) return NONE;
+    if (options.captureActive || options.measureActive) return NONE;
 
     const panel = panels.find((p) => p.id === activePanelId);
 

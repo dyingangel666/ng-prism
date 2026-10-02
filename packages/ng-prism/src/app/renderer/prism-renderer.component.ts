@@ -185,6 +185,7 @@ export class PrismRendererComponent {
             const allPanels: PanelDefinition[] = [...BUILTIN_PANELS, ...this.pluginService.panels()];
             const resolution = resolveOverlay(allPanels, panelId, {
                 captureActive: this.capture.active(),
+                measureActive: this.canvasService.measure(),
                 cache: this.overlayCache
             });
 
