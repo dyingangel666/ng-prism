@@ -10,6 +10,9 @@
             class="stage-crosshair"
             [class.visible]="canvasService.guides()"></div>
         <prism-canvas-rulers />
+        @if (canvasService.measure()) {
+            <prism-canvas-measure />
+        }
         <prism-canvas-bg-pill />
         @if (viewportWidth() !== null) {
             <!-- Grips and the dimension line are siblings of .demo-wrap, never

@@ -1,0 +1,56 @@
+/* The host catches the pointer — it is the one layer allowed to. Everything
+   it draws is exempted from that, or elementFromPoint would hit its own
+   lines instead of the specimen. */
+:host {
+    position: absolute;
+    inset: 0;
+    cursor: crosshair;
+}
+
+.m-svg,
+.m-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.m-svg line {
+    stroke: var(--prism-measure);
+    stroke-width: 1;
+    stroke-linecap: round;
+}
+
+.m-svg .is-pinned line {
+    stroke-opacity: 0.55;
+}
+
+/* The snap echo is a footnote to the measurement, not a second measurement —
+   hence dotted and noticeably weaker than the line itself. */
+.m-svg .m-echo {
+    stroke-opacity: 0.34;
+    stroke-dasharray: 2 3;
+}
+
+.m-svg .is-pinned .m-echo {
+    stroke-opacity: 0.2;
+}
+
+/* The number sits outside .demo-wrap and therefore does not scale with
+   --zoom. It also never rotates for a diagonal measurement: a tilted number
+   is slower to read, and readability is the whole point here. */
+.m-label {
+    position: absolute;
+    padding: var(--sp-1) var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--prism-measure);
+    white-space: nowrap;
+    background: var(--prism-stage);
+    transform: translate(-50%, -50%);
+}
+
+.m-label.is-pinned {
+    opacity: 0.62;
+}

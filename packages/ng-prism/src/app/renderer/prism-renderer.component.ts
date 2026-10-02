@@ -20,6 +20,7 @@ import type { PanelDefinition, RuntimeComponent } from '../../plugin/plugin.type
 import { VIEWPORT_MAX, VIEWPORT_MIN } from '../../shared/viewport.type.js';
 import { CANVAS_BG_STYLES } from '../canvas/canvas-bg.styles.js';
 import { PrismCanvasBgPillComponent } from '../canvas/prism-canvas-bg-pill.component.js';
+import { PrismCanvasMeasureComponent } from '../canvas/prism-canvas-measure.component.js';
 import { PrismCanvasRulersComponent } from '../canvas/prism-canvas-rulers.component.js';
 import { snapViewportWidth } from '../canvas/viewport-snap.js';
 import { PrismResizerDirective } from '../directives/prism-resizer.directive.js';
@@ -42,7 +43,7 @@ import { parseContentToNodes } from './projectable-content.js';
     selector: 'prism-renderer',
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [PrismCanvasRulersComponent, PrismCanvasBgPillComponent, NgComponentOutlet, PrismResizerDirective],
+    imports: [PrismCanvasRulersComponent, PrismCanvasBgPillComponent, PrismCanvasMeasureComponent, NgComponentOutlet, PrismResizerDirective],
     templateUrl: './prism-renderer.component.html',
     styleUrl: './prism-renderer.component.css',
     styles: [CANVAS_BG_STYLES]
