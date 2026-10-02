@@ -4,6 +4,7 @@ import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toLocal, toScreen, type Vec } from './measure-geometry.js';
+import { nudge } from './measure-keyboard.js';
 import { type Box, quadLines, quadSpans } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
@@ -81,7 +82,13 @@ export function watchGeometry(stage: Element, wrap: Element | null, onChange: ()
     standalone: true,
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './prism-canvas-measure.component.html',
-    styleUrl: './prism-canvas-measure.component.css'
+    styleUrl: './prism-canvas-measure.component.css',
+    host: {
+        tabindex: '0',
+        role: 'application',
+        'aria-label': 'Measure tool. Tab steps through element edges, arrow keys nudge, Enter sets a point, Escape clears.',
+        '(keydown)': 'onKey($event)'
+    }
 })
 export class PrismCanvasMeasureComponent {
     private readonly el = inject(ElementRef<HTMLElement>);
@@ -205,6 +212,39 @@ export class PrismCanvasMeasureComponent {
         const snapped = target.axis === 'x' ? { x: target.at, y: clientY } : { x: clientX, y: target.at };
 
         return { ...toLocal(snapped, origin, zoom), snap: { kind: target.kind, side: target.side, from: hit } };
+    }
+
+    /**
+     * Keyboard operation of the running draft.
+     *
+     * `Escape` and `Enter` act regardless of what `nudge` would say about the
+     * key; everything else only matters while a draft is open.
+     * `preventDefault` is called only on the branches that actually consumed
+     * the key — never for `Tab`, which `nudge` returns `null` for and this
+     * method then leaves untouched. Swallowing it here would break keyboard
+     * navigation of the whole shell for the sake of a tool that, as shipped,
+     * has nothing of its own to put Tab to — see `nudge`'s doc.
+     */
+    protected onKey(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            this.measure.cancelDraft();
+            return;
+        }
+        if (event.key === 'Enter') {
+            this.measure.commitDraft();
+            event.preventDefault();
+            return;
+        }
+
+        const draft = this.measure.draft();
+
+        if (!draft) return;
+
+        const moved = nudge(draft.b, event.key, event.shiftKey);
+
+        if (!moved) return;
+        this.measure.updateDraft({ ...moved, snap: null });
+        event.preventDefault();
     }
 
     constructor() {

@@ -77,3 +77,12 @@
         </span>
     }
 </div>
+
+<span
+    class="m-live"
+    role="status"
+    aria-live="polite">
+    @if (lines().length > 0) {
+        {{ lines()[lines().length - 1].text }}
+    }
+</span>

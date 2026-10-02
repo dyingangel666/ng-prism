@@ -54,3 +54,19 @@
 .m-label.is-pinned {
     opacity: 0.62;
 }
+
+/* Visually hidden, not display:none — a status region only announces to a
+   screen reader while it stays in the accessibility tree. */
+.m-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+:host(:focus-visible) {
+    outline: 2px solid var(--prism-measure);
+    outline-offset: -2px;
+}
