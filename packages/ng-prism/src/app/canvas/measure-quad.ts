@@ -1,5 +1,5 @@
 import type { EdgeSide } from '../../shared/measure.type.js';
-import type { Vec } from './measure-geometry.js';
+import { formatMeasure, labelPlacement, type RenderedLine, tickEndpoints, type Vec } from './measure-geometry.js';
 
 /** An axis-aligned box in `.demo-wrap`-local CSS pixels. */
 export interface Box {
@@ -91,4 +91,31 @@ export function quadSpans(anchor: Box, target: Box): QuadSpan[] {
     ];
 
     return all.filter((s) => s.value !== 0);
+}
+
+/**
+ * Turns spans into the exact shape the template draws, using the same
+ * tick/label helpers the primary drag measurement uses.
+ *
+ * Every hover line is unpinned and carries no snap echoes — an element-to-
+ * element span has no single snapped-to edge to retrace. The value is
+ * divided by `zoom` because `quadSpans`' boxes come from
+ * `getBoundingClientRect` and so arrive in screen pixels, unlike the drag
+ * measurement's points, which are already `.demo-wrap`-local CSS pixels; the
+ * `|| 1` guard matches `formatMeasure`'s caller elsewhere, so a zoom of 0
+ * cannot turn the text into `NaN`. The text itself carries no unit: four
+ * `px` values in a tight space would be noise, the same reasoning
+ * `formatMeasure`'s own doc gives.
+ */
+export function quadLines(spans: QuadSpan[], centre: Vec, zoom: number): RenderedLine[] {
+    return spans.map(({ a, b, value }) => ({
+        a,
+        b,
+        tickA: tickEndpoints(a, b, 'a'),
+        tickB: tickEndpoints(a, b, 'b'),
+        label: labelPlacement(a, b, centre),
+        text: formatMeasure(value / (zoom || 1)),
+        pinned: false,
+        echoes: []
+    }));
 }

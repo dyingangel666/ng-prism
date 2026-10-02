@@ -18,6 +18,27 @@ export interface Vec {
     y: number;
 }
 
+/** A measurement, reduced to exactly what the template draws. */
+export interface RenderedLine {
+    a: Vec;
+    b: Vec;
+    tickA: [Vec, Vec];
+    tickB: [Vec, Vec];
+    label: Vec;
+    text: string;
+    pinned: boolean;
+    /**
+     * The snapped-to edges, retraced as a dotted line (Spec §4.4).
+     *
+     * Without them you can see *that* the tool latched, but not *onto what*
+     * — and with a 2px border, the border, padding and content edges sit
+     * exactly 2 pixels apart. Which one was meant is otherwise impossible to
+     * tell. Always empty for the alt-hover quad readout: a span between two
+     * elements has no single snapped-to edge to retrace.
+     */
+    echoes: Array<[Vec, Vec]>;
+}
+
 /**
  * A zoom that is never 0.
  *

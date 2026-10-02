@@ -1,4 +1,4 @@
-import { quadDistances, quadSpans } from './measure-quad.js';
+import { quadDistances, quadLines, type QuadSpan, quadSpans } from './measure-quad.js';
 
 const card = { left: 148, top: 64, right: 368, bottom: 260 };
 
@@ -95,5 +95,50 @@ describe('quadSpans', () => {
 
     it('should produce no spans when the boxes are flush on every side', () => {
         expect(quadSpans(anchor, anchor)).toEqual([]);
+    });
+});
+
+describe('quadLines', () => {
+    const span: QuadSpan = { a: { x: 100, y: 0 }, b: { x: 100, y: 16 }, value: 16, side: 'top' };
+    const centre = { x: 100, y: 50 };
+
+    it('should format the value without a unit', () => {
+        const [line] = quadLines([span], centre, 1);
+
+        expect(line.text).toBe('16');
+    });
+
+    it('should divide the value by zoom, not multiply it', () => {
+        // Pinned at a zoom other than 1 so a future slip from `/ zoom` to
+        // `* zoom` fails loudly: at zoom 2, that mistake would produce "32",
+        // not "8".
+        const [line] = quadLines([span], centre, 2);
+
+        expect(line.text).toBe('8');
+    });
+
+    it('should mark every hover line unpinned with no snap echoes', () => {
+        const [line] = quadLines([span], centre, 1);
+
+        expect(line.pinned).toBe(false);
+        expect(line.echoes).toEqual([]);
+    });
+
+    it('should derive ticks and the label from the shared geometry helpers', () => {
+        // Hand-computed from tickEndpoints/labelPlacement's own documented
+        // behaviour, the same way measure-geometry.spec.ts pins its cases,
+        // rather than re-calling the helpers here and comparing against
+        // themselves.
+        const [line] = quadLines([span], centre, 1);
+
+        expect(line.tickA).toEqual([
+            { x: 103.5, y: 0 },
+            { x: 96.5, y: 0 }
+        ]);
+        expect(line.tickB).toEqual([
+            { x: 103.5, y: 16 },
+            { x: 96.5, y: 16 }
+        ]);
+        expect(line.label).toEqual({ x: 85, y: 8 });
     });
 });

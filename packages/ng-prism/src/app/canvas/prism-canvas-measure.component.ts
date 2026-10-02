@@ -3,8 +3,8 @@ import { MEASURE_SNAP_TOLERANCE, type MeasurePoint } from '../../shared/measure.
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-import { formatMeasure, labelPlacement, measureDistance, tickEndpoints, toLocal, toScreen, type Vec } from './measure-geometry.js';
-import { type Box, quadSpans } from './measure-quad.js';
+import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toLocal, toScreen, type Vec } from './measure-geometry.js';
+import { type Box, quadLines, quadSpans } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
 /**
@@ -20,25 +20,6 @@ export function elementUnderPoint(x: number, y: number, root: Element | null): E
     const hit = document.elementFromPoint(x, y);
 
     return hit && root.contains(hit) ? hit : null;
-}
-
-interface RenderedLine {
-    a: Vec;
-    b: Vec;
-    tickA: [Vec, Vec];
-    tickB: [Vec, Vec];
-    label: Vec;
-    text: string;
-    pinned: boolean;
-    /**
-     * The snapped-to edges, retraced as a dotted line (Spec §4.4).
-     *
-     * Without them you can see *that* the tool latched, but not *onto what*
-     * — and with a 2px border, the border, padding and content edges sit
-     * exactly 2 pixels apart. Which one was meant is otherwise impossible to
-     * tell.
-     */
-    echoes: Array<[Vec, Vec]>;
 }
 
 /**
@@ -187,22 +168,9 @@ export class PrismCanvasMeasureComponent {
         const t = this.boxOf(targetEl);
         const centre = { x: (t.left + t.right) / 2, y: (t.top + t.bottom) / 2 };
 
-        return quadSpans(a, t).map(({ a: p, b: q, value }) => ({
-            a: p,
-            b: q,
-            tickA: tickEndpoints(p, q, 'a'),
-            tickB: tickEndpoints(p, q, 'b'),
-            label: labelPlacement(p, q, centre),
-            // No unit: four `px` values in a tight space would be noise, the
-            // same reasoning `formatMeasure`'s doc gives for the four-sided
-            // readout. Divided by zoom because these boxes come from
-            // `getBoundingClientRect` and so arrive in screen pixels — unlike
-            // the drag measurement's points, which are already
-            // `.demo-wrap`-local CSS pixels.
-            text: formatMeasure(value / (zoom || 1)),
-            pinned: false,
-            echoes: []
-        }));
+        // The DOM-bound half (boxOf) stops here; quadSpans/quadLines are
+        // both pure and tested directly in measure-quad.spec.ts.
+        return quadLines(quadSpans(a, t), centre, zoom);
     });
 
     /** The element under the pointer while alt-hovering, `null` otherwise. */
