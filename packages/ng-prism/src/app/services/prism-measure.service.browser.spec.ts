@@ -11,11 +11,13 @@ const pt = (x: number, y: number): MeasurePoint => ({ x, y, snap: null });
 describe('PrismMeasureService', () => {
     let activeComponent: ReturnType<typeof signal<unknown>>;
     let activeVariantIndex: ReturnType<typeof signal<number>>;
+    let measure: ReturnType<typeof signal<boolean>>;
     let service: PrismMeasureService;
 
     beforeEach(() => {
         activeComponent = signal<unknown>({ id: 'a' });
         activeVariantIndex = signal(0);
+        measure = signal(false);
 
         // Every other TestBed-based spec in this codebase (e.g.
         // prism-persistence.service.spec.ts, prism-variant-bg.service.spec.ts)
@@ -30,8 +32,11 @@ describe('PrismMeasureService', () => {
                 { provide: PrismRendererService, useValue: { activeVariantIndex } },
                 // Explicitly mocked, not real: the real PrismCanvasService pulls
                 // PrismCaptureService, URL parsing and localStorage into a unit
-                // test that has no need to know about any of it.
-                { provide: PrismCanvasService, useValue: { measure: signal(false) } }
+                // test that has no need to know about any of it. Kept as a `let`
+                // (not an inline signal() per call) so tests can drive the toggle
+                // and exercise the suspend-on-toggle-off effect, not just the
+                // method it calls.
+                { provide: PrismCanvasService, useValue: { measure } }
             ]
         });
         service = TestBed.inject(PrismMeasureService);
@@ -127,6 +132,11 @@ describe('PrismMeasureService', () => {
         // does the hover anchor: once the overlay that renders it is gone, the
         // anchored element has nothing left to refer to, so it leaves with the
         // draft rather than surviving with the pins.
+        //
+        // This exercises the contract of suspend() directly. The sibling test
+        // below exercises the effect that calls suspend() when the canvas
+        // toggle goes false — the two are not redundant: this one would still
+        // pass if that effect were deleted.
         service.beginDraft(pt(0, 0));
         service.updateDraft(pt(1, 0));
         service.commitDraft();
@@ -134,6 +144,27 @@ describe('PrismMeasureService', () => {
         service.setHoverAnchor(document.createElement('div'));
 
         service.suspend();
+
+        expect(service.draft()).toBeNull();
+        expect(service.hoverAnchor()).toBeNull();
+        expect(service.pins()).toHaveLength(1);
+    });
+
+    it('should drop the draft but keep the pins when the toggle is switched off', () => {
+        // Drives the canvas.measure() toggle itself, not suspend() directly —
+        // this is the test that would fail if the constructor's second effect
+        // were ever deleted, which the test above (calling suspend() directly)
+        // cannot catch.
+        service.beginDraft(pt(0, 0));
+        service.updateDraft(pt(1, 0));
+        service.commitDraft();
+        service.beginDraft(pt(5, 5));
+        service.setHoverAnchor(document.createElement('div'));
+
+        measure.set(true);
+        TestBed.tick();
+        measure.set(false);
+        TestBed.tick();
 
         expect(service.draft()).toBeNull();
         expect(service.hoverAnchor()).toBeNull();

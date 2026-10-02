@@ -50,10 +50,10 @@ export class PrismCanvasService {
     private lastViewportWidth = VIEWPORT_DEFAULT;
 
     constructor() {
-        // Capture mode renders for a screenshot tool: persisted zoom, guides and
-        // rulers would leak a previous session's state into the image, so the
-        // defaults (zoom 1, no guides, no rulers) are kept and nothing is written
-        // back.
+        // Capture mode renders for a screenshot tool: persisted zoom, guides,
+        // rulers and the measure toggle would leak a previous session's state
+        // into the image, so the defaults (zoom 1, no guides, no rulers, measure
+        // off) are kept and nothing is written back.
         if (this.capture.active()) return;
         this.loadFromStorage();
     }
