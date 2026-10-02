@@ -1,9 +1,9 @@
 /**
- * Ein Messwert als Text, ohne Einheit.
+ * A measured value as text, without a unit.
  *
- * Die Einheit hängt der Aufrufer an: die primäre Messung trägt `px` wie die
- * Viewport-Maßlinie, der Vier-Seiten-Readout nicht, weil vier Mal `px` auf
- * engem Raum nur Rauschen ist.
+ * The caller appends the unit: the primary measurement carries `px` like the
+ * viewport dimension line does, the four-sided readout does not, because
+ * four `px` in a small space is noise.
  */
 export function formatMeasure(cssPx: number): string {
     const rounded = Math.round(cssPx * 10) / 10;

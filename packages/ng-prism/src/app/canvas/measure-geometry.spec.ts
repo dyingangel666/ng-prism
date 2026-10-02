@@ -6,9 +6,9 @@ describe('formatMeasure', () => {
     });
 
     it('should keep one decimal on a fractional value', () => {
-        // Der ganze Grund für die Nachkommastelle: 23.5 darf nicht wie 24
-        // aussehen, sonst meldet das Werkzeug einen Abstand als rund, der es
-        // nicht ist.
+        // The entire reason for the one decimal place: 23.5 must not look
+        // like 24, or the tool would report a distance as round when it is
+        // not.
         expect(formatMeasure(23.5)).toBe('23.5');
     });
 
@@ -18,8 +18,8 @@ describe('formatMeasure', () => {
     });
 
     it('should collapse a value that rounds to a whole number', () => {
-        // Subpixel-Arithmetik liefert ständig 23.999999; "24" ist die ehrliche
-        // Ausgabe, "24.0" nur Rauschen.
+        // Subpixel arithmetic constantly produces values like 23.999999;
+        // "24" is the honest output, "24.0" would just be noise.
         expect(formatMeasure(23.999999)).toBe('24');
     });
 
@@ -28,8 +28,8 @@ describe('formatMeasure', () => {
     });
 
     it('should format a negative value', () => {
-        // Überlappende Boxen liefern negative Abstände; das Vorzeichen ist die
-        // Information.
+        // Overlapping boxes produce negative distances; the sign is the
+        // information.
         expect(formatMeasure(-4.5)).toBe('-4.5');
     });
 });

@@ -1,13 +1,13 @@
 /**
- * Das Messwerkzeug misst Geometrie, nicht Kaskade: ein Punkt kennt die Kante,
- * auf der er sitzt, aber nicht die CSS-Eigenschaft, die sie erzeugt. Die
- * Zuordnung Pixel -> Eigenschaft ist bewusst Folgeschritt, siehe Spec §13.
+ * The measuring tool measures geometry, not cascade: a point knows the edge
+ * it sits on, but not the CSS property that produced it. Mapping pixels to a
+ * property is deliberately a follow-up step, see Spec §13.
  */
 export type SnapKind = 'border' | 'padding' | 'content';
 
 export type EdgeSide = 'top' | 'right' | 'bottom' | 'left';
 
-/** Worauf ein Punkt eingerastet ist — `null`, wenn kein Ziel in Toleranz lag. */
+/** What a point snapped to — `null` when no target was within tolerance. */
 export interface SnapRef {
     kind: SnapKind;
     side: EdgeSide;
@@ -15,12 +15,12 @@ export interface SnapRef {
 }
 
 /**
- * Ein Messpunkt in `.demo-wrap`-lokalen CSS-Pixeln.
+ * A measure point in `.demo-wrap`-local CSS pixels.
  *
- * Nicht in Bildschirmkoordinaten: `.demo-wrap` trägt
- * `transform: scale(var(--zoom))`, und lokale Koordinaten machen die Distanz
- * ohne weitere Division zur CSS-Pixel-Distanz. Zoomen nach dem Setzen eines
- * Pins verschiebt ihn dann nicht relativ zum Specimen.
+ * Not in screen coordinates: `.demo-wrap` carries
+ * `transform: scale(var(--zoom))`, and local coordinates turn the distance
+ * into a CSS-pixel distance with no further division. Zooming after a pin is
+ * placed then does not shift it relative to the specimen.
  */
 export interface MeasurePoint {
     x: number;
@@ -34,25 +34,26 @@ export interface Measurement {
 }
 
 /**
- * Wie nah der Zeiger an eine Kante kommen muss, in **Bildschirm**pixeln.
+ * How close the pointer has to come to an edge, in **screen** pixels.
  *
- * Bildschirm- und nicht Dokumentpixel, weil die Toleranz eine Zielgenauigkeit
- * der Hand beschreibt und keine Eigenschaft des Dokuments: bei 50 % Zoom muss
- * sie sich genauso anfühlen wie bei 200 %. Derselbe Wert wie
- * `VIEWPORT_SNAP_TOLERANCE`, aus demselben Grund.
+ * Screen and not document pixels, because the tolerance describes a
+ * precision of the hand and not a property of the document: it has to feel
+ * the same at 50% zoom as at 200%. Same value as `VIEWPORT_SNAP_TOLERANCE`,
+ * for the same reason.
  */
 export const MEASURE_SNAP_TOLERANCE = 8;
 
 /**
- * Ab welcher Streckenlänge der Wert zwischen die Endticks passt, in CSS-Pixeln.
+ * The span, in CSS pixels, above which the value fits between the end ticks.
  *
- * Darunter überlappen Ticks und Zahl, und die Messung wird unleserlich genau
- * dort, wo sie am genauesten sein müsste. Der Wert wandert dann nach außen.
+ * Below it the ticks and the number overlap, and the measurement becomes
+ * unreadable exactly where it needs to be most precise. The value then
+ * moves outside instead.
  */
 export const MEASURE_LABEL_MIN_SPAN = 28;
 
-/** Wie weit der Wert bei kurzen Strecken senkrecht zur Linie ausweicht. */
+/** How far the value steps aside, perpendicular to the line, for short spans. */
 export const MEASURE_LABEL_OFFSET = 15;
 
-/** Länge eines Endticks, auf dem Endpunkt zentriert. */
+/** Length of an end tick, centered on the endpoint. */
 export const MEASURE_TICK_LENGTH = 7;
