@@ -16,9 +16,14 @@ const NONE: OverlayResolution = { kind: 'none' };
 /**
  * Decides which overlay component belongs to the active panel.
  *
- * Panel overlays render *inside* `.demo-wrap` — the same element external
- * screenshot tools capture — so capture mode resolves to `none` regardless of
- * which panel is active, and never triggers a lazy overlay load.
+ * Resolves to `none` regardless of which panel is active, and never
+ * triggers a lazy overlay load, under either of two independent
+ * conditions:
+ *
+ * - Capture mode: panel overlays render *inside* `.demo-wrap` — the same
+ *   element external screenshot tools capture.
+ * - Measure mode: see the `measureActive` option below for why a running
+ *   measuring tool preempts every panel overlay the same way.
  */
 export function resolveOverlay(
     panels: readonly PanelDefinition[],

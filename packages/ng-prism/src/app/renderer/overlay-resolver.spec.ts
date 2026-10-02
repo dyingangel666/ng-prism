@@ -142,13 +142,13 @@ describe('resolveOverlay', () => {
 
         it('does not trigger a lazy overlay load while the measure tool is active', () => {
             const load = jest.fn(() => Promise.resolve(LazyOverlay));
-
-            resolveOverlay([panel({ loadOverlayComponent: load })], 'p', {
+            const result = resolveOverlay([panel({ loadOverlayComponent: load })], 'p', {
                 captureActive: false,
                 measureActive: true,
                 cache: NO_CACHE
             });
 
+            expect(result).toEqual({ kind: 'none' });
             expect(load).not.toHaveBeenCalled();
         });
     });
