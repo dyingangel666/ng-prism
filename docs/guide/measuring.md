@@ -8,7 +8,7 @@ The measuring tool is a toggle button on the floating canvas rail, next to guide
 
 ## Measuring a distance
 
-Press and drag from one point to another; releasing the pointer finishes the measurement. While dragging, each endpoint latches onto the nearest border, padding or content edge of whatever element sits under the pointer, as long as one is within 8 screen pixels — screen pixels, not CSS pixels, because the precision of a hand should feel the same whether the canvas is zoomed to 50% or 200%.
+Press and drag from one point to another; releasing the pointer finishes the measurement. Press and _release_ without moving does not: a click is not a drag, and a zero-length measurement is not the statement "0 px" — it is no statement at all, so it is discarded rather than dropped into the pin row for you to clear by hand. Only the primary button starts a measurement; a right-click is ignored outright, because the context menu would take the pointer away and leave a half-finished measurement following the cursor with no button held. While dragging, each endpoint latches onto the nearest border, padding or content edge of whatever element sits under the pointer, as long as one is within 8 screen pixels — screen pixels, not CSS pixels, because the precision of a hand should feel the same whether the canvas is zoomed to 50% or 200%.
 
 A latched endpoint draws a short dotted tick retracing the exact edge it locked onto. That echo is deliberately a footnote and not a second measurement — shorter than the edge itself and noticeably fainter than the measurement line — but it earns its place: a 2px border puts the border, padding and content edges exactly 2 pixels apart, and without the echo there is no way to tell which of the three was actually meant.
 

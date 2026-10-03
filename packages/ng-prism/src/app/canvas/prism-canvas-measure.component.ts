@@ -338,12 +338,34 @@ export class PrismCanvasMeasureComponent {
     constructor() {
         const host = this.el.nativeElement;
         const down = (e: PointerEvent): void => {
+            // Primary button only, and the same failure
+            // `prism-resizer.directive.ts` guards against in its own
+            // `onMouseDown`: a right-click arms the drag, the context menu
+            // then takes the pointer so the matching `pointerup` never
+            // arrives, and the draft stays open afterwards with no button
+            // held. From there `move`'s `if (!this.measure.draft()) return;`
+            // protects nothing any more and the measurement simply follows
+            // the cursor. `preventDefault` does not suppress `contextmenu`,
+            // so the guard has to be the button check.
+            if (e.button !== 0) return;
             // Held Alt: fix the element under the pointer as the hover
             // anchor instead of starting a drag measurement.
             if (e.altKey) {
                 this.measure.setHoverAnchor(elementUnderPoint(e.clientX, e.clientY, this.renderer.renderedElement()));
                 return;
             }
+            // Stops the drag from selecting the specimen's text and painting
+            // a selection highlight across the very thing being measured.
+            // `user-select: none` on the host does not cover it: the
+            // selection starts on the specimen underneath, not on the
+            // overlay.
+            e.preventDefault();
+            // …which also suppresses the compatibility `mousedown`, and with
+            // it the focus the host would otherwise have received from the
+            // click. Without this line the keyboard handling below becomes
+            // unreachable for anyone who starts with the pointer, which is
+            // everyone — a measurement cannot be started any other way.
+            host.focus({ preventScroll: true });
             this.measure.beginDraft(this.pointAt(e.clientX, e.clientY));
             host.setPointerCapture(e.pointerId);
         };
@@ -358,15 +380,36 @@ export class PrismCanvasMeasureComponent {
             if (!this.measure.draft()) return;
             this.measure.updateDraft(this.pointAt(e.clientX, e.clientY));
         };
-        const up = (): void => this.measure.commitDraft();
+        const up = (): void => {
+            const draft = this.measure.draft();
+
+            if (!draft) return;
+            // A pointer-down that never moved is a click, not a drag.
+            // `beginDraft` seeds `b` with `a`, so the two stay exactly equal
+            // until the first `pointermove` — and committing that pins a
+            // `0 px` chip the user then has to dismiss by hand. A finished
+            // drag being a pin is the design; a bare click is not a drag.
+            if (draft.a.x === draft.b.x && draft.a.y === draft.b.y) {
+                this.measure.cancelDraft();
+                return;
+            }
+            this.measure.commitDraft();
+        };
+        // A cancelled pointer — the browser taking it for a scroll or a
+        // gesture, the device going away — otherwise leaves the draft open
+        // for ever, the same end state the missing button guard above
+        // produced by another route.
+        const cancel = (): void => this.measure.cancelDraft();
 
         host.addEventListener('pointerdown', down);
         host.addEventListener('pointermove', move);
         host.addEventListener('pointerup', up);
+        host.addEventListener('pointercancel', cancel);
         this.destroyRef.onDestroy(() => {
             host.removeEventListener('pointerdown', down);
             host.removeEventListener('pointermove', move);
             host.removeEventListener('pointerup', up);
+            host.removeEventListener('pointercancel', cancel);
         });
 
         // Deferred the same way box-model-overlay.component.ts defers its

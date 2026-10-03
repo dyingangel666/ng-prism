@@ -21,6 +21,12 @@
     inset: 0;
     z-index: 1;
     cursor: crosshair;
+
+    /* A measuring drag across a text-bearing specimen would otherwise paint
+     a selection highlight over the thing being measured. `pointerdown`
+     calls preventDefault() for the selection that starts underneath; this
+     covers a selection that starts on the overlay itself. */
+    user-select: none;
 }
 
 .m-svg,

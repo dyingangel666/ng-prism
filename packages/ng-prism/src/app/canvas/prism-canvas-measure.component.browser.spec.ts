@@ -327,6 +327,116 @@ describe('PrismCanvasMeasureComponent — keyboard', () => {
     });
 });
 
+describe('PrismCanvasMeasureComponent — pointer', () => {
+    let measure: PrismMeasureService;
+    let host: HTMLElement;
+
+    beforeAll(async () => {
+        await resolveComponentResources((url) => readFile(join(__dirname, url), 'utf8'));
+    });
+
+    beforeEach(() => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [
+                { provide: PrismNavigationService, useValue: { activeComponent: signal(null) } },
+                { provide: PrismRendererService, useValue: { activeVariantIndex: signal(0), renderedElement: signal(null) } },
+                { provide: PrismCanvasService, useValue: { measure: signal(false), zoom: signal(1) } }
+            ]
+        });
+        measure = TestBed.inject(PrismMeasureService);
+        TestBed.tick();
+
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        host = fixture.nativeElement as HTMLElement;
+        // jsdom implements neither `PointerEvent` nor `setPointerCapture`.
+        // The events below are therefore plain `MouseEvent`s dispatched under
+        // the pointer event names — the listeners are registered by name and
+        // read nothing a MouseEvent lacks except `pointerId`, which only ever
+        // reaches this stub.
+        host.setPointerCapture = (): void => {};
+    });
+
+    /** Dispatches a pointer-named event on the host and returns it. */
+    function pointer(type: string, init: MouseEventInit = {}): MouseEvent {
+        const event = new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, ...init });
+
+        host.dispatchEvent(event);
+        return event;
+    }
+
+    it('should discard a press that never moved rather than pinning 0 px', () => {
+        // `beginDraft` seeds b with a, so a click commits a zero-length
+        // measurement — a `0 px` chip in the pin row that has to be dismissed
+        // by hand. A finished drag being a pin is the design; a click is not a
+        // drag.
+        pointer('pointerdown', { clientX: 40, clientY: 40 });
+        pointer('pointerup', { clientX: 40, clientY: 40 });
+
+        expect(measure.pins()).toEqual([]);
+        expect(measure.draft()).toBeNull();
+    });
+
+    it('should pin a drag that actually moved', () => {
+        // The other half of the same rule: the discard must key on the
+        // endpoints coinciding, not on anything that would also swallow a real
+        // measurement.
+        pointer('pointerdown', { clientX: 40, clientY: 40 });
+        pointer('pointermove', { clientX: 96, clientY: 40 });
+        pointer('pointerup', { clientX: 96, clientY: 40 });
+
+        expect(measure.pins()).toHaveLength(1);
+        expect(measure.draft()).toBeNull();
+    });
+
+    it('should ignore a secondary button, so a right-click cannot arm a drag', () => {
+        // prism-resizer.directive.ts carries the same guard and spells out
+        // why: the context menu takes the pointer, the matching pointerup
+        // never arrives, and the draft stays open with no button held — from
+        // there `move`'s draft check protects nothing and the measurement
+        // follows the cursor.
+        pointer('pointerdown', { clientX: 40, clientY: 40, button: 2 });
+
+        expect(measure.draft()).toBeNull();
+
+        pointer('pointermove', { clientX: 96, clientY: 40 });
+
+        expect(measure.draft()).toBeNull();
+        expect(measure.pins()).toEqual([]);
+    });
+
+    it('should prevent the default press so the drag does not select the specimen', () => {
+        const event = pointer('pointerdown', { clientX: 40, clientY: 40 });
+
+        expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('should focus the host, which the prevented default would otherwise cost', () => {
+        // preventDefault on pointerdown suppresses the compatibility
+        // mousedown, and with it the focus the click would have given the
+        // host. Without the explicit focus the Enter/Escape/arrow handling is
+        // unreachable for anyone who started the measurement with a pointer —
+        // which is everyone, since there is no other way to start one.
+        pointer('pointerdown', { clientX: 40, clientY: 40 });
+
+        expect(document.activeElement).toBe(host);
+    });
+
+    it('should drop the draft on pointercancel', () => {
+        // A cancelled pointer otherwise leaves the draft open for ever: the
+        // same end state the missing button guard produced, reached another
+        // way.
+        pointer('pointerdown', { clientX: 40, clientY: 40 });
+        pointer('pointermove', { clientX: 96, clientY: 40 });
+        pointer('pointercancel', { clientX: 96, clientY: 40 });
+
+        expect(measure.draft()).toBeNull();
+        expect(measure.pins()).toEqual([]);
+    });
+});
+
 describe('PrismCanvasMeasureComponent — alt-hover readout', () => {
     let measure: PrismMeasureService;
     let fixture: ComponentFixture<PrismCanvasMeasureComponent>;
