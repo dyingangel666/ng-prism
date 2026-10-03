@@ -12,6 +12,14 @@ Press and drag from one point to another; releasing the pointer finishes the mea
 
 A latched endpoint draws a short dotted tick retracing the exact edge it locked onto. That echo is deliberately a footnote and not a second measurement — shorter than the edge itself and noticeably fainter than the measurement line — but it earns its place: a 2px border puts the border, padding and content edges exactly 2 pixels apart, and without the echo there is no way to tell which of the three was actually meant.
 
+Hold **Shift** while dragging and the measurement is pulled onto whichever of the eight 45-degree directions it lies nearest — horizontal, vertical, or one of the four diagonals. It is the same service Shift performs in Photoshop, Illustrator and Figma, and it is what makes an exactly straight measurement reachable by hand rather than by patience. Releasing Shift frees the drag again immediately, mid-drag included; nothing about the constraint is remembered.
+
+The constraint runs _on_ the snapped point rather than instead of it, which is what keeps the two features from fighting. Drag horizontally while the endpoint latches onto a left edge at x=338 and you keep that x and gain an exactly flat line — precise on both counts. The one thing that cannot survive is a latched edge lying across the direction being forced: forcing the vertical off a top edge moves the point off that edge, so the dotted echo is dropped rather than left marking an edge the point has since left. A diagonal moves the point on both axes at once and so drops any echo.
+
+The projection is orthogonal, not length-preserving. A drag 240 across and 7 down reports 240, the distance along the line actually drawn — printing 240.1 beside a flat line would be quoting a hypotenuse that is not there.
+
+> Shift means something else on the keyboard, where it enlarges the arrow-key step to 10 pixels. The two never meet: one needs a pointer held down, the other needs none.
+
 Nothing in range is a perfectly valid outcome too. A point with nothing to snap to simply drops wherever the pointer is, in the open space between elements — the tool measures open space exactly as readily as it measures an edge.
 
 The value sits at the midpoint of the line for anything long enough to hold it; short measurements move the number aside instead of letting it collide with its own end ticks. The result is also announced through a polite live region, so the measurement is available to a screen reader, not only to whoever is looking at the canvas — the four-sided readout below included, which is spoken with each side named and the unit restored (`top 16 px, right 8 px`), since neither position nor an implied unit survives being read aloud.

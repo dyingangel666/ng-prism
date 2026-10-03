@@ -3,7 +3,18 @@ import { MEASURE_SNAP_TOLERANCE, type MeasurePoint } from '../../shared/measure.
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toHostSpace, toLocal, toScreen, type Vec } from './measure-geometry.js';
+import {
+    constrainDirection,
+    formatMeasure,
+    labelPlacement,
+    measureDistance,
+    type RenderedLine,
+    tickEndpoints,
+    toHostSpace,
+    toLocal,
+    toScreen,
+    type Vec
+} from './measure-geometry.js';
 import { nudge } from './measure-keyboard.js';
 import { type Box, outlineOf, type OutlineRect, quadLines, quadSpans, quadSummary } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
@@ -389,8 +400,22 @@ export class PrismCanvasMeasureComponent {
                 return;
             }
             this.hoverTarget.set(null);
-            if (!this.measure.draft()) return;
-            this.measure.updateDraft(this.pointAt(e.clientX, e.clientY));
+
+            const draft = this.measure.draft();
+
+            if (!draft) return;
+
+            const point = this.pointAt(e.clientX, e.clientY);
+
+            // Shift pulls the measurement onto the nearest of the eight
+            // 45-degree directions, the same service it performs in Photoshop,
+            // Illustrator and Figma. It runs on the already-snapped point
+            // rather than instead of it, so a latched edge still contributes
+            // on whichever axis the constraint preserves — see
+            // `constrainDirection`. Releasing Shift frees the drag again
+            // immediately, mid-drag included, because nothing about the
+            // constraint is stored.
+            this.measure.updateDraft(e.shiftKey ? constrainDirection(draft.a, point) : point);
         };
         const up = (): void => {
             const draft = this.measure.draft();

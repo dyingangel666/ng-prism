@@ -1,5 +1,5 @@
-import { MEASURE_LABEL_MIN_SPAN } from '../../shared/measure.type.js';
-import { formatMeasure, labelPlacement, measureDistance, tickEndpoints, toHostSpace, toLocal, toScreen } from './measure-geometry.js';
+import { type EdgeSide, MEASURE_LABEL_MIN_SPAN, type MeasurePoint } from '../../shared/measure.type.js';
+import { constrainDirection, formatMeasure, labelPlacement, measureDistance, tickEndpoints, toHostSpace, toLocal, toScreen } from './measure-geometry.js';
 
 describe('formatMeasure', () => {
     it('should drop the decimal on a whole value', () => {
@@ -182,5 +182,75 @@ describe('labelPlacement', () => {
         const placed = labelPlacement({ x: 0, y: 0 }, { x: 0, y: span }, { x: 50, y: 0 });
 
         expect(placed).toEqual({ x: 0, y: span / 2 });
+    });
+});
+
+describe('constrainDirection', () => {
+    const el = {} as Element;
+    const free = (x: number, y: number): MeasurePoint => ({ x, y, snap: null });
+    const snapped = (x: number, y: number, side: EdgeSide): MeasurePoint => ({ x, y, snap: { kind: 'border', side, from: el } });
+
+    it('should force a near-horizontal drag onto the horizontal', () => {
+        // The projection is orthogonal, so the 7px of vertical drift is
+        // dropped rather than folded into the length: 240 across, not 240.1.
+        expect(constrainDirection({ x: 100, y: 200 }, free(340, 207))).toEqual(free(340, 200));
+    });
+
+    it('should force a near-vertical drag onto the vertical', () => {
+        expect(constrainDirection({ x: 100, y: 200 }, free(107, 440))).toEqual(free(100, 440));
+    });
+
+    it('should hold an exact diagonal', () => {
+        const r = constrainDirection({ x: 0, y: 0 }, free(100, 100));
+
+        expect(r.x).toBeCloseTo(100, 6);
+        expect(r.y).toBeCloseTo(100, 6);
+    });
+
+    it('should pull a near-diagonal onto the exact diagonal', () => {
+        const r = constrainDirection({ x: 0, y: 0 }, free(100, 90));
+
+        expect(r.x).toBeCloseTo(95, 6);
+        expect(r.y).toBeCloseTo(95, 6);
+    });
+
+    it('should choose the axis just inside the 22.5 degree boundary', () => {
+        const r = constrainDirection({ x: 0, y: 0 }, free(100, 40));
+
+        expect(r.x).toBeCloseTo(100, 6);
+        expect(r.y).toBeCloseTo(0, 6);
+    });
+
+    it('should choose the diagonal just outside the 22.5 degree boundary', () => {
+        const r = constrainDirection({ x: 0, y: 0 }, free(100, 43));
+
+        expect(r.x).toBeCloseTo(71.5, 6);
+        expect(r.y).toBeCloseTo(71.5, 6);
+    });
+
+    it('should leave a zero-length drag alone', () => {
+        // atan2(0, 0) is 0, which would silently constrain to the horizontal.
+        // There is no direction to snap yet, so the point is returned as it is.
+        expect(constrainDirection({ x: 5, y: 5 }, free(5, 5))).toEqual(free(5, 5));
+    });
+
+    it('should keep a vertical-edge snap under a horizontal constraint', () => {
+        // The constraint forces y and preserves x, so a left/right edge the
+        // point latched onto is still the edge it sits on.
+        expect(constrainDirection({ x: 100, y: 200 }, snapped(338, 207, 'left'))).toEqual(snapped(338, 200, 'left'));
+    });
+
+    it('should drop a horizontal-edge snap under a horizontal constraint', () => {
+        // Forcing y moves the point off the top edge it latched onto. Keeping
+        // the reference would draw a snap echo on an edge the point has left.
+        expect(constrainDirection({ x: 100, y: 200 }, snapped(338, 207, 'top'))).toEqual(free(338, 200));
+    });
+
+    it('should drop any snap under a diagonal constraint', () => {
+        // A diagonal projection moves the point on both axes at once, so it
+        // sits on no edge at all.
+        const r = constrainDirection({ x: 0, y: 0 }, snapped(100, 90, 'left'));
+
+        expect(r.snap).toBeNull();
     });
 });
