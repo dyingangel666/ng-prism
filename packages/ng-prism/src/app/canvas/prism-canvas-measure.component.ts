@@ -125,7 +125,19 @@ const EMPTY_HOVER: HoverReadout = { lines: [], summary: '', anchor: null, target
     styleUrl: './prism-canvas-measure.component.css',
     host: {
         tabindex: '0',
-        role: 'application',
+        // `group`, not `application`. `application` is only justified for a
+        // widget with complete custom keyboard handling, because it pulls
+        // assistive technology out of browse mode and forwards every
+        // keystroke to the widget. The keyboard handling here is explicitly
+        // incomplete — see the class doc above: a measurement cannot be
+        // started without a pointer — so `application` would trade a screen
+        // reader user's browse mode for a key set that can do nothing.
+        // `group` is labelled and announced on focus without suppressing
+        // browse mode. `application` becomes the right answer the day Spec
+        // §10's Tab-stepping through the specimen's snap targets exists,
+        // and not before: revisit this line then, together with the
+        // `aria-label` below.
+        role: 'group',
         'aria-label': 'Measure tool. Arrow keys nudge the active point, Shift for a larger step, Enter commits, Escape clears.',
         '(keydown)': 'onKey($event)'
     }
