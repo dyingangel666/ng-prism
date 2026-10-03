@@ -90,6 +90,26 @@ renderer's `@if (!capture.active())` block, alongside the crosshair, the rulers 
 pill. Capture mode also never _writes_ the width back to storage — `PrismCanvasService.save()` is a
 no-op while capture is active — so a capture run cannot corrupt the user's stored preference either.
 
+## Measuring
+
+The measuring tool adds a third kind of state to the two services above: a point, stored in `.demo-wrap`-local CSS pixels, and an overlay drawn as a sibling of `.demo-wrap`, deliberately never a child of it.
+
+### Local coordinates, not screen coordinates
+
+A `MeasurePoint` is recorded via `toLocal` in the same coordinate space `.demo-wrap` itself occupies before its own transform is applied — not in screen coordinates. The distinction matters because `.demo-wrap` carries `transform: scale(var(--zoom))`: a screen-pixel gap between two points on a zoomed-out canvas is smaller than the CSS-pixel distance the component itself renders at. Storing a point already inside that pre-scale space means the distance between two of them (`measureDistance`, a plain `Math.hypot`) is already the real CSS-pixel distance — `formatMeasure` never has to divide by `zoom` to print it.
+
+It also means a pin survives a zoom change instead of being tied to the screen position it was drawn at. `toScreen`, the inverse of `toLocal`, re-projects every point on every render, reading whatever `zoom` currently is; a pin placed at 50% and viewed back at 200% is recomputed from its stored CSS-pixel position, rather than replaying the screen coordinates captured the first time. The alt-hover four-sided readout takes the opposite route to the same destination: `quadSpans` reads screen-space boxes straight from `getBoundingClientRect()`, so `quadLines` divides by `zoom` once, by hand, before formatting — the one place the overlay needs an explicit division, because that reading starts in the other coordinate space.
+
+### Why the label moves at 28px
+
+`MEASURE_LABEL_MIN_SPAN` (28) is evaluated against the _projected_ span — the on-screen distance between the two ticks after `toScreen` — not the CSS-pixel value the label prints. That split matters: a measurement can be a large number and still render as a short line on screen at low zoom, and it is the rendered length, not the number, that decides whether the end ticks and the value can share the space without overlapping. Below 28px the value steps aside, perpendicular to the line, by `MEASURE_LABEL_OFFSET` (15px), toward whichever side points away from the specimen's centre — so a short measurement inside a single small component never buries its own number under its own ticks.
+
+### Core chrome, not a plugin overlay
+
+`<prism-canvas-measure>` sits inside `.prism-canvas-stage` as a sibling of `.demo-wrap`, gated only by `canvasService.measure()` and the same `@if (!capture.active())` guard the crosshair, the rulers and the background pill sit behind — never by which panel is active. A plugin overlay does not have that option: it is rendered as an ordinary Angular component _inside_ `.demo-wrap`, through `NgComponentOutlet` bound to the active panel. Two problems follow from sitting there instead. It is scaled by the same `transform: scale(var(--zoom))` `.demo-wrap` carries, so a label sized at 10px in the overlay's own CSS renders at 5 real screen pixels the moment zoom drops to 50% — the same shrink the specimen itself gets. And it is confined to `.demo-wrap`'s box the way `plugin-box-model`'s own overlay is, whose host sits at `inset: 0` relative to `.demo-wrap` with its own `overflow: hidden`, so a margin box that would extend past the specimen's edge is clipped exactly there. Neither problem is particular to box-model's overlay specifically — both are what any component rendered inside a scaled, bounded box inherits for free, and both are exactly wrong for a tool whose job is comparing two elements that are not necessarily at the same place or the same apparent size on screen.
+
+The deeper reason is architectural rather than visual: a panel overlay is _about_ the active panel — box-model's overlay only makes sense while the Box Model panel is open. Measuring is not about any panel; it is orthogonal to them, chrome for the whole canvas the way guides and rulers are, rather than for one view. `resolveOverlay()` makes that explicit rather than incidental: it resolves to `{ kind: 'none' }` whenever the measuring tool is active, regardless of which panel is selected, and a lazy panel overlay is never even fetched while it runs — the two are never competing for the same pointer. The function's own doc calls this a bridge: once the tool can attribute a measured gap to the CSS property that produced it, the box-model plugin has nothing left that it alone can do, and the reason for keeping them apart dissolves with it.
+
 ## UI Affordances
 
 - **Tools menu — recommendation marker** — the recommended background's button in the **Canvas** group carries a tinted border (driven by `recommended()`), rather than a separate glyph. Title attribute: `Recommended background for this variant`. Passive, always visible while a recommendation is active.
