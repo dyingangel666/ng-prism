@@ -36,6 +36,20 @@
     pointer-events: none;
 }
 
+/* An `<svg>` is a replaced element, and for an absolutely positioned replaced
+   element CSS takes the used width and height from the intrinsic size — 300x150
+   when the element declares none — instead of resolving them from `inset`. The
+   rule above therefore sized this box 300x150 in the stage's top-left corner,
+   while `.m-labels`, an ordinary div, stretched to the host as those same
+   declarations promised. Since an `<svg>` clips to its own viewport, every line,
+   tick, echo and outline beyond that corner was drawn and thrown away, and the
+   tool printed numbers with nothing to attach them to. The identical trap is why
+   `prism-canvas-rulers.component.ts` sizes its `<canvas>` elements by hand. */
+.m-svg {
+    width: 100%;
+    height: 100%;
+}
+
 .m-svg line {
     stroke: var(--prism-measure);
     stroke-width: 1;
