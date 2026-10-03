@@ -9,18 +9,30 @@ import { type Box, quadLines, quadSpans } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
 /**
- * The element under a screen point, provided it belongs to the specimen.
+ * The topmost element under a screen point that belongs to the specimen.
  *
- * The `contains` check is not optional: the overlay itself, the toolrail and
- * the viewport grips all sit above the canvas, and without it
- * `elementFromPoint` returns that chrome instead of the component.
- * `pointer-events: none` on the overlay only covers its own layer.
+ * `elementsFromPoint`, the plural one, and the loop are what make this work
+ * at all. The overlay host sits above `.demo-wrap` (see the `z-index` in the
+ * stylesheet and why it has to be there) and is the one layer that takes
+ * pointer events across the whole stage — so the singular `elementFromPoint`
+ * answers the overlay itself for every point over the specimen, `contains`
+ * then rejects it, and snapping and alt-click anchoring both stop working
+ * entirely. Walking the hit list past the overlay's own subtree is what
+ * gives the element actually underneath it.
+ *
+ * The `contains` check stays, and is still not optional: the toolrail and
+ * the viewport grips sit *above* the overlay, so they appear in the hit list
+ * ahead of anything in the specimen. Only the first hit the rendered root
+ * owns is the one the tool may latch onto.
  */
 export function elementUnderPoint(x: number, y: number, root: Element | null): Element | null {
     if (!root) return null;
-    const hit = document.elementFromPoint(x, y);
 
-    return hit && root.contains(hit) ? hit : null;
+    for (const hit of document.elementsFromPoint(x, y)) {
+        if (root.contains(hit)) return hit;
+    }
+
+    return null;
 }
 
 /**
@@ -62,7 +74,7 @@ export function echoFor(point: MeasurePoint, screen: Vec): [Vec, Vec] | null {
  * Takes the `ResizeObserver` constructor as a parameter instead of reading
  * the global directly so the wiring stays testable without a real one:
  * jsdom does not implement `ResizeObserver` at all, the same gap
- * `elementFromPoint` has above.
+ * `elementsFromPoint` has above.
  */
 export function watchGeometry(stage: Element, wrap: Element | null, onChange: () => void, ResizeObserverCtor: typeof ResizeObserver = ResizeObserver): () => void {
     const ro = new ResizeObserverCtor(onChange);

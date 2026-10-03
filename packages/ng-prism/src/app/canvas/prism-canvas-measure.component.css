@@ -1,9 +1,25 @@
 /* The host catches the pointer — it is the one layer allowed to. Everything
-   it draws is exempted from that, or elementFromPoint would hit its own
-   lines instead of the specimen. */
+   it draws is exempted from that, or the hit test would land on its own
+   lines instead of the specimen. Walking past the host itself is
+   elementUnderPoint's job; see its doc.
+
+   z-index 1, and both halves of that are load-bearing. It has to be set at
+   all because .demo-wrap is position: relative with a transform — a
+   stacking context of its own — and comes *after* this element in
+   prism-renderer.component.html: at z-index auto the two are painted in
+   tree order and .demo-wrap wins, hiding every line over the specimen and,
+   worse, swallowing the pointerdown that alt-click anchoring needs to land
+   on an element. And it has to be the *lowest* of the stage's overlays,
+   below the background pill at 2, the rulers, grips and dimension line at
+   4, and the toolrail at 5, because this is the only one of them that
+   takes pointer events across the whole stage. Raised past the pill it
+   would cover its Reset button — the failure .vp-grip already documents —
+   and raised past the rail it would cover the very button that switches
+   the tool off again. */
 :host {
     position: absolute;
     inset: 0;
+    z-index: 1;
     cursor: crosshair;
 }
 

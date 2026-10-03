@@ -9,37 +9,64 @@ import { PrismNavigationService } from '../services/prism-navigation.service.js'
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { echoFor, elementUnderPoint, PrismCanvasMeasureComponent, watchGeometry } from './prism-canvas-measure.component.js';
 
+// jsdom does not implement `elementsFromPoint` at all — not even a stub that
+// returns an empty list — so `jest.spyOn` below would have no existing
+// property to attach to. A no-op default gives it one; every test that cares
+// still overrides the hit list it wants. File scope rather than inside the
+// first describe, because the pointer tests further down reach
+// `elementUnderPoint` through the component and would otherwise depend on
+// describe execution order for the property to exist.
+beforeAll(() => {
+    if (typeof document.elementsFromPoint !== 'function') {
+        document.elementsFromPoint = (): Element[] => [];
+    }
+});
+
 describe('elementUnderPoint', () => {
     let root: HTMLElement;
     let child: HTMLElement;
+    let deeper: HTMLElement;
+    let overlay: HTMLElement;
     let outside: HTMLElement;
-
-    beforeAll(() => {
-        // jsdom does not implement `elementFromPoint` at all — not even a
-        // stub that returns null — so `jest.spyOn` below has no existing
-        // property to attach to without this. A no-op default gives it one;
-        // every test still overrides the return value it cares about.
-        if (typeof document.elementFromPoint !== 'function') {
-            document.elementFromPoint = (): Element | null => null;
-        }
-    });
 
     beforeEach(() => {
         root = document.createElement('div');
         child = document.createElement('span');
+        deeper = document.createElement('em');
+        overlay = document.createElement('prism-canvas-measure');
         outside = document.createElement('div');
+        child.appendChild(deeper);
         root.appendChild(child);
-        document.body.append(root, outside);
+        document.body.append(root, overlay, outside);
     });
 
     afterEach(() => {
         root.remove();
+        overlay.remove();
         outside.remove();
         jest.restoreAllMocks();
     });
 
+    /** `document.elementsFromPoint` answering a fixed hit list, topmost first. */
+    const hits = (...elements: Element[]): void => {
+        jest.spyOn(document, 'elementsFromPoint').mockReturnValue(elements);
+    };
+
     it('should return an element inside the rendered root', () => {
-        jest.spyOn(document, 'elementFromPoint').mockReturnValue(child);
+        hits(child);
+
+        expect(elementUnderPoint(10, 10, root)).toBe(child);
+    });
+
+    it('should look past the overlay itself to the specimen behind it', () => {
+        // The case the whole plural-`elementsFromPoint` rewrite exists for.
+        // The overlay host now carries a z-index that puts it above
+        // `.demo-wrap`, and it is the layer that takes the pointer — so it is
+        // the topmost hit for every point over the specimen. The singular
+        // `elementFromPoint` would answer the overlay, `contains` would reject
+        // it, and snapping and alt-click anchoring would both stop working
+        // outright.
+        hits(overlay, child, root);
 
         expect(elementUnderPoint(10, 10, root)).toBe(child);
     });
@@ -48,13 +75,32 @@ describe('elementUnderPoint', () => {
         // Review focus 4: without this check the tool latches onto its own
         // overlay or the toolrail instead of the specimen.
         // plugin-box-model protects itself with exactly this contains() check.
-        jest.spyOn(document, 'elementFromPoint').mockReturnValue(outside);
+        hits(outside);
 
         expect(elementUnderPoint(10, 10, root)).toBeNull();
     });
 
+    it('should still reject chrome when nothing of the specimen is under the point', () => {
+        // The toolrail and the grips sit above the overlay, so they lead the
+        // hit list where they are. Walking the list must not turn into
+        // "return whatever is at the bottom of it".
+        hits(overlay, outside, document.body);
+
+        expect(elementUnderPoint(10, 10, root)).toBeNull();
+    });
+
+    it('should return the topmost hit the root owns, not the deepest', () => {
+        // `elementsFromPoint` answers topmost first, and the first owned hit
+        // is exactly what the singular call used to give. Taking the last one
+        // instead would snap to a container when the pointer is over its
+        // child.
+        hits(overlay, deeper, child, root);
+
+        expect(elementUnderPoint(10, 10, root)).toBe(deeper);
+    });
+
     it('should return null when nothing is under the point', () => {
-        jest.spyOn(document, 'elementFromPoint').mockReturnValue(null);
+        hits();
 
         expect(elementUnderPoint(10, 10, root)).toBeNull();
     });
