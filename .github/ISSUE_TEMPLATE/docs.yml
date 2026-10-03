@@ -6,7 +6,7 @@ body:
     - type: markdown
       attributes:
           value: |
-              For small fixes — typos, broken links, a stale code sample — a pull
+              For small fixes (typos, broken links, a stale code sample) a pull
               request against `docs/` is usually faster than an issue. Both are
               welcome.
 
@@ -24,10 +24,10 @@ body:
       attributes:
           label: What kind of problem is it?
           options:
-              - 'Wrong — the documented behaviour does not match the code'
-              - 'Missing — something is not documented at all'
-              - 'Unclear — documented, but hard to follow'
-              - 'Outdated — describes an older version'
+              - 'Wrong: the documented behaviour does not match the code'
+              - 'Missing: something is not documented at all'
+              - 'Unclear: documented, but hard to follow'
+              - 'Outdated: describes an older version'
               - 'Broken link, typo, or formatting'
       validations:
           required: true

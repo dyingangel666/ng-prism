@@ -6,9 +6,8 @@ body:
     - type: markdown
       attributes:
           value: |
-              ng-prism aims to stay lightweight. The strongest proposals start from a
-              concrete problem you hit while showcasing real components — not from a
-              feature another tool happens to have.
+              ng-prism aims to stay lightweight. Good proposals start from a
+              concrete problem you hit while showcasing real components.
 
     - type: textarea
       id: problem
@@ -22,7 +21,7 @@ body:
       id: proposal
       attributes:
           label: Proposed solution
-          description: If you have one in mind, sketch the API. Decorator options, config keys, plugin hooks — whatever fits.
+          description: If you have one in mind, sketch the API. Decorator options, config keys, plugin hooks, whatever fits.
           render: typescript
       validations:
           required: true
@@ -53,8 +52,8 @@ body:
       attributes:
           label: Would this be a breaking change?
           options:
-              - 'No — purely additive'
-              - 'Yes — changes existing behaviour or API'
+              - 'No, purely additive'
+              - 'Yes, changes existing behaviour or API'
               - Not sure
       validations:
           required: true

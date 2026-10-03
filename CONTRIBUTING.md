@@ -20,7 +20,7 @@ Thank you for your interest in contributing to ng-prism! This guide will help yo
 
 ## Code of Conduct
 
-This project adheres to the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it. Be kind, constructive, and professional in all interactions — and expect direct, detailed reviews of your code, which is a different thing entirely.
+This project adheres to the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it. Be kind, constructive, and professional in all interactions. Also expect direct, detailed reviews of your code; that is a different thing.
 
 ## Getting Started
 
@@ -42,7 +42,7 @@ cd ng-prism
 npm install
 ```
 
-`npm install` activates **npm workspaces** under `packages/*` and installs all monorepo dev dependencies (Nx, Angular SDK, Jest, etc.).
+`npm install` activates npm workspaces under `packages/*` and installs all monorepo dev dependencies (Nx, Angular SDK, Jest, etc.).
 
 #### 2. Verify the core builds and tests
 
@@ -50,11 +50,11 @@ npm install
 npm run check       # Format + declared-deps check + style + lint + test + build + typecheck for all packages
 ```
 
-CI runs these same steps (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing — the test-workspace setup depends on a working core build.
+CI runs these same steps (see [Run the Check Suite](#3-run-the-check-suite)). It must pass before continuing, because the test-workspace setup depends on a working core build.
 
 #### 3. Start the local registry (separate terminal)
 
-The `test-workspace/` resolves transitive dependencies through a local **Verdaccio** registry. Open a **second terminal** and keep it running:
+The `test-workspace/` resolves transitive dependencies through a local Verdaccio registry. Open a second terminal and keep it running:
 
 ```bash
 npx nx run ng-prism-workspace:local-registry
@@ -66,7 +66,7 @@ Why Verdaccio? See [Why a local registry?](#why-a-local-registry) below.
 
 #### 4. Install and bootstrap the test workspace
 
-Back in your **first terminal**:
+Back in your first terminal:
 
 ```bash
 npm run test:workspace:install
@@ -74,7 +74,7 @@ npm run test:workspace:install
 
 This does two things:
 
-- `npm install` inside `test-workspace/` (resolves `@ng-prism/*` via `file:` links, everything else via Verdaccio → proxied to npmjs.org)
+- `npm install` inside `test-workspace/` (resolves `@ng-prism/*` via `file:` links, everything else via Verdaccio, which proxies to npmjs.org)
 - Creates `ng-prism.config.ts` from `ng-prism.config.example.ts` if it doesn't exist (the actual config file is gitignored)
 
 #### 5. Run the demo
@@ -85,11 +85,11 @@ npm run test:workspace:serve
 
 The Prism dev server starts on `http://localhost:4400`. Open it to verify your setup works end-to-end.
 
-You're done — your local setup is ready for development.
+You're done; your local setup is ready for development.
 
 ## Development Setup
 
-ng-prism is an **Nx 22 monorepo** using **npm workspaces**. All packages live under `packages/`.
+ng-prism is an Nx 22 monorepo using npm workspaces. All packages live under `packages/`.
 
 ### Key Dependencies
 
@@ -106,23 +106,23 @@ The `test-workspace/` directory is a real Angular workspace used as a live demo 
 
 #### Why a local registry?
 
-`test-workspace/` resolves transitive dependencies through a local **Verdaccio** registry (`http://localhost:4873`). This serves two purposes:
+`test-workspace/` resolves transitive dependencies through a local Verdaccio registry (`http://localhost:4873`). This serves two purposes:
 
-1. **Isolated transitive resolution** — Angular and other transitive deps of the in-repo packages are fetched through Verdaccio, which proxies to `https://registry.npmjs.org/` for unknown packages (see `.verdaccio/config.yml`).
-2. **No global config pollution** — `test-workspace/.npmrc` pins the registry to `localhost:4873` for this directory only. Your global `~/.npmrc` (e.g. a corporate registry) stays untouched. The `local-registry` Nx target also passes `location: none` so Verdaccio itself leaves your global config alone.
+1. **Isolated transitive resolution**: Angular and other transitive deps of the in-repo packages are fetched through Verdaccio, which proxies to `https://registry.npmjs.org/` for unknown packages (see `.verdaccio/config.yml`).
+2. **No global config pollution**: `test-workspace/.npmrc` pins the registry to `localhost:4873` for this directory only. Your global `~/.npmrc` (e.g. a corporate registry) stays untouched. The `local-registry` Nx target also passes `location: none` so Verdaccio itself leaves your global config alone.
 
 #### The `ng-prism.config.ts` file
 
-`test-workspace/ng-prism.config.ts` configures plugins, theme, and other Prism options. It is **gitignored** because it is environment/setup specific — the schematic that ships with `@ng-prism/core` creates a minimal version, and contributors may add or remove plugins as they like.
+`test-workspace/ng-prism.config.ts` configures plugins, theme, and other Prism options. It is gitignored because it is environment/setup specific. The schematic that ships with `@ng-prism/core` creates a minimal version, and contributors may add or remove plugins as they like.
 
-`test-workspace/ng-prism.config.example.ts` is **committed** as a reference. It enables all five official plugins (figma, jsdoc, perf, coverage, box-model). The `test:workspace:install` script copies it to `ng-prism.config.ts` on first run if the latter doesn't exist.
+`test-workspace/ng-prism.config.example.ts` is committed as a reference. It enables all five official plugins (figma, jsdoc, perf, coverage, box-model). The `test:workspace:install` script copies it to `ng-prism.config.ts` on first run if the latter doesn't exist.
 
 #### Scripts reference
 
 | Script                   | Purpose                                                                                                                                                                                                    |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `test:workspace:setup`   | Build `ng-prism` core (skip-nx-cache) — prerequisite for serve/build                                                                                                                                       |
-| `test:workspace:install` | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` → `ng-prism.config.ts` if missing. Requires Verdaccio running.                                                                |
+| `test:workspace:setup`   | Build `ng-prism` core (skip-nx-cache), prerequisite for serve/build                                                                                                                                        |
+| `test:workspace:install` | `npm install` inside `test-workspace/` and copy `ng-prism.config.example.ts` to `ng-prism.config.ts` if missing. Requires Verdaccio running.                                                               |
 | `test:workspace:update`  | Rebuild `ng-prism` + all plugins (Nx-cached), purge Angular esbuild cache, and re-resolve the `file:` deps offline. Use this after editing source. Does **not** require Verdaccio for incremental updates. |
 | `test:workspace:serve`   | Start the Prism dev server on `http://localhost:4400`                                                                                                                                                      |
 | `test:workspace:build`   | Production build of the Prism app                                                                                                                                                                          |
@@ -155,7 +155,7 @@ npm run test:workspace:serve
 
 **Accidentally ran `test:workspace:clean`:**
 
-Same as above — `npm run test:workspace:reset` puts the workspace back into a runnable state.
+Same as above: `npm run test:workspace:reset` puts the workspace back into a runnable state.
 
 #### Troubleshooting
 
@@ -164,7 +164,7 @@ Same as above — `npm run test:workspace:reset` puts the workspace back into a 
 | `npm install` (in test-workspace) hangs indefinitely with a spinner        | Verdaccio is not running. Start it: `npx nx run ng-prism-workspace:local-registry`.                                                                                           |
 | `Cannot find module '@angular-devkit/build-angular/package.json'` on serve | `test-workspace/node_modules` is missing. Run `npm run test:workspace:install`.                                                                                               |
 | `Angular compilation initialization failed. Error: Debug Failure` on serve | `ng-prism.config.ts` is missing. Copy the example: `cp test-workspace/ng-prism.config.example.ts test-workspace/ng-prism.config.ts`, or run `npm run test:workspace:install`. |
-| `EPERM open ~/.npmrc` when starting Verdaccio                              | Nx tried to mutate your global config. The `local-registry` target in root `package.json` should have `"location": "none"` — verify it.                                       |
+| `EPERM open ~/.npmrc` when starting Verdaccio                              | Nx tried to mutate your global config. The `local-registry` target in root `package.json` should have `"location": "none"`; verify it.                                        |
 | Changes in `packages/ng-prism/` not picked up in the test workspace        | Re-run `npm run test:workspace:setup` to rebuild the core, then restart serve.                                                                                                |
 | Port 4400 already in use                                                   | `npm run test:workspace:kill`.                                                                                                                                                |
 
@@ -232,8 +232,8 @@ npm run check       # nx format:check + check-declared-deps + stylelint + lint +
 ```
 
 CI runs step for step the same list. The one difference is that CI appends
-`e2e-ci` to the final `nx run-many`, a target no project currently defines —
-it predates this toolchain and is skipped silently, so it changes nothing
+`e2e-ci` to the final `nx run-many`, a target no project currently defines.
+It predates this toolchain and is skipped silently, so it changes nothing
 either way.
 
 If `check` fails on formatting, lint, or style, auto-fix what can be auto-fixed with:
@@ -248,11 +248,11 @@ reruns a tool until the files stop changing, because neither `eslint --fix` nor
 `stylelint --fix` reliably converges in one pass (`import/order` needs two on
 some files; `property-no-vendor-prefix` against `order/properties-order` leaves
 a duplicate declaration that only the second pass clears). It gives up after 5
-passes — a sign of misconfiguration rather than a reason to raise the limit.
+passes, which points to misconfiguration rather than a reason to raise the limit.
 
-`lint:fix` deliberately does **not** go through `nx run-many`. The `lint` target
+`lint:fix` does not go through `nx run-many`. The `lint` target
 is cached but declares no outputs, so a cache hit replays an empty result while
-the files it was supposed to rewrite stay untouched — the command would report
+the files it was supposed to rewrite stay untouched, so the command would report
 success on a tree it never fixed. Fixing is not a cacheable operation; linting
 is, which is why `npm run lint` and the pre-push hook still use Nx.
 
@@ -264,9 +264,9 @@ Three tools with clearly separated responsibilities:
 | --------------------------------------------- | ----------------------------------- | -------------------------------------------------------------- |
 | `.ts`                                         | Prettier, running as an ESLint rule | ESLint (typescript-eslint, angular-eslint, @stylistic, import) |
 | Angular templates (`.html` under `packages/`) | Prettier, running as an ESLint rule | ESLint (angular-eslint template rules)                         |
-| `index.html` (docsify page, app shells)       | Prettier                            | — (see below)                                                  |
+| `index.html` (docsify page, app shells)       | Prettier                            | - (see below)                                                  |
 | `.css`, `.scss`                               | Prettier                            | Stylelint                                                      |
-| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | — (except `scripts/**/*.mjs`*)                                 |
+| `.json`, `.md`, `.yml`, `.js`, `.cjs`, `.mjs` | Prettier                            | - (except `scripts/**/*.mjs`*)                                 |
 
 This covers `test-workspace/` as well. It is not a side project: its components
 are the input the scanner is developed against, and leaving them outside the
@@ -274,57 +274,57 @@ toolchain meant a file could be committed unformatted and only fail later in
 CI's `nx format:check`. Nx infers `lint` targets for `test-lib`, `test-ui-kit`
 and `test-workspace` from the same root `eslint.config.mjs` as everything else.
 
-The three standalone `.html` documents — `docs/index.html` and the two app
-shells under `test-workspace/projects/*-prism/src/` — are reached by Prettier
+The three standalone `.html` documents (`docs/index.html` and the two app
+shells under `test-workspace/projects/*-prism/src/`) are reached by Prettier
 only. ESLint has no parser for a complete HTML document (the angular-eslint
 template parser is for templates, not documents), so they run through the
 Prettier entry in `lint-staged` instead. Inline `template:` strings, by
 contrast, _are_ linted: `angular.processInlineTemplates` extracts them as
 virtual `.html` files, which is why they match the template rules above.
 
-\* `scripts/**/*.mjs` is linted too — plain `eslint:recommended`, no Angular or
+\* `scripts/**/*.mjs` is linted too, with plain `eslint:recommended`, no Angular or
 `@stylistic` rules, since it's Node code with no browser or Angular surface.
 The same applies to `test-workspace/*.mjs`, the two measurement scripts.
 Nothing infers a `lint` target for the workspace root automatically (Nx only
 does that for a root project with a standalone `src`/`lib`), so it runs from
 an explicit `lint` target declared on `ng-prism-workspace` in `package.json`'s
-`nx.targets`, scoped to `eslint scripts jest.config.ts` — which is also how
+`nx.targets`, scoped to `eslint scripts jest.config.ts`, which is also how
 `jest.config.ts` itself ends up linted. `nx run-many -t lint` picks it up like
 any other project's `lint` target, so `npm run lint`, `npm run check`, and CI
 all reach it.
 
-Stylelint covers `.scss` as well — the eight partials under
+Stylelint covers `.scss` as well: the eight partials under
 `test-workspace/projects/test-lib/src/lib/styles/`. They need their own parser
 and rule set (`@use`, `@mixin` and `//` comments are not CSS), which
 `stylelint-config-standard-scss` supplies through an `overrides` entry in
 `.stylelintrc.cjs`. One rule is narrowed there: `scss/dollar-variable-empty-line-before`
 forbids a blank line between consecutive `$` variables, and its autofix
-collapsed the deliberate grouping in `_variables.scss` into one undivided
+collapsed the intended grouping in `_variables.scss` into one undivided
 block. Between two variables the rule is therefore set to `ignore`; everywhere
 else it applies unchanged.
 
-Every target runs `eslint … --max-warnings 0` (set once in `nx.json`'s
+Every target runs `eslint ... --max-warnings 0` (set once in `nx.json`'s
 `targetDefaults`). Without it the `warn` severities in `eslint.config.mjs` could
 not fail anything: `eslint` exits 0 with warnings, so a `warn`-level finding
 would have passed the pre-push hook and CI alike. Severity therefore expresses
 how loud a finding is in the editor, not whether it blocks.
 
-Prettier does not run separately for TypeScript and HTML — it runs as an
+Prettier does not run separately for TypeScript and HTML. It runs as an
 ESLint rule via `eslint-plugin-prettier`. One `eslint --fix` therefore handles
 formatting and rules in a single pass, and no two tools rewrite the same file
 one after another.
 
 When a fix pass is needed, the order is always **ESLint, then Prettier, then
-Stylelint** — `stylelint-config-recess-order` reorders properties, and Prettier
+Stylelint**, because `stylelint-config-recess-order` reorders properties, and Prettier
 would otherwise touch the result again. `npm run check:fix` does this for you.
 
 A pre-commit hook runs the three tools on staged files, and a pre-push hook
 lints every package plus the workspace root (`scripts/` and `jest.config.ts`,
-see above) — Nx serves the unchanged ones from cache, so this costs little
+see above). Nx serves the unchanged ones from cache, so this costs little
 more than linting only what changed, and it cannot pick the wrong base.
 
-Editor setup: VS Code picks up `.vscode/settings.json` automatically — it is
-tracked in git on purpose, via a negation rule in `.gitignore` (`.vscode/*` is
+Editor setup: VS Code picks up `.vscode/settings.json` automatically. It is
+tracked in git via a negation rule in `.gitignore` (`.vscode/*` is
 ignored, then `!.vscode/settings.json` un-ignores this one file). Install the
 recommended extensions when prompted.
 
@@ -332,29 +332,28 @@ WebStorm and IntelliJ have no equivalent: `/.idea` is gitignored wholesale, so
 none of its settings can travel with the repo. Enable these three manually, on
 each machine:
 
-- **ESLint** — Languages & Frameworks → JavaScript → Code Quality Tools →
+- **ESLint**: Languages & Frameworks → JavaScript → Code Quality Tools →
   ESLint: "Automatic ESLint configuration", check "Run eslint --fix on save",
   pattern `**/*.{ts,html}`
-- **Prettier** — Languages & Frameworks → JavaScript → Prettier: check "Run on
+- **Prettier**: Languages & Frameworks → JavaScript → Prettier: check "Run on
   save", pattern `**/*.{json,css,md,yml,js,cjs,mjs}`
-- **Stylelint** — Languages & Frameworks → Style Sheets → Stylelint: leave
+- **Stylelint**: Languages & Frameworks → Style Sheets → Stylelint: leave
   "Run stylelint --fix on save" **off**, and set the pattern to `**/*.css` so
   you still get the diagnostics inline.
 
-Neither editor fixes `.css` on save, and that is deliberate rather than an
-omission. A single `stylelint --fix` pass does not converge —
-`property-no-vendor-prefix` against `order/properties-order` leaves behind a
-duplicate declaration that only a second pass clears — and no editor offers a
+Neither editor fixes `.css` on save, by design. A single `stylelint --fix` pass does not converge
+(`property-no-vendor-prefix` against `order/properties-order` leaves behind a
+duplicate declaration that only a second pass clears), and no editor offers a
 "repeat until stable" save action. Both would also have to guarantee that
 Prettier runs before Stylelint, which neither can order reliably. So the editors
 show Stylelint's findings and Prettier formats the file; the actual fixing
 happens at commit time, where `lint-staged` runs Prettier first and then loops
-`scripts/fix-until-stable.mjs` until the file stops changing. That is the
-guarantee — the editor is convenience.
+`scripts/fix-until-stable.mjs` until the file stops changing. The editor
+setup is only a convenience.
 
 Two of the three wholesale reformats during the linting rollout carry a small
-amount of real change alongside the formatting; `.git-blame-ignore-revs` names
-exactly what, per commit. To keep `git blame` pointing at the author of a line
+amount of real change alongside the formatting; `.git-blame-ignore-revs` lists
+what changed in each commit. To keep `git blame` pointing at the author of a line
 rather than at the reformat, tell git to skip those commits:
 
     git config blame.ignoreRevsFile .git-blame-ignore-revs
@@ -394,7 +393,7 @@ Push your branch and open a PR against `main`. See [Pull Request Process](#pull-
 - Use Signal-based APIs: `input()`, `output()`, `signal()`, `computed()`
 - Do **not** use legacy `@Input()` / `@Output()` decorators
 - Use `inject()` instead of constructor injection
-- Keep template and styles in sibling files — `templateUrl: './x.component.html'`
+- Keep template and styles in sibling files: `templateUrl: './x.component.html'`
   and `styleUrl: './x.component.css'`, never inline `template:` or `styles:`
 - Stylesheets under `packages/` are plain **`.css`**, not `.scss`. These packages
   are built with bare `ngc`, which has no style preprocessor: it inlines a
@@ -479,7 +478,7 @@ docs: update plugin API reference
 
 ### Before Submitting
 
-1. Run the full check suite: `npm run check` — must pass clean (this is what CI runs)
+1. Run the full check suite: `npm run check`, which must pass clean (this is what CI runs)
 2. Update documentation in `docs/` if your change affects public APIs or behavior
 3. Rebase on latest `main` if your branch has fallen behind
 
@@ -487,7 +486,7 @@ docs: update plugin API reference
 
 - **Title:** Follow the commit message format (`feat: ...`, `fix: ...`, etc.)
 - **Description:** Explain _what_ changed and _why_
-- **Scope:** Keep PRs focused — one feature or fix per PR
+- **Scope:** Keep PRs focused: one feature or fix per PR
 - **Tests:** Include tests for new functionality or bug fixes
 - **Docs:** Update relevant documentation
 
@@ -548,9 +547,9 @@ For feature requests, please describe:
 
 ### Where to Report
 
-Open an issue on the [GitHub repository](https://github.com/dyingangel666/ng-prism/issues). The issue forms for bugs, feature requests, and documentation problems ask for exactly the information listed above.
+Open an issue on the [GitHub repository](https://github.com/dyingangel666/ng-prism/issues). The issue forms for bugs, feature requests, and documentation problems ask for the information listed above.
 
-Suspected security vulnerabilities do **not** belong in public issues — see [SECURITY.md](SECURITY.md) for the private reporting channel.
+Suspected security vulnerabilities do **not** belong in public issues. See [SECURITY.md](SECURITY.md) for the private reporting channel.
 
 ---
 

@@ -31,7 +31,7 @@ export interface PrismPipelineResult {
 
 export interface PrismPipelineState {
     scanner: Scanner | undefined;
-    /** Sorted, joined entry-file paths — used to detect when the entry set changed between rebuilds. */
+    /** Sorted, joined entry-file paths. Used to detect when the entry set changed between rebuilds. */
     lastEntrySetKey: string | undefined;
 }
 
@@ -66,7 +66,7 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
         if (violations.length > 0) {
             const summary = violations.map((v) => `${v.metric}: ${v.actual} (threshold ${v.threshold})`).join(', ');
 
-            throw new Error(`ng-prism: a11y thresholds violated — ${summary}. ` + `Update components or relax thresholds via config.a11y.thresholds.`);
+            throw new Error(`ng-prism: a11y thresholds violated: ${summary}. ` + `Update components or relax thresholds via config.a11y.thresholds.`);
         }
         // Read once, not once per component: the reader re-stats the file on every
         // call even when its cache hits, so a per-component lookup scales the
@@ -113,7 +113,7 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
         `ng-prism: ${written ? 'Generated' : 'Verified (unchanged)'} manifest ` +
             `with ${manifest.components.length} component(s)` +
             (pageCount > 0 ? ` and ${pageCount} page(s)` : '') +
-            ` → ${manifestPath}`
+            ` at ${manifestPath}`
     );
 
     return {
@@ -133,16 +133,11 @@ function writeManifestIfChanged(manifestPath: string, newContent: string): boole
         }
     }
 
-    // In-place write (truncate + write to the existing inode). The previous
-    // implementation used a temp file + atomic rename, which produces a fresh
-    // inode on every write. That breaks file watchers — most importantly Vite's
-    // — when the manifest lives in a cache dir outside the prism project's
-    // source root: Vite watches the file by path/inode, loses the handle on
-    // rename, and never picks up subsequent rewrites. The result for the user
-    // is that @Showcase changes never trigger an HMR / reload. The window
-    // between truncate and write is small (single syscall for kilobyte-sized
-    // manifests), so the risk of a bundler observing a partial file is
-    // negligible in practice.
+    // Write in place (truncate + write, same inode). A temp file + atomic
+    // rename creates a new inode each time, and Vite's watcher loses the file
+    // when the manifest lives in a cache dir outside the project's source
+    // root, so @Showcase changes would stop triggering HMR. The manifest is
+    // only kilobytes, so a bundler seeing a partial write is unlikely.
     writeFileSync(manifestPath, newContent, 'utf-8');
     return true;
 }

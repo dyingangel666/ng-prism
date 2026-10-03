@@ -1,6 +1,6 @@
 # Built-in Accessibility Auditing
 
-ng-prism includes a comprehensive accessibility panel powered by [axe-core](https://github.com/dequelabs/axe-core). No plugin required — it's part of the core.
+ng-prism includes an accessibility panel powered by [axe-core](https://github.com/dequelabs/axe-core). It's part of the core, so no plugin is required.
 
 ## Features
 
@@ -10,12 +10,12 @@ The A11y panel has four sub-tabs:
 
 Runs an axe-core audit against the currently rendered component variant. Results are sorted by impact level:
 
-| Level    | Color  | Meaning                               |
-| -------- | ------ | ------------------------------------- |
-| Critical | Red    | Must fix — blocks users entirely      |
-| Serious  | Orange | Should fix — significant barrier      |
-| Moderate | Yellow | Consider fixing — some users affected |
-| Minor    | Blue   | Nice to fix — minor inconvenience     |
+| Level    | Color  | Meaning                              |
+| -------- | ------ | ------------------------------------ |
+| Critical | Red    | Must fix: blocks users entirely      |
+| Serious  | Orange | Should fix: significant barrier      |
+| Moderate | Yellow | Consider fixing: some users affected |
+| Minor    | Blue   | Nice to fix: minor inconvenience     |
 
 The audit re-runs automatically when you switch variants or change input values in the Controls panel. A score ring visualizes the pass rate.
 
@@ -40,16 +40,16 @@ Displays the component's ARIA role hierarchy as a tree structure:
 
 Simulates how a screen reader would interpret the component:
 
-- **List mode** (visual perspective) — shows all announced elements
-- **Player mode** (screen reader perspective) — step-by-step navigation with previous/next controls
+- **List mode** (visual perspective): shows all announced elements
+- **Player mode** (screen reader perspective): step-by-step navigation with previous/next controls
 - Violet overlay indicators on the rendered component
 
 ## Perspective Toggle
 
 The renderer toolbar includes a perspective toggle:
 
-- **Visual** — default view, component rendered normally
-- **Screen Reader** — canvas dims, overlay shows SR-announced elements
+- **Visual**: default view, component rendered normally
+- **Screen Reader**: canvas dims, overlay shows SR-announced elements
 
 The active perspective affects which overlays are visible (Keyboard uses indigo, Screen Reader uses violet).
 
@@ -88,17 +88,17 @@ When disabled, the A11y panel shows a message instead of running the audit.
 
 ## Library-Wide A11y Score & Header Badge
 
-Beyond the live runtime audit, ng-prism can surface a **library-wide** A11y score as a color-coded **pill in the header** — green/orange/red depending on whether the library meets your thresholds.
+Beyond the live runtime audit, ng-prism can surface a library-wide A11y score as a color-coded pill in the header. It turns green, orange or red depending on whether the library meets your thresholds.
 
-ng-prism does **not** generate the score itself. Producing an aggregate audit is the consumer's responsibility (same pattern as `coverage-summary.json` for the coverage plugin). ng-prism only **reads** an `a11y-report.json` you place in your workspace.
+ng-prism does not generate the score itself. Producing an aggregate audit is the consumer's responsibility (same pattern as `coverage-summary.json` for the coverage plugin). ng-prism only reads an `a11y-report.json` you place in your workspace.
 
 ### 1. Produce `a11y-report.json` in your library project
 
-Write the report at build time using any tool you like — headless browsers + axe-core (Playwright/Puppeteer), an Nx target wrapping `@axe-core/cli`, or your own script.
+Write the report at build time using any tool you like: headless browsers + axe-core (Playwright/Puppeteer), an Nx target wrapping `@axe-core/cli`, or your own script.
 
 #### External Audit API
 
-The Prism app exposes a small contract for driving it from the outside — `window.__PRISM_MANIFEST__` to enumerate components and variants, `?component=`/`?variant=` to navigate, and `data-prism-rendered` on `.demo-wrap` as the render marker. It is documented in full under [External Tooling API](guide/external-tooling.md).
+The Prism app exposes a small contract for driving it from the outside: `window.__PRISM_MANIFEST__` to enumerate components and variants, `?component=`/`?variant=` to navigate, and `data-prism-rendered` on `.demo-wrap` as the render marker. It is documented in full under [External Tooling API](guide/external-tooling.md).
 
 An axe-core audit loop over every variant looks like this:
 
@@ -122,7 +122,7 @@ for (const comp of manifest.components) {
 }
 ```
 
-> Auditing accessibility does not need [capture isolation mode](guide/external-tooling.md#capture-isolation-mode) — axe-core inspects the DOM, not pixels. Screenshot tooling does; see [Visual Regression](guide/visual-regression.md).
+> Auditing accessibility does not need [capture isolation mode](guide/external-tooling.md#capture-isolation-mode), because axe-core inspects the DOM, not pixels. Screenshot tooling does; see [Visual Regression](guide/visual-regression.md).
 
 The file must match this JSON shape:
 
@@ -177,7 +177,7 @@ export default defineConfig({
 });
 ```
 
-Thresholds are used **both** by the build pipeline (build fails on violation) and by the header pill (color-coding).
+Thresholds are used both by the build pipeline (build fails on violation) and by the header pill (color-coding).
 
 ### 3. Build the Prism app
 
@@ -189,7 +189,7 @@ The build pipeline reads `a11y-report.json` and embeds the aggregate data into t
 
 ### CI integration
 
-The audit produces two independent things: the **report** and an **exit code**. Chaining them together is the most common way to lose the report exactly when it matters.
+The audit produces two independent things: a report and an exit code. Chaining them together is a common way to lose the report when you need it most.
 
 ```yaml
 # Broken: the audit fails the job, so the build that embeds the report never runs
@@ -198,7 +198,7 @@ The audit produces two independent things: the **report** and an **exit code**. 
 - run: npx nx run my-lib-prism:build # never reached
 ```
 
-The moment the library drops below its threshold, the audit exits non-zero, the second build never happens, and the styleguide that would have shown you _which_ components regressed is never deployed. The gate has eaten the tool that explains the gate.
+The moment the library drops below its threshold, the audit exits non-zero, the second build never happens, and the styleguide that would have shown you _which_ components regressed is never deployed.
 
 Separate them. The gate blocks the merge; it must not block the deploy:
 
@@ -220,15 +220,15 @@ Separate them. The gate blocks the merge; it must not block the deploy:
   if: always()
 ```
 
-The job still turns red and the pull request is still blocked — but the styleguide is deployed, and the header pill plus the A11y panel show you what caused it.
+The job still turns red and the pull request is still blocked, but the styleguide is deployed and the header pill and A11y panel show what caused it.
 
-This requires your audit script to be able to _not_ fail: write the report before checking thresholds, and put the threshold check behind a flag or a separate gate command that re-reads the report. The same reasoning applies to visual regression testing — see [CI integration](guide/visual-regression.md#ci-integration-keep-the-gate-away-from-the-deploy) there for the longer treatment.
+This requires an audit script that can run without failing: write the report before checking thresholds, and put the threshold check behind a flag or a separate gate command that re-reads the report. The same reasoning applies to visual regression testing; see [CI integration](guide/visual-regression.md#ci-integration-keep-the-gate-away-from-the-deploy) there for details.
 
-> Note that `&&` chains in an npm script have the same problem as sequential CI steps: `build && audit && build` stops at the first non-zero exit.
+> `&&` chains in an npm script have the same problem as sequential CI steps: `build && audit && build` stops at the first non-zero exit.
 
 ## Dependencies
 
-`axe-core` ships as a dependency of `@ng-prism/core`, so there is nothing to install. It is loaded lazily — the audit engine is only fetched when you open the A11y panel, so it costs nothing in a styleguide you never audit.
+`axe-core` ships as a dependency of `@ng-prism/core`, so there is nothing to install. It is loaded lazily: the audit engine is only fetched when you open the A11y panel, so it costs nothing in a styleguide you never audit.
 
 The `ng add` schematic already lists it in `allowedCommonJsDependencies` for the generated showcase app. If you set the app up by hand, add it yourself to silence the CommonJS optimization-bailout warning, since axe-core ships as UMD:
 

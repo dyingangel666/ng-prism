@@ -76,8 +76,8 @@
     box-shadow: 0 8px 28px -10px rgb(0 0 0 / 45%);
 }
 
-/* display belongs on :popover-open and nowhere else — see the note in
-   prism-template-popover.component.ts. An author display on the base
+/* display belongs on :popover-open and nowhere else (see the note in
+   prism-template-popover.component.ts). An author display on the base
    rule outranks the UA's [popover]:not(:popover-open) { display: none }
    and pins the readout open. */
 .gauge-card:popover-open {

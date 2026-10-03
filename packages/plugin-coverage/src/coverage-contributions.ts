@@ -14,11 +14,10 @@ function componentMeta(component: RuntimeComponent): CoverageData | null {
 /**
  * The score on the panel's own tab.
  *
- * Declared by the plugin rather than left to the core's built-in badge chain,
- * which graded every score on a fixed 90/70 scale and so could paint the tab
- * red for a component the navigation marker — reading this plugin's configured
- * thresholds — called amber. The `summary` written at build time wins when it
- * is there; deriving from `thresholds` covers the run where it is not.
+ * Declared by the plugin because the core's built-in badge uses a fixed 90/70
+ * scale and could show red where the navigation marker, which uses the
+ * configured thresholds, shows amber. The build-time `summary` wins when
+ * present; otherwise the badge is derived from `thresholds`.
  */
 export function coverageBadge(component: RuntimeComponent): PanelBadge | null {
     const meta = componentMeta(component);

@@ -27,7 +27,7 @@ interface ShowcaseConfig<T = unknown> {
 type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 ```
 
-The optional generic parameter `T` is the component class. When set via `@Showcase<MyComponent>({...})`, variant `inputs` are checked against `Partial<InputsOf<MyComponent>>`, giving you autocomplete on input names and type-checking on values. When omitted, `T` defaults to `unknown` and `inputs` accepts any `Record<string, unknown>` — existing call sites keep working unchanged. See [Variants — Type-safe inputs](guide/variants.md#type-safe-inputs) for usage and [`InputsOf<T>`](api/types.md#inputsof) for the type mapping rules.
+The optional generic parameter `T` is the component class. When set via `@Showcase<MyComponent>({...})`, variant `inputs` are checked against `Partial<InputsOf<MyComponent>>`, giving you autocomplete on input names and type-checking on values. When omitted, `T` defaults to `unknown` and `inputs` accepts any `Record<string, unknown>`, so existing call sites keep working unchanged. See [Variants: Type-safe inputs](guide/variants.md#type-safe-inputs) for usage and [`InputsOf<T>`](api/types.md#inputsof) for the type mapping rules.
 
 ## Fields
 
@@ -88,7 +88,7 @@ Optional number controlling the sort order of _this component_ within its catego
 
 ### `section`
 
-Optional string that places the component into a top-level sidebar section. Auto-detected when omitted: `@Directive` → `'Directives'`, `@Component` → `'Components'`. Any free-form string creates a new section (e.g. `'Pipes'`, `'Utilities'`).
+Optional string that places the component into a top-level sidebar section. Auto-detected when omitted: `'Directives'` for a `@Directive`, `'Components'` for a `@Component`. Any free-form string creates a new section (e.g. `'Pipes'`, `'Utilities'`).
 
 ```typescript
 @Showcase({ title: 'Autofocus', section: 'Behavior' })
@@ -100,7 +100,7 @@ export class AutofocusDirective {}
 
 ### `sectionOrder`
 
-Optional number controlling the sort order of this _section_ in the sidebar. Lower numbers appear first. The section's effective order is the minimum `sectionOrder` among its items. Defaults: `Components` → 0, `Directives` → 10, custom → 100.
+Optional number controlling the sort order of this _section_ in the sidebar. Lower numbers appear first. The section's effective order is the minimum `sectionOrder` among its items. Defaults: `Components` 0, `Directives` 10, custom 100.
 
 ```typescript
 @Showcase({ title: 'AutofocusDirective', section: 'Behavior', sectionOrder: 5 })
@@ -167,13 +167,13 @@ Optional arbitrary key-value metadata. Plugins read their own namespaced keys fr
 
 ### `bg`
 
-Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail) — the override is transient and resets when switching variants or components.
+Optional recommended canvas background for this component. Applied when the user opens the component, unless a variant defines its own `bg`. The user can still override the background from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail). The override is transient and resets when switching variants or components.
 
 Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
 
-`'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
+`'transparent'` draws the same checkerboard as `'checker'` while browsing. The canvas has no way to show the difference, because the difference only shows up in a [capture](guide/visual-regression.md#capturing-transparency): `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
+`'checker'` is deprecated since 22.2.0 and removed in 23.0.0. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart. It does, however, capture as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background, and a value missing from it is a value the UI cannot show.
 
 ```typescript
 @Showcase({
@@ -184,7 +184,7 @@ Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transp
 
 When the user has deviated from the recommended background, a small floating pill appears in the canvas labelled `Recommended: <bg>` with a one-click `Reset` button.
 
-See also: [Variants — Per-Variant Background](guide/variants.md#per-variant-background) for the variant-level override and [Canvas State](architecture/canvas-state.md) for the full fallback model.
+See also: [Variants: Per-Variant Background](guide/variants.md#per-variant-background) for the variant-level override and [Canvas State](architecture/canvas-state.md) for the full fallback model.
 
 ---
 
@@ -196,7 +196,7 @@ Accepted values: `'fit'` (default), `'stretch'`.
 
 | Value       | Behavior                                                                                                                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size. The canvas stage's flexbox centers it. Use for the vast majority of components — buttons, badges, cards, alerts.                                                                  |
+| `'fit'`     | Wrapper is `display: inline-block` and shrinks to the component's intrinsic size. The canvas stage's flexbox centers it. Use for the vast majority of components: buttons, badges, cards, alerts.                                                                   |
 | `'stretch'` | Wrapper becomes `display: block; width: 100%; max-width: 800px`. Use when the component has no intrinsic width (e.g. a horizontal divider rendered via `border-bottom`) or explicitly opts into filling its container (e.g. a full-width button via `width: 100%`). |
 
 A `Variant.canvasLayout` overrides the component-level setting.
@@ -208,27 +208,27 @@ A `Variant.canvasLayout` overrides the component-level setting.
   canvasLayout: 'stretch',
   variants: [
     { name: 'Horizontal', inputs: { orientation: 'horizontal' } },
-    // Vertical dividers are intrinsic-sized — opt back into 'fit'.
+    // Vertical dividers are intrinsic-sized, so opt back into 'fit'.
     { name: 'Vertical',   inputs: { orientation: 'vertical' }, canvasLayout: 'fit' },
   ],
 })
 ```
 
-See also: [Variants — Per-Variant Canvas Layout](guide/variants.md#per-variant-canvas-layout) for variant-level overrides.
+See also: [Variants: Per-Variant Canvas Layout](guide/variants.md#per-variant-canvas-layout) for variant-level overrides.
 
 ---
 
 ### `host`
 
-Optional. Tells ng-prism how to render a **directive** that cannot render on its own.
+Optional. Tells ng-prism how to render a directive that cannot render on its own.
 
-**String form** — an HTML element string:
+**String form**, an HTML element string:
 
 ```typescript
 @Showcase({ title: 'Tooltip', host: '<button class="btn">Hover me</button>' })
 ```
 
-**Object form** (`DirectiveHost`) — an Angular component as host:
+**Object form** (`DirectiveHost`), an Angular component as host:
 
 ```typescript
 @Showcase({
@@ -264,27 +264,27 @@ The page component can inject `PrismRendererService` to react to variant and con
 
 Optional migration / maturity badge. Accepts one of four values from the `ComponentStatus` union:
 
-| Value          | Meaning                                    |
-| -------------- | ------------------------------------------ |
-| `'stable'`     | Migrated and production-ready.             |
-| `'beta'`       | Functional, but API may still change.      |
-| `'wip'`        | Work in progress, migration ongoing.       |
-| `'deprecated'` | Legacy component — do not use in new code. |
+| Value          | Meaning                                   |
+| -------------- | ----------------------------------------- |
+| `'stable'`     | Migrated and production-ready.            |
+| `'beta'`       | Functional, but API may still change.     |
+| `'wip'`        | Work in progress, migration ongoing.      |
+| `'deprecated'` | Legacy component. Do not use in new code. |
 
 ```typescript
 @Showcase({ title: 'Button', status: 'stable' })
 @Showcase({ title: 'Dialog', status: 'deprecated' })
 ```
 
-When the property is omitted, the component is treated like `stable` but rendered **without** any indicator — neither in the sidebar nor in the component head. Set the property explicitly only when you want to draw attention to the migration state.
+When the property is omitted, the component is treated like `stable` but rendered without any indicator, either in the sidebar or in the component head. Set the property explicitly only when you want to draw attention to the migration state.
 
 UI impact:
 
 - **Sidebar**
-    - `'wip'` → small amber dot at the right edge of the sidebar item, with a native tooltip "Work in progress".
-    - `'deprecated'` → component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
-    - `'stable'` / `'beta'` / unset → no sidebar decoration.
-- **Component head** — an outlined status chip renders inline with the title for every explicit value (Stable, Beta, Work in progress, Deprecated). The `<selector>` itself has moved into the details popover behind the ⓘ glyph.
+    - `'wip'`: the leading icon becomes a dashed circle (`circle-dashed`) instead of the regular `box`, with a native tooltip "Work in progress".
+    - `'deprecated'`: component name is rendered struck-through and dimmed, with a native tooltip "Deprecated / Legacy".
+    - `'stable'` / `'beta'` / unset: no sidebar decoration.
+- **Component head:** an outlined status chip renders inline with the title for every explicit value (Stable, Beta, Work in progress, Deprecated). The `<selector>` itself has moved into the details popover behind the ⓘ glyph.
 
 All colors come from the `--prism-mark-*` role tokens (plus `--prism-text-muted` for `stable`) and adapt automatically to light/dark mode. The chip is always an outline and never a filled surface, so `deprecated` separates itself by hue rather than by weight.
 
@@ -308,4 +308,4 @@ interface DirectiveHost {
 
 ## Variant Interface
 
-See [Type Reference — Variant](api/types.md#variant).
+See [Type Reference: Variant](api/types.md#variant).

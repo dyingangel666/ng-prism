@@ -1,17 +1,17 @@
 # Migration to v22
 
-`@ng-prism/core@22.0.0` moves the auto-generated `prism-manifest.ts` out of your source tree into a workspace-level cache directory and switches the import to a tsconfig path mapping. This is a **breaking change** — the previous layout will not work against the new pipeline.
+`@ng-prism/core@22.0.0` moves the auto-generated `prism-manifest.ts` out of your source tree into a workspace-level cache directory and switches the import to a tsconfig path mapping. This is a **breaking change**: the previous layout will not work against the new pipeline.
 
-> **This guide is for existing ng-prism installations** being upgraded from `21.x` to `22.x`. If you have not used ng-prism in this workspace before, you want a fresh install instead — see [Installation & Setup](installation.md).
+> **This guide is for existing ng-prism installations** being upgraded from `21.x` to `22.x`. If you have not used ng-prism in this workspace before, you want a fresh install instead; see [Installation & Setup](installation.md).
 
 ## Prerequisites
 
 - Angular CLI **22+** in your workspace. The migration schematic is shipped as ESM; older CLI versions silently skip it or report "package does not provide any `ng add` actions". Run `ng version` to check.
 - Node.js **22+** (Angular CLI 22 requirement).
 
-## TL;DR — upgrade an existing 21.x install
+## TL;DR: upgrade an existing 21.x install
 
-Update **core AND every installed `@ng-prism/plugin-*` in a single call** so peer dependencies resolve together. While `22.0.0` is in beta, use the `@beta` dist-tag:
+Update core and every installed `@ng-prism/plugin-*` in a single call so peer dependencies resolve together. While `22.0.0` is in beta, use the `@beta` dist-tag:
 
 ```bash
 ng update @ng-prism/core@beta \
@@ -29,11 +29,11 @@ ng update @ng-prism/core @ng-prism/plugin-box-model @ng-prism/plugin-coverage \
   @ng-prism/plugin-figma @ng-prism/plugin-jsdoc @ng-prism/plugin-perf
 ```
 
-The Angular CLI will pull in the new versions, run the migration schematic, and leave your workspace in the new layout. Manual `main.ts` customizations (component pages, zoneless setup, custom providers) are preserved — only the manifest import line is touched.
+The Angular CLI will pull in the new versions, run the migration schematic, and leave your workspace in the new layout. Manual `main.ts` customizations (component pages, zoneless setup, custom providers) are preserved. Only the manifest import line is touched.
 
 > **Why core + plugins together?** Each plugin declares `@ng-prism/core` as a peer dependency pinned to its major. If you update core to `22` without bumping plugins, npm rejects the install with a peer-dependency conflict. Bundling them in one `ng update` call lets the CLI resolve the whole set at once.
 
-If you see peer-dependency warnings about `@angular-devkit/architect`, `@angular-devkit/core`, or `@angular-devkit/schematics`, those packages are available transitively via `@angular/cli` / `@angular-devkit/build-angular` in any Angular workspace. The warning is npm being strict about direct declarations — add `--force` to acknowledge:
+If you see peer-dependency warnings about `@angular-devkit/architect`, `@angular-devkit/core`, or `@angular-devkit/schematics`, those packages are available transitively via `@angular/cli` / `@angular-devkit/build-angular` in any Angular workspace. npm warns because they are not declared directly. Add `--force` to acknowledge:
 
 ```bash
 ng update @ng-prism/core@beta @ng-prism/plugin-...@beta --force
@@ -56,7 +56,7 @@ You probably used `--next=true`. That flag looks for a `next` dist-tag specifica
 
 **`ng update` says "already up to date"**
 
-You don't have an older ng-prism installed — there is nothing to migrate. If you intended a fresh install, use `ng add @ng-prism/core@beta` (see [Installation & Setup](installation.md)). If `ng add` reports "Package does not provide any `ng add` actions", run the schematic directly:
+No older ng-prism is installed, so there is nothing to migrate. If you intended a fresh install, use `ng add @ng-prism/core@beta` (see [Installation & Setup](installation.md)). If `ng add` reports "Package does not provide any `ng add` actions", run the schematic directly:
 
 ```bash
 ng generate @ng-prism/core:ng-add --project=<your-library>
@@ -80,7 +80,7 @@ You probably bumped `@ng-prism/core` without also bumping the plugin packages (w
 
 **Build fails with `TS6059: File '...prism-manifest.ts' is not under rootDir`**
 
-Your `projects/<lib>-prism/tsconfig.app.json` doesn't widen `rootDir` to the workspace root. The migration in v22.0.0-beta.0 missed this update — open the file and add both `rootDir` and the include glob:
+Your `projects/<lib>-prism/tsconfig.app.json` doesn't widen `rootDir` to the workspace root. The migration in v22.0.0-beta.0 missed this update. Open the file and add both `rootDir` and the include glob:
 
 ```diff
   "compilerOptions": {
@@ -119,7 +119,7 @@ The migration schematic runs four steps per prism project found in your `angular
 + import { PRISM_RUNTIME_MANIFEST } from 'prism-manifest/<lib>-prism';
 ```
 
-The new specifier is project-specific (it ends with your prism project name). This is what makes multi-project workspaces coexist cleanly — see the [wildcard mapping section](#wildcard-path-mapping) below.
+The new specifier is project-specific (it ends with your prism project name), so multiple prism projects can coexist in one workspace (see the [wildcard mapping section](#wildcard-path-mapping) below).
 
 The regex tolerates whitespace and quote-style variations and is anchored to line-start, so commented-out lines (`// import ...`) are left untouched.
 
@@ -141,7 +141,7 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 - projects/<lib>-prism/src/prism-manifest.ts
 ```
 
-(If you previously committed the file by accident, `git status` will show it as deleted after the migration — stage the deletion as part of your migration commit.)
+(If you previously committed the file by accident, `git status` will show it as deleted after the migration. Stage the deletion as part of your migration commit.)
 
 ### 4. Removes the stale `.gitignore` entry
 
@@ -173,25 +173,25 @@ The regex tolerates whitespace and quote-style variations and is anchored to lin
 Both changes are required:
 
 - `include` tells TypeScript that the cache file is part of the project (otherwise it isn't loaded into the compilation).
-- `rootDir: ../..` widens the project's root to the workspace so the cache file is _under_ rootDir — without this, TypeScript rejects with `TS6059: File ... is not under rootDir` even when the file is included.
+- `rootDir: ../..` widens the project's root to the workspace so the cache file is _under_ rootDir. Without this, TypeScript rejects with `TS6059: File ... is not under rootDir` even when the file is included.
 
 An existing user-defined `rootDir` is preserved; the migration only sets the default when no `rootDir` is declared.
 
 ## Wildcard path mapping
 
-If you have **multiple prism projects** in the same workspace, the wildcard mapping resolves each one to its own cache file:
+If you have multiple prism projects in the same workspace, the wildcard mapping resolves each one to its own cache file:
 
 ```jsonc
 "prism-manifest/*": ["./ng-prism-cache/*/prism-manifest.ts"]
 ```
 
-So `from 'prism-manifest/test-lib-prism'` resolves to `./ng-prism-cache/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `./ng-prism-cache/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier — no per-tsconfig.app.json overrides needed.
+So `from 'prism-manifest/test-lib-prism'` resolves to `./ng-prism-cache/test-lib-prism/prism-manifest.ts`, and `from 'prism-manifest/test-ui-kit-prism'` resolves to `./ng-prism-cache/test-ui-kit-prism/prism-manifest.ts`. Each project's `main.ts` imports its own specifier, so no per-tsconfig.app.json overrides are needed.
 
 ## Manual migration
 
 If you can't use `ng update` (e.g., locked CLI version, vendored dependencies), apply the same edits by hand. For each prism project in your `angular.json`:
 
-### Step 1 — Edit `projects/<lib>-prism/src/main.ts`
+### Step 1: Edit `projects/<lib>-prism/src/main.ts`
 
 Change the import line:
 
@@ -202,7 +202,7 @@ Change the import line:
 
 Replace `<lib>-prism` with the actual prism project name (the value of `prismProject` in your `@ng-prism/core:serve` builder options, typically `<library-name>-prism`).
 
-### Step 2 — Edit `tsconfig.json`
+### Step 2: Edit `tsconfig.json`
 
 Add the wildcard mapping under `compilerOptions.paths`:
 
@@ -217,9 +217,9 @@ Add the wildcard mapping under `compilerOptions.paths`:
 }
 ```
 
-This entry is a single line workspace-wide — it covers all prism projects via the `*` wildcard. The leading `./` is required for TypeScript 6 when `baseUrl` is not set.
+This single workspace-wide entry covers all prism projects via the `*` wildcard. The leading `./` is required for TypeScript 6 when `baseUrl` is not set.
 
-### Step 3 — Delete the legacy manifest file
+### Step 3: Delete the legacy manifest file
 
 ```bash
 rm projects/<lib>-prism/src/prism-manifest.ts
@@ -231,7 +231,7 @@ Plus the `.d.ts` companion if it exists:
 rm projects/<lib>-prism/src/prism-manifest.d.ts
 ```
 
-### Step 4 — Update `.gitignore`
+### Step 4: Update `.gitignore`
 
 Remove any per-project manifest lines:
 
@@ -245,7 +245,7 @@ Add a single workspace-wide ignore:
 + ng-prism-cache/
 ```
 
-### Step 5 — Update `projects/<lib>-prism/tsconfig.app.json`
+### Step 5: Update `projects/<lib>-prism/tsconfig.app.json`
 
 Two changes:
 
@@ -264,7 +264,7 @@ Two changes:
 
 `include` adds the cache file to the program; `rootDir: ../..` makes the workspace root the project root so the cache file is _under_ rootDir. Without both, TypeScript fails with `TS6059`.
 
-### Step 6 — Run a build to populate the cache
+### Step 6: Run a build to populate the cache
 
 ```bash
 ng run my-lib:prism-build
@@ -274,16 +274,16 @@ The pipeline will generate `<workspaceRoot>/ng-prism-cache/<lib>-prism/prism-man
 
 ## What if I skip the migration?
 
-If you upgrade to `@ng-prism/core@22.0.0` and **don't** run `ng update` or apply the manual steps, expect one of two outcomes:
+If you upgrade to `@ng-prism/core@22.0.0` and don't run `ng update` or apply the manual steps, expect one of two outcomes:
 
-- **Stale `src/prism-manifest.ts` still present** (the file was previously generated): your `main.ts` still imports the old file via the relative path. The build succeeds, but you are reading **stale data** — components added since the last pipeline run won't appear in your styleguide. Run `ng update @ng-prism/core` to fix.
-- **Old file deleted** (e.g., wiped by `git clean -fdx`): TypeScript fails with `Cannot find module './prism-manifest'`. Clear signal — apply the migration.
+- **Stale `src/prism-manifest.ts` still present** (the file was previously generated): your `main.ts` still imports the old file via the relative path. The build succeeds, but the data is stale: components added since the last pipeline run won't appear in your styleguide. Run `ng update @ng-prism/core` to fix.
+- **Old file deleted** (e.g., wiped by `git clean -fdx`): TypeScript fails with `Cannot find module './prism-manifest'`.
 
-In either case, the fix is the same: run `ng update @ng-prism/core` or follow the manual steps above.
+In either case, run `ng update @ng-prism/core` or follow the manual steps above.
 
 ## Angular version compatibility
 
-`@ng-prism/core@22.0.0` supports **Angular 20, 21, and 22** in a single release (peerDependency `>=20.0.0`). You do not need to be on Angular 22 to upgrade — if you're on 20 or 21, the manifest cache-dir migration is independent of your Angular major.
+`@ng-prism/core@22.0.0` supports Angular 20, 21 and 22 in a single release (peerDependency `>=20.0.0`). You do not need to be on Angular 22 to upgrade. If you're on 20 or 21, the manifest cache-dir migration is independent of your Angular major.
 
 ## `cacheDir` builder option
 
@@ -308,17 +308,17 @@ Relative paths resolve against `workspaceRoot`. If you set this option, also upd
 
 ## Breaking changes in 22.2.0
 
-`22.2.0` reduces the fixed chrome above the canvas — the component head's description, tags, selector and stat row moved into a details popover, the canvas tools left the layout for a floating rail, and the panel tabs picked up a consistent icon per tab. Every new token below is **additive**; every existing token is kept. The breaking surface is small and entirely in application code, not in `ShowcaseConfig`:
+`22.2.0` reduces the fixed chrome above the canvas. The component head's description, tags, selector and stat row moved into a details popover, the canvas tools left the layout for a floating rail, and the panel tabs picked up a consistent icon per tab. All new tokens are additive and every existing token is kept. The breaking changes are small and affect application code only, not `ShowcaseConfig`:
 
-- **`PrismLayoutService.templatePopoverVisible`, `toggleTemplatePopover()` and `closeTemplatePopover()` are gone.** The Angular-template popover now uses the platform [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API): open and close are wired through `popovertarget`/`popovertargetaction` attributes rather than a service call. If your own code called any of these three members directly (rather than through the canvas toolbar's own button), replace the call with a `popovertarget="prism-template"` attribute on your trigger element — there is no programmatic open/close left to call.
-- **`Alt+T` toggles only the variant rail now.** The component head no longer hides with it, because the head carries the Playground/API view switcher — hiding it would take primary navigation with it. If you built tooling that asserts on the component head disappearing after `Alt+T`, update it to expect only the variant ribbon to hide.
-- **Four internal class names are gone from the DOM:** `.comp-desc`, `.comp-tags`, `.comp-selector`, `.comp-head-stats` on the component head, and the variant ribbon's `--vc` custom property. None of these were documented public API, but a `themeStylesheet` or a browser extension that targeted them by class will no longer match anything. The description and tags now render inside the component head's details popover (behind the ⓘ glyph); the selector lives there too; the stat row was replaced by the head gauge. The variant ribbon no longer assigns a per-tab colour via `--vc` — each tab reads a slice of `--prism-spectrum` instead, positioned with `--i`/`--n`.
-- **The canvas toolbar is no longer a band.** It used to occupy a fixed-height strip between the variant ribbon and the canvas stage; it is now a floating rail (`.prism-toolrail`) absolutely positioned inside `.prism-canvas-wrap`, plus a popover menu for the background and zoom choosers. See [Theming — Marks, Measurement and Stage Tokens](theming.md#marks-measurement-and-stage-tokens) for the recommendation marker's replacement (a tinted border, not a star).
-- **The gauge readout in the component head shows three values, not five:** coverage, a11y score and VRT diff. The variant count moved to the details popover behind the ⓘ glyph, where it sits with the selector and the tags — it is a property of the component rather than a measurement, has no threshold it could pass, and was inflating the gauge's quiet tally of metrics that are within theirs. A bundle-size figure was never actually reliable — `bundleSize()` read `gzipKb`/`sizeKb`, while `@ng-prism/plugin-perf` writes `sourceSize`/`gzipEstimate`, so the property lookup always missed and the value was always `null`. It has been dropped from the gauge rather than fixed, since nothing currently populates the fields it expected.
+- **`PrismLayoutService.templatePopoverVisible`, `toggleTemplatePopover()` and `closeTemplatePopover()` are gone.** The Angular-template popover now uses the platform [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API): open and close are wired through `popovertarget`/`popovertargetaction` attributes instead of a service call. If your own code called any of these three members directly, replace the call with a `popovertarget="prism-template"` attribute on your trigger element; there is no programmatic open/close anymore.
+- **`Alt+T` toggles only the variant rail now.** The component head no longer hides with it, because it carries the Playground/API view switcher. If you built tooling that asserts on the component head disappearing after `Alt+T`, update it to expect only the variant ribbon to hide.
+- **Four internal class names are gone from the DOM:** `.comp-desc`, `.comp-tags`, `.comp-selector`, `.comp-head-stats` on the component head, and the variant ribbon's `--vc` custom property. None of these were documented public API, but a `themeStylesheet` or browser extension that targeted them will no longer match. The description and tags now render inside the component head's details popover (behind the ⓘ glyph); the selector lives there too; the stat row was replaced by the head gauge. The variant ribbon no longer assigns a per-tab colour via `--vc`. Each tab reads a slice of `--prism-spectrum` instead, positioned with `--i`/`--n`.
+- **The canvas toolbar is no longer a band.** It used to occupy a fixed-height strip between the variant ribbon and the canvas stage; it is now a floating rail (`.prism-toolrail`) absolutely positioned inside `.prism-canvas-wrap`, plus a popover menu for the background and zoom choosers. See [Theming: Marks, Measurement and Stage Tokens](theming.md#marks-measurement-and-stage-tokens) for the recommendation marker's replacement (a tinted border instead of a star).
+- **The gauge readout in the component head shows three values instead of five:** coverage, a11y score and VRT diff. The variant count moved to the details popover behind the ⓘ glyph, next to the selector and the tags, because it is a property of the component and has no threshold. The bundle-size figure was dropped: `bundleSize()` read `gzipKb`/`sizeKb` while `@ng-prism/plugin-perf` writes `sourceSize`/`gzipEstimate`, so the value was always `null`.
 
-None of this affects `ShowcaseConfig`, the manifest format, or any plugin's public API — see [`PrismMetricBadgeComponent` and `PrismIconComponent`](../plugins/writing-plugins.md#header-and-panel-widgets) if you are building a header widget and want the same building blocks the built-in gauge uses.
+None of this affects `ShowcaseConfig`, the manifest format, or any plugin's public API. See [`PrismMetricBadgeComponent` and `PrismIconComponent`](../plugins/writing-plugins.md#header-and-panel-widgets) if you are building a header widget and want the same building blocks the built-in gauge uses.
 
 ## Related
 
 - Issue [#13](https://github.com/dyingangel666/ng-prism/issues/13)
-- Follow-up RFC [#14](https://github.com/dyingangel666/ng-prism/issues/14) — drop the separate `<lib>-prism` project entirely
+- Follow-up RFC [#14](https://github.com/dyingangel666/ng-prism/issues/14): drop the separate `<lib>-prism` project entirely

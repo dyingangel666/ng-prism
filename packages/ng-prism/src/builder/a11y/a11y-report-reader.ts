@@ -46,7 +46,7 @@ export function readA11yMeta(reportPath: string, thresholdsInput?: Partial<A11yT
  * The plural form exists because {@link readA11yForComponent} re-enters
  * {@link loadA11yReport}, which `statSync`s the file even on a cache hit.
  * Calling it once per scanned component turns a 300-component library into 300
- * redundant syscalls per build, and a watch-mode rebuild repeats them all — so
+ * redundant syscalls per build, and a watch-mode rebuild repeats them all. So
  * the pipeline reads the report once and looks components up in the result.
  */
 export function readA11yForComponents(reportPath: string, thresholds: A11yThresholds): Map<string, A11yComponentMeta> {

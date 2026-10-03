@@ -27,7 +27,7 @@ import { Component } from '@angular/core';
                     @for (space of spacing; track space.name) {
                         <div class="token-space">
                             <div class="token-space__bar" [style.width.px]="space.px"></div>
-                            <span class="token-space__label">{{ space.name }} — {{ space.px }}px</span>
+                            <span class="token-space__label">{{ space.name }} · {{ space.px }}px</span>
                         </div>
                     }
                 </div>
@@ -36,12 +36,12 @@ import { Component } from '@angular/core';
             <section class="tokens-section">
                 <h2>Typography</h2>
                 <div class="tokens-type">
-                    <p style="font-size: 32px; font-weight: 700;">Heading 1 — 32px Bold</p>
-                    <p style="font-size: 24px; font-weight: 600;">Heading 2 — 24px Semibold</p>
-                    <p style="font-size: 18px; font-weight: 600;">Heading 3 — 18px Semibold</p>
-                    <p style="font-size: 16px; font-weight: 400;">Body — 16px Regular</p>
-                    <p style="font-size: 14px; font-weight: 400; opacity: 0.7;">Caption — 14px Regular</p>
-                    <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Overline — 12px Medium</p>
+                    <p style="font-size: 32px; font-weight: 700;">Heading 1 · 32px Bold</p>
+                    <p style="font-size: 24px; font-weight: 600;">Heading 2 · 24px Semibold</p>
+                    <p style="font-size: 18px; font-weight: 600;">Heading 3 · 18px Semibold</p>
+                    <p style="font-size: 16px; font-weight: 400;">Body · 16px Regular</p>
+                    <p style="font-size: 14px; font-weight: 400; opacity: 0.7;">Caption · 14px Regular</p>
+                    <p style="font-size: 12px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase;">Overline · 12px Medium</p>
                 </div>
             </section>
         </div>

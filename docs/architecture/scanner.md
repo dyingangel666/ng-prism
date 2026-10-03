@@ -1,6 +1,6 @@
 # How the Scanner Works
 
-The ng-prism scanner uses the TypeScript Compiler API to extract `@Showcase` metadata, component structure, and input/output types from library source files at build time — with no runtime reflection.
+The ng-prism scanner uses the TypeScript Compiler API to extract `@Showcase` metadata, component structure, and input/output types from library source files at build time, with no runtime reflection.
 
 ## Entry
 
@@ -15,7 +15,7 @@ const manifest = scanner.scan();
 
 Each `scan()` call creates or reuses a `ts.Program`, resolves all exports from the entry point, and passes them to `scanComponents()`.
 
-## Incremental Builds — `createScanner()` Factory
+## Incremental Builds: the `createScanner()` Factory
 
 `createScanner()` is a stateful factory. It retains the previous `ts.Program` reference between calls. When TypeScript creates a new program via `ts.createProgram(files, opts, oldProgram)`, it reuses `SourceFile` objects for files that have not changed. On file saves during watch mode, only the changed files are re-parsed.
 
@@ -39,7 +39,7 @@ export function createScanner(options: CreateScannerOptions): Scanner {
 
 ## Entry Point Discovery
 
-The pipeline accepts either a directory or a file as `entryPoint`. The resolution works the same way for both — the file form is just a convenience that gets resolved upward to its containing library.
+The pipeline accepts either a directory or a file as `entryPoint`. The resolution works the same way for both. The file form is just a convenience that gets resolved upward to its containing library.
 
 ### Directory with secondary entry points (recommended)
 
@@ -66,7 +66,7 @@ libraryRoot = "projects/my-lib"
 [my-lib/atoms, my-lib/molecules, ...]
 ```
 
-If no `ng-package.json` is found above the file, or if discovery returns no entries (e.g. for a primary-only library without secondaries), the pipeline falls back to scanning the configured file directly — preserving back-compat for non-ng-packagr setups.
+If no `ng-package.json` is found above the file, or if discovery returns no entries (e.g. for a primary-only library without secondaries), the pipeline falls back to scanning the configured file directly, which preserves back-compat for non-ng-packagr setups.
 
 ## How Decorators Are Extracted
 
@@ -118,7 +118,7 @@ A class is considered a directive (`isDirective: true`) if it has `@Directive` b
 `scanComponents()` returns an array of `ScannedComponent` objects. Each includes:
 
 - `className`, `filePath`
-- `showcaseConfig` — the evaluated `@Showcase` argument
-- `inputs`, `outputs` — extracted metadata arrays
-- `componentMeta` — `{ selector, standalone, isDirective }`
-- `importPath` — set by the pipeline for secondary entry points
+- `showcaseConfig`: the evaluated `@Showcase` argument
+- `inputs`, `outputs`: extracted metadata arrays
+- `componentMeta`: `{ selector, standalone, isDirective }`
+- `importPath`: set by the pipeline for secondary entry points

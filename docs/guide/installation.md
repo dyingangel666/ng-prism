@@ -4,9 +4,9 @@
 
 - Angular 20+ workspace (tested against 20, 21, 22)
 - Node.js 20+, npm 10+
-- Angular CLI and Nx workspaces are both supported — see [Nx Workspaces](#nx-workspaces)
+- Angular CLI and Nx workspaces are both supported (see [Nx Workspaces](#nx-workspaces))
 
-## Automatic Setup — `ng add`
+## Automatic Setup with `ng add`
 
 The fastest path is the `ng add` schematic. It creates a showcase app project, wires up the Angular builder targets, and generates a config file in one command.
 
@@ -55,7 +55,7 @@ ng-prism works in Nx workspaces that define projects through per-project `projec
 npx nx g @ng-prism/core:ng-add --project=my-lib
 ```
 
-`ng add @ng-prism/core` does **not** work here — the Angular CLI refuses to run outside a workspace it recognises, and an Nx workspace has no root `angular.json`. Nx's generator bridge supplies the workspace configuration to the schematic and writes the result back into the relevant `project.json` files, converting `architect` to `targets` and `builder` to `executor` along the way.
+`ng add @ng-prism/core` does not work here. The Angular CLI refuses to run outside a workspace it recognises, and an Nx workspace has no root `angular.json`. Nx's generator bridge supplies the workspace configuration to the schematic and writes the result back into the relevant `project.json` files, converting `architect` to `targets` and `builder` to `executor` along the way.
 
 The schematic adapts to the workspace it finds:
 
@@ -66,7 +66,7 @@ The schematic adapts to the workspace it finds:
 | Path mappings       | `tsconfig.json`                       | `tsconfig.base.json`                                |
 | Targets             | `architect` / `builder`               | `targets` / `executor`                              |
 
-The app root also honours `workspaceLayout.appsDir` in `nx.json` when you have configured one. Existing path mappings are never overwritten, so the `my-lib` → `src/index.ts` mapping Nx generated for your library stays as it is.
+The app root also honours `workspaceLayout.appsDir` in `nx.json` when you have configured one. Existing path mappings are never overwritten, so the `my-lib` to `src/index.ts` mapping Nx generated for your library stays as it is.
 
 Run the targets the usual way:
 
@@ -75,7 +75,7 @@ npx nx run my-lib:prism          # dev server on :4400
 npx nx run my-lib:prism-build    # production build
 ```
 
-> If Nx reports `Cannot find target 'prism'` straight after running the schematic, its project graph is stale — `npx nx reset` clears it.
+> If Nx reports `Cannot find target 'prism'` straight after running the schematic, its project graph is stale; `npx nx reset` clears it.
 
 ## Zoneless Mode (optional, recommended)
 
@@ -85,13 +85,13 @@ ng-prism supports Angular's zoneless change detection. Pass `--zoneless` during 
 ng add @ng-prism/core --zoneless
 ```
 
-This removes ~30 KB from the bundle and aligns with the modern Angular direction. ng-prism itself is fully signal-based, and the scanner already requires `input()`/`output()` signals on every showcased component — so zoneless is safe by design.
+This removes ~30 KB from the bundle and aligns with the modern Angular direction. ng-prism itself is fully signal-based, and the scanner already requires `input()`/`output()` signals on every showcased component, so running zoneless is safe.
 
 ### Migrating an existing setup to zoneless
 
 Three manual edits are needed:
 
-**1. `projects/<lib>-prism/src/main.ts`** — add `provideZonelessChangeDetection()`:
+**1. `projects/<lib>-prism/src/main.ts`**: add `provideZonelessChangeDetection()`:
 
 ```diff
 +import { provideZonelessChangeDetection } from '@angular/core';
@@ -111,7 +111,7 @@ Three manual edits are needed:
 
 Order matters: `provideZonelessChangeDetection()` must come before `providePrism()`.
 
-**2. `angular.json`** — remove the `zone.js` polyfill from the Prism app's build target:
+**2. `angular.json`**: remove the `zone.js` polyfill from the Prism app's build target:
 
 ```diff
  "projects": {
@@ -123,13 +123,13 @@ Order matters: `provideZonelessChangeDetection()` must come before `providePrism
 +          "polyfills": [],
 ```
 
-**3. `ng-prism.config.ts`** — if your `appProviders` contains zone-dependent providers (e.g. older animation modules, `provideZoneChangeDetection`), remove them or swap for zoneless-compatible alternatives.
+**3. `ng-prism.config.ts`**: if your `appProviders` contains zone-dependent providers (e.g. older animation modules, `provideZoneChangeDetection`), remove them or swap for zoneless-compatible alternatives.
 
-**Verify:** Run `ng run <lib>:prism` — the app should boot without errors and all showcases should render. Bundle size drops by ~30 KB (zone.js is no longer loaded).
+**Verify:** Run `ng run <lib>:prism`. The app should boot without errors and all showcases should render. Bundle size drops by ~30 KB (zone.js is no longer loaded).
 
 ## Angular Builder Targets
 
-The schematic adds two targets to the **library project** in `angular.json`:
+The schematic adds two targets to the library project in `angular.json`:
 
 ```json
 "prism": {
@@ -152,8 +152,8 @@ The schematic adds two targets to the **library project** in `angular.json`:
 }
 ```
 
-- **`@ng-prism/core:serve`** — runs the TypeScript scanner, generates a runtime manifest, then delegates to the Angular dev server. Watches for file changes and re-scans incrementally.
-- **`@ng-prism/core:build`** — same pipeline but runs the Angular production build and exits.
+- **`@ng-prism/core:serve`** runs the TypeScript scanner, generates a runtime manifest, then delegates to the Angular dev server. Watches for file changes and re-scans incrementally.
+- **`@ng-prism/core:build`** uses the same pipeline but runs the Angular production build and exits.
 
 ### Builder Options
 
@@ -161,7 +161,7 @@ The schematic adds two targets to the **library project** in `angular.json`:
 | ------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `entryPoint`        | Yes           | Path to the library directory (recommended) or to its barrel `public-api.ts` file. When pointed at a file, the pipeline walks upward to find the nearest `ng-package.json` and treats that directory as the library root, so secondary entry points are still discovered automatically. |
 | `prismProject`      | Yes           | Angular project name for the generated showcase app                                                                                                                                                                                                                                     |
-| `libraryProject`    | No            | Angular project name of the library being showcased — only used as a fallback for `libraryImportPath`                                                                                                                                                                                   |
+| `libraryProject`    | No            | Angular project name of the library being showcased. Only used as a fallback for `libraryImportPath`                                                                                                                                                                                    |
 | `libraryImportPath` | No            | Override the import path used in the generated manifest (defaults to `libraryProject`)                                                                                                                                                                                                  |
 | `configFile`        | No            | Path to your config file (default: `ng-prism.config.ts` at workspace root)                                                                                                                                                                                                              |
 | `port`              | No            | Dev server port for `:serve` (default: `4400`)                                                                                                                                                                                                                                          |
@@ -170,7 +170,7 @@ The schematic adds two targets to the **library project** in `angular.json`:
 
 ## Showcase App Target Configuration
 
-The schematic also adds a separate **showcase app project** (`my-lib-prism`) to `angular.json` with its own build and serve targets:
+The schematic also adds a separate showcase app project (`my-lib-prism`) to `angular.json` with its own build and serve targets:
 
 ```json
 "my-lib-prism": {
@@ -216,23 +216,23 @@ The schematic also adds a separate **showcase app project** (`my-lib-prism`) to 
 
 The configuration split is intentional:
 
-- `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR — the dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
-- The `development` configuration disables hashing, turns off optimization, and enables source maps — the usual Angular dev defaults.
+- `outputHashing` lives only in the `production` configuration. Hashed filenames (`main.abc123.js`) are needed for production cache-busting but are incompatible with HMR. The dev server prints `Hot Module Replacement (HMR) is disabled because the 'outputHashing' option is set to 'all'.` in the terminal when hashing is on.
+- The `development` configuration disables hashing, turns off optimization, and enables source maps, which are the usual Angular dev defaults.
 - The `serve` target explicitly points at `:build:development` so iteration uses the dev configuration.
-- The `polyfills` array shown above is the zone-based default. When set up with `--zoneless`, this field is `[]` instead — see [Zoneless Mode](#zoneless-mode-optional-recommended) above.
+- The `polyfills` array shown above is the zone-based default. When set up with `--zoneless`, this field is `[]` instead; see [Zoneless Mode](#zoneless-mode-optional-recommended) above.
 
 ## Dev Reload Behavior
 
-Angular's `@angular/build:application` builds the entire app into a single bundle (`main.js`). True module-level HMR — where individual modules get hot-swapped — is not possible against a monolithic bundle. In practice that means **edits trigger a full page refresh**, even with `hmr: true`. ng-prism turns this from a workflow blocker into an acceptable iteration loop through two layers:
+Angular's `@angular/build:application` builds the entire app into a single bundle (`main.js`). True module-level HMR, where individual modules get hot-swapped, is not possible against a monolithic bundle. In practice that means **edits trigger a full page refresh**, even with `hmr: true`. ng-prism turns this from a workflow blocker into an acceptable iteration loop through two layers:
 
 1. **The dev configuration skips minification and source-map optimization.** Library and showcase rebuilds typically complete in 300-900ms.
 2. **State preservation across reloads** (built into ng-prism): the active component, variant, view tab, addon panel tab, control panel overrides, and a11y sub-state are restored after the page reloads, so iterating on a specific variant doesn't lose context. See [State Preservation](guide/url-state.md).
 
-`liveReload: true` is the recommended default — it triggers the reload automatically. Setting `liveReload: false` is only useful if you want to refresh manually (for example to inspect server-side state between edits).
+`liveReload: true` is the recommended default because it triggers the reload automatically. Setting `liveReload: false` is only useful if you want to refresh manually (for example to inspect server-side state between edits).
 
 ### What ng-prism's watcher does
 
-The `@ng-prism/core:serve` builder runs its own incremental scanner on the library entry point. The scanner only reacts to **`.ts` file changes** — style and template edits don't need a manifest rescan and are handled directly by Angular's dev server. Concretely:
+The `@ng-prism/core:serve` builder runs its own incremental scanner on the library entry point. The scanner only reacts to `.ts` file changes. Style and template edits don't need a manifest rescan and are handled directly by Angular's dev server. Concretely:
 
 | Edit                                       | ng-prism scanner                                  | Angular dev server |
 | ------------------------------------------ | ------------------------------------------------- | ------------------ |
@@ -292,7 +292,7 @@ The import specifier `prism-manifest/<prism-project>` is resolved via a wildcard
 
 The schematic adds both the path mapping and a workspace-wide `ng-prism-cache/` entry in `.gitignore` automatically.
 
-**5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above. In an Nx workspace they go into the library's `project.json` under `targets`, with `executor` instead of `builder` — see [Nx Workspaces](#nx-workspaces).
+**5. Add builder targets** to `angular.json` as shown in the [Builder Targets](#angular-builder-targets) section above. In an Nx workspace they go into the library's `project.json` under `targets`, with `executor` instead of `builder` (see [Nx Workspaces](#nx-workspaces)).
 
 ## Adding Plugins
 
@@ -307,7 +307,7 @@ ng add @ng-prism/plugin-perf
 ng add @ng-prism/plugin-visual-regression
 ```
 
-Each command installs the plugin into `devDependencies` and registers it in `ng-prism.config.ts`. Re-running is safe — already-registered plugins are skipped.
+Each command installs the plugin into `devDependencies` and registers it in `ng-prism.config.ts`. Re-running is safe: already-registered plugins are skipped.
 
 See [Plugin Overview](plugins/overview.md) for details on what each plugin provides.
 

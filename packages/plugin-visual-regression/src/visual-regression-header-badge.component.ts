@@ -24,7 +24,7 @@ export class VisualRegressionHeaderBadgeComponent {
         const { total, thresholds } = meta;
         const variant: Variant = total.score >= thresholds.score ? 'ok' : total.score >= thresholds.score * 0.75 ? 'warn' : 'danger';
 
-        // `new` and `excluded` stay out of the headline counts on purpose — neither
+        // `new` and `excluded` stay out of the headline counts: neither
         // has regressed, so both are reported but never framed as a fault.
         const parts = [
             `Visual regression: ${total.score}% unchanged (target ${thresholds.score}%)`,

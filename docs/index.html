@@ -2,8 +2,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>ng-prism — Documentation</title>
-        <meta name="description" content="Lightweight, Angular-native component showcase tool — documentation" />
+        <title>ng-prism Documentation</title>
+        <meta name="description" content="Lightweight, Angular-native component showcase tool: documentation" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css" />
         <style>
             :root {
-                /* — Prism dark palette (aligned with PRISM_DARK_THEME) — */
+                /* Prism dark palette (aligned with PRISM_DARK_THEME) */
                 --prism-void: #07050f;
                 --prism-deep: #0d0b1c;
                 --prism-surface: #131022;
@@ -29,7 +29,7 @@
                 --prism-glow: rgba(139, 92, 246, 0.18);
                 --prism-glow-strong: rgba(139, 92, 246, 0.35);
 
-                /* — Docsify theme overrides — */
+                /* Docsify theme overrides */
                 --theme-color: #a78bfa;
                 --base-background-color: #0d0b1c;
                 --base-color: #ede9f8;
@@ -77,9 +77,9 @@
                 --content-max-width: 860px;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Global & Body
-    —————————————————————————————————————— */
+    -------------------------------------- */
             * {
                 box-sizing: border-box;
             }
@@ -91,9 +91,9 @@
                 -moz-osx-font-smoothing: grayscale;
             }
 
-            /* ——————————————————————————————————————
-       Sidebar — spectral accent line
-    —————————————————————————————————————— */
+            /* --------------------------------------
+       Sidebar: spectral accent line
+    -------------------------------------- */
             .sidebar {
                 border-right: 1px solid var(--prism-border);
                 background: var(--prism-void) !important;
@@ -120,7 +120,7 @@
                 margin-top: 0 !important;
             }
 
-            /* Sidebar app name — logo treatment */
+            /* Sidebar app name (logo treatment) */
             .sidebar .app-name-link {
                 font-weight: 700;
                 font-size: 22px;
@@ -172,9 +172,9 @@
                 background-color: var(--prism-text-muted) !important;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Content
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .content {
                 padding-top: 32px;
             }
@@ -249,9 +249,9 @@
                 border-top: 1px solid var(--prism-border);
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Code blocks
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .markdown-section pre {
                 background: var(--prism-surface) !important;
                 border: 1px solid var(--prism-border);
@@ -282,9 +282,9 @@
                 font-size: 0.85em;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Prism.js syntax highlighting (dark)
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .token.comment,
             .token.prolog,
             .token.doctype,
@@ -336,9 +336,9 @@
                 color: #fbbf24;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Tables
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .markdown-section table {
                 border-collapse: collapse;
                 width: 100%;
@@ -370,9 +370,9 @@
                 background: rgba(167, 139, 250, 0.06);
             }
 
-            /* ——————————————————————————————————————
-       Blockquotes — violet left border
-    —————————————————————————————————————— */
+            /* --------------------------------------
+       Blockquotes with violet left border
+    -------------------------------------- */
             .markdown-section blockquote {
                 border-left: 3px solid var(--prism-violet-deep);
                 background: rgba(167, 139, 250, 0.06);
@@ -382,9 +382,9 @@
                 color: var(--prism-text-secondary);
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Search
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .search {
                 border-bottom: 1px solid var(--prism-border) !important;
                 padding: 12px 16px !important;
@@ -441,9 +441,9 @@
                 color: var(--prism-violet) !important;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Copy button
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .docsify-copy-code-button {
                 background: var(--prism-surface) !important;
                 color: var(--prism-text-muted) !important;
@@ -457,9 +457,9 @@
                 border-color: rgba(167, 139, 250, 0.3) !important;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        GitHub corner
-    —————————————————————————————————————— */
+    -------------------------------------- */
             .github-corner svg {
                 fill: #131022;
                 color: #b0a6c8;
@@ -468,9 +468,9 @@
                 color: #ede9f8;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Scrollbar
-    —————————————————————————————————————— */
+    -------------------------------------- */
             ::-webkit-scrollbar {
                 width: 6px;
                 height: 6px;
@@ -486,9 +486,9 @@
                 background: rgba(139, 92, 246, 0.3);
             }
 
-            /* ——————————————————————————————————————
-       Version badge — anchored to GitHub corner
-    —————————————————————————————————————— */
+            /* --------------------------------------
+       Version badge, anchored to the GitHub corner
+    -------------------------------------- */
 
             .prism-version-badge {
                 position: absolute;
@@ -514,9 +514,9 @@
                 background: #a78bfa;
             }
 
-            /* ——————————————————————————————————————
+            /* --------------------------------------
        Mobile
-    —————————————————————————————————————— */
+    -------------------------------------- */
             @media (max-width: 768px) {
                 .markdown-section h1 {
                     font-size: 1.6rem;

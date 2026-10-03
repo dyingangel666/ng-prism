@@ -16,8 +16,8 @@ const NONE: OverlayResolution = { kind: 'none' };
 /**
  * Decides which overlay component belongs to the active panel.
  *
- * Panel overlays render *inside* `.demo-wrap` — the same element external
- * screenshot tools capture — so capture mode resolves to `none` regardless of
+ * Panel overlays render *inside* `.demo-wrap`, the same element external
+ * screenshot tools capture, so capture mode resolves to `none` regardless of
  * which panel is active, and never triggers a lazy overlay load.
  */
 export function resolveOverlay(

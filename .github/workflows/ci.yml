@@ -34,9 +34,8 @@ jobs:
 
             # Prepend any command with "nx record --" to record its logs to Nx Cloud
             - run: npx nx record -- npx nx format:check  --base="remotes/origin/main"
-            # Spiegelt `npm run check`: ohne diesen Schritt faengt nur der lokale
-            # Lauf eine nicht deklarierte Dependency, und ein Package geht mit
-            # gruener CI nach npm.
+            # Mirrors `npm run check`. Without it only the local run catches an
+            # undeclared dependency, and a package ships to npm with green CI.
             - run: node scripts/check-declared-deps.mjs
             - run: npm run style
             - run: npx nx run-many -t lint test build typecheck e2e-ci

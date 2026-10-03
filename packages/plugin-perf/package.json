@@ -1,7 +1,7 @@
 {
     "name": "@ng-prism/plugin-perf",
     "version": "22.3.0",
-    "description": "Performance profiling panel for ng-prism — bundle size, render time, memory footprint.",
+    "description": "Performance profiling panel for ng-prism: bundle size, render time, memory footprint.",
     "ng-add": {
         "save": "devDependencies"
     },

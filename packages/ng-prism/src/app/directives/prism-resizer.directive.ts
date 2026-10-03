@@ -40,7 +40,7 @@ export class PrismResizerDirective {
     protected onMouseDown(e: MouseEvent): void {
         // Primary button only. Without this a right-click arms the document-level
         // listeners below, the context menu takes the pointer so the matching
-        // mouseup never arrives, and the drag stays live afterwards — the value
+        // mouseup never arrives, and the drag stays live afterwards, so the value
         // then follows the cursor with no button held. `preventDefault` does not
         // suppress `contextmenu`, so the guard has to be here.
         if (e.button !== 0) return;
@@ -67,7 +67,7 @@ export class PrismResizerDirective {
     }
 
     /**
-     * Keyboard direction is deliberately independent of `scale`.
+     * Keyboard direction is independent of `scale`.
      *
      * `scale` inverts the *pointer* for a grip on the far edge of a centred box,
      * and carrying that inversion into the keyboard was wrong: two separators

@@ -45,14 +45,14 @@ export default defineConfig({
 
 Color-coded warning and critical thresholds for each metric:
 
-| Option         | Default | Description                                               |
-| -------------- | ------- | --------------------------------------------------------- |
-| `renderWarnMs` | `5`     | Render time warning threshold (ms)                        |
-| `renderCritMs` | `16`    | Render time critical threshold (ms) — one frame at 60 fps |
-| `bundleWarnKb` | `20`    | Bundle size warning threshold (KB)                        |
-| `bundleCritKb` | `50`    | Bundle size critical threshold (KB)                       |
-| `memoryWarnMb` | `5`     | Memory warning threshold (MB)                             |
-| `memoryLeakMb` | `0.5`   | Memory leak detection threshold per render (MB)           |
+| Option         | Default | Description                                              |
+| -------------- | ------- | -------------------------------------------------------- |
+| `renderWarnMs` | `5`     | Render time warning threshold (ms)                       |
+| `renderCritMs` | `16`    | Render time critical threshold (ms), one frame at 60 fps |
+| `bundleWarnKb` | `20`    | Bundle size warning threshold (KB)                       |
+| `bundleCritKb` | `50`    | Bundle size critical threshold (KB)                      |
+| `memoryWarnMb` | `5`     | Memory warning threshold (MB)                            |
+| `memoryLeakMb` | `0.5`   | Memory leak detection threshold per render (MB)          |
 
 ### `bundle`
 
@@ -92,9 +92,9 @@ perfPlugin({
 
 Shows timing for the last N renders with a mini sparkline chart. Values are color-coded against the configured thresholds:
 
-- Green — within warning threshold
-- Yellow — between warning and critical
-- Red — exceeds critical threshold
+- Green: within warning threshold
+- Yellow: between warning and critical
+- Red: exceeds critical threshold
 
 ### Bundle Panel
 

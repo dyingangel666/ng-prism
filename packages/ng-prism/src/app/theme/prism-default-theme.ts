@@ -119,7 +119,7 @@ export const PRISM_BASE_TOKENS: Record<string, string> = {
      *
      *   prism-shell { --density: .8 }
      *
-     * There is deliberately no signal, service or menu behind this — the whole
+     * There is no signal, service or menu behind this. The whole
      * control surface is the custom property.
      */
     '--density': '1',

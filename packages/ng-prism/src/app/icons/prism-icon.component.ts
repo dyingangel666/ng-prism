@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, ElementRef, inject, input }
 import { ICON_NAMES, ICONS } from './icon-registry.js';
 
 // Re-exported for existing consumers of this module. The registry itself
-// lives in `icon-registry.js` — a dependency-free module — so a plugin barrel
+// lives in `icon-registry.js`, a dependency-free module, so a plugin barrel
 // can re-export `ICON_NAMES` without dragging this `@Component` class (and
 // `@angular/core`) into a module graph the builder evaluates in Node.js.
 export { ICON_NAMES };
@@ -18,8 +18,8 @@ const warnedIcons = new Set<string>();
  * invisible: the `<svg>` is still built at the right size, so a missing entry
  * renders as a correctly-spaced blank and reads like a CSS bug. Plugins declare
  * `icon` as a free-form string and are compiled separately from this registry,
- * so nothing else catches the typo — the visual regression panel shipped with a
- * blank tab icon exactly this way.
+ * so no other check catches the typo. The visual regression panel once shipped
+ * with a blank tab icon this way.
  *
  * Warned once per name: an icon on a panel tab re-renders constantly.
  */
@@ -28,7 +28,7 @@ export function resolveIcon(name: string): string | undefined {
 
     if (content === undefined && !warnedIcons.has(name)) {
         warnedIcons.add(name);
-        console.warn(`[ng-prism] Unknown icon "${name}" — rendering an empty glyph. Available: ${ICON_NAMES.join(', ')}.`);
+        console.warn(`[ng-prism] Unknown icon "${name}", rendering an empty glyph. Available: ${ICON_NAMES.join(', ')}.`);
     }
     return content;
 }

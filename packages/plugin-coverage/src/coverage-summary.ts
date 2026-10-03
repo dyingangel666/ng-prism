@@ -8,7 +8,7 @@ import type { CoverageSummary, CoverageThresholds } from './coverage.types.js';
  *
  * Same motive as `thresholds.ts` in `plugin-visual-regression`.
  */
-/** The single number the badge compares against — the mean of the four metrics. */
+/** The single number the badge compares against: the mean of the four metrics. */
 export function avgThreshold(thresholds: CoverageThresholds): number {
     return Math.round((thresholds.lines + thresholds.branches + thresholds.functions + thresholds.statements) / 4);
 }

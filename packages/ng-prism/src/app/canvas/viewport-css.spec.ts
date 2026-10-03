@@ -7,11 +7,11 @@ import { join } from 'node:path';
  * None of them can be asserted against a rendered DOM: this package's specs run
  * under jsdom, which resolves no `var()`, and `PrismRendererComponent` uses
  * `viewChild.required`, which JIT cannot instantiate from SWC-compiled sources.
- * So they are asserted against the source text — the stylesheet, the template or
- * the class, whichever carries the claim — the way
+ * So they are asserted against the source text (the stylesheet, the template or
+ * the class, whichever carries the claim), the way
  * `canvas-overlay-offsets.spec.ts` asserts the overlay offsets.
  *
- * Every one of them fails silently if it breaks — a wrong `container-type`
+ * Every one of them fails silently if it breaks: a wrong `container-type`
  * moves every visual-regression baseline while the canvas still looks right, a
  * grip that reads a custom property nobody publishes simply sits at the centre
  * of the stage, and one that ignores zoom cuts through the middle of the very
@@ -21,7 +21,7 @@ import { join } from 'node:path';
  * Three files, not one: the renderer keeps its template and styles beside it
  * rather than inline, so each assertion below has to read the file that
  * actually carries what it claims. Pointing all three at one path is how this
- * breaks — a `block()` against the template finds no CSS rule and throws
+ * breaks. A `block()` against the template finds no CSS rule and throws
  * `selector not found`, which reads like a deleted rule rather than a wrong
  * path.
  */
@@ -32,8 +32,8 @@ const RENDERER_TS = join(__dirname, '../renderer/prism-renderer.component.ts');
 /**
  * `src` with every block comment removed.
  *
- * Without this, a selector named only in prose — e.g. a future comment that
- * happens to discuss `.demo-wrap {` — would be indistinguishable from the rule
+ * Without this, a selector named only in prose (say, a future comment that
+ * happens to discuss `.demo-wrap {`) would be indistinguishable from the rule
  * that declares it, and `block()` below would silently slice comment text.
  */
 function withoutComments(src: string): string {
@@ -43,8 +43,8 @@ function withoutComments(src: string): string {
 /**
  * `src` with every run of whitespace collapsed to a single space.
  *
- * Every assertion below runs through this. Matching raw source made the guards
- * fail on a Prettier reflow rather than on a behaviour change — and this repo
+ * Every assertion below runs through this. Matching raw source made the checks
+ * fail on a Prettier reflow rather than on a behaviour change, and this repo
  * runs `nx format:write` before every commit, so a declaration crossing the
  * print width would have broken tests that nothing about the CSS had changed.
  */
@@ -68,12 +68,12 @@ function block(selector: string): string {
 
 /**
  * The opening tag (attributes and all) of the element whose tag contains
- * `marker` — typically a `class="..."` literal.
+ * `marker`, typically a `class="..."` literal.
  *
  * Narrower than searching the whole file: `[style.--prism-vp-w.px]` bound on the
  * wrong element would still make a file-wide "does this substring exist
- * anywhere" check pass, which is exactly the defect this constraint depends
- * on catching (see the first test below).
+ * anywhere" check pass, and that is the defect this constraint has to
+ * catch (see the first test below).
  */
 function openingTag(marker: string): string {
     const src = readFileSync(RENDERER_HTML, 'utf-8');
@@ -126,11 +126,11 @@ describe('viewport CSS invariants', () => {
         const constrained = block('.demo-wrap[data-viewport] {');
 
         // A plain substring check for "width: var(--prism-vp-w)" would also match
-        // inside "max-width: var(--prism-vp-w)" — the lookbehind rules that out.
+        // inside "max-width: var(--prism-vp-w)". The lookbehind rules that out.
         expect(constrained).toMatch(/(?<!-)width:\s*var\(--prism-vp-w\)/);
         expect(constrained).toContain('max-width: none');
 
-        // Both selectors weigh (0,2,0) — equal specificity — so the cap above only
+        // Both selectors weigh (0,2,0), equal specificity, so the cap above only
         // loses to this rule because it is declared later in the stylesheet.
         // Reordering the two would silently cap every canvasLayout: 'stretch'
         // component at 800px again while the canvas still looked correct at
@@ -142,12 +142,12 @@ describe('viewport CSS invariants', () => {
 
     it('derives both grip positions from --prism-vp-w and --zoom rather than measuring', () => {
         // .demo-wrap is centred in the stage and then scaled in place by --zoom,
-        // so each edge sits half the *painted* width — --prism-vp-w times --zoom — away
+        // so each edge sits half the *painted* width (--prism-vp-w times --zoom) away
         // from the middle. Checked per rule rather than file-wide: a single
         // occurrence (e.g. .vp-grip--end regressing to a bare `right: 0`) would
         // still satisfy a check that only asks whether the pattern exists
         // somewhere in the file. The `getBoundingClientRect` guard lives in its own
-        // test below, scoped to the class body — a JS API can never appear inside a
+        // test below, scoped to the class body. A JS API can never appear inside a
         // CSS declaration block, so checking for it in `rule` here could never fail.
         const left = block('.vp-grip {');
         const end = block('.vp-grip--end {');
@@ -164,7 +164,7 @@ describe('viewport CSS invariants', () => {
         // directions: it sat inside a CSS `block()` result where a JS API can
         // never appear, and once moved to the class body it would have failed for
         // any future renderer feature that legitimately measures something
-        // unrelated to the grips. The claim worth holding is narrower — the grips
+        // unrelated to the grips. The claim worth holding is narrower: the grips
         // are positioned by arithmetic over --prism-vp-w and --zoom (asserted
         // above), and the drag that feeds them reads no layout.
         const src = withoutComments(readFileSync(RENDERER_TS, 'utf-8'));
@@ -179,8 +179,8 @@ describe('viewport CSS invariants', () => {
     });
 
     it("binds --zoom on the stage, which the grips' calc() and .demo-wrap both depend on", () => {
-        // .demo-wrap's own --zoom binding is redundant — it would inherit the
-        // stage's — but it stays for reasons unrelated to this file. What matters
+        // .demo-wrap's own --zoom binding is redundant (it would inherit the
+        // stage's), but it stays for reasons unrelated to this file. What matters
         // here is that the stage keeps binding it at all, since both grips read
         // --zoom from the cascade and would silently drift to the stage's
         // fallback of 1 if this binding were ever removed.
@@ -194,7 +194,7 @@ describe('viewport CSS invariants', () => {
         // here and the wrong one. The specimen is created through
         // ViewContainerRef, so its host element carries none of the renderer's
         // _ngcontent attribute and no scoped rule in that file can reach it to
-        // undo an inherited value — text-align would leak all the way in and
+        // undo an inherited value. text-align would leak all the way in and
         // silently re-align the specimen's own text whenever the viewport is
         // switched on. Centring at the container touches nothing inside it.
         const constrained = block('.demo-wrap[data-viewport] {');
@@ -219,7 +219,7 @@ describe('viewport CSS invariants', () => {
 
         // Both pseudo-elements must sit in the same grid cell, or grid's default
         // auto-flow stacks the handle above the line instead of on it. Asserted on
-        // each rule separately because they are written separately — a grouped
+        // each rule separately because they are written separately. A grouped
         // selector would make `block()` ambiguous for whichever of the two it
         // named last, which is how this test first failed.
         const handle = block('.vp-grip__bar {');
@@ -247,7 +247,7 @@ describe('viewport CSS invariants', () => {
     it('refuses to shrink below the width it was asked for', () => {
         // The stage is a flex container and .demo-wrap is its only item, so the
         // default flex-shrink: 1 renders the box narrower than the requested width
-        // whenever the canvas is the smaller of the two — and container-type drops
+        // whenever the canvas is the smaller of the two, and container-type drops
         // the automatic minimum size to zero, so nothing stops it. The failure is
         // silent and total: the dimension line states 1024 while every @container
         // rule in the specimen answers whatever the canvas allowed.
@@ -260,7 +260,7 @@ describe('viewport CSS invariants', () => {
         // The guide line is centred in the grip, and the dimension line's end
         // ticks sit at exactly +/- half the width from the middle. So the grip's
         // own offset has to be half its width, or the two overlays bracket
-        // different regions — they were 8.5px apart on each side, while the docs
+        // different regions. They were 8.5px apart on each side, while the docs
         // claimed both marked "the two edges the grips can be dragged to".
         const grip = block('.vp-grip {');
         const width = /width:\s*(\d+(?:\.\d+)?)px/.exec(grip);
@@ -278,7 +278,7 @@ describe('viewport CSS invariants', () => {
 
     it('keeps the guide line out of the hit test', () => {
         // The grip element is the guide line's full-height track, running from the
-        // overlay band to the bottom of the stage at z-index 4 — straight over
+        // overlay band to the bottom of the stage at z-index 4, straight over
         // prism-canvas-bg-pill at z-index 2. Hit-testable, it made part of the
         // pill's Reset button unreachable whenever a viewport was on. Only the bar
         // takes pointer events back.

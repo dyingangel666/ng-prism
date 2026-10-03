@@ -23,7 +23,7 @@ Once, with the full manifest:
   → ...
 ```
 
-Plugins run in registration order within each phase. The output of one plugin is the input to the next — hooks chain.
+Plugins run in registration order within each phase. The output of one plugin is the input to the next, so hooks chain.
 
 ## `onComponentScanned`
 
@@ -33,7 +33,7 @@ Called once per `@Showcase`-decorated component after all metadata has been extr
 onComponentScanned(component: ScannedComponent): ScannedComponent | void | Promise<ScannedComponent | void>
 ```
 
-**Mutation pattern** — mutate the object in place and return `void`, or return a new object. Returning `void` (or `undefined`) keeps the previous value.
+**Mutation pattern:** mutate the object in place and return `void`, or return a new object. Returning `void` (or `undefined`) keeps the previous value.
 
 ```typescript
 onComponentScanned(component) {
@@ -133,22 +133,22 @@ onManifestReady(manifest) {
 
 ## Navigation Decorations
 
-`NgPrismPlugin.navigationDecorations` lets a plugin mark a component's sidebar item with a small icon — the built-in a11y, visual regression and coverage sources all use it to flag a component whose latest report needs attention. It is a runtime contribution (its `badge()` callback runs in the browser), but the verdict it displays has to be decided here, at build time. This section explains why.
+`NgPrismPlugin.navigationDecorations` lets a plugin mark a component's sidebar item with a small icon. The built-in a11y, visual regression and coverage sources all use it to flag a component whose latest report needs attention. It is a runtime contribution (its `badge()` callback runs in the browser), but the verdict it displays has to be decided here, at build time. This section explains why.
 
 ### The two-zone principle
 
 Every component's navigation item has two places a marker can live:
 
-- **The leading icon** carries _lifecycle_ — what the author declared with `@Showcase({ status })`. It speaks in **form alone**: `box` for a normal component, `box-select` for `'wip'`, a struck-through name for `'deprecated'`. Never colour.
-- **The trailing slot** carries _health_ — what a report measured. It speaks in **colour alone**: `warn` (amber) or `danger` (red), via `NavigationDecoration.variant`.
+- **The leading icon** carries _lifecycle_: what the author declared with `@Showcase({ status })`. It uses shape only: `box` for a normal component, `circle-dashed` for `'wip'`, a struck-through name for `'deprecated'`. Never colour.
+- **The trailing slot** carries _health_: what a report measured. It uses colour only: `warn` (amber) or `danger` (red), via `NavigationDecoration.variant`.
 
-The split is deliberate, not cosmetic. Before `navigationDecorations` existed, the work-in-progress marker was a 6px amber dot in the trailing slot — the exact position and the exact colour a health signal wants. Had a coverage or a11y marker landed there too, the two would have been indistinguishable: a reader could not tell "the author isn't done with this yet" from "the last audit found a problem". Keeping lifecycle in the leading slot, expressed only as shape, and health in the trailing slot, expressed only as colour, means colour in the sidebar now means exactly one thing — measured quality — and nothing else competes for it.
+Before `navigationDecorations` existed, the work-in-progress marker was a 6px amber dot in the trailing slot, the same position and colour a health signal uses. A coverage or a11y marker there would have been indistinguishable from it: a reader could not tell "the author isn't done with this yet" from "the last audit found a problem". With lifecycle in the leading slot as shape and health in the trailing slot as colour, colour in the sidebar only ever means measured quality.
 
 ### Why the threshold decision has to happen in a hook
 
-A `NavigationDecorationDefinition.badge()` callback receives one `RuntimeComponent` and nothing else — no injected services, no access to the plugin's configured thresholds, no view of any other component in the library. That is enough to _read_ a verdict, but not enough to _decide_ one: it cannot tell whether 72% coverage is fine or a regression, because "fine" is a library-wide threshold the badge callback never sees.
+A `NavigationDecorationDefinition.badge()` callback receives one `RuntimeComponent` and nothing else: no injected services, no access to the plugin's configured thresholds, no view of any other component in the library. That is enough to read a verdict but not to decide one: it cannot tell whether 72% coverage is fine or a regression, because "fine" is a library-wide threshold the badge callback never sees.
 
-That decision is made once, in `onComponentScanned`, which does have everything it needs — the plugin's resolved thresholds (closed over from `options`), and the one component's raw numbers — and is only ever run at build time, in Node.js, never on every change-detection tick. The hook writes its verdict into `component.showcaseConfig.meta` as an already-decided `{ variant, label }` pair, conventionally under a `summary` field. `badge()` then does no more than read that field back:
+That decision is made once, in `onComponentScanned`, which has everything it needs (the plugin's resolved thresholds, closed over from `options`, and the one component's raw numbers) and is only ever run at build time, in Node.js, never on every change-detection tick. The hook writes its verdict into `component.showcaseConfig.meta` as an already-decided `{ variant, label }` pair, conventionally under a `summary` field. `badge()` then only reads that field back:
 
 ```typescript
 // packages/plugin-coverage/src/coverage-contributions.ts (shipped)
@@ -160,9 +160,9 @@ badge: (component) => {
 },
 ```
 
-Note that `meta.summary.variant` above is three-valued (`'ok' | 'warn' | 'danger'`) — it is the plugin's own build-time verdict type (`CoverageSummary`, `VrtStat`, …), and it has to include `'ok'` because the hook that writes it needs a way to say "healthy". The public `NavigationDecoration` returned by `badge()` is deliberately two-valued (`'warn' | 'danger'`, no `'ok'`) — the `if (... === 'ok') return null;` line above is exactly where the narrowing happens, not a special case.
+Note that `meta.summary.variant` above is three-valued (`'ok' | 'warn' | 'danger'`). It is the plugin's own build-time verdict type (`CoverageSummary`, `VrtStat`, ...), and it has to include `'ok'` because the hook that writes it needs a way to say "healthy". The public `NavigationDecoration` returned by `badge()` is two-valued (`'warn' | 'danger'`, no `'ok'`). The `if (... === 'ok') return null;` line above does that narrowing.
 
-All three built-in sources follow this split — see `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped `onComponentScanned` → `summary` → `badge()` chain, and [`NavigationDecorationDefinition`](api/ng-prism-plugin.md#navigationdecorationdefinition) for the full field reference and the reserved `order` values.
+All three built-in sources follow this split. See `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped chain from `onComponentScanned` through `summary` to `badge()`, and [`NavigationDecorationDefinition`](api/ng-prism-plugin.md#navigationdecorationdefinition) for the full field reference and the reserved `order` values.
 
 ## Async Hooks
 
@@ -176,7 +176,7 @@ async onComponentScanned(component) {
 }
 ```
 
-The pipeline is sequential — it does not parallelize hook calls within a phase. If a hook is slow, it blocks the full rebuild. Keep async hooks lightweight.
+The pipeline is sequential and does not parallelize hook calls within a phase. If a hook is slow, it blocks the full rebuild. Keep async hooks lightweight.
 
 ## Error Handling
 
@@ -190,4 +190,4 @@ Build-time hooks run in Node.js. The following are not available:
 - Angular APIs that require the browser (`@angular/platform-browser`, CDK)
 - Lazy-loaded Angular components
 
-For browser-only functionality, use `panels` and `controls` runtime contributions instead — they are only loaded in the browser.
+For browser-only functionality, use `panels` and `controls` runtime contributions instead, since they are only loaded in the browser.

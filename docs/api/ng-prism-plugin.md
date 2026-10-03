@@ -1,6 +1,6 @@
 # NgPrismPlugin
 
-Interface implemented by all ng-prism plugins. A plugin is a plain JavaScript object — no class inheritance or base classes.
+Interface implemented by all ng-prism plugins. A plugin is a plain JavaScript object, with no class inheritance or base classes.
 
 ```typescript
 interface NgPrismPlugin {
@@ -34,7 +34,7 @@ interface NgPrismPlugin {
 
 Build-time hook called once per `@Showcase`-decorated component. Receives the `ScannedComponent` object. Mutate it in place or return a new object. Returning `void` keeps the original.
 
-Runs in Node.js — do not import browser APIs.
+Runs in Node.js, so do not import browser APIs.
 
 ```typescript
 onComponentScanned(component) {
@@ -120,7 +120,7 @@ controls: [
 
 ### `headerWidgets`
 
-Array of `HeaderWidgetDefinition` objects rendering Angular components inside the Prism shell header bar. Use for library-wide signals — total coverage, perf budgets, version banners.
+Array of `HeaderWidgetDefinition` objects rendering Angular components inside the Prism shell header bar. Use for library-wide signals such as total coverage, perf budgets or version banners.
 
 ```typescript
 headerWidgets: [
@@ -148,7 +148,7 @@ async onManifestReady(manifest) {
 
 ### `navigationDecorations`
 
-Array of `NavigationDecorationDefinition` objects, each contributing a marker to the sidebar's navigation item for every component. Use for library-wide health signals that should be visible while browsing — a11y, coverage and visual regression standing all ship as built-ins through this exact extension point.
+Array of `NavigationDecorationDefinition` objects, each contributing a marker to the sidebar's navigation item for every component. Use for library-wide health signals that should be visible while browsing. The a11y, coverage and visual regression markers all ship as built-ins through this same extension point.
 
 ```typescript
 navigationDecorations: [
@@ -198,23 +198,23 @@ interface PanelDefinition {
 }
 ```
 
-| Field                  | Description                                                                                                                                                                                                     |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`                   | Unique panel ID. Collision with built-in IDs overwrites the built-in panel.                                                                                                                                     |
-| `label`                | Tab label shown in the panel tab bar                                                                                                                                                                            |
-| `component`            | Static Angular component — avoid for browser-only deps                                                                                                                                                          |
-| `loadComponent`        | Lazy-loaded component — preferred when importing `@angular/platform-browser` or DOM APIs                                                                                                                        |
-| `overlayComponent`     | Component rendered as a canvas overlay (e.g. visual annotations)                                                                                                                                                |
-| `loadOverlayComponent` | Lazy-loaded canvas overlay                                                                                                                                                                                      |
-| `icon`                 | Icon identifier (optional, theme-dependent)                                                                                                                                                                     |
-| `position`             | `'bottom'` (horizontal panel) or `'right'` (sidebar panel)                                                                                                                                                      |
-| `placement`            | `'addon'` = bottom tab bar, `'view'` = view toolbar toggle                                                                                                                                                      |
-| `providers`            | Providers scoped to this panel's child `EnvironmentInjector`                                                                                                                                                    |
-| `isVisible`            | Predicate — when provided, the panel tab is only shown if it returns `true` for the active component                                                                                                            |
-| `badge`                | When provided, the panel's tab carries a [badge](#panelbadge) for the active component. Return `null` for "nothing worth saying".                                                                               |
-| `keepAlive`            | When `true`, the panel component is rendered once on first activation and merely hidden (instead of destroyed) on tab switch. Use for expensive panels — iframes, remote previews, heavy DOM. Default: `false`. |
+| Field                  | Description                                                                                                                                                                                                          |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                   | Unique panel ID. Collision with built-in IDs overwrites the built-in panel.                                                                                                                                          |
+| `label`                | Tab label shown in the panel tab bar                                                                                                                                                                                 |
+| `component`            | Static Angular component. Avoid for browser-only deps                                                                                                                                                                |
+| `loadComponent`        | Lazy-loaded component (preferred when importing `@angular/platform-browser` or DOM APIs)                                                                                                                             |
+| `overlayComponent`     | Component rendered as a canvas overlay (e.g. visual annotations)                                                                                                                                                     |
+| `loadOverlayComponent` | Lazy-loaded canvas overlay                                                                                                                                                                                           |
+| `icon`                 | Icon identifier (optional, theme-dependent)                                                                                                                                                                          |
+| `position`             | `'bottom'` (horizontal panel) or `'right'` (sidebar panel)                                                                                                                                                           |
+| `placement`            | `'addon'` = bottom tab bar, `'view'` = view toolbar toggle                                                                                                                                                           |
+| `providers`            | Providers scoped to this panel's child `EnvironmentInjector`                                                                                                                                                         |
+| `isVisible`            | Predicate. When provided, the panel tab is only shown if it returns `true` for the active component                                                                                                                  |
+| `badge`                | When provided, the panel's tab carries a [badge](#panelbadge) for the active component. Return `null` for "nothing worth saying".                                                                                    |
+| `keepAlive`            | When `true`, the panel component is rendered once on first activation and merely hidden (instead of destroyed) on tab switch. Use for expensive panels like iframes, remote previews or heavy DOM. Default: `false`. |
 
-> **Note:** Always prefer `loadComponent` over `component`. The config file is evaluated by the Angular builder in Node.js — a static import of a component that uses `DomSanitizer` or any browser global will crash the build.
+> **Note:** Always prefer `loadComponent` over `component`. The config file is evaluated by the Angular builder in Node.js, and a static import of a component that uses `DomSanitizer` or any browser global will crash the build.
 
 ---
 
@@ -229,10 +229,10 @@ interface PanelBadge {
 
 A short marker on a panel's tab, returned by [`PanelDefinition.badge`](#paneldefinition).
 
-| Field     | Description                                                                                              |
-| --------- | -------------------------------------------------------------------------------------------------------- |
-| `text`    | Usually a count. Keep it to a couple of characters — the tab bar scrolls horizontally on a narrow panel. |
-| `variant` | Colour role. `default` is a neutral tint for a plain count; `ok` / `warn` / `danger` carry a judgement.  |
+| Field     | Description                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------------- |
+| `text`    | Usually a count. Keep it to a couple of characters, since the tab bar scrolls horizontally on a narrow panel. |
+| `variant` | Colour role. `default` is a neutral tint for a plain count; `ok` / `warn` / `danger` carry a judgement.       |
 
 ```typescript
 panels: [
@@ -250,8 +250,8 @@ panels: [
 
 Two rules make the difference between a badge and decoration:
 
-- **Return `null` when there is nothing to report.** A badge that is always present stops being a signal — a green `0` on every tab trains people to ignore the one tab showing `3`.
-- **Keep it cheap and pure.** The callback runs during change detection. Read what the component's `meta` already holds; do not fetch, and do not inject — a badge has no injection context.
+- **Return `null` when there is nothing to report.** A badge that is always present stops being a signal: a green `0` on every tab trains people to ignore the one tab showing `3`.
+- **Keep it cheap and pure.** The callback runs during change detection. Read what the component's `meta` already holds; do not fetch, and do not inject (a badge has no injection context).
 
 ---
 
@@ -286,8 +286,8 @@ interface HeaderWidgetDefinition {
 | Field           | Description                                                                                                                       |
 | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `id`            | Unique widget ID.                                                                                                                 |
-| `component`     | Static Angular component — avoid for browser-only deps.                                                                           |
-| `loadComponent` | Lazy-loaded component — preferred (config is evaluated in Node.js by the builder).                                                |
+| `component`     | Static Angular component. Avoid for browser-only deps.                                                                            |
+| `loadComponent` | Lazy-loaded component. Preferred, because the builder evaluates the config in Node.js.                                            |
 | `placement`     | `'start'` renders next to the brand block; `'end'` (default) renders inside the existing actions area, before theme/menu buttons. |
 | `order`         | Sort order within the same placement (lower = earlier). Default `0`.                                                              |
 
@@ -297,7 +297,7 @@ interface HeaderWidgetDefinition {
 
 ## PrismMetricBadgeComponent
 
-Exported from the **main** `@ng-prism/core` entry (not `@ng-prism/core/plugin`, since it is an `@Component` class and the plugin entry stays evaluable in Node.js). The presentational badge every built-in header widget renders through — a11y, coverage and visual regression all use it, so the three badges share one appearance instead of three near-identical ones.
+Exported from the main `@ng-prism/core` entry (not `@ng-prism/core/plugin`, since it is an `@Component` class and the plugin entry stays evaluable in Node.js). The presentational badge every built-in header widget renders through. A11y, coverage and visual regression all use it, so the three badges share one appearance instead of three near-identical ones.
 
 ```typescript
 import { PrismMetricBadgeComponent } from '@ng-prism/core';
@@ -309,7 +309,7 @@ import { PrismMetricBadgeComponent } from '@ng-prism/core';
 | `value`   | `string`                     | yes      | The already-formatted figure, e.g. `'87%'`. The component does no formatting or unit conversion of its own.                                                                                                                                 |
 | `label`   | `string`                     | yes      | Human-readable name for the metric, e.g. `'Library coverage'`. Composed with `value` into the accessible name (`"label: value"`), so the figure cannot be dropped by a caller that only sets `label`.                                       |
 | `title`   | `string`                     | no       | Full text for the hover tooltip. Defaults to `label` when omitted.                                                                                                                                                                          |
-| `variant` | `'ok' \| 'warn' \| 'danger'` | no       | Colour role, drawn from `--prism-mark-attention` / `--prism-mark-critical`. Default `'ok'`, which renders with no accent colour at all — see [Marks, Measurement and Stage Tokens](../guide/theming.md#marks-measurement-and-stage-tokens). |
+| `variant` | `'ok' \| 'warn' \| 'danger'` | no       | Colour role, drawn from `--prism-mark-attention` / `--prism-mark-critical`. Default `'ok'`, which renders with no accent colour at all (see [Marks, Measurement and Stage Tokens](../guide/theming.md#marks-measurement-and-stage-tokens)). |
 
 The icon is `aria-hidden`; the badge's own `role="img"` and computed `aria-label` carry the accessible name instead.
 
@@ -317,7 +317,7 @@ The icon is `aria-hidden`; the badge's own `role="img"` and computed `aria-label
 
 ## PrismIconComponent
 
-Also exported from the **main** entry. Renders one glyph from the shared registry as an inline `<svg>` sized in pixels — the same registry `PanelDefinition.icon` and `NavigationDecorationDefinition.icon` names resolve against.
+Also exported from the main entry. Renders one glyph from the shared registry as an inline `<svg>` sized in pixels. It uses the same registry `PanelDefinition.icon` and `NavigationDecorationDefinition.icon` names resolve against.
 
 ```typescript
 import { PrismIconComponent } from '@ng-prism/core';
@@ -328,11 +328,11 @@ import { PrismIconComponent } from '@ng-prism/core';
 | `name` | `string` | yes      | Icon name from the registry (`ICON_NAMES`). An unknown name renders an empty, correctly-sized glyph and logs one console warning per name. |
 | `size` | `number` | no       | Width and height in pixels. Default `16`.                                                                                                  |
 
-`ICON_NAMES` itself — the list of valid `name` values — is also re-exported from `@ng-prism/core/plugin`, deliberately from a dependency-free module so a plugin's Node-evaluated entry can validate or reference an icon name without pulling `@angular/core` into a module graph the builder loads in Node.js.
+`ICON_NAMES` itself, the list of valid `name` values, is also re-exported from `@ng-prism/core/plugin`, from a dependency-free module, so a plugin's Node-evaluated entry can validate or reference an icon name without pulling `@angular/core` into a module graph the builder loads in Node.js.
 
 ### Example: a header widget built from both
 
-The shipped `@ng-prism/plugin-coverage` header badge is the reference for this pattern — a `PrismMetricBadgeComponent` driven by manifest data, registered as a `headerWidgets` entry:
+The shipped `@ng-prism/plugin-coverage` header badge is the reference for this pattern: a `PrismMetricBadgeComponent` driven by manifest data and registered as a `headerWidgets` entry:
 
 ```typescript
 // coverage-header-badge.component.ts
@@ -379,7 +379,7 @@ headerWidgets: [
 ];
 ```
 
-`PrismIconComponent` is available the same way for a panel or header widget that needs a bare glyph rather than a full metric badge — `<prism-icon name="camera" [size]="14" />`.
+`PrismIconComponent` is available the same way for a panel or header widget that needs a bare glyph rather than a full metric badge: `<prism-icon name="camera" [size]="14" />`.
 
 ---
 
@@ -396,12 +396,12 @@ interface NavigationDecorationDefinition {
 
 | Field   | Description                                                                                                                                                                                                                         |
 | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`    | Unique id — used for de-duplication when two plugins contribute the same source. Built-ins win a collision: a plugin cannot silence or restyle `a11y`, `visual-regression` or `coverage` by reusing their id.                       |
+| `id`    | Unique id, used for de-duplication when two plugins contribute the same source. Built-ins win a collision: a plugin cannot silence or restyle `a11y`, `visual-regression` or `coverage` by reusing their id.                        |
 | `icon`  | Icon name from the built-in registry (`ICON_NAMES`). Built-in sources use `accessibility`, `camera` and `shield-check`.                                                                                                             |
 | `order` | Fixed slot order (lower = further left in the sidebar's trailing marker group). Position alone names the source to the reader, so a decoration must not move depending on plugin registration order. See the reserved values below. |
 | `badge` | The component's standing for this source, or `null` for "nothing worth saying". See [`NavigationDecoration`](#navigationdecoration) and the rules below.                                                                            |
 
-The built-in sources reserve these `order` values — pick something else (`40`, `50`, …) for a new source so its marker does not interleave with them:
+The built-in sources reserve these `order` values. Pick something else (`40`, `50`, ...) for a new source so its marker does not interleave with them:
 
 | `order` | Source                                                   |
 | ------- | -------------------------------------------------------- |
@@ -409,11 +409,11 @@ The built-in sources reserve these `order` values — pick something else (`40`,
 | `20`    | Visual Regression (`@ng-prism/plugin-visual-regression`) |
 | `30`    | Coverage (`@ng-prism/plugin-coverage`)                   |
 
-Three rules make the difference between a decoration and one that quietly breaks the contract:
+A decoration has to follow three rules:
 
-- **Return `null` for anything healthy.** There is no `'ok'` variant on `NavigationDecoration` — a marker that is always present stops being a signal, same reasoning as [`PanelDefinition.badge`](#panelbadge). The per-source summary types stored in build-time `meta` (e.g. `CoverageSummary`, `VrtStat`) are three-valued and do include `'ok'`, because the hook that writes them needs to represent "healthy" as a real value; `badge()` is exactly the place that narrows a three-valued verdict down to the two-valued public type, by returning `null` instead of passing `'ok'` through.
-- **Keep it cheap and pure.** `badge()` runs during change detection: read what `component.meta.showcaseConfig.meta` already holds, do not fetch, and do not inject — a decoration has no injection context.
-- **Decide the threshold at build time, not here.** `badge()` only ever sees one component, so it has no way to know what counts as "bad" for the library as a whole — is 72% coverage fine, or a regression? Each built-in source answers that once, in `onComponentScanned`, where the full picture (thresholds, aggregates) is available, and stores the verdict under its own key in `component.showcaseConfig.meta` — conventionally a `summary: { variant, label }` field. `badge()` then does nothing but read that field back. See `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped pattern, and [Plugin Hooks](architecture/plugin-hooks.md) for the full rationale.
+- **Return `null` for anything healthy.** There is no `'ok'` variant on `NavigationDecoration`, because a marker that is always present stops being a signal (same reasoning as [`PanelDefinition.badge`](#panelbadge)). The per-source summary types stored in build-time `meta` (e.g. `CoverageSummary`, `VrtStat`) are three-valued and do include `'ok'`, because the hook that writes them needs to represent "healthy" as a real value; `badge()` is where the plugin narrows a three-valued verdict down to the two-valued public type, by returning `null` instead of passing `'ok'` through.
+- **Keep it cheap and pure.** `badge()` runs during change detection: read what `component.meta.showcaseConfig.meta` already holds, do not fetch, and do not inject. A decoration has no injection context.
+- **Decide the threshold at build time, not here.** `badge()` only ever sees one component, so it has no way to know what counts as "bad" for the library as a whole. Whether 72% coverage is fine or a regression, each built-in source decides once, in `onComponentScanned`, where the full picture (thresholds, aggregates) is available, and stores the verdict under its own key in `component.showcaseConfig.meta`, by convention as a `summary: { variant, label }` field. `badge()` then does nothing but read that field back. See `packages/plugin-visual-regression/src/panel-contributions.ts` and `packages/plugin-coverage/src/coverage-contributions.ts` for the shipped pattern, and [Plugin Hooks](architecture/plugin-hooks.md) for the full rationale.
 
 ---
 
@@ -430,25 +430,25 @@ What one source has to say about one component, returned by [`NavigationDecorati
 
 | Field     | Description                                                                                                                                                           |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `variant` | Colour role. Deliberately only two — see the "return `null`" rule above.                                                                                              |
+| `variant` | Colour role. Only two exist; see the "return `null`" rule above.                                                                                                      |
 | `label`   | One tooltip line for this source, e.g. `'A11y: 2 critical, 1 serious'`. Several sources on the same component join their labels with a newline in the item's tooltip. |
 
 ---
 
 ## Example: a complete navigation decoration plugin
 
-A self-contained plugin that flags components with open `// TODO` comments. It follows the same three-file split every shipped plugin with a build-time hook uses — `packages/plugin-coverage/src/coverage-plugin.ts`, `coverage-plugin.browser.ts` and `coverage-contributions.ts` are the reference this example mirrors.
+A self-contained plugin that flags components with open `// TODO` comments. It follows the same three-file split every shipped plugin with a build-time hook uses. This example mirrors `packages/plugin-coverage/src/coverage-plugin.ts`, `coverage-plugin.browser.ts` and `coverage-contributions.ts`.
 
-The split exists because of one fact about this project: the generated Prism app imports the config directly (see the schematic that wires it in, `packages/ng-prism/src/schematics/ng-add/index.ts`), so the config module — and every plugin it imports — lands in the **browser** bundle too, not just in the Node.js process that runs the builder. A plugin file with a top-level `import { readFileSync } from 'node:fs'` crashes the moment that bundle reaches it, whether or not the hook that uses it ever runs in the browser. `onComponentScanned` never does — but the import statement doesn't know that.
+The split exists because the generated Prism app imports the config directly (see the schematic that wires it in, `packages/ng-prism/src/schematics/ng-add/index.ts`), so the config module and every plugin it imports also land in the browser bundle, in addition to the Node.js process that runs the builder. A plugin file with a top-level `import { readFileSync } from 'node:fs'` crashes as soon as that bundle loads it, even though `onComponentScanned` never runs in the browser.
 
 Three files close that gap:
 
-- **`todo-marker-contributions.ts`** — no `node:` imports, no Angular. Declares the `navigationDecorations` entry once, so both entries below share the exact same `badge()` and can't drift apart.
-- **`todo-marker-plugin.ts`** — the **Node entry**, resolved when the builder loads the config. Carries `onComponentScanned`. Still no _static_ `node:` import: `readFileSync` is loaded with a dynamic `import()` inside the hook, the same shape `coverage-plugin.ts` uses to load `coverage-reader.js`. A dynamic import only executes when the hook actually runs, which is never in a browser bundle.
-- **`todo-marker-plugin.browser.ts`** — the **browser entry**, resolved when the Prism app itself loads the config. No build-time hooks at all — just the runtime contribution, reading back whatever the Node entry already wrote to `meta` during the last build.
+- **`todo-marker-contributions.ts`**: no `node:` imports, no Angular. Declares the `navigationDecorations` entry once, so both entries below share the exact same `badge()` and can't drift apart.
+- **`todo-marker-plugin.ts`**: the **Node entry**, resolved when the builder loads the config. Carries `onComponentScanned`. Still no _static_ `node:` import: `readFileSync` is loaded with a dynamic `import()` inside the hook, the same shape `coverage-plugin.ts` uses to load `coverage-reader.js`. A dynamic import only executes when the hook actually runs, which is never in a browser bundle.
+- **`todo-marker-plugin.browser.ts`**: the **browser entry**, resolved when the Prism app itself loads the config. No build-time hooks at all, only the runtime contribution, reading back whatever the Node entry already wrote to `meta` during the last build.
 
 ```typescript
-// todo-marker-contributions.ts — shared by both entries, dependency-free
+// todo-marker-contributions.ts: shared by both entries, dependency-free
 import type { NavigationDecorationDefinition, RuntimeComponent } from '@ng-prism/core/plugin';
 
 export interface TodoSummary {
@@ -478,7 +478,7 @@ export const TODO_NAVIGATION_DECORATION: NavigationDecorationDefinition = {
 ```
 
 ```typescript
-// todo-marker-plugin.ts — Node entry, loaded by the builder
+// todo-marker-plugin.ts: Node entry, loaded by the builder
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { TODO_NAVIGATION_DECORATION, type TodoMeta } from './todo-marker-contributions.js';
 
@@ -487,7 +487,7 @@ export function todoMarkerPlugin(): NgPrismPlugin {
         name: '@my-org/plugin-todo-marker',
 
         // Build time only: count `// TODO` markers and decide the verdict once,
-        // here — not in `badge()`, which never sees more than one component and
+        // here and not in `badge()`, which never sees more than one component and
         // cannot know what "too many" means for the library as a whole.
         async onComponentScanned(component) {
             const { readFileSync } = await import('node:fs');
@@ -521,7 +521,7 @@ export function todoMarkerPlugin(): NgPrismPlugin {
 ```
 
 ```typescript
-// todo-marker-plugin.browser.ts — browser entry, loaded by the Prism app itself
+// todo-marker-plugin.browser.ts: browser entry, loaded by the Prism app itself
 import type { NgPrismPlugin } from '@ng-prism/core/plugin';
 import { TODO_NAVIGATION_DECORATION } from './todo-marker-contributions.js';
 
@@ -529,7 +529,7 @@ export function todoMarkerPlugin(): NgPrismPlugin {
     return {
         name: '@my-org/plugin-todo-marker',
         // Runtime only: read the pre-derived verdict back. No file access, no
-        // computation, no build-time hooks — just the shared contribution.
+        // computation, no build-time hooks. Just the shared contribution.
         navigationDecorations: [TODO_NAVIGATION_DECORATION]
     };
 }
@@ -550,4 +550,4 @@ The two entries are the same exported function name in two files; a `"browser"` 
 }
 ```
 
-`packages/plugin-coverage/package.json` and `packages/plugin-visual-regression/package.json` carry the shipped version of this map — each `index.ts` re-exports the Node entry, each `index.browser.ts` re-exports the browser entry. See [Plugin Hooks](architecture/plugin-hooks.md#navigation-decorations) for why the threshold decision has to live in the Node entry's hook and never in `badge()`.
+`packages/plugin-coverage/package.json` and `packages/plugin-visual-regression/package.json` carry the shipped version of this map: each `index.ts` re-exports the Node entry, each `index.browser.ts` re-exports the browser entry. See [Plugin Hooks](architecture/plugin-hooks.md#navigation-decorations) for why the threshold decision has to live in the Node entry's hook and never in `badge()`.

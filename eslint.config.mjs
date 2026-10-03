@@ -10,57 +10,52 @@ import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
     {
-        // Jeder Eintrag ist bewusst entweder root-verankert (nur
-        // <workspaceRoot>/<name>) oder mit `**/` auf beliebige Tiefe
-        // ausgelegt — je nachdem, wo das jeweils generierte Verzeichnis
-        // tatsächlich entsteht. Ein bloßer Name ohne `**/` matcht in
-        // ESLints Flat-Config-Ignores NUR die Wurzel, anders als in
-        // .gitignore: `nx build` schreibt z.B. nach packages/*/dist,
-        // Jest nach packages/*/test-output/jest/coverage — beides bräche
-        // ohne `**/` durch.
+        // Each entry is either root-anchored (only <workspaceRoot>/<name>)
+        // or prefixed with `**/` for any depth, depending on where the
+        // generated directory is created. In flat-config ignores a bare name
+        // without `**/` matches only at the root, unlike .gitignore:
+        // `nx build` writes to packages/*/dist, Jest to
+        // packages/*/test-output/jest/coverage. Both would slip through
+        // without `**/`.
         ignores: [
-            // Generierte Build-/Test-Artefakte: pro Package, daher `**/`.
+            // Generated build/test output, per package, hence `**/`.
             '**/dist',
             '**/out-tsc',
             '**/node_modules',
             '**/coverage',
-            // Angulars Build-Cache — entsteht pro Angular-Workspace, hier
-            // also unter test-workspace/.angular.
+            // Angular build cache, created per Angular workspace, here
+            // test-workspace/.angular.
             '**/.angular',
-            // `join(workspaceRoot, 'ng-prism-cache')` (siehe
-            // builder/shared/prism-pipeline.ts) — nie pro Package, aber pro
-            // *Workspace*, und seit test-workspace mitgelintet wird gibt es
-            // davon zwei: das generierte prism-manifest.ts liegt unter
-            // test-workspace/ng-prism-cache/, nicht nur am Repo-Root.
+            // `join(workspaceRoot, 'ng-prism-cache')` (see
+            // builder/shared/prism-pipeline.ts): never per package, but per
+            // workspace, and since test-workspace is linted too there are
+            // two: the generated prism-manifest.ts also lives under
+            // test-workspace/ng-prism-cache/, not only at the repo root.
             '**/ng-prism-cache',
 
-            // Einzelne, feste Verzeichnisse am Workspace-Root — es gibt
-            // keinen Mechanismus, der sie pro Package anlegt, daher
-            // bewusst root-verankert ohne `**/`.
+            // Fixed directories at the workspace root. Nothing creates them
+            // per package, so root-anchored without `**/`.
             '.nx',
             '.claude',
             '.superpowers',
             '.posts',
-            // Verdaccios local-registry-Storage, immer tmp/local-registry/
-            // storage am Repo-Root — dieselbe Begründung wie der `/tmp`-
-            // Eintrag in .prettierignore, und anders als dist/out-tsc/
-            // coverage oben eben *nicht* pro Package.
+            // Verdaccio local-registry storage, always tmp/local-registry/
+            // storage at the repo root. Same reasoning as the `/tmp` entry in
+            // .prettierignore; unlike dist/out-tsc/coverage above, not per
+            // package.
             'tmp',
 
-            // Generiertes/unveränderliches CommonJS-Tooling: ESLint lief
-            // hier ohnehin nie über `**/*.ts`/`**/*.html` hinaus, traf also
-            // nie eine Regel — bislang ein Zufallszustand statt einer
-            // Entscheidung (ein `/* eslint-disable */` in jest.config.cjs
-            // wurde beim Autofix in Task 3 kommentarlos entfernt, weil es
-            // wirkungslos war). jest.preset.js und die sieben
-            // jest.config.cjs sind von Nx erzeugtes Boilerplate mit fester
-            // Form; eine eigene Node-Regelmenge dafür brächte nichts, was
-            // ein erneuter Nx-Generatorlauf nicht wieder verwerfen würde.
-            // eslint.config.mjs ist die Lint-Konfiguration selbst.
-            // scripts/check-declared-deps.mjs ist davon bewusst
-            // ausgenommen (siehe eigener `files`-Block unten): es ist
-            // echte, handgeschriebene Logik, kein generiertes Boilerplate,
-            // und läuft in `npm run check` und CI.
+            // Generated or fixed-shape CommonJS tooling. ESLint never went
+            // beyond `**/*.ts`/`**/*.html` here, so no rule ever hit these
+            // files; that was an accident, now it is a decision (an earlier
+            // autofix silently removed a `/* eslint-disable */` from
+            // jest.config.cjs because it had no effect). jest.preset.js and
+            // the seven jest.config.cjs files are Nx-generated boilerplate; a
+            // Node rule set for them would be undone by the next Nx generator
+            // run. eslint.config.mjs is the lint config itself.
+            // scripts/check-declared-deps.mjs is not ignored (see its `files`
+            // block below): it is hand-written logic, not boilerplate, and
+            // runs in `npm run check` and CI.
             'jest.preset.js',
             '**/jest.config.cjs',
             'eslint.config.mjs',
@@ -89,16 +84,15 @@ export default [
         settings: {
             'import/resolver': {
                 typescript: {
-                    // Absolut, an dieser Datei verankert — nicht relativ. Jedes
-                    // von @nx/eslint/plugin inferierte Target läuft mit
-                    // `cwd: <projectRoot>`, und relative Pfade lösen dort ins
-                    // Leere (`packages/ng-prism/packages/*/tsconfig.lib.json`).
-                    // Der Resolver findet dann nichts, import/order steckt die
-                    // betroffenen Specifier in eine andere Gruppe, und dieselbe
-                    // Datei fällt je nach Aufrufort unterschiedlich aus —
-                    // nachgewiesen an test-ui-kit-prism/src/main.ts, das aus
-                    // dem Repo-Root sauber war und aus test-workspace heraus
-                    // eine import/order-Meldung ergab.
+                    // Absolute, anchored at this file. Every target inferred by
+                    // @nx/eslint/plugin runs with `cwd: <projectRoot>`, where
+                    // relative paths resolve to nothing
+                    // (`packages/ng-prism/packages/*/tsconfig.lib.json`). The
+                    // resolver then finds nothing, import/order puts the
+                    // affected specifiers in a different group, and the same
+                    // file lints differently depending on where it is run from.
+                    // Seen on test-ui-kit-prism/src/main.ts: clean from the repo
+                    // root, an import/order finding from inside test-workspace.
                     project: [join(import.meta.dirname, 'tsconfig.base.json'), join(import.meta.dirname, 'packages/*/tsconfig.lib.json')],
                     noWarnOnMultipleProjects: true
                 },
@@ -106,22 +100,21 @@ export default [
             }
         },
         rules: {
-            // Beide stehen in js.configs.recommended auf `error` und bleiben
-            // dort: das sind keine Stilregeln. no-unsafe-optional-chaining
-            // fängt `(a?.b).c` — einen garantierten TypeError, sobald das
-            // Optional kurzschließt; no-case-declarations fängt ein `const`
-            // in einem `case`, das über den ganzen switch-Block leckt.
-            // Herabstufen auf `warn` hieße bei `--max-warnings 0` nur, die
-            // Meldung gelb statt rot zu färben — der Lauf schlägt so oder so
-            // fehl, also lieber mit der Severity, die zur Sache passt.
+            // no-unsafe-optional-chaining and no-case-declarations are `error`
+            // in js.configs.recommended and stay there; they are not style
+            // rules. no-unsafe-optional-chaining catches `(a?.b).c`, a
+            // guaranteed TypeError once the optional short-circuits;
+            // no-case-declarations catches a `const` in a `case` that leaks
+            // into the whole switch block. With `--max-warnings 0`,
+            // downgrading to `warn` would only turn the message yellow; the run
+            // fails either way, so keep the severity that fits.
 
-            // unused-imports/no-unused-vars deckt denselben Fall ab, autofixt
-            // zusätzlich ungenutzte Imports und respektiert bereits die
-            // `_`-Präfix-Konvention (siehe unten). Mit beiden Regeln aktiv
-            // meldet jeder ungenutzte Wert doppelt, und zwar mit
-            // unterschiedlichen Ignore-Patterns — @typescript-eslint/no-unused-vars
-            // kennt das `_`-Präfix nicht, daher feuert es selbst auf bereits
-            // korrekt benannten Parametern.
+            // unused-imports/no-unused-vars covers the same case, also
+            // autofixes unused imports and already honours the `_` prefix
+            // convention (see below). With both rules on, every unused value
+            // is reported twice with different ignore patterns:
+            // @typescript-eslint/no-unused-vars does not know the `_` prefix
+            // and fires on correctly named parameters too.
             '@typescript-eslint/no-unused-vars': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off',
@@ -131,32 +124,30 @@ export default [
             '@angular-eslint/prefer-standalone': 'off',
             '@angular-eslint/prefer-on-push-component-change-detection': ['warn'],
 
-            // Die Auflösung zwischen Packages läuft über npm-Workspaces und
-            // customConditions: ["@org/source"], was der Resolver nicht nachvollzieht.
-            // TypeScript prüft das im typecheck-Target ohnehin.
+            // Cross-package resolution goes through npm workspaces and
+            // customConditions: ["@org/source"], which the resolver does not
+            // follow. The typecheck target covers it.
             'import/no-unresolved': 'off',
 
             // ──── Stylistic ────
             //
-            // Nur Regeln, die eslint-config-prettier NICHT abschaltet — also
-            // genau die, über die Prettier keine Aussage trifft. Alles, was
+            // Only rules that eslint-config-prettier does not turn off, i.e.
+            // the ones Prettier has no opinion on. Everything
             // eslint-config-prettier (via eslint-plugin-prettier/recommended,
-            // oben gespreadet) ausschaltet, bleibt ausgeschaltet: diese
-            // Config-Liste steht hinter jenem Spread, jede hier gesetzte
-            // Regel würde die Abschaltung also wieder aufheben.
+            // spread above) disables stays disabled: this config comes after
+            // that spread, so any rule set here would re-enable it.
             //
-            // Das ist kein Geschmacksurteil, sondern gemessen: mit den 17
-            // zuvor hier stehenden Regeln (array-bracket-spacing, arrow-parens,
-            // semi, eol-last, object-curly-spacing, padded-blocks, …) ändert
-            // ein `eslint --fix` über den gesamten Baum exakt dieselben null
-            // Dateien wie ohne sie. Sie setzen durch, was prettier/prettier
-            // ohnehin durchsetzt — und zwar als zweiter Fixer auf derselben
-            // Stelle. Genau diese Klasse hat schon einmal zugeschlagen:
-            // array-element-newline und object-property-newline mussten
-            // entfernt werden, nachdem `eslint --fix` "Circular fixes
-            // detected … conflicting rules in your configuration" geloggt,
-            // die Datei zerschrieben und Fehler hinterlassen hatte. Kein
-            // Zugewinn gegen ein reales Risiko — deshalb nur noch diese vier.
+            // Measured: with the 17 rules that used to be here
+            // (array-bracket-spacing, arrow-parens, semi, eol-last,
+            // object-curly-spacing, padded-blocks, etc.), `eslint --fix` over
+            // the whole tree changes the same zero files as without them. They
+            // enforce what prettier/prettier already enforces, as a second
+            // fixer on the same spot. That class of rule has bitten before:
+            // array-element-newline and object-property-newline had to be
+            // removed after `eslint --fix` logged "Circular fixes detected
+            // ... conflicting rules in your configuration", mangled the file
+            // and left errors behind. No gain against a real risk, so only
+            // these four remain.
             '@stylistic/curly-newline': ['warn', { consistent: true }],
             '@stylistic/spaced-comment': ['warn', 'always', { exceptions: ['*'] }],
             '@stylistic/multiline-comment-style': 'off',
@@ -193,15 +184,14 @@ export default [
         }
     },
 
-    // ──── Fixtures und Mocks ────
+    // ──── Fixtures and mocks ────
     //
-    // Die Fixtures unter __fixtures__ sind Eingabedaten für den Scanner, keine
-    // Produktivkomponenten: sie tragen absichtlich fremde Selektoren wie
-    // my-button oder lib-button, weil genau das getestet wird. Ein
-    // ungenutzter Parameter oder eine ungenutzte lokale Variable gehört zum
-    // Zweck dieser Dateien (sie deklarieren eine Form, die niemand liest),
-    // daher bleibt no-unused-vars hier komplett aus — anders als in Specs
-    // (siehe unten), wo derselbe Befund ein echter Defekt wäre.
+    // The files under __fixtures__ are scanner input, not production
+    // components: they carry foreign selectors like my-button or lib-button
+    // because that is what the tests cover. Unused parameters and locals are
+    // part of their purpose (they declare a shape nobody reads), so
+    // no-unused-vars is off here. In specs (below) the same finding is a
+    // real defect.
     {
         files: ['**/__fixtures__/**/*.ts', '**/__mocks__/**/*.ts'],
         rules: {
@@ -213,12 +203,10 @@ export default [
 
     // ──── Specs ────
     //
-    // Specs sind gewöhnlicher Code, der zufällig etwas testet: eine
-    // ungenutzte lokale Variable oder ein ungenutzter Parameter ohne
-    // `_`-Präfix ist hier genauso ein Defekt wie überall sonst, daher KEIN
-    // pauschales `unused-imports/no-unused-vars: 'off'` wie bei den
-    // Fixtures/Mocks oben — die allgemeine Regel samt `_`-Konvention greift
-    // unverändert.
+    // Specs are ordinary code. An unused local or an unused parameter without
+    // the `_` prefix is a defect here like anywhere else, so there is no
+    // blanket `unused-imports/no-unused-vars: 'off'` as for fixtures/mocks
+    // above. The general rule and the `_` convention apply unchanged.
     {
         files: ['**/*.spec.ts'],
         rules: {
@@ -239,22 +227,20 @@ export default [
         }
     },
 
-    // ──── Node-Skripte ────
+    // ──── Node scripts ────
     //
-    // scripts/ ist reines, handgeschriebenes ESM ohne jede Berührung mit
-    // Angular oder dem Browser — anders als builder/, wo Node- und
-    // Browser-Code im selben Verzeichnis nebeneinander liegen und eine
-    // Verzeichnis-Override deshalb in beide Richtungen falsch läge (daher
-    // bleibt eine Node-Kontext-Override dort bewusst außerhalb dieses
-    // Plans). scripts/ hat dieses Problem nicht, bekommt also eine echte,
-    // kleine Regelmenge statt eines Ignores. test-workspace/*.mjs sind die
-    // beiden Messskripte (measure-pipeline, measure-watch-rebuilds) und
-    // derselbe Fall.
+    // scripts/ is plain hand-written ESM with no Angular or browser code.
+    // builder/ is different: Node and browser code share directories there,
+    // so a directory override would be wrong in both directions, and a Node
+    // context override for builder/ is out of scope. scripts/ has no such
+    // problem and gets a small real rule set instead of an ignore.
+    // test-workspace/*.mjs are the two measurement scripts (measure-pipeline,
+    // measure-watch-rebuilds), same case.
     //
-    // globals.nodeBuiltin statt einer handgepflegten Liste: die Skripte
-    // brauchen heute nur process und console, aber eine Liste, die genau das
-    // enthält, quittiert das erste Buffer, URL oder fetch mit einem
-    // no-undef, das wie ein echter Fund aussieht und keiner ist.
+    // globals.nodeBuiltin instead of a hand-kept list: the scripts only need
+    // process and console today, but a list with just those would flag the
+    // first Buffer, URL or fetch as no-undef, which looks like a real
+    // finding and isn't.
     {
         ...js.configs.recommended,
         files: ['scripts/**/*.mjs', 'test-workspace/*.mjs'],
@@ -265,24 +251,22 @@ export default [
         }
     },
 
-    // ──── Angular-Templates ────
+    // ──── Angular templates ────
     //
-    // Erfasst zweierlei: die ausgelagerten Templates unter packages/, und die
-    // virtuellen .html-Dateien, die `angular.processInlineTemplates` (oben am
-    // **/*.ts-Block) aus jedem inline `template:` erzeugt. Letztere liegen
-    // unter einem Pfadsegment, das auf .ts endet, matchen also dieselben
-    // `**/*.html`-Globs — nur deshalb werden Inline-Templates überhaupt
-    // formatiert.
+    // Covers two things: the external templates under packages/, and the
+    // virtual .html files that `angular.processInlineTemplates` (on the
+    // **/*.ts block above) creates from every inline `template:`. Those live
+    // under a path segment ending in .ts, so they match the same `**/*.html`
+    // globs. That is the only reason inline templates get formatted at all.
     //
-    // Die drei echten .html im Baum sind dagegen *keine* Angular-Templates:
-    // docs/index.html ist die docsify-Seite, die beiden index.html sind die
-    // App-Shells von test-lib-prism und test-ui-kit-prism. ESLint hat für
-    // vollständige HTML-Dokumente ohnehin keinen Parser (der Angular-
-    // Template-Parser scheitert an `<!doctype html>`), und mit `parser:
-    // 'angular'` formatiert würden sie anders aussehen als das, was die
-    // Prettier-CLI für dieselbe Datei produziert — `nx format:check` und
-    // dieser Lauf lägen dauerhaft über Kreuz. Sie laufen deshalb über den
-    // Prettier-Eintrag in lint-staged, nicht über ESLint.
+    // The three real .html files in the tree are not Angular templates:
+    // docs/index.html is the docsify page, the two index.html files are the
+    // app shells of test-lib-prism and test-ui-kit-prism. ESLint has no
+    // parser for full HTML documents (the Angular template parser fails on
+    // `<!doctype html>`), and formatted with `parser: 'angular'` they would
+    // differ from what the Prettier CLI produces for the same file, so
+    // `nx format:check` and this run would disagree forever. They go through
+    // the Prettier entry in lint-staged instead.
     ...angular.configs.templateRecommended.map((config) => ({
         ...config,
         files: ['packages/**/*.html', 'test-workspace/**/*.html'],

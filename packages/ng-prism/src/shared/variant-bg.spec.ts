@@ -4,13 +4,10 @@ import { declaredVariantBg, DEFAULT_VARIANT_BG, resolveVariantBg } from './varia
 /**
  * A variant as `@Showcase` actually declares one.
  *
- * Built through a function rather than written inline. `VariantBgSource`
- * describes only the field this module reads — deliberately, so that nothing
- * here has to import `ShowcaseConfig` — and TypeScript's excess property check
- * rejects a `name` written straight into an argument literal, even though a
- * real `Variant` always has one and the same object passes fine through a
- * variable. Keeping the name is worth the helper: it is what makes "variant A"
- * and "variant B" legible in the assertions below.
+ * Built through a function because `VariantBgSource` only describes the field
+ * this module reads (so nothing here imports `ShowcaseConfig`), and the excess
+ * property check would reject a `name` in an inline argument literal. The name
+ * keeps "variant A" and "variant B" readable in the assertions below.
  */
 function variant(name: string, bg?: CanvasBg) {
     return { name, bg };

@@ -4,12 +4,11 @@ import type { A11yComponentMeta, A11yScoreResult, A11yThresholds } from './a11y.
  * A component's standing, derived with the same precedence
  * `checkA11yThresholds` uses library-wide.
  *
- * Browser-safe and deliberately so, even though the build step is its main
- * caller: the derivation is written down once and read from both sides. The
+ * Browser-safe, even though the build step is its main caller: the derivation is written down once and read from both sides. The
  * build-time hook stores the result in the component's meta for the navigation
  * marker, and the panel tab grades the *live* audit with the very same rule.
- * The two look at different numbers — the report is a snapshot, the audit is
- * running now — but they must never grade the same number differently, which
+ * The two look at different numbers (the report is a snapshot, the audit is
+ * running now), but they must never grade the same number differently, which
  * is what a second hardcoded scale next to this one would guarantee.
  */
 export function deriveA11ySummary(score: A11yScoreResult, thresholds: A11yThresholds): NonNullable<A11yComponentMeta['summary']> {

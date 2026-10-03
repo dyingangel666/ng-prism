@@ -22,6 +22,6 @@ function warnOnDuplicatePluginNames(config: NgPrismConfig): void {
     }
 
     for (const name of duplicates) {
-        console.warn(`⚠ ng-prism: plugin "${name}" is registered more than once — later hooks may overwrite earlier ones.`);
+        console.warn(`⚠ ng-prism: plugin "${name}" is registered more than once, so later hooks may overwrite earlier ones.`);
     }
 }

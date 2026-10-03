@@ -8,11 +8,11 @@ export type ButtonVariantType = 'filled' | 'outlined' | 'elevated' | 'text' | 'i
  *
  * ## Variants
  *
- * - `filled` — primary actions, highest emphasis
- * - `outlined` — secondary actions
- * - `elevated` — floating actions on neutral surfaces
- * - `text` — low-emphasis actions, e.g. dialog buttons
- * - `icon-only` — compact actions, label replaced by an icon
+ * - `filled`: primary actions, highest emphasis
+ * - `outlined`: secondary actions
+ * - `elevated`: floating actions on neutral surfaces
+ * - `text`: low-emphasis actions, e.g. dialog buttons
+ * - `icon-only`: compact actions, label replaced by an icon
  *
  * Supports `label` text, `icon-only` mode, and the `disabled`/`readonly` states.
  * See **[ButtonVariantType](#)** for the full type union.
@@ -264,7 +264,7 @@ export class ButtonComponent {
      */
     readonly icon = input<string>('★');
 
-    /** Disables the button — prevents interaction and reduces opacity. */
+    /** Disables the button: prevents interaction and reduces opacity. */
     readonly disabled = input<boolean>(false);
 
     /** Stretches the button to fill the container width. */

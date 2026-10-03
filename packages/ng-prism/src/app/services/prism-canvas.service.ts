@@ -18,7 +18,7 @@ export class PrismCanvasService {
      * The width `.demo-wrap` is constrained to, or `null` for "as wide as it
      * wants".
      *
-     * Nullable rather than a `0`/`-1` sentinel because "off" is genuinely a
+     * Nullable rather than a `0`/`-1` sentinel because "off" is a
      * different state and not a width: the renderer keys a whole set of CSS off
      * `[data-viewport]`, and a falsy number would make `viewportWidth() ? ... `
      * silently treat a legal narrow width as "off" the moment the floor ever

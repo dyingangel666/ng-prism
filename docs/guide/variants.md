@@ -16,7 +16,7 @@ interface Variant<T = unknown> {
 }
 ```
 
-`T` is the component class — supply it via `@Showcase<MyComponent>({...})` to type the `inputs` against the component's signal inputs. Without it, `inputs` accepts any `Record<string, unknown>`. See [Type-safe inputs](#type-safe-inputs) below.
+`T` is the component class. Supply it via `@Showcase<MyComponent>({...})` to type the `inputs` against the component's signal inputs. Without it, `inputs` accepts any `Record<string, unknown>`. See [Type-safe inputs](#type-safe-inputs) below.
 
 ## Defining Variants
 
@@ -62,13 +62,13 @@ export class ButtonComponent {
 
 The compiler now enforces three things:
 
-1. **Keys** — only declared signal inputs (`label`, `variant`) are accepted. A typo like `inputs: { lable: 'Save' }` fails to compile.
-2. **Values** — each value must satisfy the input's declared type. `variant: 'tertiary'` would be rejected because the union does not include it.
-3. **Output exclusion** — `output()` signals (e.g. `closed`) are not accepted as inputs.
+1. **Keys**: only declared signal inputs (`label`, `variant`) are accepted. A typo like `inputs: { lable: 'Save' }` fails to compile.
+2. **Values**: each value must satisfy the input's declared type. `variant: 'tertiary'` would be rejected because the union does not include it.
+3. **Output exclusion**: `output()` signals (e.g. `closed`) are not accepted as inputs.
 
-For transform inputs (e.g. `input(false, { transform: booleanAttribute })`), the accepted type is the **source** type that the transform reads, not the parsed value — so you can write what you would in an Angular template.
+For transform inputs (e.g. `input(false, { transform: booleanAttribute })`), the accepted type is the source type that the transform reads, not the parsed value, so you can write what you would in an Angular template.
 
-Without the generic parameter, `inputs` falls back to `Record<string, unknown>` and behaves exactly like before. The change is purely additive and opt-in — no existing call site needs to be updated.
+Without the generic parameter, `inputs` falls back to `Record<string, unknown>` and behaves as before. The change is additive and opt-in; no existing call site needs to be updated.
 
 See [`InputsOf<T>`](api/types.md#inputsof) for the type mapping rules.
 
@@ -101,11 +101,11 @@ export class TagComponent {
 
 The Controls panel renders:
 
-- `label` → text input (required, no default)
-- `count` → number input (default `0`)
-- `active` → checkbox (default `false`)
-- `size` → select with options `sm`, `md`, `lg` (default `md`)
-- `style` → JSON editor (default `{}`)
+- `label`: text input (required, no default)
+- `count`: number input (default `0`)
+- `active`: checkbox (default `false`)
+- `size`: select with options `sm`, `md`, `lg` (default `md`)
+- `style`: JSON editor (default `{}`)
 
 ## Default Values
 
@@ -120,7 +120,7 @@ When a variant does not specify a value for an input, the control falls back to 
 
 ## Explicit Keys Behavior
 
-When you define `inputs` on a variant, only the keys you list are overridden. Other inputs keep their defaults or any value set via the Controls panel — they are not reset unless you navigate to a different variant.
+When you define `inputs` on a variant, only the keys you list are overridden. Other inputs keep their defaults or any value set via the Controls panel. They are not reset unless you navigate to a different variant.
 
 ```typescript
 variants: [
@@ -177,7 +177,7 @@ variants: [
 
 ## Per-Variant Background
 
-A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically — overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail), but switching variants resets to the recommendation.
+A variant can declare a recommended canvas background. When the user selects the variant, the canvas switches to that background automatically, overriding both `ShowcaseConfig.bg` and the user's global default. The override is transient: the user can change it from the **Canvas** group in the tools menu (opened from the sliders button on the floating canvas rail), but switching variants resets to the recommendation.
 
 ```typescript
 @Showcase({
@@ -191,17 +191,17 @@ A variant can declare a recommended canvas background. When the user selects the
 
 Accepted values: `'dots'`, `'plain'`, `'light'`, `'dark'`, `'checker'`, `'transparent'`.
 
-`'transparent'` draws the same checkerboard as `'checker'` while browsing — the canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
+`'transparent'` draws the same checkerboard as `'checker'` while browsing. The canvas has no way to show the difference, because the difference is what a [capture](guide/visual-regression.md#capturing-transparency) does: `'transparent'` yields a screenshot with a real alpha channel, `'checker'` one on the themed surface. It is also what a variant resolves to when nothing declares a background.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background — a value missing from it is a value the UI cannot show.
+`'checker'` is deprecated since 22.2.0 and removed in 23.0.0. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart. But it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it. It stays in the tools menu's **Canvas** group until then, because that group marks the active and the recommended background, and a value missing from it is a value the UI cannot show.
 
 The matching background's button in that group carries a tinted border, signalling which background is recommended for the active variant; the active background's button carries the filled state, and both can be the same button.
 
-See [Showcase Decorator — bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.
+See [Showcase Decorator: bg](guide/showcase-decorator.md#bg) for the component-level fallback and the full override-reset behavior.
 
 ## Per-Variant Canvas Layout
 
-A variant can override the wrapper layout used in the canvas. The default is `'fit'` — the wrapper shrinks to the component's intrinsic size and the canvas stage centers it via flexbox. Switch to `'stretch'` for variants where you need a real container width — e.g. a horizontal divider (no intrinsic width because it's just a `border-bottom`) or a "full width" button variant (`width: 100%` only resolves against a sized parent).
+A variant can override the wrapper layout used in the canvas. The default is `'fit'`: the wrapper shrinks to the component's intrinsic size and the canvas stage centers it via flexbox. Switch to `'stretch'` for variants where you need a real container width, e.g. a horizontal divider (no intrinsic width because it's just a `border-bottom`) or a "full width" button variant (`width: 100%` only resolves against a sized parent).
 
 ```typescript
 @Showcase({
@@ -216,11 +216,11 @@ A variant can override the wrapper layout used in the canvas. The default is `'f
 ```typescript
 @Showcase({
   title: 'Divider',
-  // Set at component level — most variants need stretch.
+  // Set at component level, since most variants need stretch.
   canvasLayout: 'stretch',
   variants: [
     { name: 'Horizontal', inputs: { orientation: 'horizontal' } },
-    // Vertical dividers are intrinsic-sized — opt back into 'fit'.
+    // Vertical dividers are intrinsic-sized, so opt back into 'fit'.
     { name: 'Vertical',   inputs: { orientation: 'vertical' }, canvasLayout: 'fit' },
   ],
 })
@@ -228,20 +228,20 @@ A variant can override the wrapper layout used in the canvas. The default is `'f
 
 In `'stretch'` mode `.demo-wrap` becomes `display: block; width: 100%; max-width: 800px`, giving children a real container width to size against. The variant-level value always wins over the component-level value.
 
-See [Showcase Decorator — canvasLayout](guide/showcase-decorator.md#canvaslayout) for the component-level setting and the [`CanvasLayout`](api/types.md#canvaslayout) type for the wrapper styles applied in each mode.
+See [Showcase Decorator: canvasLayout](guide/showcase-decorator.md#canvaslayout) for the component-level setting and the [`CanvasLayout`](api/types.md#canvaslayout) type for the wrapper styles applied in each mode.
 
-## Overview — All Variants at Once
+## Overview: All Variants at Once
 
-The component header carries a third view tab between `Playground` and `API`: **Overview**. It renders every variant of the active component at the same time, as a grid of cells — a contact sheet rather than a viewfinder. Use it to compare variants against each other instead of stepping through them one by one.
+The component header carries a third view tab between `Playground` and `API`: **Overview**. It renders every variant of the active component at the same time, as a grid of cells, more of a contact sheet than a viewfinder. Use it to compare variants against each other instead of stepping through them one by one.
 
-The tab appears when a component declares **two or more** variants. It stays hidden for single-variant components (a one-cell grid says nothing the Playground does not say better) and for components using [`renderPage`](guide/component-pages.md) — those render a page that reads its values from a single shared renderer state, so every cell would show the same thing.
+The tab appears when a component declares two or more variants. It stays hidden for single-variant components (a one-cell grid says nothing the Playground does not say better) and for components using [`renderPage`](guide/component-pages.md). Those render a page that reads its values from a single shared renderer state, so every cell would show the same thing.
 
-Each cell renders its variant exactly as declared:
+Each cell renders its variant as declared:
 
-- **Background** — a variant's own [`bg`](guide/showcase-decorator.md#bg) paints that cell, so an `On dark` variant sits on dark while its neighbours do not. Variants that declare nothing get the checkerboard, matching what external tooling is told the variant renders on.
-- **Layout** — a variant with `canvasLayout: 'stretch'` takes a full row instead of a column, because it has no intrinsic width to compare against its neighbours.
-- **Caption** — running number and variant name below the frame, e.g. `08 On dark`.
+- **Background**: a variant's own [`bg`](guide/showcase-decorator.md#bg) paints that cell, so an `On dark` variant sits on dark while its neighbours do not. Variants that declare nothing get the checkerboard, matching what external tooling is told the variant renders on.
+- **Layout**: a variant with `canvasLayout: 'stretch'` takes a full row instead of a column, because it has no intrinsic width to compare against its neighbours.
+- **Caption**: running number and variant name below the frame, e.g. `08 On dark`.
 
-The Overview is a stage, not a workbench: it has no controls, no density or zoom settings, and no addon panel. Control values you changed in the Playground do not leak into it — every cell shows the variant as the decorator declares it.
+The Overview is a stage, not a workbench: it has no controls, no density or zoom settings, and no addon panel. Control values you changed in the Playground do not leak into it. Every cell shows the variant as the decorator declares it.
 
 Link straight to it with `?view=overview`, see [State Preservation](guide/url-state.md).

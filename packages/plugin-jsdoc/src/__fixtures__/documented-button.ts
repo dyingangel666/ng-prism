@@ -35,8 +35,8 @@ export class UndocumentedButtonComponent {
  *
  * ## Size
  *
- * - `small` (4px) — inline indicators
- * - `large` (9px, default) — section-level loading
+ * - `small` (4px): inline indicators
+ * - `large` (9px, default): section-level loading
  *
  * @example
  * ```html

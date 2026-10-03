@@ -6,12 +6,12 @@ import { join } from 'path';
  * as native ESM. `@angular-devkit/schematics` ships without an `exports` map and
  * relies on the legacy folder-as-module convention (`tasks/package.json` with a
  * `main` field). CommonJS `require()` honours that; Node's ESM resolver does
- * not — a bare `@angular-devkit/schematics/tasks` is a directory import and
+ * not. A bare `@angular-devkit/schematics/tasks` is a directory import and
  * fails with ERR_UNSUPPORTED_DIR_IMPORT.
  *
- * The spec suite runs through Jest/SWC in CommonJS, so such an import resolves
- * fine here and the breakage only shows up for real consumers. This guard closes
- * that gap by checking the source text instead of the resolver.
+ * Jest/SWC runs the specs as CommonJS, where such an import resolves fine, so
+ * the breakage would only show up for consumers. This spec checks the source
+ * text instead of relying on the resolver.
  *
  * See https://github.com/dyingangel666/ng-prism/issues/32.
  */

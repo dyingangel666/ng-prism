@@ -29,7 +29,7 @@ const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
     types: [],
     // Perf: we never call program.emit(); skip emit-related setup work.
     noEmit: true,
-    // Perf: complement to skipLibCheck — also skip type-checking lib.*.d.ts files.
+    // Perf: complements skipLibCheck by also skipping type-checking of lib.*.d.ts files.
     skipDefaultLibCheck: true
 };
 
@@ -37,7 +37,7 @@ const DEFAULT_COMPILER_OPTIONS: ts.CompilerOptions = {
  * Create a stateful multi-entry scanner that retains the previous ts.Program between scans.
  * A single shared program is created with every entry-point file as a root name, so the
  * transitive type graph (Angular framework typings, etc.) is parsed once and shared via
- * the program's `TypeChecker` — instead of N programs that each load Material/CDK/RxJS.
+ * the program's `TypeChecker`, instead of N programs that each load Material/CDK/RxJS.
  *
  * TypeScript reuses parsed SourceFile objects from the old program on rebuild, making
  * incremental scans fast.

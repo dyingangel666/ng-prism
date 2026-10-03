@@ -217,8 +217,8 @@
    plugin-coverage, plugin-visual-regression) at 11px each plus two
    --sp-1 gaps, with a little headroom. navigationDecorations is an open
    extension point, so a fourth mark from a third-party plugin is
-   clipped via overflow: hidden rather than allowed to grow the gutter —
-   the point of a fixed-width gutter is that rows never shift
+   clipped via overflow: hidden rather than allowed to grow the gutter.
+   The point of a fixed-width gutter is that rows never shift
    horizontally as you scan the list. */
 .sb-item-health {
     display: flex;

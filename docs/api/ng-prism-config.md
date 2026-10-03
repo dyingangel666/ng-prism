@@ -75,7 +75,7 @@ export default defineConfig({
 });
 ```
 
-For `ComponentPage` entries (Angular class references), use `providePrism(manifest, config, { componentPages: [...] })` in `main.ts` instead — Angular classes cannot be serialized through the build pipeline.
+For `ComponentPage` entries (Angular class references), use `providePrism(manifest, config, { componentPages: [...] })` in `main.ts` instead, because Angular classes cannot be serialized through the build pipeline.
 
 ---
 
@@ -123,7 +123,7 @@ export default defineConfig({
 
 ### `ui`
 
-Replace individual UI sections with custom Angular standalone components. All fields are optional — omit any slot to keep the built-in component.
+Replace individual UI sections with custom Angular standalone components. All fields are optional. Omit a slot to keep the built-in component.
 
 | Key               | Replaces                                                 |
 | ----------------- | -------------------------------------------------------- |
@@ -150,9 +150,9 @@ See [Custom UI Sections](guide/custom-ui.md) for examples.
 
 ### `headless`
 
-> **Not yet implemented — setting this has no effect.** The property exists on `NgPrismConfig` and is kept for forward compatibility.
+> **Not yet implemented. Setting this has no effect.** The property exists on `NgPrismConfig` and is kept for forward compatibility.
 
-When implemented, `true` will strip all built-in chrome — header, sidebar, toolbar, panels — and render only the component canvas. Default: `false`. For a custom shell today, use [`appComponent`](#appcomponent).
+When implemented, `true` will strip all built-in chrome (header, sidebar, toolbar, panels) and render only the component canvas. Default: `false`. For a custom shell today, use [`appComponent`](#appcomponent).
 
 For screenshot isolation (a separate, working feature), see [capture isolation mode](guide/external-tooling.md#capture-isolation-mode).
 
@@ -200,7 +200,7 @@ See [State Preservation](guide/url-state.md).
 
 Display the deployed package version and/or git commit hash as a subtle pill in the header (left of the action buttons).
 
-Both fields are optional — the pill shows whichever values are provided, separated by `·`. When neither is set, nothing is rendered.
+Both fields are optional. The pill shows whichever values are provided, separated by `·`. When neither is set, nothing is rendered.
 
 ```typescript
 export default defineConfig({
@@ -211,10 +211,10 @@ export default defineConfig({
 });
 ```
 
-| Key       | Type     | Description                                       |
-| --------- | -------- | ------------------------------------------------- |
-| `version` | `string` | Package version — displayed as `v1.2.3`           |
-| `gitHash` | `string` | Git commit hash — truncated to 7 characters in UI |
+| Key       | Type     | Description                                      |
+| --------- | -------- | ------------------------------------------------ |
+| `version` | `string` | Package version, displayed as `v1.2.3`           |
+| `gitHash` | `string` | Git commit hash, truncated to 7 characters in UI |
 
 ---
 
@@ -223,7 +223,7 @@ export default defineConfig({
 Configuration for the library-wide accessibility audit. Drives both:
 
 1. The **A11y header pill** (color-coded against `thresholds`).
-2. The **build-time threshold check** — when an `a11y-report.json` exists and a threshold is violated, `nx run my-lib-prism:build` fails.
+2. The **build-time threshold check**: when an `a11y-report.json` exists and a threshold is violated, `nx run my-lib-prism:build` fails.
 
 ```typescript
 export default defineConfig({
@@ -239,12 +239,12 @@ export default defineConfig({
 });
 ```
 
-| Key                   | Default              | Description                                                                                                                                                                    |
-| --------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `thresholds.score`    | `80`                 | Minimum avg library score (0–100)                                                                                                                                              |
-| `thresholds.critical` | `0`                  | Maximum allowed critical violations                                                                                                                                            |
-| `thresholds.serious`  | `0`                  | Maximum allowed serious violations                                                                                                                                             |
-| `thresholds.moderate` | unlimited            | Maximum allowed moderate violations                                                                                                                                            |
-| `reportPath`          | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the library-wide a11y report. Generation is the consumer's responsibility — see the guide for the JSON shape. |
+| Key                   | Default              | Description                                                                                                                                                           |
+| --------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `thresholds.score`    | `80`                 | Minimum avg library score (0–100)                                                                                                                                     |
+| `thresholds.critical` | `0`                  | Maximum allowed critical violations                                                                                                                                   |
+| `thresholds.serious`  | `0`                  | Maximum allowed serious violations                                                                                                                                    |
+| `thresholds.moderate` | unlimited            | Maximum allowed moderate violations                                                                                                                                   |
+| `reportPath`          | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the library-wide a11y report. Generating it is up to the consumer; see the guide for the JSON shape. |
 
-See [Accessibility — Library-Wide A11y Score](guide/accessibility.md#library-wide-a11y-score--header-badge) for the report shape and integration workflow.
+See [Accessibility: Library-Wide A11y Score](guide/accessibility.md#library-wide-a11y-score--header-badge) for the report shape and integration workflow.

@@ -292,12 +292,12 @@ describe('coveragePlugin', () => {
 
 /**
  * The Node entry carries the build-time hooks and must never be reachable
- * from a browser bundle — see `coverage-plugin.browser.ts`. A
+ * from a browser bundle (see `coverage-plugin.browser.ts`). A
  * `navigationDecorations` entry added to only one of the two twins would
- * silently drop the marker in exactly the setup that needs it, and no other
- * suite would notice.
+ * silently drop the marker in the setup that needs it, and no other suite
+ * would notice.
  */
-describe('entry parity — navigation decorations', () => {
+describe('entry parity: navigation decorations', () => {
     it('declares the same decoration ids as the browser entry', () => {
         const nodeIds = (coveragePlugin().navigationDecorations ?? []).map((d) => d.id);
         const browserIds = (coveragePluginBrowser().navigationDecorations ?? []).map((d) => d.id);

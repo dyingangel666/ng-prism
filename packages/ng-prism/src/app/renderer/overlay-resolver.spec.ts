@@ -57,7 +57,7 @@ describe('resolveOverlay', () => {
         // Written in method shorthand and reading its own object, which is what
         // handing the bare method reference on would break: the renderer would
         // call it detached, `this` would be undefined, and the resulting throw
-        // lands in a promise nothing catches — the overlay just never appears.
+        // lands in a promise nothing catches. The overlay just never appears.
         const definition = {
             id: 'p',
             label: 'P',

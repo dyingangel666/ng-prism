@@ -11,7 +11,7 @@ Do **not** open public GitHub issues for suspected vulnerabilities.
 
 ## Threat Model
 
-`@ng-prism/core` is a **developer tool** — an Angular-native styleguide /
+`@ng-prism/core` is a **developer tool**: an Angular-native styleguide /
 showcase application, conceptually similar to Storybook. Understanding which
 inputs ng-prism treats as trusted is essential when reviewing security alerts
 against the library.
@@ -23,11 +23,11 @@ processed at build time by the TypeScript scanner, and embedded into the
 runtime manifest:
 
 - `@Showcase` decorator metadata, including:
-    - `variants[].inputs` — input values for a variant
-    - `variants[].content` — HTML snippets projected into the rendered component
+    - `variants[].inputs`: input values for a variant
+    - `variants[].content`: HTML snippets projected into the rendered component
     - `providers`, `meta`, `canvasLayout`, etc.
-- `NgPrismConfig` (from `ng-prism.config.ts`) — theme, plugins, custom pages,
-  thresholds, …
+- `NgPrismConfig` (from `ng-prism.config.ts`): theme, plugins, custom pages,
+  thresholds, etc.
 - `ComponentPage` and `CustomPage` definitions registered via
   `providePrism(..., { componentPages, ... })`.
 
@@ -39,9 +39,9 @@ developer**. They are not, and cannot become, end-user input at runtime.
 Only the following runtime inputs are considered untrusted, and ng-prism never
 routes them into HTML rendering:
 
-- URL state (`?component=…&variant=…&panel=…`) — interpreted as identifiers,
+- URL state (`?component=…&variant=…&panel=…`), interpreted as identifiers,
   used to look up entries in the trusted manifest. Never rendered as HTML.
-- Control panel edits — typed values applied via `componentRef.setInput(name,
+- Control panel edits: typed values applied via `componentRef.setInput(name,
 value)`. Bound through Angular's normal input pipeline, not interpolated into
   HTML.
 
@@ -55,7 +55,7 @@ into the rendered demo at runtime.
 convert variant content into projectable DOM nodes. Static analysis tools
 (e.g. Socket.dev) flag this pattern as a potential XSS sink.
 
-In the threat model described above this is **safe by design**:
+In the threat model described above this is safe:
 
 - The HTML string originates exclusively from `variant.content` in a
   developer-authored `@Showcase` decorator.
@@ -70,7 +70,7 @@ In the threat model described above this is **safe by design**:
 Library authors who use `@ng-prism/core` MUST NOT pipe untrusted, end-user
 input into `@Showcase` variant content, into `NgPrismConfig`, or into the
 runtime manifest. ng-prism is intended to render content the developer
-wrote — not content received from end users at runtime.
+wrote, not content received from end users at runtime.
 
 If you have a use case that requires rendering untrusted HTML through
 ng-prism, please open an issue first so we can discuss a sanitized rendering
@@ -90,7 +90,7 @@ consumer's `ng-prism.config.ts`, transpiles it to ESM via TypeScript's
 `ts.transpileModule`, writes it to a uniquely named temp file inside the
 workspace and loads it through native `import(pathToFileURL(...))`. Scanners
 that flag this as "uses eval / dynamic code execution" are matching on the
-dynamic-load shape, not on `eval()` or `new Function()` — neither is used.
+dynamic-load shape, not on `eval()` or `new Function()`, and neither is used.
 
 This pattern is required to load a TypeScript config file at build time and
 mirrors how Vite, Angular DevKit and other Node build tools load their own

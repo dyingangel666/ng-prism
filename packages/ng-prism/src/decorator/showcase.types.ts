@@ -22,7 +22,7 @@ type UnwrapSignalInput<S> = S extends InputSignalWithTransform<any, infer WriteT
  * (`input()`, `input.required()`, `model()`), unwrapping each to its value type.
  * `output()` and other properties are excluded.
  *
- * When `T` is `unknown` (the default — no generic argument given), falls back
+ * When `T` is `unknown` (the default, i.e. no generic argument given), falls back
  * to `Record<string, unknown>` so existing call sites without a generic param
  * keep working.
  */
@@ -35,7 +35,7 @@ export type InputsOf<T> = [unknown] extends [T]
 export interface ShowcaseConfig<T = unknown> {
     /** Display name in the ng-prism UI */
     title: string;
-    /** Description text — Markdown supported */
+    /** Description text, Markdown supported */
     description?: string;
     /** Groups the component in the sidebar */
     category?: string;
@@ -45,14 +45,14 @@ export interface ShowcaseConfig<T = unknown> {
     componentOrder?: number;
     /**
      * Top-level section in the sidebar. Auto-detected if omitted:
-     * `@Directive` → 'Directives', otherwise 'Components'. Free-form string —
+     * 'Directives' for a `@Directive`, otherwise 'Components'. Free-form string:
      * any value creates a new top-level section (e.g. 'Pipes', 'Utilities').
      */
     section?: string;
     /**
      * Sort order of this section in the sidebar (lower = higher in list).
      * The section's effective order is the minimum `sectionOrder` of all its items.
-     * Defaults: 'Components' → 0, 'Directives' → 10, all others → 100.
+     * Defaults: 'Components' 0, 'Directives' 10, all others 100.
      */
     sectionOrder?: number;
     /** Predefined variants shown as tabs */
@@ -103,8 +103,8 @@ export interface Variant<T = unknown> {
     inputs?: Partial<InputsOf<T>>;
     /**
      * Content projected into <ng-content>.
-     * - string → projected into the default (unnamed) slot
-     * - Record<string, string> → keys are slot selectors (e.g. '[card-header]'), 'default' is the unnamed slot
+     * - string: projected into the default (unnamed) slot
+     * - Record<string, string>: keys are slot selectors (e.g. '[card-header]'), 'default' is the unnamed slot
      */
     content?: string | Record<string, string>;
     /** Optional description for this variant */

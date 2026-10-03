@@ -18,18 +18,12 @@ const read = (file: string): string => readFileSync(file, 'utf8');
 /**
  * `<prism-foo />` written out as `<prism-foo></prism-foo>`.
  *
- * Angular's parser honours self-closing syntax on any element; the HTML parser
- * honours it on none but the void elements. Feeding a template straight to
- * `innerHTML` therefore makes every unknown element swallow its followers as
- * children — `<prism-view-tab-bar />` ends up the *ancestor* of the component
- * head, the variant ribbon and the canvas, instead of their sibling. That
- * inverts the one relationship these fixtures exist to describe, so it is
- * normalised away before parsing rather than reasoned around afterwards.
- *
- * Void elements (`<img />`, SVG `<path />`) pick up a closing tag they do not
- * need, which the parser discards. No attribute value can contain `/>`: the
- * only candidate in the shell is a base64 `src`, and `>` is not in the base64
- * alphabet.
+ * The HTML parser ignores self-closing syntax on non-void elements, so through
+ * `innerHTML` `<prism-view-tab-bar />` would become the ancestor of the head,
+ * ribbon and canvas instead of their sibling, inverting the nesting these
+ * fixtures describe. Void elements get a redundant closing tag the parser
+ * discards. No attribute value contains `/>`: the only candidate in the shell
+ * is a base64 `src`, and `>` is not in the base64 alphabet.
  */
 function expandSelfClosing(template: string): string {
     return template.replace(/<([a-z][a-z0-9-]*)([^<>]*?)\s*\/>/g, '<$1$2></$1>');
@@ -49,14 +43,14 @@ function selectorOf(source: string): string {
  * Angular resolves `:host` against the host element; nothing does that here,
  * so a `:host` rule would simply never match and a background declared there
  * would be invisible to every assertion. Scoped per source rather than
- * globally — the shell's `:host` and the renderer's are different elements.
+ * globally, because the shell's `:host` and the renderer's are different elements.
  */
 function scopeHost(styles: string, selector: string): string {
     return styles.replace(/:host\b/g, selector);
 }
 
 export interface CaptureDom {
-    /** The shell's own host element — the one the app bootstraps. */
+    /** The shell's own host element, i.e. the one the app bootstraps. */
     host: HTMLElement;
     shell: Element;
     stage: Element;
@@ -66,20 +60,13 @@ export interface CaptureDom {
 /**
  * The canvas DOM as the shell and the renderer actually declare it.
  *
- * Built from the template sources rather than from a live render: the renderer
- * uses `viewChild.required` and the shell pulls in directives with
- * `input.required`, and initializer-based APIs do not survive this workspace's
- * JIT test compilation — the specs are transpiled by SWC, so nothing runs the
- * Angular compiler over them. Composing the templates keeps what these tests
- * are actually about, the *nesting* and the *stylesheets*, and both of those
- * are declared statically.
+ * Composed from the template sources instead of a live render: the specs are
+ * SWC-transpiled and run JIT, where `viewChild.required` and `input.required`
+ * do not work. The nesting and stylesheets these tests check are static anyway.
  *
- * Angular control flow (`@if (…) { … }`) parses as text around elements that
- * still nest correctly, so conditional regions show up unconditionally: the
- * canvas, the page renderer and the view panel host are all siblings here
- * where a real render shows one of them. That errs toward more siblings, never
- * fewer — every assertion built on this sees at least the DOM a real render
- * produces.
+ * Control flow (`@if (...) { ... }`) parses as text, so conditional regions
+ * (canvas, page renderer, view panel host) all appear as siblings. That only
+ * ever adds siblings, so assertions see at least the DOM a real render produces.
  */
 export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     const shellSource = read(SHELL_SOURCE);
@@ -91,15 +78,10 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
         throw new Error('the renderer template was not spliced into the shell');
     }
 
-    // This fixture injects CANVAS_BG_STYLES below unconditionally — it does not
-    // scan the renderer source for it the way it scans for `demo-wrap` above.
-    // That is only honest for as long as the renderer's own `styles` array
-    // still composes the same constant: if someone drops it from there, the
-    // fixture would keep supplying the rules the real component no longer has,
-    // and capture-transparency.browser.spec.ts would stay green while the app
-    // silently stopped painting every declared background. Guard it the same
-    // way the demo-wrap splice is guarded, so that drift fails loudly instead
-    // of quietly.
+    // CANVAS_BG_STYLES is injected below unconditionally, so check that the
+    // renderer still composes it. Otherwise the fixture would keep supplying
+    // rules the real component dropped, and capture-transparency.browser.spec.ts
+    // would stay green while the app stopped painting declared backgrounds.
     if (!rendererSource.includes('CANVAS_BG_STYLES')) {
         throw new Error('the renderer no longer composes CANVAS_BG_STYLES into its styles');
     }
@@ -107,14 +89,14 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // CANVAS_BG_STYLES is imported rather than read out of a file: it is a plain
     // exported string with no Angular compilation involved, so importing it
     // cannot drift out of step with the component. It is not run through
-    // `scopeHost` — its selectors are bare `[data-bg="…"]` attribute selectors
+    // `scopeHost`: its selectors are bare `[data-bg="..."]` attribute selectors
     // with no `:host` in them, so that rewrite has nothing to do.
     // Placed directly after the renderer's own stylesheet, mirroring its
-    // position as the last entry of the real `styles` array — and ngc emits
+    // position as the last entry of the real `styles` array. ngc emits
     // `styleUrl` content ahead of inline `styles`, so that is the order the
     // component ships. `.prism-canvas-stage` and `[data-bg="light"]` are equal
-    // specificity either way — a class selector and an attribute selector both
-    // weigh (0,1,0) — so source order is what decides here too.
+    // specificity either way (a class selector and an attribute selector both
+    // weigh (0,1,0)), so source order is what decides here too.
     const style = document.createElement('style');
 
     style.textContent = [scopeHost(read(RENDERER_STYLES), selectorOf(rendererSource)), CANVAS_BG_STYLES, scopeHost(read(SHELL_STYLES), selectorOf(shellSource))].join(
@@ -125,7 +107,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // The real host element, not a bare `<div>`. The app bootstraps
     // `<prism-shell>` and the template's `div.prism-shell` lives *inside* it, so
     // a wrapper of any other name would drop a layer out of the chain these
-    // fixtures exist to describe — and a `:host` background added to the shell
+    // fixtures exist to describe, and a `:host` background added to the shell
     // would then paint above a capture without a single test noticing.
     const host = document.createElement(selectorOf(shellSource));
 
@@ -144,9 +126,9 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     // The canvas tool rail, which the composed template does not carry: it is
     // declared inside `prism-canvas-toolbar`, and only the renderer's template is
     // spliced in above. Its host is `display: contents`, so the rail is a child
-    // of `.prism-canvas-wrap` in layout terms — precisely the position capture
-    // mode's structural rule exists to catch, and precisely the position a rail
-    // moved into the renderer or the stage would lose. Added at that level rather
+    // of `.prism-canvas-wrap` in layout terms: the position capture mode's
+    // structural rule must catch, and the one a rail moved into the renderer or
+    // the stage would lose. Added at that level rather
     // than under a `prism-canvas-toolbar` element so the level-by-level walk in
     // `capture-layout.browser.spec.ts` asserts the rail itself: jsdom computes no
     // inherited `display`, so an element nested one level deeper would be visited
@@ -157,7 +139,7 @@ export function renderCanvasChain(bg = 'transparent'): CaptureDom {
     canvasWrap.appendChild(toolrail);
 
     // `data-bg` is a binding, so the markup carries no value. Setting the one
-    // the variant resolved to is exactly what the renderer does at runtime.
+    // the variant resolved to matches what the renderer does at runtime.
     stage.setAttribute('data-bg', bg);
     document.documentElement.setAttribute('data-prism-capture', '');
 

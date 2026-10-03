@@ -7,7 +7,7 @@ export interface FigmaPluginOptions {
      */
     accessToken?: string;
     /**
-     * Registers the Design Diff panel. Opt-in — without it only the Figma embed
+     * Registers the Design Diff panel. Opt-in; without it only the Figma embed
      * panel is registered. Requires `accessToken` to actually run a diff.
      *
      * @default false

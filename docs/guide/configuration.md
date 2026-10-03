@@ -17,7 +17,7 @@ export default defineConfig({
 });
 ```
 
-`defineConfig()` is an identity function — it exists purely for TypeScript inference on the config object.
+`defineConfig()` is an identity function. It only exists for TypeScript inference on the config object.
 
 ## Full Reference
 
@@ -35,13 +35,13 @@ The most commonly used fields:
 | `theme`           | `Record<string, string>` | CSS custom property overrides                               |
 | `themeStylesheet` | `string`                 | Path to a custom SCSS file loaded by the Prism app          |
 | `ui`              | object                   | Replace individual UI sections with custom components       |
-| `headless`        | `boolean`                | _Reserved, not yet implemented_ — strip all built-in chrome |
+| `headless`        | `boolean`                | _Reserved, not yet implemented._ Strips all built-in chrome |
 | `urlState`        | `boolean`                | Disable URL state sync (default: `true`)                    |
 | `buildInfo`       | `object`                 | Show version / git hash pill in header                      |
 
 ## Adding Global Providers
 
-Use `appProviders` for services that every showcase component needs — for example, a mock API service or router:
+Use `appProviders` for services that every showcase component needs, for example a mock API service or router:
 
 ```typescript
 import { defineConfig } from '@ng-prism/core';
@@ -107,7 +107,7 @@ export default defineConfig({
 });
 ```
 
-The pill appears left of the header action buttons. Both fields are optional — the git hash is automatically truncated to 7 characters.
+The pill appears left of the header action buttons. Both fields are optional, and the git hash is automatically truncated to 7 characters.
 
 > **Note:** A small "Powered by ng-prism" notice is always visible at the bottom of the sidebar.
 

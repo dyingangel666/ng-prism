@@ -69,7 +69,7 @@ function updateTsConfigMapping(tree: Tree, context: SchematicContext): void {
     const existing = parsed.compilerOptions?.paths?.['prism-manifest/*'];
 
     if (!existing) {
-        // No existing mapping — fall through to addTsConfigPath which inserts the new default.
+        // No existing mapping, so fall through to addTsConfigPath which inserts the new default.
         addTsConfigPath(tree, 'tsconfig.json', 'prism-manifest/*', [NEW_PATH_MAPPING]);
         return;
     }
@@ -160,7 +160,7 @@ export function migrate(): Rule {
 
         context.logger.info(
             'ng-prism migration: cache directory renamed from .ng-prism/ to ng-prism-cache/. ' +
-                'You can safely delete the old .ng-prism/ directory from your workspace — ' +
+                'You can safely delete the old .ng-prism/ directory from your workspace; ' +
                 'the builder will regenerate the manifest on next serve/build run.'
         );
 

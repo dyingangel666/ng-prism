@@ -39,7 +39,7 @@ export class JsDocPanelComponent {
     protected readonly classDescription = computed(() => this.jsdocData()?.classDescription);
 
     // Source is component-author JSDoc compiled into the manifest at build time,
-    // not user input — bypassing sanitization is safe here.
+    // not user input, so bypassing sanitization is safe here.
     protected readonly renderedClassDescription = computed<SafeHtml | null>(() => {
         const html = renderBlockMarkdown(this.classDescription());
 

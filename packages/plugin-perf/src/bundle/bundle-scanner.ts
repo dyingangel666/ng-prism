@@ -58,7 +58,7 @@ function computeTreeDepth(filePath: string, imports: string[], maxDepth: number,
 
             deepest = Math.max(deepest, childDepth);
         } catch {
-            // File not readable — treat as leaf
+            // File not readable, treat as leaf
         }
     }
 

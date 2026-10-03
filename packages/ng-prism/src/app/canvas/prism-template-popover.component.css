@@ -6,8 +6,8 @@
    containing block is the viewport, so the old right/top pair against the
    canvas would have parked this in the corner of the *window* and over the
    header. It hangs off the rail instead, the same way the head popovers
-   hang off their triggers. Viewport units, not percentages — a percentage
-   here resolves against the position area, not the canvas. */
+   hang off their triggers. Viewport units, not percentages, because a
+   percentage here resolves against the position area, not the canvas. */
 .tpl-popover {
     inset: auto;
     width: 520px;
@@ -29,7 +29,7 @@
 
 /* display belongs on :popover-open and nowhere else. The UA stylesheet
    hides a closed popover with [popover]:not(:popover-open) { display: none },
-   and any author display on the base rule outranks it — the panel then
+   and any author display on the base rule outranks it. The panel then
    shows permanently and neither Escape nor light-dismiss can hide it,
    because closing only drops :popover-open and leaves the author rule
    standing. */

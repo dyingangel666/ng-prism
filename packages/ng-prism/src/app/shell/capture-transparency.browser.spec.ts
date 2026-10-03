@@ -4,13 +4,13 @@ import { describeAll, matchesSafely, renderCanvasChain } from './__fixtures__/ca
 /**
  * Does any stylesheet in the document give this element a background?
  *
- * Deliberately asks whether a background is *declared*, never what colour it
+ * Asks whether a background is *declared*, never what colour it
  * resolves to. jsdom does not resolve `var()`, and every background in the
- * shell is a theme token — a `getComputedStyle` check would read `''` for all
+ * shell is a theme token, so a `getComputedStyle` check would read `''` for all
  * of them and pass whether or not the feature works.
  *
  * `transparent` and `none` do not count as painting: they are what the
- * neutralising rule writes, and what a few pieces of chrome declare on purpose.
+ * neutralising rule writes, and what a few pieces of chrome declare intentionally.
  */
 function isPaintedByStylesheet(el: Element): boolean {
     for (const sheet of Array.from(document.styleSheets)) {
@@ -53,7 +53,7 @@ describe('capture mode with a transparent background', () => {
      *
      * That list is the fragile part of transparent capture: rename a wrapper or
      * introduce a new painting layer and the capture silently goes opaque while
-     * the screenshot still looks perfectly fine — nothing fails loudly, the
+     * the screenshot still looks perfectly fine. Nothing fails loudly, the
      * image just stops testing transparency. A test over the selectors would
      * only restate them. Walking the chain fails the moment a painting layer
      * appears that the list does not reach.
@@ -64,8 +64,8 @@ describe('capture mode with a transparent background', () => {
         const painted = ancestorsToRoot(demoWrap).filter(isPaintedByStylesheet);
 
         // Guards against passing vacuously. Four layers paint above the component
-        // today — stage, canvas wrap, main, shell. If a refactor genuinely leaves
-        // fewer, that is precisely when the selector list wants another look.
+        // today: stage, canvas wrap, main, shell. If a refactor really leaves
+        // fewer, review the selector list.
         expect(painted.length).toBeGreaterThanOrEqual(4);
 
         const unneutralised = painted.filter((el) => !matchesSafely(el, CAPTURE_TRANSPARENT_SELECTOR));
@@ -78,8 +78,8 @@ describe('capture mode with a transparent background', () => {
 
         // The app bootstraps `<prism-shell>`; the template's `div.prism-shell`
         // lives inside it. Mounting the template in a bare wrapper left the outer
-        // element out of the chain, and `:host { background }` on the shell — the
-        // easiest painting layer to add by accident — is declared on exactly that
+        // element out of the chain, and `:host { background }` on the shell (the
+        // easiest painting layer to add by accident) is declared on that
         // element. The walk has to see it and the selector has to reach it.
         expect(host.tagName.toLowerCase()).toBe('prism-shell');
         expect(ancestorsToRoot(demoWrap)).toContain(host);

@@ -10,7 +10,7 @@ export interface SpectrumSlot {
  * Maps a variant's index onto the spectrum rail.
  *
  * The CSS reads `calc(var(--i) / (var(--n) - 1) * 100%)`, so n = 1 would
- * divide by zero — and an invalid calc() drops the whole declaration rather
+ * divide by zero, and an invalid calc() drops the whole declaration rather
  * than falling back to a sane default, leaving the result dependent on
  * whatever else happens to target background-position. Reporting a floor of 2
  * keeps the arithmetic defined and parks a lone variant at the start of the
