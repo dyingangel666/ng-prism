@@ -4,78 +4,160 @@
 
 # ng-prism
 
-Lightweight, Angular-native component showcase tool. Annotate components with `@Showcase` — no separate story files needed.
+**A component showcase for modern Angular — without story files.**
+Add one decorator to your component. ng-prism finds it at build time and generates live controls, code snippets and docs.
 
-[![Angular](https://img.shields.io/badge/Angular-21+-dd0031)](https://angular.dev)
+[![npm](https://img.shields.io/npm/v/@ng-prism/core)](https://www.npmjs.com/package/@ng-prism/core)
+[![downloads](https://img.shields.io/npm/dm/@ng-prism/core)](https://www.npmjs.com/package/@ng-prism/core)
+[![Angular](https://img.shields.io/badge/Angular-20+-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6)](https://www.typescriptlang.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
-**[Live Demo](https://dyingangel666.github.io/ng-prism/demo/?component=ButtonComponent)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
+**[▶ Live Demo](https://dyingangel666.github.io/ng-prism/demo/?component=ButtonComponent)** · **[Documentation](https://dyingangel666.github.io/ng-prism/)**
+
+<!-- TODO(maintainer): record a 10–15 s GIF: pick component in sidebar → switch
+     variant → change a control → code snippet updates. Save as docs/demo.gif
+     and uncomment the line below.
+<p align="center"><img src="docs/demo.gif" alt="ng-prism in action" width="800" /></p>
+-->
+
+## Same button, two approaches
+
+<table>
+<tr><th>Storybook</th><th>ng-prism</th></tr>
+<tr>
+<td valign="top">
+
+```ts
+// button.stories.ts — separate file
+import type { Meta, StoryObj } from '@storybook/angular';
+import { ButtonComponent } from './button.component';
+
+const meta: Meta<ButtonComponent> = {
+    title: 'Atoms/Button',
+    component: ButtonComponent,
+    argTypes: {
+        variant: {
+            control: 'select',
+            options: ['primary', 'secondary', 'danger']
+        }
+    }
+};
+export default meta;
+type Story = StoryObj<ButtonComponent>;
+
+export const Primary: Story = {
+    args: { variant: 'primary', label: 'Click me' }
+};
+export const Danger: Story = {
+    args: { variant: 'danger', disabled: true }
+};
+```
+
+</td>
+<td valign="top">
+
+<!-- prettier-ignore -->
+```ts
+// button.component.ts — right where it lives
+@Showcase<ButtonComponent>({
+    title: 'Button',
+    category: 'Atoms',
+    variants: [
+        { name: 'Primary',
+          inputs: { variant: 'primary', label: 'Click me' } },
+        { name: 'Danger',
+          inputs: { variant: 'danger', disabled: true } }
+    ]
+})
+@Component({ /* ... */ })
+export class ButtonComponent { /* ... */ }
+```
+
+Controls are inferred from your `input()` types —
+no `argTypes`, no extra file, type-checked variants.
+
+</td>
+</tr>
+</table>
+
+## Does `@Showcase` end up in my production bundle?
+
+No — and it is worth knowing why, because it does not happen by itself.
+
+The decorator is a runtime no-op. It takes your config, returns an empty function and stores nothing:
+
+```ts
+export function Showcase<T = unknown>(_config: ShowcaseConfig<T>): ClassDecorator {
+    return () => {};
+}
+```
+
+Every piece of metadata is read at build time by the prism builder, straight from your source files via the TypeScript Compiler API. Nothing is registered, reflected or looked up while your application runs.
+
+That alone is not enough. When ng-packagr compiles your library it lowers the decorator into a top-level call, and a top-level call is a side effect that tree-shaking is not allowed to drop:
+
+```js
+import { Showcase } from '@ng-prism/core';
+Showcase({ title: 'Button', category: 'Atoms' })(ButtonComponent);
+```
+
+So ng-prism ships an AST transformer that removes those calls together with their imports. `ng add` registers it as a `strip-showcase` script in your `package.json`:
+
+```bash
+ng build my-lib && npm run strip-showcase
+```
+
+Afterwards your published library has no reference to `@ng-prism/core` left — `grep -r "@ng-prism/core" dist/my-lib/` comes back empty. Keep the package as a `devDependency`; consumers of your library never see it.
+
+Details, including Nx targets and programmatic use: [Publishing Libraries with @Showcase](https://dyingangel666.github.io/ng-prism/#/guide/library-publishing).
+
+## Why not Storybook?
+
+Storybook is great. ng-prism is narrower on purpose: it does one framework and tries to do it natively.
+
+|                     | Storybook                                 | ng-prism                                                            |
+| ------------------- | ----------------------------------------- | ------------------------------------------------------------------- |
+| Frameworks          | React, Vue, Angular, …                    | Angular only                                                        |
+| Where variants live | Separate `*.stories.ts`                   | On the component                                                    |
+| Controls            | Configured via `argTypes` / Compodoc      | Inferred from `input()` signals                                     |
+| Visual regression   | Chromatic (paid SaaS) or community addons | Official plugin, works with your own screenshot runner, no SaaS     |
+| Accessibility       | `@storybook/addon-a11y`                   | Built in (axe-core)                                                 |
+| Design handoff      | Design addons                             | Official Figma plugin, with an opt-in pixel diff against the design |
+| Interaction tests   | Yes (play functions)                      | No                                                                  |
+| Addon ecosystem     | Huge                                      | Small (official plugins)                                            |
+
+**Choose Storybook** if you need multiple frameworks, its addon ecosystem, or interaction testing today.
+**Choose ng-prism** if you're on modern, signal-based Angular and want your showcase to stay in sync with your components without maintaining story files.
 
 ## Features
 
 - **Zero-config discovery** — TypeScript Compiler API scans your library at build time
 - **Signal-native** — works with `input()` / `output()` signals
 - **Type-safe variants** — opt-in `@Showcase<MyComponent>` generic gives autocomplete + compile-time checks on variant `inputs`
-- **Directive support** — showcase directives with configurable host elements
-- **Plugin architecture** — JSDoc, A11y, Figma, Performance, Box Model, Coverage
 - **Live Controls** — auto-generated input controls with type-aware editors
 - **Code Snippets** — live-updating Angular template snippets per variant
+- **Accessibility built in** — axe-core audits per variant, no plugin needed
+- **Visual regression** — per-variant diff report next to the component; your own screenshot runner writes a plain JSON report (the worked example drives Playwright)
+- **Directive support** — showcase directives with configurable host elements
 - **Component Pages** — free-form demo pages for complex components
 - **Deep-linking** — URL state sync for sharing specific component/variant/view
 - **Themeable** — full CSS custom property system, replaceable UI sections
+- **Plugin architecture** — JSDoc, Figma, Perf, Box Model, Coverage, VRT
 
 ## Quick Start
 
-### 1. Install
+```bash
+ng add @ng-prism/core      # creates the prism app, configures builders, generates ng-prism.config.ts
+```
+
+Annotate a component with `@Showcase` (see above), then:
 
 ```bash
-npm install @ng-prism/core
+ng run my-lib:prism        # → http://localhost:4400
 ```
 
-### 2. Add `@Showcase` to a component
-
-```typescript
-import { Component, input, output } from '@angular/core';
-import { Showcase } from '@ng-prism/core';
-
-@Showcase({
-    title: 'Button',
-    category: 'Atoms',
-    description: 'Primary action button',
-    variants: [
-        { name: 'Primary', inputs: { variant: 'primary', label: 'Click me' } },
-        { name: 'Danger', inputs: { variant: 'danger', disabled: true } }
-    ]
-})
-@Component({
-    selector: 'my-button',
-    standalone: true,
-    template: `<button [class]="variant()">{{ label() }}</button>`
-})
-export class ButtonComponent {
-    variant = input<'primary' | 'secondary' | 'danger'>('primary');
-    label = input('Button');
-    disabled = input(false);
-    clicked = output<void>();
-}
-```
-
-### 3. Run the schematic
-
-```bash
-ng add @ng-prism/core
-```
-
-This creates the prism app project, configures Angular builders, and generates `ng-prism.config.ts`.
-
-### 4. Start the dev server
-
-```bash
-ng run my-lib:prism
-```
-
-Open `http://localhost:4400` — your component appears in the sidebar with live controls, code snippets, and variant tabs.
+Your component appears in the sidebar with live controls, code snippets and variant tabs.
 
 ## Configuration
 
@@ -138,20 +220,21 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 
 ## Official Plugins
 
-| Plugin    | Package                              | Description                                                   |
-| --------- | ------------------------------------ | ------------------------------------------------------------- |
-| JSDoc     | `@ng-prism/plugin-jsdoc`             | API documentation from JSDoc comments                         |
-| Figma     | `@ng-prism/plugin-figma`             | Figma design embed + visual diff                              |
-| Box Model | `@ng-prism/plugin-box-model`         | CSS box model inspector                                       |
-| Perf      | `@ng-prism/plugin-perf`              | Render performance profiling                                  |
-| Coverage  | `@ng-prism/plugin-coverage`          | Per-component test coverage from Istanbul/v8                  |
-| VRT       | `@ng-prism/plugin-visual-regression` | Per-variant visual regression report from a screenshot runner |
+| Plugin            | Package                              | What you get                                                                                     |
+| ----------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Visual Regression | `@ng-prism/plugin-visual-regression` | Per-variant diff report, side by side with the live component. Bring your own screenshot runner. |
+| JSDoc             | `@ng-prism/plugin-jsdoc`             | API tables generated from your JSDoc comments                                                    |
+| Figma             | `@ng-prism/plugin-figma`             | Embed the Figma frame next to the component; opt-in pixel diff against the design                |
+| Coverage          | `@ng-prism/plugin-coverage`          | Test coverage per component from Istanbul/v8                                                     |
+| Perf              | `@ng-prism/plugin-perf`              | Render-time profiling per variant                                                                |
+| Box Model         | `@ng-prism/plugin-box-model`         | Live CSS box-model inspector                                                                     |
 
-> **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
+> Accessibility auditing (axe-core) is part of the core — no plugin needed.
+> The Figma plugin's Design Diff compares a live component against its Figma design in the browser; Visual Regression compares a screenshot against the last approved baseline. Different features, same presentation problem.
 
 ## Requirements
 
-- Angular >= 21
+- Angular >= 20
 - TypeScript >= 5.5
 - Components must use `input()` / `output()` signals
 
