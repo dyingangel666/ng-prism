@@ -8,6 +8,7 @@ import {
     formatMeasure,
     labelPlacement,
     measureDistance,
+    quantizeFree,
     type RenderedLine,
     tickEndpoints,
     toHostSpace,
@@ -314,15 +315,19 @@ export class PrismCanvasMeasureComponent {
         const hit = elementUnderPoint(clientX, clientY, this.renderer.renderedElement());
         const screen = { x: clientX, y: clientY };
 
-        if (!hit) return { ...toLocal(screen, origin, zoom), snap: null };
+        // Every return below is quantized, and the asymmetry inside
+        // `quantizeFree` is the reason it is applied here rather than at the
+        // call site: only one axis of a snapped point comes from the document,
+        // and this is the only place that knows which.
+        if (!hit) return quantizeFree({ ...toLocal(screen, origin, zoom), snap: null });
 
         const target = nearestSnap(screen, snapTargetsFor(readElementBox(hit)), MEASURE_SNAP_TOLERANCE);
 
-        if (!target) return { ...toLocal(screen, origin, zoom), snap: null };
+        if (!target) return quantizeFree({ ...toLocal(screen, origin, zoom), snap: null });
 
         const snapped = target.axis === 'x' ? { x: target.at, y: clientY } : { x: clientX, y: target.at };
 
-        return { ...toLocal(snapped, origin, zoom), snap: { kind: target.kind, side: target.side, from: hit } };
+        return quantizeFree({ ...toLocal(snapped, origin, zoom), snap: { kind: target.kind, side: target.side, from: hit } });
     }
 
     /**

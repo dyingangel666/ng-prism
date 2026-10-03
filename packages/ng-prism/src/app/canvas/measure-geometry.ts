@@ -220,3 +220,44 @@ export function constrainDirection(a: Vec, point: MeasurePoint): MeasurePoint {
 
     return { x: a.x + along * u.x, y: a.y + along * u.y, snap: keptSnap(point.snap, u) };
 }
+
+/**
+ * `point` with every axis the document did not pin rounded to a whole CSS
+ * pixel.
+ *
+ * The decimals a free measurement shows are not sub-pixel geometry — they are
+ * the specimen's own offset leaking into the reading. `.demo-wrap` is centred
+ * in the stage, so its left edge sits at something like 824.3594, and a point
+ * that latched onto nothing is the cursor minus exactly that. The fraction
+ * therefore describes where the specimen happens to sit, which is of no
+ * interest, and it appears on practically every free drag.
+ *
+ * Rounding per axis rather than per point is what keeps this from throwing
+ * away the fractions that *are* real. `pointAt` only ever pins one axis: a
+ * point latched to a left edge takes that edge's exact x while its y is still
+ * the raw cursor carrying the same offset. Measured against the shipped
+ * fixtures, a fifth of the distances between a parent and its child are
+ * genuinely fractional — a toggle knob centred at 2.5px in its track, an
+ * avatar's glyph sitting 6.8281 from one side and 6.8438 from the other.
+ * Rounding those away would hide the asymmetry a ruler exists to reveal.
+ *
+ * In CSS pixels, not screen pixels: at 200% zoom one whole CSS pixel is two
+ * screen pixels, and a whole pixel should mean what the readout prints.
+ *
+ * Deliberately not applied after {@link constrainDirection}. Projecting onto a
+ * diagonal multiplies by √2/2, so a constrained endpoint is fractional by
+ * construction and the length between two whole points on a 45-degree line is
+ * irrational anyway. Rounding there would trade the exact angle Shift just
+ * promised for a tidier number.
+ */
+export function quantizeFree(point: MeasurePoint): MeasurePoint {
+    const side = point.snap?.side;
+    const xPinned = side === 'left' || side === 'right';
+    const yPinned = side === 'top' || side === 'bottom';
+
+    return {
+        x: xPinned ? point.x : Math.round(point.x),
+        y: yPinned ? point.y : Math.round(point.y),
+        snap: point.snap
+    };
+}

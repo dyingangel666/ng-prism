@@ -22,6 +22,14 @@ The projection is orthogonal, not length-preserving. A drag 240 across and 7 dow
 
 Nothing in range is a perfectly valid outcome too. A point with nothing to snap to simply drops wherever the pointer is, in the open space between elements — the tool measures open space exactly as readily as it measures an edge.
 
+Whatever the document did not pin is reported in whole pixels. A point that latched onto nothing is the cursor minus the specimen's own offset, and because `.demo-wrap` is centred that offset is itself fractional — a left edge at 824.3594 and the like. The decimals a free measurement used to show described where the specimen happened to sit, not what was being measured, so they are rounded away.
+
+The rounding is per axis, not per point, which is what keeps it from discarding the fractions that are real. Only one axis of a snapped point comes from the document: an endpoint latched to a left edge takes that edge's exact x, while its y is still the raw cursor carrying the same offset as a free point. So the latched axis is kept exactly and the other is rounded. Measured against this repo's own fixtures, about a fifth of the distances between a parent and its child are genuinely fractional — a toggle knob centred at 2.5px in its track, an avatar's glyph sitting 6.8281 from one side and 6.8438 from the other — and rounding those away would hide the asymmetry a ruler exists to reveal.
+
+Values are printed to at most one decimal, and whole values carry none at all. One decimal is a deliberate floor rather than an accident: it is enough to show that a gap is 2.5 and not 3, and short enough to read at a glance. It does mean two readings that differ in the second decimal print the same number, so `left 6.8, right 6.8` is not a promise of symmetry.
+
+A measurement constrained with Shift is the one place fractions survive on purpose. Projecting onto a diagonal multiplies by √2/2, and the distance between two whole points on a 45-degree line is irrational in any case; rounding there would trade the exact angle Shift just promised for a tidier number.
+
 The value sits at the midpoint of the line for anything long enough to hold it; short measurements move the number aside instead of letting it collide with its own end ticks. The result is also announced through a polite live region, so the measurement is available to a screen reader, not only to whoever is looking at the canvas — the four-sided readout below included, which is spoken with each side named and the unit restored (`top 16 px, right 8 px`), since neither position nor an implied unit survives being read aloud.
 
 ## Comparing two elements

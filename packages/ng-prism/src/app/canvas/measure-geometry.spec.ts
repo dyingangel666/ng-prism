@@ -1,5 +1,5 @@
 import { type EdgeSide, MEASURE_LABEL_MIN_SPAN, type MeasurePoint } from '../../shared/measure.type.js';
-import { constrainDirection, formatMeasure, labelPlacement, measureDistance, tickEndpoints, toHostSpace, toLocal, toScreen } from './measure-geometry.js';
+import { constrainDirection, formatMeasure, labelPlacement, measureDistance, quantizeFree, tickEndpoints, toHostSpace, toLocal, toScreen } from './measure-geometry.js';
 
 describe('formatMeasure', () => {
     it('should drop the decimal on a whole value', () => {
@@ -252,5 +252,55 @@ describe('constrainDirection', () => {
         const r = constrainDirection({ x: 0, y: 0 }, snapped(100, 90, 'left'));
 
         expect(r.snap).toBeNull();
+    });
+});
+
+describe('quantizeFree', () => {
+    const el = {} as Element;
+    const free = (x: number, y: number): MeasurePoint => ({ x, y, snap: null });
+    const on = (x: number, y: number, side: EdgeSide): MeasurePoint => ({ x, y, snap: { kind: 'border', side, from: el } });
+
+    it('should round both axes of a free point', () => {
+        // Nothing here came from the document: a free point is the cursor
+        // minus the specimen's own offset, and that offset is fractional
+        // because .demo-wrap is centred. The decimals describe where the
+        // specimen happens to sit, not what is being measured.
+        expect(quantizeFree(free(824.3594, 338.5938))).toEqual(free(824, 339));
+    });
+
+    it('should keep x exact and round y under a left-edge snap', () => {
+        // x is the edge the point latched onto — real geometry. y is still
+        // the raw cursor and carries the same offset a free point does.
+        expect(quantizeFree(on(338.5, 207.4, 'left'))).toEqual(on(338.5, 207, 'left'));
+    });
+
+    it('should keep x exact and round y under a right-edge snap', () => {
+        expect(quantizeFree(on(338.5, 207.4, 'right'))).toEqual(on(338.5, 207, 'right'));
+    });
+
+    it('should keep y exact and round x under a top-edge snap', () => {
+        expect(quantizeFree(on(338.4, 207.5, 'top'))).toEqual(on(338, 207.5, 'top'));
+    });
+
+    it('should keep y exact and round x under a bottom-edge snap', () => {
+        expect(quantizeFree(on(338.4, 207.5, 'bottom'))).toEqual(on(338, 207.5, 'bottom'));
+    });
+
+    it('should leave an already whole point alone', () => {
+        expect(quantizeFree(free(340, 200))).toEqual(free(340, 200));
+    });
+
+    it('should round a half upwards, and the same way for negatives', () => {
+        // `Math.round` breaks ties toward positive infinity, so -0.5 goes to 0
+        // rather than to -1. Pinned because a later switch to a symmetric
+        // rounding would move every measurement that lands exactly on a half.
+        expect(quantizeFree(free(0.5, 1.5))).toEqual(free(1, 2));
+        expect(quantizeFree(free(-0.5, -1.5))).toEqual(free(-0, -1));
+    });
+
+    it('should carry the snap reference through untouched', () => {
+        const point = on(338.5, 207.4, 'left');
+
+        expect(quantizeFree(point).snap).toBe(point.snap);
     });
 });
