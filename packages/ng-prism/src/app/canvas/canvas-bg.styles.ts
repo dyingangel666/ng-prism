@@ -41,6 +41,17 @@ export const CANVAS_BG_STYLES = `
      ground rather than to the theme is what makes "always visible" true
      instead of true-in-the-common-case.
 
+     --prism-measure-plate travels with it, and has to. It is the surface
+     the measuring tool's value label paints itself on, to look like a gap
+     in the measurement line rather than a badge laid over it. Left at its
+     --prism-stage fallback it would be the *theme's* stage under a
+     re-pointed foreground — the light theme's navy on the dark theme's
+     stage reads 2.10:1, and the dark theme's blue on white 2.13:1. Pinning
+     the plate to the ground the same way the foreground is pinned restores
+     8.00:1 and 9.50:1. A color-mix against the ground would do as well and
+     is not used: this file already states both grounds literally, and one
+     mechanism per decision beats two.
+
      Literal values because this file is theme-independent by construction —
      it is the one place that already hard-codes the two absolute grounds
      below, for the same reason. Keep them in step with --prism-measure in
@@ -49,11 +60,13 @@ export const CANVAS_BG_STYLES = `
     background-color: var(--prism-void-light, #f7f5fc);
     background-image: none;
     --prism-measure: #004d8a;
+    --prism-measure-plate: var(--prism-void-light, #f7f5fc);
   }
   [data-bg="dark"] {
     background-color: var(--prism-void-dark, #07050f);
     background-image: none;
     --prism-measure: #41bcff;
+    --prism-measure-plate: var(--prism-void-dark, #07050f);
   }
 
   /* "transparent" shares the checkerboard on purpose. The two say the same

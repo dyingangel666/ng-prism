@@ -277,6 +277,57 @@ describe('semantic colours', () => {
             expect(ON_LIGHT_GROUND).toBe(PRISM_LIGHT_THEME['--prism-measure']);
         });
 
+        /**
+         * The label plate is a second consumer with the same exposure.
+         *
+         * The measuring tool prints its value on a small opaque plate, so that
+         * the number reads as sitting in a gap in the measurement line rather
+         * than as a badge laid over it. The plate shipped as `--prism-stage`,
+         * which is *not* re-pointed on the two absolute backgrounds — so a
+         * `bg: 'light'` variant under the dark theme put the light theme's navy
+         * on the dark theme's stage at 2.10:1, and `bg: 'dark'` under the light
+         * theme the mirror image at 2.13:1. Both are documented, supported
+         * `@Showcase({ bg })` values, which is precisely the
+         * true-in-the-common-case failure the override above exists to prevent.
+         */
+        describe('--prism-measure-plate', () => {
+            /** The plate each absolute background declares, read out of the stylesheet. */
+            const plateFor = (bg: 'light' | 'dark'): string => {
+                const rule = CANVAS_BG_STYLES.slice(CANVAS_BG_STYLES.indexOf(`[data-bg="${bg}"]`));
+                const found = /--prism-measure-plate:[^;]*?(#[0-9a-f]{6})/i.exec(rule.slice(0, rule.indexOf('}')));
+
+                if (!found) throw new Error(`[data-bg="${bg}"] declares no --prism-measure-plate`);
+                return found[1];
+            };
+
+            const PLATES = [
+                ['bg:light, any theme', ON_LIGHT_GROUND, plateFor('light'), ABSOLUTE_LIGHT],
+                ['bg:dark, any theme', ON_DARK_GROUND, plateFor('dark'), ABSOLUTE_DARK]
+            ] as const;
+
+            it.each(PLATES)('%s paints the plate in the ground, not in the theme surface', (_l, _colour, plate, ground) => {
+                // The plate has to *be* the ground, or it stops reading as a gap
+                // in the line and becomes a badge sitting on top of one.
+                expect(plate).toBe(ground);
+            });
+
+            it.each(PLATES)('%s keeps the value legible on its plate', (_l, colour, plate) => {
+                // An 11px monospace number — AA body text, so 4.5:1, the same
+                // floor the 9px rail readout is held to above.
+                expect(contrast(colour, plate)).toBeGreaterThanOrEqual(4.5);
+            });
+
+            it('is what the label actually paints itself on', () => {
+                // Without this the pair above could stay perfectly in step while
+                // the component went back to reading --prism-stage directly, and
+                // nothing would fail. The fallback is required too: it is what
+                // covers the four grounds that do follow the theme.
+                const css = readFileSync(join(__dirname, '../canvas/prism-canvas-measure.component.css'), 'utf-8').replace(/\/\*[\s\S]*?\*\//g, '');
+
+                expect(css).toMatch(/background:\s*var\(--prism-measure-plate,\s*var\(--prism-stage\)\)/);
+            });
+        });
+
         it('stays tellable from the primary accent in both themes', () => {
             // Measurement is its own signal. If it drifts far enough toward the
             // brand violet, a grip starts reading as a primary control rather than

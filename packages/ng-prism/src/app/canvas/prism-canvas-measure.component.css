@@ -75,7 +75,19 @@
 
 /* The number sits outside .demo-wrap and therefore does not scale with
    --zoom. It also never rotates for a diagonal measurement: a tilted number
-   is slower to read, and readability is the whole point here. */
+   is slower to read, and readability is the whole point here.
+
+   The plate follows the *ground*, not --prism-stage, and that is the same
+   argument canvas-bg.styles.ts makes for --prism-measure itself. On
+   bg: 'light' and bg: 'dark' the ground is absolute while --prism-stage
+   stays with the theme, so a plate painted in --prism-stage puts the
+   re-pointed measurement colour on the other theme's surface: 2.10:1 for a
+   light ground under the dark theme, 2.13:1 the other way round. Both are
+   documented @Showcase({ bg }) values, so "always visible" would have been
+   true-in-the-common-case again — exactly the problem the token override
+   exists to prevent. --prism-measure-plate is re-pointed alongside
+   --prism-measure in that same file and falls back to --prism-stage
+   everywhere else, where the stage *is* the ground. */
 .m-label {
     position: absolute;
     padding: var(--sp-1) var(--sp-2);
@@ -85,7 +97,7 @@
     line-height: 1;
     color: var(--prism-measure);
     white-space: nowrap;
-    background: var(--prism-stage);
+    background: var(--prism-measure-plate, var(--prism-stage));
     transform: translate(-50%, -50%);
 }
 
