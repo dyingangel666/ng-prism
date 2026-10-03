@@ -14,15 +14,15 @@ A latched endpoint draws a short dotted tick retracing the exact edge it locked 
 
 Nothing in range is a perfectly valid outcome too. A point with nothing to snap to simply drops wherever the pointer is, in the open space between elements — the tool measures open space exactly as readily as it measures an edge.
 
-The value sits at the midpoint of the line for anything long enough to hold it; short measurements move the number aside instead of letting it collide with its own end ticks. The result is also announced through a polite live region, so the measurement is available to a screen reader, not only to whoever is looking at the canvas.
+The value sits at the midpoint of the line for anything long enough to hold it; short measurements move the number aside instead of letting it collide with its own end ticks. The result is also announced through a polite live region, so the measurement is available to a screen reader, not only to whoever is looking at the canvas — the four-sided readout below included, which is spoken with each side named and the unit restored (`top 16 px, right 8 px`), since neither position nor an implied unit survives being read aloud.
 
 ## Comparing two elements
 
-Alt-click an element to fix it as the anchor. From there, holding Alt and moving the pointer over other elements draws every gap between the anchor and whatever is currently underneath it — up to four lines, one per side.
+Alt-click an element to fix it as the anchor. It is outlined with a dashed rectangle the moment it is fixed, before anything else is hovered — that outline is the confirmation the click registered, and it is also what tells the two ends of a single one-sided reading apart. From there, holding Alt and moving the pointer over other elements outlines whatever is underneath with a solid rectangle and draws every gap between the two — up to four lines, one per side.
 
 Two distinct readings come out of the same four numbers. When the hovered element sits entirely inside the anchor, the four lines read as insets — exactly the reading you want to make a container's padding visible on every side at once. When the two don't contain one another, only the sides that actually face open space draw a line at all; a side with nothing between the boxes draws nothing, and two elements that overlap on both axes report nothing on any side — there is no gap there to put a number on, which is the correct statement, not a tool that gave up.
 
-The anchor stays fixed across repeated alt-hovers: let go of Alt, move the pointer elsewhere, hold Alt again, and you're still comparing against the same element. It only changes on a new Alt-click, on switching variant or component, or on turning the tool off. Hovering back onto the anchor itself draws nothing — there is no distance from an element to itself.
+The anchor stays fixed across repeated alt-hovers: let go of Alt, move the pointer elsewhere, hold Alt again, and you're still comparing against the same element. It only changes on a new Alt-click, on switching variant or component, or on turning the tool off. Hovering back onto the anchor itself draws no spans — there is no distance from an element to itself — but its dashed outline stays, so the anchor never silently disappears.
 
 ## Keeping measurements
 

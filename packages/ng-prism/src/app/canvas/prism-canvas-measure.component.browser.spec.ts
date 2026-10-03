@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { signal, ɵresolveComponentResources as resolveComponentResources } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import type { MeasurePoint } from '../../shared/measure.type.js';
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
@@ -324,5 +324,134 @@ describe('PrismCanvasMeasureComponent — keyboard', () => {
         const event = keydown(fixture.nativeElement, 'Tab');
 
         expect(event.defaultPrevented).toBe(false);
+    });
+});
+
+describe('PrismCanvasMeasureComponent — alt-hover readout', () => {
+    let measure: PrismMeasureService;
+    let fixture: ComponentFixture<PrismCanvasMeasureComponent>;
+    let host: HTMLElement;
+    let root: HTMLElement;
+    let anchor: HTMLElement;
+    let target: HTMLElement;
+
+    beforeAll(async () => {
+        await resolveComponentResources((url) => readFile(join(__dirname, url), 'utf8'));
+    });
+
+    /**
+     * A fixed rect for one element.
+     *
+     * jsdom has no layout engine and answers every `getBoundingClientRect()`
+     * with zeros, so the four-sided readout would have nothing to compute
+     * from. Stubbing the two boxes is what makes the *arithmetic and the
+     * rendering* testable here; where each outline lands on screen is not,
+     * and cannot be — that half needs a browser.
+     */
+    function stubRect(element: Element, left: number, top: number, right: number, bottom: number): void {
+        element.getBoundingClientRect = (): DOMRect => ({ left, top, right, bottom, width: right - left, height: bottom - top, x: left, y: top }) as unknown as DOMRect;
+    }
+
+    beforeEach(() => {
+        root = document.createElement('div');
+        anchor = document.createElement('div');
+        target = document.createElement('div');
+        root.append(anchor, target);
+        document.body.appendChild(root);
+        // A 200x200 anchor with the target inset 16px on every side — the
+        // "target inside anchor" reading from Spec §4.5, the one that makes a
+        // container's padding visible on all four sides at once.
+        stubRect(anchor, 100, 100, 300, 300);
+        stubRect(target, 116, 116, 284, 284);
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [
+                { provide: PrismNavigationService, useValue: { activeComponent: signal(null) } },
+                { provide: PrismRendererService, useValue: { activeVariantIndex: signal(0), renderedElement: signal(root) } },
+                { provide: PrismCanvasService, useValue: { measure: signal(false), zoom: signal(1) } }
+            ]
+        });
+        measure = TestBed.inject(PrismMeasureService);
+        TestBed.tick();
+
+        fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+        fixture.detectChanges();
+        host = fixture.nativeElement as HTMLElement;
+        host.setPointerCapture = (): void => {};
+    });
+
+    afterEach(() => {
+        root.remove();
+        jest.restoreAllMocks();
+    });
+
+    /**
+     * Dispatches a pointer-named event on the host and re-renders.
+     *
+     * The handlers are wired in the constructor rather than through the
+     * template, so nothing marks the component dirty on its own — the
+     * explicit `detectChanges` is what puts the computed's result into the
+     * DOM the assertions read.
+     */
+    function pointer(type: string, init: MouseEventInit = {}): void {
+        host.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button: 0, ...init }));
+        fixture.detectChanges();
+    }
+
+    /** `document.elementsFromPoint` answering a fixed hit list. */
+    const hits = (...elements: Element[]): void => {
+        jest.spyOn(document, 'elementsFromPoint').mockReturnValue(elements);
+    };
+
+    it('should outline the anchor as soon as it is alt-clicked, before anything is hovered', () => {
+        // Spec §4.5, and the reason it matters beyond conformance: without
+        // this, an Alt-click produces no visible change at all. Nothing is
+        // drawn until a *second* element is hovered, and hovering the anchor
+        // itself deliberately draws no spans either — so there was no way to
+        // tell whether the anchor had registered.
+        hits(anchor);
+        pointer('pointerdown', { clientX: 150, clientY: 150, altKey: true });
+
+        expect(measure.hoverAnchor()).toBe(anchor);
+        expect(host.querySelectorAll('.m-outline--anchor')).toHaveLength(1);
+        expect(host.querySelectorAll('.m-outline--target')).toHaveLength(0);
+    });
+
+    it('should outline both boxes and draw the four spans once a target is hovered', () => {
+        hits(anchor);
+        pointer('pointerdown', { clientX: 150, clientY: 150, altKey: true });
+        hits(target);
+        pointer('pointermove', { clientX: 200, clientY: 200, altKey: true });
+
+        expect(host.querySelectorAll('.m-outline--anchor')).toHaveLength(1);
+        expect(host.querySelectorAll('.m-outline--target')).toHaveLength(1);
+        expect(host.querySelectorAll('.m-label')).toHaveLength(4);
+    });
+
+    it('should drop the target outline when the pointer returns to the anchor', () => {
+        // There is no distance from an element to itself, so no spans — but
+        // the anchor is still set, so its own outline stays.
+        hits(anchor);
+        pointer('pointerdown', { clientX: 150, clientY: 150, altKey: true });
+        hits(anchor);
+        pointer('pointermove', { clientX: 150, clientY: 150, altKey: true });
+
+        expect(host.querySelectorAll('.m-outline--anchor')).toHaveLength(1);
+        expect(host.querySelectorAll('.m-outline--target')).toHaveLength(0);
+        expect(host.querySelectorAll('.m-label')).toHaveLength(0);
+    });
+
+    it('should announce the four-sided readout in the live region', () => {
+        // The live region only ever read the drag measurement, so the headline
+        // alt-hover feature was announced to nobody. The drawn form drops the
+        // unit and lets position say which side each number belongs to;
+        // neither survives being read aloud.
+        hits(anchor);
+        pointer('pointerdown', { clientX: 150, clientY: 150, altKey: true });
+        hits(target);
+        pointer('pointermove', { clientX: 200, clientY: 200, altKey: true });
+
+        expect(host.querySelector('.m-live')?.textContent?.trim()).toBe('top 16 px, right 16 px, bottom 16 px, left 16 px');
     });
 });

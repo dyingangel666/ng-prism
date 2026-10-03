@@ -1,4 +1,4 @@
-import { quadDistances, quadLines, type QuadSpan, quadSpans } from './measure-quad.js';
+import { outlineOf, quadDistances, quadLines, type QuadSpan, quadSpans, quadSummary } from './measure-quad.js';
 
 const card = { left: 148, top: 64, right: 368, bottom: 260 };
 
@@ -150,5 +150,50 @@ describe('quadLines', () => {
             { x: 96.5, y: 16 }
         ]);
         expect(line.label).toEqual({ x: 85, y: 8 });
+    });
+});
+
+describe('quadSummary', () => {
+    const spans: QuadSpan[] = [
+        { a: { x: 100, y: 0 }, b: { x: 100, y: 16 }, value: 16, side: 'top' },
+        { a: { x: 120, y: 50 }, b: { x: 128, y: 50 }, value: 8, side: 'right' }
+    ];
+
+    it('should name each side and keep the unit', () => {
+        // The drawn readout drops `px` and lets position say which side a
+        // number belongs to. Read aloud, neither survives — so the spoken
+        // form restores both.
+        expect(quadSummary(spans, 1)).toBe('top 16 px, right 8 px');
+    });
+
+    it('should divide by zoom exactly as quadLines does', () => {
+        expect(quadSummary(spans, 2)).toBe('top 8 px, right 4 px');
+    });
+
+    it('should go through the same zoom guard', () => {
+        expect(quadSummary(spans, 0)).toBe('top 16 px, right 8 px');
+        expect(quadSummary(spans, -2)).toBe('top 16 px, right 8 px');
+    });
+
+    it('should be empty when there is nothing to say', () => {
+        // The live region falls back to the drag measurement on an empty
+        // string, so "no spans" has to produce one rather than a stray
+        // separator.
+        expect(quadSummary([], 1)).toBe('');
+    });
+});
+
+describe('outlineOf', () => {
+    it('should turn two opposite corners into an origin and a size', () => {
+        // Spec §4.5's anchor and target outlines. `Box` carries corners
+        // because that is what quadDistances compares; `<rect>` wants a size.
+        expect(outlineOf({ left: 148, top: 64, right: 368, bottom: 260 })).toEqual({ x: 148, y: 64, width: 220, height: 196 });
+    });
+
+    it('should produce a zero-size rect for a collapsed box', () => {
+        // An element with no box still gets an outline rather than NaN
+        // attributes; a browser draws nothing for it, which is the right
+        // answer.
+        expect(outlineOf({ left: 10, top: 10, right: 10, bottom: 10 })).toEqual({ x: 10, y: 10, width: 0, height: 0 });
     });
 });

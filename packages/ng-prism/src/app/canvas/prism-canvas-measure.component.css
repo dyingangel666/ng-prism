@@ -51,6 +51,22 @@
     stroke-opacity: 0.2;
 }
 
+/* Spec §4.5: anchor dashed, target solid. Both sit at reduced opacity for
+   the same reason the snap echo does — they say *which two boxes* the four
+   numbers are about, and must not compete with the numbers themselves. The
+   anchor outline is also the only feedback an Alt-click produces before a
+   second element is hovered. */
+.m-svg .m-outline {
+    fill: none;
+    stroke: var(--prism-measure);
+    stroke-opacity: 0.7;
+    stroke-width: 1;
+}
+
+.m-svg .m-outline--anchor {
+    stroke-dasharray: 4 3;
+}
+
 /* The number sits outside .demo-wrap and therefore does not scale with
    --zoom. It also never rotates for a diagonal measurement: a tilted number
    is slower to read, and readability is the whole point here. */

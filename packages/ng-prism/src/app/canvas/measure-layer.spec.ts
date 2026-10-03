@@ -84,6 +84,20 @@ describe('measuring overlay layering', () => {
         expect(layer(MEASURE_CSS, OVERLAY)!).toBeLessThan(sibling!);
     });
 
+    it('draws the anchor dashed and the target solid, per Spec 4.5', () => {
+        // The two outlines are what say *which* boxes the four numbers are
+        // about. Both in --prism-measure like everything else the tool draws;
+        // only the anchor is dashed, and only the anchor — a second
+        // dasharray, or none, and the pair stops distinguishing the two ends
+        // of a one-sided reading.
+        const shared = block(MEASURE_CSS, '.m-svg .m-outline {');
+
+        expect(shared).toContain('stroke: var(--prism-measure)');
+        expect(shared).toContain('fill: none');
+        expect(shared).not.toContain('stroke-dasharray');
+        expect(block(MEASURE_CSS, '.m-svg .m-outline--anchor {')).toContain('stroke-dasharray');
+    });
+
     it('keeps everything it draws out of the hit test', () => {
         // The host is the layer that takes the pointer; its own SVG and label
         // layers must not, or the hit test lands on a measurement line instead

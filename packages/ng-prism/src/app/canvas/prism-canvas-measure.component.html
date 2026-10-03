@@ -1,6 +1,25 @@
 <svg
     class="m-svg"
     aria-hidden="true">
+    <!-- Spec §4.5. Drawn before the spans so the four measurement lines stay
+   the foreground mark and the two outlines read as the context they
+   describe. -->
+    @if (hover().anchor; as r) {
+        <rect
+            class="m-outline m-outline--anchor"
+            [attr.x]="r.x"
+            [attr.y]="r.y"
+            [attr.width]="r.width"
+            [attr.height]="r.height" />
+    }
+    @if (hover().target; as r) {
+        <rect
+            class="m-outline m-outline--target"
+            [attr.x]="r.x"
+            [attr.y]="r.y"
+            [attr.width]="r.width"
+            [attr.height]="r.height" />
+    }
     @for (l of lines(); track $index) {
         <g [class.is-pinned]="l.pinned">
             <line
@@ -28,7 +47,7 @@
             }
         </g>
     }
-    @for (l of hoverLines(); track $index) {
+    @for (l of hover().lines; track $index) {
         <g [class.is-pinned]="l.pinned">
             <line
                 [attr.x1]="l.a.x"
@@ -67,7 +86,7 @@
             {{ l.text }}
         </span>
     }
-    @for (l of hoverLines(); track $index) {
+    @for (l of hover().lines; track $index) {
         <span
             class="m-label"
             [class.is-pinned]="l.pinned"
@@ -82,7 +101,9 @@
     class="m-live"
     role="status"
     aria-live="polite">
-    @if (lines().length > 0) {
+    @if (hover().summary) {
+        {{ hover().summary }}
+    } @else if (lines().length > 0) {
         {{ lines()[lines().length - 1].text }}
     }
 </span>

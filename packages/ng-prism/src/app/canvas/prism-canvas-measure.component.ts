@@ -5,7 +5,7 @@ import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
 import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toHostSpace, toLocal, toScreen, type Vec } from './measure-geometry.js';
 import { nudge } from './measure-keyboard.js';
-import { type Box, quadLines, quadSpans } from './measure-quad.js';
+import { type Box, outlineOf, type OutlineRect, quadLines, quadSpans, quadSummary } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
 /**
@@ -88,6 +88,20 @@ export function watchGeometry(stage: Element, wrap: Element | null, onChange: ()
         stage.removeEventListener('scroll', onChange);
     };
 }
+
+/** Everything alt-hover mode puts on screen for one anchor/target pair. */
+export interface HoverReadout {
+    /** The up-to-four spans between the anchor and the hovered element. */
+    lines: RenderedLine[];
+    /** The same values named and spoken, for the live region. Empty when there is nothing to say. */
+    summary: string;
+    /** The anchor's box, drawn dashed (Spec §4.5). Set as soon as an anchor is. */
+    anchor: OutlineRect | null;
+    /** The hovered element's box, drawn solid (Spec §4.5). */
+    target: OutlineRect | null;
+}
+
+const EMPTY_HOVER: HoverReadout = { lines: [], summary: '', anchor: null, target: null };
 
 /**
  * Keyboard support here only operates a draft that already exists: nudge,
@@ -192,20 +206,15 @@ export class PrismCanvasMeasureComponent {
     });
 
     /**
-     * The up-to-four spans between the alt-hover anchor and the element
-     * currently under the pointer.
+     * Everything the alt-hover mode draws, in one evaluation.
      *
-     * `quadSpans` already drops a side with nothing to say, so an anchor and
-     * target that merely overlap correctly renders nothing at all — see its
-     * doc on `measure-quad.ts`.
+     * One computed rather than three because all of it comes out of the same
+     * two `getBoundingClientRect()` reads, and splitting it would read the
+     * anchor's box once per consumer on every change detection pass.
      */
-    protected readonly hoverLines = computed<RenderedLine[]>(() => {
+    protected readonly hover = computed<HoverReadout>(() => {
         const anchorEl = this.measure.hoverAnchor();
         const targetEl = this.hoverTarget();
-
-        if (!anchorEl || !targetEl || anchorEl === targetEl) return [];
-
-        const zoom = this.canvas.zoom();
 
         // Same dependency-only read that `lines` above makes on
         // `geometryTick`. `boxOf` reads `getBoundingClientRect()`, which is
@@ -215,14 +224,38 @@ export class PrismCanvasMeasureComponent {
         // stale.
         this.geometryTick();
 
+        if (!anchorEl) return EMPTY_HOVER;
+
+        const zoom = this.canvas.zoom();
         const host = this.hostRect();
         const a = this.boxOf(anchorEl, host);
+        // Spec §4.5: the anchor is outlined dashed from the moment it is
+        // set, before anything is hovered. Without it an Alt-click produces
+        // no visible change whatsoever — and hovering the anchor back to
+        // check cannot confirm it either, because that case deliberately
+        // draws no spans. The outline is the only confirmation the anchor
+        // registered, and it is also what tells the two ends of a single
+        // one-sided reading apart.
+        const anchor = outlineOf(a);
+
+        if (!targetEl || anchorEl === targetEl) return { ...EMPTY_HOVER, anchor };
+
         const t = this.boxOf(targetEl, host);
         const centre = { x: (t.left + t.right) / 2, y: (t.top + t.bottom) / 2 };
+        // `quadSpans` already drops a side with nothing to say, so an anchor
+        // and target that merely overlap correctly renders nothing at all —
+        // see its doc on `measure-quad.ts`. The DOM-bound half (boxOf) stops
+        // here; quadSpans/quadLines/quadSummary are all pure and tested
+        // directly in measure-quad.spec.ts.
+        const spans = quadSpans(a, t);
 
-        // The DOM-bound half (boxOf) stops here; quadSpans/quadLines are
-        // both pure and tested directly in measure-quad.spec.ts.
-        return quadLines(quadSpans(a, t), centre, zoom);
+        return {
+            lines: quadLines(spans, centre, zoom),
+            summary: quadSummary(spans, zoom),
+            anchor,
+            // Solid against the anchor's dashed outline, per Spec §4.5.
+            target: outlineOf(t)
+        };
     });
 
     /** The element under the pointer while alt-hovering, `null` otherwise. */

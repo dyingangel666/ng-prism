@@ -9,6 +9,27 @@ export interface Box {
     bottom: number;
 }
 
+/** A box in the form an SVG `<rect>` takes. */
+export interface OutlineRect {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+/**
+ * A {@link Box} as an SVG `<rect>`.
+ *
+ * Spec §4.5 asks for the anchor and the target to be outlined alongside the
+ * four numbers, and `<rect>` wants an origin and a size where `Box` carries
+ * two opposite corners. Trivial arithmetic, kept out of the component for
+ * the same reason the rest of this module is: the component should hold
+ * nothing but the DOM reads.
+ */
+export function outlineOf(box: Box): OutlineRect {
+    return { x: box.left, y: box.top, width: box.right - box.left, height: box.bottom - box.top };
+}
+
 export interface QuadResult {
     top: number;
     right: number;
@@ -121,4 +142,19 @@ export function quadLines(spans: QuadSpan[], centre: Vec, zoom: number): Rendere
         pinned: false,
         echoes: []
     }));
+}
+
+/**
+ * The same four values as one line of text, for the live region.
+ *
+ * The drawn readout drops the unit and relies on position to say which side
+ * each number belongs to — neither of which survives being read aloud, so
+ * this names the side and keeps the `px`. Without it the four-sided readout
+ * is announced to nobody: the live region only ever carried the drag
+ * measurement, and alt-hover never produces one.
+ */
+export function quadSummary(spans: QuadSpan[], zoom: number): string {
+    const z = safeZoom(zoom);
+
+    return spans.map(({ side, value }) => `${side} ${formatMeasure(value / z)} px`).join(', ');
 }
