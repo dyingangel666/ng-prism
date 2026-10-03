@@ -102,7 +102,13 @@ describe('watchGeometry', () => {
         readonly observed: Element[] = [];
         disconnected = false;
 
-        constructor(private readonly callback: ResizeObserverCallback) {
+        // The callback is accepted and dropped: the fake never fires, and
+        // every test that needs `onChange` called drives it through the
+        // `scroll` listener instead. Stored it was dead state, which
+        // `tsc --build` rejects outright (TS6138) and which failed
+        // `nx run ng-prism:typecheck` on this branch before the parameter
+        // was renamed out of the way.
+        constructor(_callback: ResizeObserverCallback) {
             FakeResizeObserver.instances.push(this);
         }
 

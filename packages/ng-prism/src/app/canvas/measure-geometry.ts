@@ -46,8 +46,13 @@ export interface RenderedLine {
  * `canvasService.zoom() || 1`. A division by zero here produces no visible
  * problem but an invisible one: `NaN` in an SVG attribute is silently
  * discarded, and the measurement simply vanishes.
+ *
+ * Exported rather than private because `measure-quad.ts` divides by zoom
+ * too. It used to carry its own `|| 1`, which let a negative zoom straight
+ * through and mirrored the measurement instead of dropping it — two guards
+ * that disagree are worse than one, so there is only one.
  */
-function safeZoom(zoom: number): number {
+export function safeZoom(zoom: number): number {
     return zoom > 0 && Number.isFinite(zoom) ? zoom : 1;
 }
 

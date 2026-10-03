@@ -1,5 +1,5 @@
 import type { EdgeSide } from '../../shared/measure.type.js';
-import { formatMeasure, labelPlacement, type RenderedLine, tickEndpoints, type Vec } from './measure-geometry.js';
+import { formatMeasure, labelPlacement, type RenderedLine, safeZoom, tickEndpoints, type Vec } from './measure-geometry.js';
 
 /** An axis-aligned box in `.demo-wrap`-local CSS pixels. */
 export interface Box {
@@ -102,19 +102,22 @@ export function quadSpans(anchor: Box, target: Box): QuadSpan[] {
  * divided by `zoom` because `quadSpans`' boxes come from
  * `getBoundingClientRect` and so arrive in screen pixels, unlike the drag
  * measurement's points, which are already `.demo-wrap`-local CSS pixels; the
- * `|| 1` guard matches `formatMeasure`'s caller elsewhere, so a zoom of 0
- * cannot turn the text into `NaN`. The text itself carries no unit: four
- * `px` values in a tight space would be noise, the same reasoning
- * `formatMeasure`'s own doc gives.
+ * division goes through `safeZoom`, the same guard `toLocal` and `toScreen`
+ * use, so that a zoom of 0 cannot turn the text into `NaN` and a negative
+ * one cannot flip the sign of every reading. The text itself carries no
+ * unit: four `px` values in a tight space would be noise, the same
+ * reasoning `formatMeasure`'s own doc gives.
  */
 export function quadLines(spans: QuadSpan[], centre: Vec, zoom: number): RenderedLine[] {
+    const z = safeZoom(zoom);
+
     return spans.map(({ a, b, value }) => ({
         a,
         b,
         tickA: tickEndpoints(a, b, 'a'),
         tickB: tickEndpoints(a, b, 'b'),
         label: labelPlacement(a, b, centre),
-        text: formatMeasure(value / (zoom || 1)),
+        text: formatMeasure(value / z),
         pinned: false,
         echoes: []
     }));

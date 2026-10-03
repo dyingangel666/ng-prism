@@ -124,6 +124,16 @@ describe('quadLines', () => {
         expect(line.echoes).toEqual([]);
     });
 
+    it('should treat a negative zoom as 1 rather than mirroring the reading', () => {
+        // The guard used to be a bare `|| 1`, which only catches 0 — a
+        // negative zoom passed straight through and turned every distance
+        // into its own negative. `safeZoom` in measure-geometry.ts rejects
+        // zero, negative and non-finite alike, and is now the only guard
+        // either module has.
+        expect(quadLines([span], centre, -2)[0].text).toBe('16');
+        expect(quadLines([span], centre, Number.NaN)[0].text).toBe('16');
+    });
+
     it('should derive ticks and the label from the shared geometry helpers', () => {
         // Hand-computed from tickEndpoints/labelPlacement's own documented
         // behaviour, the same way measure-geometry.spec.ts pins its cases,
