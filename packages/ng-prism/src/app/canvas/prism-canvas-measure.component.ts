@@ -77,6 +77,20 @@ export function watchGeometry(stage: Element, wrap: Element | null, onChange: ()
     };
 }
 
+/**
+ * Keyboard support here only operates a draft that already exists: nudge,
+ * commit, cancel. There is deliberately no keyboard path to *start* one —
+ * Spec §10 calls for Tab to step through the specimen's snap targets as the
+ * accessible substitute for a pointer-down, and that is not built. Tab is
+ * left strictly alone by `onKey` (see its doc, and `nudge`'s) precisely so
+ * it stays free for that mechanism once it exists, rather than being
+ * repurposed here as a stand-in. The `aria-label` below only promises what
+ * this component actually does today; it does not mention Tab, because
+ * nothing happens when a user presses it. What the real interaction should
+ * be is still undecided — a tool covering the whole canvas cannot simply
+ * grab Tab for its own stepping without first deciding how a keyboard user
+ * gets back out, and that is a product decision, not one this task makes.
+ */
 @Component({
     selector: 'prism-canvas-measure',
     standalone: true,
@@ -86,7 +100,7 @@ export function watchGeometry(stage: Element, wrap: Element | null, onChange: ()
     host: {
         tabindex: '0',
         role: 'application',
-        'aria-label': 'Measure tool. Tab steps through element edges, arrow keys nudge, Enter sets a point, Escape clears.',
+        'aria-label': 'Measure tool. Arrow keys nudge the active point, Shift for a larger step, Enter commits, Escape clears.',
         '(keydown)': 'onKey($event)'
     }
 })

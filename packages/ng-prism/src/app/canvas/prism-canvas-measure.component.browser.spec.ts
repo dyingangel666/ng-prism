@@ -1,4 +1,13 @@
-import { echoFor, elementUnderPoint, watchGeometry } from './prism-canvas-measure.component.js';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { signal, ɵresolveComponentResources as resolveComponentResources } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import type { MeasurePoint } from '../../shared/measure.type.js';
+import { PrismCanvasService } from '../services/prism-canvas.service.js';
+import { PrismMeasureService } from '../services/prism-measure.service.js';
+import { PrismNavigationService } from '../services/prism-navigation.service.js';
+import { PrismRendererService } from '../services/prism-renderer.service.js';
+import { echoFor, elementUnderPoint, PrismCanvasMeasureComponent, watchGeometry } from './prism-canvas-measure.component.js';
 
 describe('elementUnderPoint', () => {
     let root: HTMLElement;
@@ -156,5 +165,112 @@ describe('watchGeometry', () => {
 
         expect(FakeResizeObserver.instances[0]?.disconnected).toBe(true);
         expect(onChange).not.toHaveBeenCalled();
+    });
+});
+
+const pt = (x: number, y: number): MeasurePoint => ({ x, y, snap: null });
+
+describe('PrismCanvasMeasureComponent — keyboard', () => {
+    let measure: PrismMeasureService;
+
+    /**
+     * Load `templateUrl`/`styleUrl` off disk before TestBed sees the class —
+     * the same JIT-resource bootstrap `prism-canvas-bg-pill.component.spec.ts`
+     * uses for the same reason: these specs are transpiled by SWC rather than
+     * compiled by `ngtsc`, so nothing resolves the component's external
+     * template/style ahead of time the way a real build would. This component
+     * has no child custom component of its own (unlike
+     * `prism-canvas-pin-row.component.ts`'s `PrismIconComponent`), so the
+     * single-`__dirname` resolver here is enough — no recursive search for a
+     * resource under a different directory, and no signal-input JIT
+     * limitation to double around.
+     */
+    beforeAll(async () => {
+        await resolveComponentResources((url) => readFile(join(__dirname, url), 'utf8'));
+    });
+
+    beforeEach(() => {
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [
+                { provide: PrismNavigationService, useValue: { activeComponent: signal(null) } },
+                { provide: PrismRendererService, useValue: { activeVariantIndex: signal(0), renderedElement: signal(null) } },
+                { provide: PrismCanvasService, useValue: { measure: signal(false), zoom: signal(1) } }
+            ]
+        });
+        measure = TestBed.inject(PrismMeasureService);
+        // Flushes the constructor's effects (see prism-measure.service.ts) so
+        // their first, unconditional run lands here rather than inside a test
+        // body, where it would otherwise race the fixture's own
+        // `detectChanges()` and clear a draft the test just began — the same
+        // reason `prism-canvas-pin-row.component.browser.spec.ts` ticks here.
+        TestBed.tick();
+    });
+
+    /** Dispatches a real `keydown` on the host and returns it for inspection. */
+    function keydown(host: Element, key: string, shiftKey = false): KeyboardEvent {
+        const event = new KeyboardEvent('keydown', { key, shiftKey, bubbles: true, cancelable: true });
+
+        host.dispatchEvent(event);
+        return event;
+    }
+
+    it('should move the active draft point by one pixel on an arrow key', () => {
+        measure.beginDraft(pt(10, 10));
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        keydown(fixture.nativeElement, 'ArrowRight');
+
+        expect(measure.draft()).toEqual({ a: pt(10, 10), b: pt(11, 10) });
+    });
+
+    it('should move by the coarse step with Shift held', () => {
+        measure.beginDraft(pt(10, 10));
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        keydown(fixture.nativeElement, 'ArrowRight', true);
+
+        expect(measure.draft()?.b).toEqual(pt(20, 10));
+    });
+
+    it('should commit the draft on Enter', () => {
+        measure.beginDraft(pt(0, 0));
+        measure.updateDraft(pt(0, 24));
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        keydown(fixture.nativeElement, 'Enter');
+
+        expect(measure.draft()).toBeNull();
+        expect(measure.pins()).toEqual([{ a: pt(0, 0), b: pt(0, 24) }]);
+    });
+
+    it('should cancel the draft on Escape, leaving existing pins untouched', () => {
+        measure.beginDraft(pt(0, 0));
+        measure.updateDraft(pt(0, 24));
+        measure.commitDraft();
+        measure.beginDraft(pt(5, 5));
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        keydown(fixture.nativeElement, 'Escape');
+
+        expect(measure.draft()).toBeNull();
+        expect(measure.pins()).toEqual([{ a: pt(0, 0), b: pt(0, 24) }]);
+    });
+
+    it('should not call preventDefault for a key it does not own, so Tab stays usable for native focus navigation', () => {
+        // The case that matters most: `nudge()` returns `null` instead of the
+        // unchanged point for exactly this reason — see its doc. A tool that
+        // swallowed Tab here would trap keyboard focus on the whole canvas.
+        measure.beginDraft(pt(10, 10));
+        const fixture = TestBed.createComponent(PrismCanvasMeasureComponent);
+
+        fixture.detectChanges();
+        const event = keydown(fixture.nativeElement, 'Tab');
+
+        expect(event.defaultPrevented).toBe(false);
     });
 });
