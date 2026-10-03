@@ -87,6 +87,15 @@
     stroke-dasharray: 4 3;
 }
 
+/* The same dashed shape the anchor takes, at half the weight, while it is
+   still only a prediction of what an Alt-click would take. Drawn at equal
+   weight the click would produce no visible change — the outline is already
+   there and merely stops following the pointer — which is the confirmation
+   the anchor outline exists to give. */
+.m-svg .m-outline--preview {
+    stroke-opacity: 0.35;
+}
+
 /* The number sits outside .demo-wrap and therefore does not scale with
    --zoom. It also never rotates for a diagonal measurement: a tilted number
    is slower to read, and readability is the whole point here.

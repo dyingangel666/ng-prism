@@ -111,9 +111,15 @@ export interface HoverReadout {
     anchor: OutlineRect | null;
     /** The hovered element's box, drawn solid (Spec §4.5). */
     target: OutlineRect | null;
+    /**
+     * True while `anchor` is only a prediction: Alt is held, nothing is
+     * anchored yet, and this is what a click would take. Drawn fainter, so the
+     * click visibly firms it up rather than changing nothing.
+     */
+    preview: boolean;
 }
 
-const EMPTY_HOVER: HoverReadout = { lines: [], summary: '', anchor: null, target: null };
+const EMPTY_HOVER: HoverReadout = { lines: [], summary: '', anchor: null, target: null, preview: false };
 
 /**
  * Keyboard support here only operates a draft that already exists: nudge,
@@ -248,7 +254,16 @@ export class PrismCanvasMeasureComponent {
         // stale.
         this.geometryTick();
 
-        if (!anchorEl) return EMPTY_HOVER;
+        // No anchor yet: outline whatever a click would take, so the choice is
+        // visible before it is made rather than after. Marked as a prediction
+        // so it draws fainter — at equal weight the click would change nothing
+        // on screen, the outline simply ceasing to follow the pointer, which is
+        // the same missing confirmation the anchor outline exists to provide.
+        if (!anchorEl) {
+            if (!targetEl) return EMPTY_HOVER;
+
+            return { ...EMPTY_HOVER, anchor: outlineOf(this.boxOf(targetEl, this.hostRect())), preview: true };
+        }
 
         const zoom = this.canvas.zoom();
         const host = this.hostRect();
@@ -278,7 +293,9 @@ export class PrismCanvasMeasureComponent {
             summary: quadSummary(spans, zoom),
             anchor,
             // Solid against the anchor's dashed outline, per Spec §4.5.
-            target: outlineOf(t)
+            target: outlineOf(t),
+            // The anchor is real by this point, not a prediction.
+            preview: false
         };
     });
 

@@ -34,6 +34,8 @@ The value sits at the midpoint of the line for anything long enough to hold it; 
 
 ## Comparing two elements
 
+Hold Alt without clicking and whatever sits under the pointer is outlined in the same dashed shape an anchor takes, at half the weight — a prediction of what a click would fix, so the choice is visible before it is made. Clicking firms the outline up and it stops following the pointer; those two changes together are what tell you the anchor registered. The preview only appears while nothing is anchored yet, since once an anchor exists the hovered element already carries its own solid outline and the spans between the two.
+
 Alt-click an element to fix it as the anchor. It is outlined with a dashed rectangle the moment it is fixed, before anything else is hovered — that outline is the confirmation the click registered, and it is also what tells the two ends of a single one-sided reading apart. From there, holding Alt and moving the pointer over other elements outlines whatever is underneath with a solid rectangle and draws every gap between the two — up to four lines, one per side.
 
 Two distinct readings come out of the same four numbers. When the hovered element sits entirely inside the anchor, the four lines read as insets — exactly the reading you want to make a container's padding visible on every side at once. When the two don't contain one another, only the sides that actually face open space draw a line at all; a side with nothing between the boxes draws nothing, and two elements that overlap on both axes report nothing on any side — there is no gap there to put a number on, which is the correct statement, not a tool that gave up.

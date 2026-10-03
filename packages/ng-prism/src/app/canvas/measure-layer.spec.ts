@@ -56,6 +56,35 @@ function layer(file: string, selector: string): number | null {
 
 const OVERLAY = ':host {';
 
+describe('measuring overlay anchor preview', () => {
+    /**
+     * The preview has to read as weaker than the anchor it predicts.
+     *
+     * Holding Alt before clicking outlines whatever the click would anchor, in
+     * the same dashed shape the anchor itself takes. Drawn at the same weight,
+     * the click would produce no visible change at all — the outline is
+     * already there and simply stops following the pointer — which is the very
+     * gap the anchor outline was added to close. A lighter stroke makes the
+     * click firm the outline up, so the confirmation survives.
+     *
+     * Only the relation is asserted, not the two numbers: the exact opacities
+     * are a visual call, but the preview being the fainter of the two is the
+     * behaviour, and a later tweak that inverted them would pass any test
+     * written against the values alone.
+     */
+    it('draws the preview fainter than the anchor it predicts', () => {
+        const opacity = (selector: string): number => {
+            const found = /stroke-opacity:\s*([\d.]+)/.exec(block(MEASURE_CSS, selector));
+
+            if (!found) throw new Error(`no stroke-opacity in ${selector}`);
+
+            return Number(found[1]);
+        };
+
+        expect(opacity('.m-outline--preview')).toBeLessThan(opacity('.m-outline {'));
+    });
+});
+
 describe('measuring overlay drawing surface', () => {
     /**
      * `.m-svg` has to state its own size, and `inset: 0` is not enough to give

@@ -7,6 +7,7 @@
     @if (hover().anchor; as r) {
         <rect
             class="m-outline m-outline--anchor"
+            [class.m-outline--preview]="hover().preview"
             [attr.x]="r.x"
             [attr.y]="r.y"
             [attr.width]="r.width"
