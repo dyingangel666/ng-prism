@@ -70,6 +70,30 @@ export function toScreen(local: Vec, origin: Vec, zoom: number): Vec {
     return { x: origin.x + local.x * z, y: origin.y + local.y * z };
 }
 
+/**
+ * Viewport coordinates -> the overlay host's own box.
+ *
+ * Every rect the measuring tool reads — `.demo-wrap`'s for the projection
+ * origin, the specimen's for the label reference point, an element's for the
+ * four-sided readout — comes out of `getBoundingClientRect()` and is
+ * therefore measured from the top-left corner of the *window*. Nothing the
+ * overlay draws lives in that space: the SVG is `inset: 0` on the host, so
+ * its user coordinates start at the host's top-left corner, and `.m-label`
+ * is placed with `left`/`top` against the same corner. The shell puts a
+ * header above the stage and a sidebar beside it, so handing a viewport
+ * coordinate straight to the template pushes every line, tick, echo and
+ * label down and to the right by the stage's screen offset — largely off
+ * the visible area, while the stored numbers stay perfectly correct.
+ *
+ * Pure, and taking the host rect rather than reading one, because jsdom has
+ * no layout engine: every rect it reports is zero, so a test routed through
+ * the DOM could not tell this subtraction from its absence. The same seam
+ * `watchGeometry` opens for `ResizeObserver` in the component.
+ */
+export function toHostSpace(point: Vec, hostRect: { left: number; top: number }): Vec {
+    return { x: point.x - hostRect.left, y: point.y - hostRect.top };
+}
+
 export function measureDistance(a: Vec, b: Vec): number {
     return Math.hypot(b.x - a.x, b.y - a.y);
 }

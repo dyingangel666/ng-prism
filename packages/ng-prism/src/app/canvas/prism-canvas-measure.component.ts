@@ -3,7 +3,7 @@ import { MEASURE_SNAP_TOLERANCE, type MeasurePoint } from '../../shared/measure.
 import { PrismCanvasService } from '../services/prism-canvas.service.js';
 import { PrismMeasureService } from '../services/prism-measure.service.js';
 import { PrismRendererService } from '../services/prism-renderer.service.js';
-import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toLocal, toScreen, type Vec } from './measure-geometry.js';
+import { formatMeasure, labelPlacement, measureDistance, type RenderedLine, tickEndpoints, toHostSpace, toLocal, toScreen, type Vec } from './measure-geometry.js';
 import { nudge } from './measure-keyboard.js';
 import { type Box, quadLines, quadSpans } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
@@ -115,20 +115,32 @@ export class PrismCanvasMeasureComponent {
      * Bumped whenever geometry `lines` depends on might have moved without
      * touching zoom, pins or the draft — see {@link watchGeometry} below.
      *
-     * `getBoundingClientRect()` inside `origin()` and `specimenCentre()` is
-     * not itself a reactive signal: without an explicit nudge like this one,
-     * nothing would tell `lines` to re-run after a scroll or a resize, and
-     * the drawn lines would stay put while the specimen moves out from under
-     * them.
+     * `getBoundingClientRect()` inside `origin()`, `hostRect()`,
+     * `specimenCentre()` and `boxOf()` is not itself a reactive signal:
+     * without an explicit nudge like this one, nothing would tell `lines` to
+     * re-run after a scroll or a resize, and the drawn lines would stay put
+     * while the specimen moves out from under them. It covers the host's own
+     * rect too, so reading that per evaluation costs no new trigger.
      */
     private readonly geometryTick = signal(0);
 
-    /** Origin and zoom the projection runs from. */
+    /** Origin and zoom the projection runs from, in viewport coordinates. */
     private origin(): Vec {
         const wrap = this.el.nativeElement.parentElement?.querySelector('.demo-wrap');
         const r = wrap?.getBoundingClientRect();
 
         return { x: r?.left ?? 0, y: r?.top ?? 0 };
+    }
+
+    /**
+     * The host's own rect — what every drawn coordinate is measured against.
+     *
+     * Read once per `lines()` / `hover()` evaluation and handed to
+     * {@link toHostSpace}, which carries the full explanation of why the
+     * subtraction exists at all.
+     */
+    private hostRect(): DOMRect {
+        return this.el.nativeElement.getBoundingClientRect();
     }
 
     protected readonly lines = computed<RenderedLine[]>(() => {
@@ -140,13 +152,19 @@ export class PrismCanvasMeasureComponent {
         // scroll or a resize re-run this computed.
         this.geometryTick();
 
+        const host = this.hostRect();
         const origin = this.origin();
-        const centre = this.specimenCentre();
+        const centre = this.specimenCentre(host);
         const all = [...this.measure.pins().map((m) => ({ m, pinned: true })), ...(this.measure.draft() ? [{ m: this.measure.draft()!, pinned: false }] : [])];
 
         return all.map(({ m, pinned }) => {
-            const a = toScreen(m.a, origin, zoom);
-            const b = toScreen(m.b, origin, zoom);
+            // toScreen answers in viewport coordinates, because that is the
+            // space `origin` lives in and the space `pointAt` reads the
+            // pointer in. toHostSpace is what turns that into the SVG's own
+            // user coordinates; everything downstream — ticks, label, echoes
+            // — is derived from the projected points and so follows.
+            const a = toHostSpace(toScreen(m.a, origin, zoom), host);
+            const b = toHostSpace(toScreen(m.b, origin, zoom), host);
 
             return {
                 a,
@@ -185,8 +203,9 @@ export class PrismCanvasMeasureComponent {
         // stale.
         this.geometryTick();
 
-        const a = this.boxOf(anchorEl);
-        const t = this.boxOf(targetEl);
+        const host = this.hostRect();
+        const a = this.boxOf(anchorEl, host);
+        const t = this.boxOf(targetEl, host);
         const centre = { x: (t.left + t.right) / 2, y: (t.top + t.bottom) / 2 };
 
         // The DOM-bound half (boxOf) stops here; quadSpans/quadLines are
@@ -197,17 +216,27 @@ export class PrismCanvasMeasureComponent {
     /** The element under the pointer while alt-hovering, `null` otherwise. */
     private readonly hoverTarget = signal<Element | null>(null);
 
-    /** An element's current screen rectangle, as a {@link Box}. */
-    private boxOf(element: Element): Box {
+    /**
+     * An element's current rectangle as a {@link Box}, already in host
+     * space.
+     *
+     * Projected here rather than at the four call sites downstream: a box
+     * that reached `quadSpans` in viewport coordinates would produce correct
+     * *distances* — a constant offset cancels in a subtraction — and draw
+     * them in the wrong place, which is the half that is actually visible.
+     */
+    private boxOf(element: Element, host: DOMRect): Box {
         const r = element.getBoundingClientRect();
+        const topLeft = toHostSpace({ x: r.left, y: r.top }, host);
+        const bottomRight = toHostSpace({ x: r.right, y: r.bottom }, host);
 
-        return { left: r.left, top: r.top, right: r.right, bottom: r.bottom };
+        return { left: topLeft.x, top: topLeft.y, right: bottomRight.x, bottom: bottomRight.y };
     }
 
-    private specimenCentre(): Vec {
+    private specimenCentre(host: DOMRect): Vec {
         const r = this.renderer.renderedElement()?.getBoundingClientRect();
 
-        return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : { x: 0, y: 0 };
+        return r ? toHostSpace({ x: r.left + r.width / 2, y: r.top + r.height / 2 }, host) : { x: 0, y: 0 };
     }
 
     /** A pointer point, snapped to the nearest edge, in local coordinates. */

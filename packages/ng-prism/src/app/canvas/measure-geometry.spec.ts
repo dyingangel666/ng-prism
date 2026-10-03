@@ -1,5 +1,5 @@
 import { MEASURE_LABEL_MIN_SPAN } from '../../shared/measure.type.js';
-import { formatMeasure, labelPlacement, measureDistance, tickEndpoints, toLocal, toScreen } from './measure-geometry.js';
+import { formatMeasure, labelPlacement, measureDistance, tickEndpoints, toHostSpace, toLocal, toScreen } from './measure-geometry.js';
 
 describe('formatMeasure', () => {
     it('should drop the decimal on a whole value', () => {
@@ -68,7 +68,49 @@ describe('toLocal / toScreen', () => {
         // Review Focus 5: under `canvasLayout: 'stretch'`, `.demo-wrap` is
         // `display: block; width: 100%` — the origin differs, the arithmetic
         // does not. Nothing in the model depends on inline-block.
-        expect(toLocal({ x: 12, y: 300 }, { x: 0, y: 0 }, 1)).toEqual({ x: 12, y: 300 });
+        //
+        // The origin has to be non-zero for this to test anything at all. At
+        // {0, 0} with zoom 1 the function is the identity, and the assertion
+        // held just as well for `(s + o) * z`, `s * z - o` or a bare `s` —
+        // it could not have failed for the reason the paragraph above gives.
+        // A stretch `.demo-wrap` spans the stage's content box, so its origin
+        // is the stage's padding (32px) plus whatever the shell puts to the
+        // left of and above the stage.
+        expect(toLocal({ x: 12, y: 300 }, { x: 240, y: 96 }, 1)).toEqual({ x: -228, y: 204 });
+    });
+});
+
+describe('toHostSpace', () => {
+    it('should subtract the host origin from a viewport point', () => {
+        // The one thing that stands between a correct measurement and one
+        // drawn off the visible canvas. Everything the overlay reads comes out
+        // of getBoundingClientRect() and is therefore measured from the corner
+        // of the window; everything it draws is measured from the corner of
+        // the host. A point the pointer touched at viewport (500, 300), with
+        // the overlay host starting at viewport (300, 120), belongs at (200,
+        // 180) in the SVG — not at (500, 300), which on a shell with a header
+        // and a sidebar lands outside the stage entirely.
+        expect(toHostSpace({ x: 500, y: 300 }, { left: 300, top: 120 })).toEqual({ x: 200, y: 180 });
+    });
+
+    it('should be the identity for a host at the window corner', () => {
+        expect(toHostSpace({ x: 40, y: 90 }, { left: 0, top: 0 })).toEqual({ x: 40, y: 90 });
+    });
+
+    it('should produce negative coordinates above and left of the host', () => {
+        // Not an error case: the stage scrolls, so a pinned measurement can
+        // legitimately sit off the top of the overlay, and an SVG draws
+        // negative coordinates perfectly happily.
+        expect(toHostSpace({ x: 10, y: 10 }, { left: 300, top: 120 })).toEqual({ x: -290, y: -110 });
+    });
+
+    it('should accept a DOMRect-shaped host without reading anything else off it', () => {
+        // The production caller hands it `host.getBoundingClientRect()`
+        // whole. Only `left` and `top` may ever be used: width and height
+        // belong to the host's own box, not to the point being projected.
+        const rect = { left: 64, top: 48, right: 1024, bottom: 768, width: 960, height: 720, x: 64, y: 48 };
+
+        expect(toHostSpace({ x: 100, y: 100 }, rect)).toEqual({ x: 36, y: 52 });
     });
 });
 
