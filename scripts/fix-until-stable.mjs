@@ -1,26 +1,22 @@
 #!/usr/bin/env node
 /**
- * `--fix` bis zum Fixpunkt, für ESLint wie für Stylelint.
+ * Runs `--fix` until nothing changes, for ESLint and Stylelint.
  *
- * Ein einzelner Durchlauf reicht bei keinem der beiden zuverlässig:
- * `import/order` braucht bei manchen Dateien zwei, und
- * `property-no-vendor-prefix` gegen `order/properties-order` hinterlässt einen
- * Durchlauf lang eine doppelte Deklaration (`-webkit-background-clip: text`
- * wird zu `background-clip: text`, das daneben schon steht; erst der zweite
- * Durchlauf räumt das Duplikat weg). lint-staged fährt genau einen Durchlauf,
- * also würde eine Datei als sauber committet, die es nicht ist — und die CI
- * meldet es später.
+ * One pass is not reliable for either: `import/order` needs two on some
+ * files, and `property-no-vendor-prefix` against `order/properties-order`
+ * leaves a duplicate declaration for one pass (`-webkit-background-clip: text`
+ * becomes `background-clip: text`, which is already next to it; the second
+ * pass removes the duplicate). lint-staged runs one pass, so a file would be
+ * committed as clean when it isn't, and CI reports it later.
  *
- * Aufgerufen wird hier die Node-API beider Werkzeuge, nicht deren CLI über
- * npx. Drei Gründe: `execFileSync('npx', …)` startet keine Shell und findet
- * unter Windows deshalb `npx.cmd` nicht; jeder Durchlauf zahlte sonst erneut
- * npx' Auflösung; und die API sagt von sich aus, ob sie etwas geschrieben hat
- * — bei ESLint über `result.output`, was auch Verzeichnisargumente wie `.`
- * abdeckt, die sich nicht als Datei einlesen lassen.
+ * Uses the Node API of both tools, not their CLI via npx, for three reasons:
+ * `execFileSync('npx', ...)` starts no shell and so does not find `npx.cmd`
+ * on Windows; every pass would pay for npx resolution again; and the API
+ * reports whether it wrote anything: for ESLint via `result.output`, which
+ * also covers directory arguments like `.` that can't be read as a file.
  *
- * Die Obergrenze ist eine Reißleine gegen zwei Regeln, die einander im Kreis
- * umschreiben. Wird sie erreicht, ist das ein Konfigurationsfehler und kein
- * Grund, den Wert zu erhöhen.
+ * The pass limit is a stop against two rules rewriting each other in a loop.
+ * Hitting it means a config bug; don't raise the value.
  */
 import { readFileSync } from 'node:fs';
 import { ESLint } from 'eslint';
@@ -31,28 +27,24 @@ const MAX_PASSES = 5;
 const [tool, ...targets] = process.argv.slice(2);
 
 if (tool !== 'eslint' && tool !== 'stylelint') {
-    console.error(`Unbekanntes Werkzeug: ${tool}. Erwartet: eslint, stylelint`);
+    console.error(`Unknown tool: ${tool}. Expected: eslint, stylelint`);
     process.exit(1);
 }
 
 if (targets.length === 0) process.exit(0);
 
 function giveUp() {
-    console.error(
-        `${tool} --fix hat nach ${MAX_PASSES} Durchläufen keinen stabilen Zustand erreicht.\n` +
-            'Zwei Regeln schreiben dieselbe Stelle gegeneinander um. Die Konfiguration ' +
-            'ist zu reparieren, nicht dieser Wert zu erhöhen.'
-    );
+    console.error(`${tool} --fix did not stabilize after ${MAX_PASSES} passes.\n` + 'Two rules keep rewriting the same spot. Fix the config; do not raise this limit.');
     process.exit(1);
 }
 
 /**
- * lint-staged übergibt die Pfade, die gerade gestaged sind — darunter können
- * Dateien sein, die ESLint ignoriert (test-workspace war das bis vor Kurzem,
- * generiertes Boilerplate ist es weiterhin). `warnIgnored: false` hält die
- * sonst bei jedem Commit anfallende "File ignored"-Warnung heraus, und
- * `errorOnUnmatchedPattern: false` verhindert, dass ein Stage-Set aus lauter
- * ignorierten Dateien den Commit mit einem Fehler blockiert, der keiner ist.
+ * lint-staged passes the currently staged paths. Some of them may be ignored
+ * by ESLint (test-workspace was until recently, generated boilerplate still
+ * is). `warnIgnored: false` suppresses the "File ignored" warning that would
+ * otherwise show on every commit, and `errorOnUnmatchedPattern: false` keeps a
+ * staged set made only of ignored files from blocking the commit with a bogus
+ * error.
  */
 async function fixWithEslint() {
     const engine = new ESLint({ fix: true, warnIgnored: false, errorOnUnmatchedPattern: false });
@@ -68,9 +60,8 @@ async function fixWithEslint() {
 
         if (text.trim()) console.error(text);
 
-        // Nur Errors blockieren. Warnungen sind in dieser Config bewusst
-        // Warnungen; ob sie einen Lauf scheitern lassen, entscheidet
-        // `--max-warnings 0` am lint-Target, nicht dieser Fix-Durchlauf.
+        // Only errors block. Whether warnings fail a run is decided by
+        // `--max-warnings 0` on the lint target, not by this fix pass.
         process.exit(results.some((r) => r.errorCount > 0) ? 1 : 0);
     }
 
@@ -78,16 +69,16 @@ async function fixWithEslint() {
 }
 
 /**
- * Stylelints API meldet nicht, ob sie geschrieben hat, also wird über die
- * tatsächlich verarbeiteten Quellen ein Digest gebildet und mit dem des
- * Vordurchlaufs verglichen. Das deckt auch Globs und Verzeichnisse ab, weil
- * die Dateiliste aus dem Ergebnis stammt und nicht aus den Argumenten.
+ * Stylelint's API does not report whether it wrote anything, so we digest the
+ * sources it actually processed and compare with the previous pass. That also
+ * covers globs and directories, since the file list comes from the result,
+ * not from the arguments.
  */
 function digest(sources) {
     try {
         return sources.map((f) => readFileSync(f, 'utf-8')).join('\0');
     } catch (err) {
-        console.error(`Konnte Datei nicht lesen: ${err.message}\n` + 'Pfad prüfen — existiert die Datei (noch) und ist sie lesbar?');
+        console.error(`Could not read file: ${err.message}\n` + 'Check the path: does the file (still) exist and is it readable?');
         process.exit(1);
     }
 }
@@ -99,19 +90,16 @@ async function fixWithStylelint() {
         let result;
 
         try {
-            // `formatter: 'string'` ist Absicht: die Node-API von Stylelint
-            // formatiert `report` sonst als JSON, und bei einem Fund staende
-            // hier eine Wand aus Rohdaten statt der Meldung, die die CLI
-            // ausgeben wuerde.
+            // Stylelint's Node API formats `report` as JSON by default, which
+            // would print raw data on a finding instead of the CLI message.
             result = await stylelint.lint({ files: targets, fix: true, allowEmptyInput: true, formatter: 'string' });
         } catch (err) {
-            // Ein Fehler hier heißt meist: Stylelint selbst kam mit einer
-            // Datei nicht zurecht (z.B. ein Syntaxfehler), den kein Autofix
-            // behebt — kein Bug in diesem Script.
+            // Usually Stylelint itself choked on a file (e.g. a syntax error)
+            // that no autofix can repair, not a bug in this script.
             console.error(
-                `stylelint --fix ist abgebrochen: ${err.message}\n` +
-                    'Vermutlich ein Fund, den kein Autofix beheben kann — von Hand reparieren ' +
-                    'und erneut versuchen; der Commit bleibt so lange blockiert.'
+                `stylelint --fix aborted: ${err.message}\n` +
+                    'Probably a finding no autofix can repair. Fix it by hand and retry; ' +
+                    'the commit stays blocked until then.'
             );
             process.exit(1);
         }

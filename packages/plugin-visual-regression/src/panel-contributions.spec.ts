@@ -70,7 +70,7 @@ describe('reviewBadge', () => {
 
     it('stays amber while nothing has actually regressed', () => {
         // Resized and new could not be compared. Neither is a regression, so
-        // neither earns the colour a regression gets.
+        // neither gets the regression colour.
         expect(reviewBadge(withVariants('new', 'size-mismatch'))?.variant).toBe('warn');
     });
 
@@ -123,7 +123,7 @@ describe('VRT_NAVIGATION_DECORATION', () => {
 
     it('returns the label the build step composed, verbatim, without recomposing it', () => {
         // Unlike a11y/coverage, this used to compose `Visual regression: ${value}
-        // max diff` here. It no longer does — the value passed in below would
+        // max diff` here. It no longer does: the value passed in below would
         // produce a different string than the label if `badge()` were still
         // building it itself.
         expect(
@@ -148,9 +148,9 @@ describe('VRT_NAVIGATION_DECORATION', () => {
     });
 
     it('returns a warn label naming its reason, not a percentage', () => {
-        // The degenerate case this closes: `value` is '—' when nothing was
+        // Edge case: `value` is '—' when nothing was
         // compared, so a label composed from it at read time would read
-        // "Visual regression: — max diff" — amber, naming nothing actionable.
+        // "Visual regression: — max diff", amber and naming nothing actionable.
         expect(
             VRT_NAVIGATION_DECORATION.badge(
                 component({

@@ -34,14 +34,14 @@ describe('PrismCanvasBgPillComponent', () => {
      * Load `templateUrl` and `styleUrl` off disk before TestBed sees the class.
      *
      * These specs are transpiled by SWC, so nothing runs the Angular compiler
-     * over them and the component is compiled JIT — which fetches external
+     * over them and the component is compiled JIT, which fetches external
      * resources through a network call this environment does not provide.
      *
      * `TestBed.compileComponents()` cannot do it: putting the component in
      * `imports` makes `configureTestingModule` read its definition to decide
      * whether it is standalone, and reading the definition is what throws while
      * the resources are still pending. The resolution has to happen before
-     * TestBed touches the class at all, which is what this hook is for — it is
+     * TestBed touches the class at all, which is what this hook is for. It is
      * the same function `compileComponents()` calls internally, and the one the
      * runtime error names. Angular exports it ɵ-prefixed; there is no
      * unprefixed equivalent.

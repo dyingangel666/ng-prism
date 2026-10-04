@@ -18,7 +18,7 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
     },
     beta: {
         label: 'Beta',
-        tooltip: 'Beta — API may change'
+        tooltip: 'Beta: API may change'
     },
     wip: {
         label: 'Work in progress',
@@ -26,7 +26,7 @@ const STATUS_BADGES: Record<ComponentStatus, StatusBadge> = {
     },
     deprecated: {
         label: 'Deprecated',
-        tooltip: 'Deprecated / Legacy — do not use in new code'
+        tooltip: 'Deprecated / Legacy. Do not use in new code'
     }
 };
 
@@ -73,19 +73,12 @@ export class PrismComponentHeadComponent {
     });
 
     /*
-     * There is deliberately no bundle metric here.
+     * No bundle metric here. Reading `meta.perf.bundle.gzipKb`/`.sizeKb` finds
+     * nothing: `@ng-prism/plugin-perf` stores `sourceSize` and `gzipEstimate`
+     * (see `perf.types.ts`), so the tile would read `Bundle —` everywhere.
      *
-     * The computed that used to produce one read `meta.perf.bundle.gzipKb` and
-     * `.sizeKb`. `@ng-prism/plugin-perf` writes neither: `bundle-scanner.ts`
-     * stores `sourceSize` and `gzipEstimate`, and `perf.types.ts` declares only
-     * those two. So the value was always null, and the old head simply hid the
-     * tile — a gauge row reading `Bundle —` on every component is noise, not
-     * information.
-     *
-     * Do not re-add the read against the real key names without first settling
-     * whether `gzipEstimate` is bytes or kilobytes. The old code appended ' kb'
-     * to whatever it found, and that question belongs to the perf plugin, not
-     * to the head.
+     * Before wiring it to the real keys, settle with the perf plugin whether
+     * `gzipEstimate` is bytes or kilobytes.
      */
 
     protected readonly a11yScore = computed<number | null>(() => {
@@ -96,8 +89,8 @@ export class PrismComponentHeadComponent {
      * The visual regression headline, as the plugin already derived it.
      *
      * Read whole rather than recomputed: the colour follows the plugin's status
-     * semantics — red for any changed variant, amber for ones that could not be
-     * compared — and duplicating that rule here would mean the stat and the
+     * semantics (red for any changed variant, amber for ones that could not be
+     * compared), and duplicating that rule here would mean the stat and the
      * plugin's own panel could disagree about the same component.
      */
     protected readonly vrtStat = computed<{

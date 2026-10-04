@@ -21,7 +21,7 @@ describe('summarizeMetrics', () => {
     });
 
     /**
-     * A metric with no data is not a metric in good standing — it is one the
+     * A metric with no data is not a metric in good standing. It is one the
      * gauge has nothing to say about. Counting it would make "5" mean something
      * different depending on which plugins happen to be installed.
      */

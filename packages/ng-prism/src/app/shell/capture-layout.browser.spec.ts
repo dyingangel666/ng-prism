@@ -8,7 +8,7 @@ import { type CaptureDom, describeAll, renderCanvasChain } from './__fixtures__/
  * The failure this covers is geometric: a component taller than the canvas
  * viewport keeps a bounding box that extends past the canvas, and a screenshot
  * tool captures screen *coordinates*, so it picks up whichever shell region
- * paints there — a real baseline of a 200x201 component came back with the
+ * paints there. A real baseline of a 200x201 component came back with the
  * panel's tab bar composited into its bottom 40px. The assertion that matches
  * that failure one-to-one is "`.demo-wrap`'s box lies inside the painted region
  * of `.prism-canvas-stage`", and jsdom cannot make it: it has no layout engine,
@@ -17,9 +17,9 @@ import { type CaptureDom, describeAll, renderCanvasChain } from './__fixtures__/
  * and CI installs no browsers.
  *
  * So these assert the structural precondition instead: in capture mode nothing
- * beside the canvas's own ancestor chain occupies layout, which is exactly what
+ * beside the canvas's own ancestor chain occupies layout, which is what
  * gives the canvas the space the geometric assertion needs. That is weaker in
- * kind but not in coverage of the regression — it fails today, for the same
+ * kind but not in coverage of the regression: it fails today, for the same
  * reason the geometric one would.
  *
  * The geometry itself was verified once out of band, in Chromium against these
@@ -34,8 +34,8 @@ function setSearch(search: string): void {
 /**
  * The declared shell with capture mode's real stylesheet applied to it.
  *
- * Instantiating the service rather than pasting its rules in: the whole point
- * of the file is that the shipped stylesheet reaches the shipped DOM.
+ * Instantiates the service instead of copying its rules, because this file
+ * checks that the shipped stylesheet reaches the shipped DOM.
  */
 function renderInCaptureMode(): CaptureDom {
     const dom = renderCanvasChain('light');
@@ -83,7 +83,7 @@ describe('capture mode layout isolation', () => {
      * selectors, because enumeration is what makes this class of bug recur. The
      * panel was added to the shell long after capture mode's promise was written
      * down, and nothing failed when it started compositing itself into
-     * screenshots — the baselines were simply recorded with the contamination in
+     * screenshots. The baselines were simply recorded with the contamination in
      * them and compared clean against themselves ever after. A region added
      * tomorrow fails here on the day it is added.
      */
@@ -92,7 +92,7 @@ describe('capture mode layout isolation', () => {
 
         const siblings = siblingsOfCanvasChain(dom);
 
-        // Guards against passing vacuously — the composed template has the panel,
+        // Guards against passing vacuously. The composed template has the panel,
         // the resizer row, the variant ribbon, the component head, the view tab
         // bar, the canvas toolbar, the sidebar and the header in it.
         expect(siblings.length).toBeGreaterThanOrEqual(8);
@@ -118,7 +118,7 @@ describe('capture mode layout isolation', () => {
      * baseline.
      *
      * `display: none`, never `visibility: hidden`. Keeping the layout box is the
-     * tempting minimal-churn fix and it does not work — the box still occupies
+     * tempting minimal-churn fix and it does not work: the box still occupies
      * its space, so what paints at those coordinates becomes `.prism-main`'s own
      * background instead of the panel's tab bar, which is a screenshot that is
      * merely wrong in a different colour. The canvas is `flex: 1`; it has to
@@ -158,7 +158,7 @@ describe('capture mode layout isolation', () => {
         const { stage } = renderInCaptureMode();
 
         // Not cosmetic: the stage is `height: 100%` under `content-box`, so its
-        // padding lands outside that height — the stage overflows the row it sits
+        // padding lands outside that height, so the stage overflows the row it sits
         // in by 64px and centres the component 32px below the centre of what is
         // actually painted. Measured: a 200x700 component at 1280x720 still leaks
         // 22px past the canvas with every region gone but the padding kept.
@@ -170,7 +170,7 @@ describe('capture mode layout isolation', () => {
 
         // The edge is outline + box-shadow so that it stays out of layout and no
         // baseline moves when it changes. The flip side is that it still paints,
-        // and `outline-offset: -1px` puts the line *inside* the border box — with
+        // and `outline-offset: -1px` puts the line *inside* the border box. With
         // the padding above gone it sits flush against the component, so a
         // `.demo-wrap` that reaches the stage edge composites it into the PNG.
         // The transparency selector clears background colour and cannot reach it.

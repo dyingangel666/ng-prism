@@ -23,8 +23,8 @@ export const MAX_FIT_HEIGHT = 400;
 /**
  * Width declarations for the frame that holds a capture.
  *
- * The frame — not the image — carries the width, so the comparison slider and
- * the legend below it stay exactly as wide as the image they describe.
+ * The frame (not the image) carries the width, so the comparison slider and
+ * the legend below it stay as wide as the image they describe.
  *
  * `fit` fills the frame's share of the stage, bounded on both sides:
  * `min-width` holds the capture's natural size, because a diff read below 1:1
@@ -33,7 +33,7 @@ export const MAX_FIT_HEIGHT = 400;
  * The share itself comes from `--vrt-fit-basis`, which the stage sets to the
  * full width, or to half of it side by side.
  *
- * The numeric steps are deliberately unbounded: asking for 4× means 4×, even
+ * The numeric steps are unbounded: asking for 4× means 4×, even
  * when that overflows the stage and scrolls.
  */
 export function frameWidthStyle(width: number | undefined, height: number | undefined, zoom: Zoom): Record<string, string> {

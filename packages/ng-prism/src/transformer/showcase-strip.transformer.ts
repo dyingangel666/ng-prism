@@ -250,7 +250,7 @@ export function stripShowcaseDecorators(source: string, fileName = 'file.ts'): s
     if (leak) {
         throw new Error(
             `[ng-prism] Showcase reference '${leak.name}' left in output after stripping at ${fileName}:${leak.line}. ` +
-                `The Showcase import was removed but a reference remains — this would cause a ReferenceError at runtime. ` +
+                `The Showcase import was removed but a reference remains, which would cause a ReferenceError at runtime. ` +
                 `This is a transformer bug; please report the input source.`
         );
     }

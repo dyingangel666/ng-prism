@@ -2,7 +2,7 @@
 
 API documentation plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Extracts JSDoc comments from component source code at build time and renders an interactive API panel.
 
-> **Full documentation:** [ng-prism Docs — JSDoc Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/jsdoc)
+> **Full documentation:** [ng-prism Docs: JSDoc Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/jsdoc)
 
 ## Installation
 
@@ -49,11 +49,11 @@ JSDoc descriptions are rendered as Markdown:
 - Headings (`#`, `##`, `###`)
 - Lists (ordered/unordered) and inline code (`` `code` ``)
 - Bold (`**text**`), italic (`*text*`), and links (`[text](url)`)
-- Fenced code blocks with a language hint (` ```html `, ` ```scss ` …)
+- Fenced code blocks with a language hint (` ```html `, ` ```scss `, ...)
 
 Class descriptions are rendered as block Markdown; input/output/method descriptions are
 rendered inline (no wrapping `<p>`). Existing plain-text descriptions keep working
-unchanged — plain text is valid Markdown.
+unchanged, since plain text is valid Markdown.
 
 ````typescript
 /**
@@ -61,8 +61,8 @@ unchanged — plain text is valid Markdown.
  *
  * ## Size
  *
- * - `small` (4px) — inline indicators
- * - `large` (9px, default) — section-level loading
+ * - `small` (4px): inline indicators
+ * - `large` (9px, default): section-level loading
  *
  * @example
  * ```html
@@ -72,9 +72,9 @@ unchanged — plain text is valid Markdown.
 ````
 
 `@example` blocks accept a fenced code block with a language hint. The language is
-passed through to `ngx-highlightjs` (`html`, `scss`, `typescript`, …). Examples without
+passed through to `ngx-highlightjs` (`html`, `scss`, `typescript`, ...). Examples without
 fences fall back to `typescript` for backwards compatibility. Make sure the languages
-you reference are registered with `highlight.js` in your app — `highlight.js`'s core
+you reference are registered with `highlight.js` in your app. `highlight.js`'s core
 language set is loaded by default, but additional languages must be registered
 explicitly by the consumer.
 

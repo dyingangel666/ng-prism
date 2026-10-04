@@ -8,7 +8,7 @@ import type { A11yScoreResult, A11yThresholds } from '../a11y/a11y.types.js';
  * Passed in rather than injected so this stays a pure function. The panel host
  * reads them from its own services and hands them over; that is the whole
  * reason the built-in chain could not simply be expressed as
- * {@link PanelDefinition.badge} callbacks — `a11y` reports a running audit, not
+ * {@link PanelDefinition.badge} callbacks: `a11y` reports a running audit, not
  * anything the component's meta holds.
  *
  * The thresholds travel with the audit result rather than being baked in here.

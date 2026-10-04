@@ -5,7 +5,7 @@ import type { MetricVariant } from './head-metrics.js';
  * One line of the gauge's readout: caption left, value right.
  *
  * Was a right-aligned tile in the old head. The pill it used to carry is gone
- * rather than restyled — it duplicated the caption directly beneath it.
+ * rather than restyled, because it duplicated the caption directly beneath it.
  */
 @Component({
     selector: 'prism-stat',

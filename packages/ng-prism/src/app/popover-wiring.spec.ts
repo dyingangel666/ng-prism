@@ -4,8 +4,8 @@ import { join } from 'node:path';
 /**
  * Every template in the package that uses the native Popover API.
  *
- * jsdom 26 does not implement the API at all — `element.showPopover` is
- * undefined — so the behaviour cannot be exercised here. What can be checked
+ * jsdom 26 does not implement the API at all (`element.showPopover` is
+ * undefined), so the behaviour cannot be exercised here. What can be checked
  * is the contract that makes the platform mechanism work in the first place:
  * a `popovertarget` naming an id that exists and carries the `popover`
  * attribute. The realistic regression is a renamed id or a dropped attribute
@@ -13,7 +13,7 @@ import { join } from 'node:path';
  * does nothing in a browser.
  *
  * The canvas toolbar legitimately targets `prism-template`, declared in the
- * sibling `prism-template-popover.component.ts` — a cross-file reference, not
+ * sibling `prism-template-popover.component.ts`. That is a cross-file reference, not
  * a bug. So id resolution is checked against the union of every file listed
  * here, while the per-file assertion (and the id-uniqueness check) stays
  * scoped to where a rename or a duplicate would actually happen.
@@ -78,12 +78,12 @@ describe('popover wiring', () => {
     });
 
     /**
-     * The regression this guards actually shipped: three of the four popovers
+     * This regression shipped once: three of the four popovers
      * carried `display: flex` on their base rule.
      *
      * The UA stylesheet hides a closed popover with
      * `[popover]:not(:popover-open) { display: none }`. That is a user-agent
-     * rule, so any author `display` on the same element outranks it — the panel
+     * rule, so any author `display` on the same element outranks it. The panel
      * renders permanently, and neither Escape nor light-dismiss can put it away,
      * because closing only drops `:popover-open` and leaves the author rule
      * standing. It looks like a broken popover and reads like a broken script,
@@ -99,7 +99,7 @@ describe('popover wiring', () => {
             .map((m) => /\sclass="([^"]+)"/.exec(m[0])?.[1]?.split(/\s+/)[0])
             .filter((c): c is string => Boolean(c));
 
-    /** The declaration block of `.<cls> { … }`, or null when there is none. */
+    /** The declaration block of `.<cls> { ... }`, or null when there is none. */
     const baseBlock = (src: string, cls: string): string | null => {
         const start = src.indexOf(`.${cls} {`);
 
@@ -124,7 +124,7 @@ describe('popover wiring', () => {
             // layout other than the element's default states it on
             // `.<cls>:popover-open`, which only matches while the popover is open
             // and therefore cannot pin it there. A popover that is happy with the
-            // default — a plain block for a div — needs no display rule at all.
+            // default (a plain block for a div) needs no display rule at all.
             expect(block).not.toMatch(/\bdisplay\s*:/);
         }
     });

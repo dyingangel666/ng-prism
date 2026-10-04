@@ -36,8 +36,8 @@ function writeA11yReport(root: string, score: number): void {
     writeFileSync(
         join(root, 'a11y-report.json'),
         JSON.stringify({
-            // total erfüllt jeden Threshold — sonst wirft checkA11yThresholds,
-            // bevor der Merge überhaupt läuft.
+            // total meets every threshold, otherwise checkA11yThresholds throws
+            // before the merge runs.
             total: {
                 score: 95,
                 violations: 0,
@@ -190,8 +190,8 @@ describe('runPrismPipeline integration', () => {
     it('does not overwrite plugin meta written by runPluginHooks when merging the a11y entry', async () => {
         // The a11y merge runs after runPluginHooks specifically so a plugin's
         // `showcaseConfig.meta` survives it. Swapping the order of the two
-        // blocks in `runPrismPipeline` — or having the a11y merge replace
-        // `meta` outright instead of spreading it — would silently drop
+        // blocks in `runPrismPipeline` (or having the a11y merge replace
+        // `meta` outright instead of spreading it) would silently drop
         // whatever a plugin wrote, and every other test in this file uses a
         // config with no a11y report or a plugin that leaves no trace in
         // `showcaseConfig.meta`, so none of them would catch it.
@@ -199,7 +199,7 @@ describe('runPrismPipeline integration', () => {
         writeA11yReport(tmp, 55);
         // `Object.assign` rather than object-spread: this file is transpiled and
         // then dynamically `import()`-ed from a temp path outside the workspace
-        // (see config-loader.ts), which Jest's own transform also reaches for —
+        // (see config-loader.ts), which Jest's own transform also reaches for,
         // and its helper injection for object spread can't resolve `@swc/helpers`
         // from that temp path. The pre-existing `test-meta-plugin` fixture beside
         // this one works around the same thing the same way.

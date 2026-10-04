@@ -49,16 +49,16 @@ Thumbs.db
 
 test-output
 
-# test-workspace: Angular CLI Workspace zum lokalen Testen. Die Quellen der
-# Test-Libs und der beiden Prism-Apps sind committet, Generiertes nicht.
+# test-workspace: Angular CLI workspace for local testing. Sources of the
+# test libs and both prism apps are committed, generated files are not.
 test-workspace/node_modules
 test-workspace/dist
 test-workspace/.angular
 test-workspace/.env
 test-workspace/package-lock.json
 test-workspace/ng-prism.config.ts
-# Von `npm run test:coverage` erzeugt, vom Coverage-Plugin gelesen.
-# Nicht committen: enthaelt absolute Pfade der erzeugenden Maschine.
+# Written by `npm run test:coverage`, read by the coverage plugin.
+# Not committed: contains absolute paths of the machine that produced it.
 test-workspace/coverage
 test-workspace/**/*.d.ts
 test-workspace/tsconfig.tsbuildinfo
@@ -67,5 +67,5 @@ test-workspace/tsconfig.tsbuildinfo
 .worktrees/
 ng-prism-cache/
 
-# Scratch-Workspace der Superpowers-Executor-Läufe (Ledger, Briefs, Reviews)
+# Local scratch directory of agent tooling
 .superpowers/

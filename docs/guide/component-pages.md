@@ -14,7 +14,7 @@ Component Pages are free-form Angular components registered as styleguide pages.
 
 ## Creating a Page Component
 
-A Component Page is a standard Angular standalone component. Place it in your showcase app (`projects/my-lib-prism/src/`), not in the library itself — Angular class references cannot be JSON-serialized and must not pass through the build pipeline.
+A Component Page is a standard Angular standalone component. Place it in your showcase app (`projects/my-lib-prism/src/`), not in the library itself. Angular class references cannot be JSON-serialized and must not pass through the build pipeline.
 
 ```typescript
 // projects/my-lib-prism/src/pages/button-patterns.page.ts
@@ -89,7 +89,7 @@ export class ButtonComponent { ... }
 componentPage({ title: 'Button Patterns', category: 'Atoms', order: 99 })
 ```
 
-## Linking a Page to a Component — `renderPage`
+## Linking a Page to a Component with `renderPage`
 
 Use `renderPage` on `@Showcase` to replace the default canvas with a Component Page. This is useful for complex components where the automatic rendering is not expressive enough.
 

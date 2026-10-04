@@ -109,13 +109,13 @@ interface OutputMeta {
 
 ## PanelDefinition
 
-See [NgPrismPlugin — PanelDefinition](api/ng-prism-plugin.md#paneldefinition).
+See [NgPrismPlugin: PanelDefinition](api/ng-prism-plugin.md#paneldefinition).
 
 ---
 
 ## ControlDefinition
 
-See [NgPrismPlugin — ControlDefinition](api/ng-prism-plugin.md#controldefinition).
+See [NgPrismPlugin: ControlDefinition](api/ng-prism-plugin.md#controldefinition).
 
 ---
 
@@ -144,7 +144,7 @@ interface CustomPage {
 
 ### ComponentPage
 
-A free-form Angular component rendered as a sidebar page. Registered via `providePrism` — not through the build pipeline.
+A free-form Angular component rendered as a sidebar page. Registered via `providePrism`, not through the build pipeline.
 
 ```typescript
 interface ComponentPage {
@@ -196,13 +196,13 @@ interface Variant<T = unknown> {
 }
 ```
 
-The optional type parameter `T` is the component class. When provided (via `@Showcase<MyComponent>({...})`), `inputs` becomes `Partial<InputsOf<MyComponent>>` and the editor checks both keys and values against the component's signal inputs. When omitted, `T` defaults to `unknown` and `inputs` falls back to `Record<string, unknown>` — fully backwards compatible.
+The optional type parameter `T` is the component class. When provided (via `@Showcase<MyComponent>({...})`), `inputs` becomes `Partial<InputsOf<MyComponent>>` and the editor checks both keys and values against the component's signal inputs. When omitted, `T` defaults to `unknown` and `inputs` falls back to `Record<string, unknown>`, which keeps it fully backwards compatible.
 
 | Field          | Description                                                                                                                                                                                                                       |
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`         | Tab label                                                                                                                                                                                                                         |
 | `inputs`       | Key-value map of input signal names to values. Typed via [`InputsOf<T>`](#inputsof) when a component generic is supplied to `@Showcase`.                                                                                          |
-| `content`      | Content projected into `<ng-content>` — string for single slot, record for named slots                                                                                                                                            |
+| `content`      | Content projected into `<ng-content>`: string for single slot, record for named slots                                                                                                                                             |
 | `description`  | Optional description rendered below the variant tab                                                                                                                                                                               |
 | `meta`         | Arbitrary plugin metadata (e.g. `{ figma: 'url' }`)                                                                                                                                                                               |
 | `bg`           | Recommended canvas background. Overrides `ShowcaseConfig.bg`. One of `dots`, `plain`, `light`, `dark`, `checker`, `transparent`. See [Per-Variant Background](guide/variants.md#per-variant-background).                          |
@@ -222,7 +222,7 @@ type InputsOf<T>;
 
 - Picks fields declared as `input()`, `input.required()`, `model()`, or `input(..., { transform })`.
 - Excludes `output()` and any other class members.
-- Unwraps each signal to its write-side type — for transform inputs (e.g. `input(false, { transform: booleanAttribute })`) this is the **source** type (`string | boolean | ''`), not the parsed value type. That mirrors what callers actually write in `inputs: {...}`.
+- Unwraps each signal to its write-side type. For transform inputs (e.g. `input(false, { transform: booleanAttribute })`) this is the source type (`string | boolean | ''`), not the parsed value type. That mirrors what callers actually write in `inputs: {...}`.
 - When `T` is `unknown` (the default), evaluates to `Record<string, unknown>`.
 
 **Example**
@@ -273,22 +273,22 @@ Canvas background mode used by `ShowcaseConfig.bg` and `Variant.bg`.
 type CanvasBg = 'dots' | 'plain' | 'light' | 'dark' | 'checker' | 'transparent';
 ```
 
-| Value         | Visual                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------ |
-| `dots`        | Dot grid over the themed surface — the canvas's own starting background                                      |
-| `plain`       | The themed surface, no pattern                                                                               |
-| `light`       | Flat light surface, for components designed for light themes                                                 |
-| `dark`        | Flat dark surface, for components designed for dark themes                                                   |
-| `checker`     | **Deprecated** (removed in 23.0.0) — checkerboard over the themed surface; captures as that surface's colour |
-| `transparent` | Checkerboard while browsing, real transparency in a capture — and the "nothing declared" answer              |
+| Value         | Visual                                                                                                      |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| `dots`        | Dot grid over the themed surface (the canvas's own starting background)                                     |
+| `plain`       | The themed surface, no pattern                                                                              |
+| `light`       | Flat light surface, for components designed for light themes                                                |
+| `dark`        | Flat dark surface, for components designed for dark themes                                                  |
+| `checker`     | **Deprecated** (removed in 23.0.0). Checkerboard over the themed surface; captures as that surface's colour |
+| `transparent` | Checkerboard while browsing, real transparency in a capture. Also the "nothing declared" answer             |
 
-Two different defaults are in play. The **canvas** starts on `dots` and remembers whatever the user picks from the toolbar. A **variant's** background resolves to `transparent` when neither the variant nor its component declares one — that is `DEFAULT_VARIANT_BG`, what [`DiscoveryVariant.bg`](guide/external-tooling.md#reading-the-background) reports and what capture mode paints. It was `checker` in the first two `22.2.0` betas; see [the note on the change](guide/visual-regression.md#breaking-the-default-background-changed).
+Two different defaults are in play. The canvas starts on `dots` and remembers whatever the user picks from the toolbar. A variant's background resolves to `transparent` when neither the variant nor its component declares one. That is `DEFAULT_VARIANT_BG`, which is what [`DiscoveryVariant.bg`](guide/external-tooling.md#reading-the-background) reports and what capture mode paints. It was `checker` in the first two `22.2.0` betas; see [the note on the change](guide/visual-regression.md#breaking-the-default-background-changed).
 
-`light` and `dark` are flat by design, and their colours (`--prism-void-light`, `--prism-void-dark`) are absolute rather than theme tokens — which is what makes them the values to declare for a variant under [visual regression](guide/visual-regression.md#the-background-is-part-of-the-baseline). `dots`, `plain` and `checker` follow `--prism-bg-surface` and therefore the active theme.
+`light` and `dark` are flat by design, and their colours (`--prism-void-light`, `--prism-void-dark`) are absolute instead of theme tokens, which makes them the values to declare for a variant under [visual regression](guide/visual-regression.md#the-background-is-part-of-the-baseline). `dots`, `plain` and `checker` follow `--prism-bg-surface` and therefore the active theme.
 
-`'checker'` is **deprecated since 22.2.0 and removed in 23.0.0**. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart — but it captures as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it.
+`'checker'` is deprecated since 22.2.0 and removed in 23.0.0. It draws the same checkerboard as `'transparent'` while browsing, so the canvas cannot tell them apart. It does, however, capture as `--prism-bg-surface`, a theme token, which makes a baseline recorded on it depend on the theme the runner's browser started in. Use `'transparent'` for the same look with a capture that keeps its alpha, or `'light'`/`'dark'` for an absolute colour. The build warns for every component and variant that still declares it.
 
-`transparent` is the odd one out: it has no colour at all. While browsing it renders as the checkerboard, which is already the UI's way of saying "no surface here" — a literally see-through canvas would just show the app shell through it. In capture mode it becomes real transparency, which is the point. See [Capturing transparency](guide/visual-regression.md#capturing-transparency).
+`transparent` has no colour at all. While browsing it renders as the checkerboard, which is already the UI's way of saying "no surface here"; a see-through canvas would just show the app shell through it. In capture mode it becomes real transparency. See [Capturing transparency](guide/visual-regression.md#capturing-transparency).
 
 ---
 
@@ -300,10 +300,10 @@ Wrapper sizing mode used by `ShowcaseConfig.canvasLayout` and `Variant.canvasLay
 type CanvasLayout = 'fit' | 'stretch';
 ```
 
-| Value     | Wrapper styles                                      | When to use                                                                                                                                                    |
-| --------- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fit`     | `display: inline-block` — shrinks to component size | Default. The vast majority of components — buttons, badges, cards, alerts — render at their intrinsic size and are centered by the canvas stage flex.          |
-| `stretch` | `display: block; width: 100%; max-width: 800px`     | Components without intrinsic width (horizontal dividers via `border-bottom`) or that opt into filling their container (full-width buttons with `width: 100%`). |
+| Value     | Wrapper styles                                     | When to use                                                                                                                                                    |
+| --------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fit`     | `display: inline-block`, shrinks to component size | Default. The vast majority of components (buttons, badges, cards, alerts) render at their intrinsic size and are centered by the canvas stage flex.            |
+| `stretch` | `display: block; width: 100%; max-width: 800px`    | Components without intrinsic width (horizontal dividers via `border-bottom`) or that opt into filling their container (full-width buttons with `width: 100%`). |
 
 The variant-level value always wins over the component-level value; the default is `'fit'`.
 
@@ -317,12 +317,12 @@ Optional migration / maturity badge used by `ShowcaseConfig.status`.
 type ComponentStatus = 'stable' | 'beta' | 'wip' | 'deprecated';
 ```
 
-| Value        | Meaning                                   |
-| ------------ | ----------------------------------------- |
-| `stable`     | Migrated and production-ready             |
-| `beta`       | Functional, but API may still change      |
-| `wip`        | Work in progress, migration ongoing       |
-| `deprecated` | Legacy component — do not use in new code |
+| Value        | Meaning                                  |
+| ------------ | ---------------------------------------- |
+| `stable`     | Migrated and production-ready            |
+| `beta`       | Functional, but API may still change     |
+| `wip`        | Work in progress, migration ongoing      |
+| `deprecated` | Legacy component. Do not use in new code |
 
 When `status` is omitted, no indicator renders. See [`ShowcaseConfig.status`](api/showcase-config.md#status) for the full UI behavior in sidebar and header.
 
@@ -330,7 +330,7 @@ When `status` is omitted, no indicator renders. See [`ShowcaseConfig.status`](ap
 
 ## PrismManifest
 
-The build-time manifest written to disk by the builder. Contains JSON-serializable data only — no class references.
+The build-time manifest written to disk by the builder. Contains JSON-serializable data only, no class references.
 
 ```typescript
 interface PrismManifest {

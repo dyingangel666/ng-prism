@@ -2,7 +2,7 @@ import type { NavigationDecorationDefinition } from '../../plugin/plugin.types.j
 import type { A11yComponentMeta } from './a11y/a11y.types.js';
 
 /**
- * Core-owned navigation markers — the counterpart to `BUILTIN_PANELS` and
+ * Core-owned navigation markers, the counterpart to `BUILTIN_PANELS` and
  * `BUILTIN_HEADER_WIDGETS`. A11y is a core feature, not a plugin, so its
  * marker lives here rather than in a plugin's contribution list.
  */

@@ -60,7 +60,7 @@ export class PrismRendererComponent {
      * Every viewport binding reads this rather than the service directly, so
      * capture mode cannot be constrained by any route. Previously only the grips
      * and the dimension line sat behind the capture guard while the attributes
-     * that change `.demo-wrap`'s box did not — safe in practice, because capture
+     * that change `.demo-wrap`'s box did not. Safe in practice, because capture
      * never restores a persisted width and every setter is suppressed, but safe
      * by reachability argument rather than by construction. A future caller of
      * `setViewportWidth` during a capture run would have recorded every
@@ -75,7 +75,7 @@ export class PrismRendererComponent {
     /**
      * A drag on either grip, rested on a preset if it came close enough.
      *
-     * The snapping lives here and not in `PrismResizerDirective` on purpose: the
+     * The snapping lives here and not in `PrismResizerDirective` because the
      * directive also drives the sidebar and the panel, where there is nothing to
      * snap to, and a generic control that knows about viewport presets would be
      * the wrong shape.
@@ -116,7 +116,7 @@ export class PrismRendererComponent {
         if (!comp) return null;
         return `${comp.meta.className}:${this.rendererService.activeVariantIndex()}`;
     });
-    /** Resolved canvas layout for the active variant — variant overrides component config; defaults to 'fit'. */
+    /** Resolved canvas layout for the active variant. Variant overrides component config; defaults to 'fit'. */
     protected readonly canvasLayout = computed(() => {
         const comp = this.navigationService.activeComponent();
 
@@ -170,7 +170,7 @@ export class PrismRendererComponent {
 
             for (const [key, value] of Object.entries(inputs)) {
                 if (!knownInputs.has(key)) {
-                    console.warn(`[ng-prism] Unknown input "${key}" on <${comp.meta.componentMeta.selector}> — skipping. Remove it from @Showcase variants.`);
+                    console.warn(`[ng-prism] Unknown input "${key}" on <${comp.meta.componentMeta.selector}>, skipping. Remove it from @Showcase variants.`);
                     continue;
                 }
                 ref.setInput(key, value);
@@ -273,7 +273,7 @@ export class PrismRendererComponent {
 
         for (const [key, value] of Object.entries(this.rendererService.inputValues())) {
             if (!knownInputs.has(key)) {
-                console.warn(`[ng-prism] Unknown input "${key}" on <${selector}> — skipping. Remove it from @Showcase variants.`);
+                console.warn(`[ng-prism] Unknown input "${key}" on <${selector}>, skipping. Remove it from @Showcase variants.`);
                 continue;
             }
             this.componentRef.setInput(key, value);

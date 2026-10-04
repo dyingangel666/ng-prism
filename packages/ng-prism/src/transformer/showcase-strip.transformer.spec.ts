@@ -19,7 +19,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('__decorate form — Showcase only', () => {
+    describe('__decorate form: Showcase only', () => {
         it('should remove entire __decorate statement when only Showcase remains', () => {
             const input = [
                 "import { Showcase } from '@ng-prism/core';",
@@ -36,7 +36,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('__decorate form — mixed decorators', () => {
+    describe('__decorate form: mixed decorators', () => {
         it('should remove only Showcase from __decorate array', () => {
             const input = [
                 "import { Showcase } from '@ng-prism/core';",
@@ -73,7 +73,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('import cleanup — sole import', () => {
+    describe('import cleanup: sole import', () => {
         it('should remove entire import statement when Showcase is the only specifier', () => {
             const input = ["import { Showcase } from '@ng-prism/core';", "Showcase({ title: 'Test' })(MyComponent);", 'class MyComponent {}'].join('\n');
 
@@ -84,7 +84,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('import cleanup — partial', () => {
+    describe('import cleanup: partial', () => {
         it('should remove only Showcase specifier when other imports remain', () => {
             const input = [
                 "import { Showcase, defineConfig } from '@ng-prism/core';",
@@ -114,7 +114,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('no-op — file without Showcase', () => {
+    describe('no-op: file without Showcase', () => {
         it('should return source unchanged when no Showcase import exists', () => {
             const input = ["import { Component } from '@angular/core';", "@Component({ selector: 'my-comp' })", 'class MyComponent {}'].join('\n');
 
@@ -146,7 +146,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('audit — fail-loud on dangling references', () => {
+    describe('audit: fail-loud on dangling references', () => {
         it('throws when a bare reference to Showcase remains after stripping', () => {
             const input = ["import { Showcase } from '@ng-prism/core';", 'class MyComponent {}', 'const meta = Showcase;'].join('\n');
 
@@ -187,7 +187,7 @@ describe('stripShowcaseDecorators', () => {
         });
     });
 
-    describe('__decorate form — chained self-alias assignment', () => {
+    describe('__decorate form: chained self-alias assignment', () => {
         it('should remove entire statement when only Showcase remains in chained assignment', () => {
             const input = [
                 "import { Showcase } from '@ng-prism/core';",

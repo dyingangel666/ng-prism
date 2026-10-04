@@ -8,7 +8,7 @@ import { PRISM_BASE_TOKENS, PRISM_DARK_THEME, PRISM_LIGHT_THEME } from './prism-
  * error at a glance.
  *
  * Both failed in the light theme and nobody noticed until it was on screen.
- * `--prism-warn` sat at 3.19:1 on white — under WCAG AA — and warning and error
+ * `--prism-warn` sat at 3.19:1 on white (under WCAG AA), and warning and error
  * were only ΔL* 12 apart where the working dark pair is 18. At the sizes these
  * appear in (an 11px gauge chip, a 10px badge, a 5px dot) lightness carries far
  * more of the distinction than hue, so a pair that differs mostly in hue reads
@@ -92,7 +92,7 @@ const CONFUSABLE = [
  * Applying the floor to all three legs was tried and is not reachable: a
  * three-step scale separated in lightness needs roughly L* 30/45/60, and L* 60
  * cannot hold 4.5:1 against white. Where lightness cannot separate them, the
- * glyph does — each mark carries its own icon, the status chip its own word,
+ * glyph does: each mark carries its own icon, the status chip its own word,
  * and every readout row its own label.
  */
 const WARM_PAIRS = [
@@ -117,7 +117,7 @@ describe('semantic colours', () => {
         '%s stays distinguishable',
         (_label, theme, a, b) => {
             // Matched to the dark pair that works in practice: ΔE 55. The floor sits
-            // just under it so a deliberate tweak has room, and a drift back to "two
+            // just under it so an intended tweak has room, and a drift back to "two
             // dark warm colours" does not.
             expect(deltaE(theme[a], theme[b])).toBeGreaterThanOrEqual(45);
         }
@@ -138,25 +138,25 @@ describe('semantic colours', () => {
      * a theme surface. Two of the six canvas backgrounds are absolute: `light`
      * stays near-white while the app runs the dark theme, and `dark` stays
      * near-black while it runs the light one. So the theme's own value is only
-     * ever half the story, and the half that was wrong — measured on the value
+     * ever half the story, and the half that was wrong. Measured on the value
      * this replaced, the dark theme's cyan reached 1.81:1 on the light
      * background, which is an overlay you cannot see.
      *
      * canvas-bg.styles.ts answers that by re-pointing the token on those two
      * backgrounds. The literals there cannot import from this file, so this is
      * what stops the two copies drifting apart: each pair is checked against the
-     * ground it is meant for, at the alpha the faintest load-bearing layer
+     * ground it is meant for, at the alpha the faintest layer that matters
      * actually uses.
      */
     describe('--prism-measure', () => {
         /**
          * The grounds, read from the theme rather than copied.
          *
-         * The same argument as `overrideFor` below: a literal here would make this
-         * file agree with itself and with nothing else, and a change to
+         * The same argument as `overrideFor` below: a literal here would only make this
+         * file agree with itself, and a change to
          * `--prism-stage` would leave the suite green while measuring a surface
-         * that no longer exists. The two absolute grounds are theme tokens too —
-         * they are the values `canvas-bg.styles.ts` falls back to.
+         * that no longer exists. The two absolute grounds are theme tokens too,
+         * since they are the values `canvas-bg.styles.ts` falls back to.
          */
         const ABSOLUTE_LIGHT = PRISM_BASE_TOKENS['--prism-void-light'];
         const ABSOLUTE_DARK = PRISM_BASE_TOKENS['--prism-void-dark'];
@@ -165,8 +165,8 @@ describe('semantic colours', () => {
          * The override each absolute background declares, read out of the
          * stylesheet rather than copied here.
          *
-         * Copying the literal would make this file agree with itself and with
-         * nothing else: the pair could drift to any other colour that still passed
+         * Copying the literal would only make this file agree with itself:
+         * the pair could drift to any other colour that still passed
          * the contrast floors below and no test would notice. Reading the real
          * declaration is what turns these into a guard on canvas-bg.styles.ts.
          */
@@ -196,8 +196,8 @@ describe('semantic colours', () => {
         /**
          * Every ground the measurement colour is ever painted on.
          *
-         * Read from the theme, not copied. A literal here would make this file
-         * agree with itself and with nothing else — change `--prism-stage` and the
+         * Read from the theme, not copied. A literal here would only make this
+         * file agree with itself. Change `--prism-stage` and the
          * suite would stay green while measuring a surface that no longer exists.
          */
         const GROUNDS = [
@@ -212,7 +212,7 @@ describe('semantic colours', () => {
          *
          * Extracted from the stylesheet rather than listed here, because listing
          * them is how the first version of this test went wrong: it checked the
-         * solid colour and the end ticks — the two layers that passed — while the
+         * solid colour and the end ticks (the two layers that passed) while the
          * guide line, the dimension rule and the grip handle all sat under the 3:1
          * floor on both light grounds, and nothing failed. Whatever the renderer
          * paints is what gets measured now.
@@ -239,7 +239,7 @@ describe('semantic colours', () => {
         };
 
         it.each(GROUNDS)('%s reads the solid value at 9px', (_l, colour, ground) => {
-            // The readout is 9px monospace — AA's 4.5:1 for body text is the right
+            // The readout is 9px monospace, so AA's 4.5:1 for body text is the right
             // floor, not the 3:1 that large text or a bare UI edge would take.
             expect(contrast(colour, ground)).toBeGreaterThanOrEqual(4.5);
         });
@@ -268,7 +268,7 @@ describe('semantic colours', () => {
 
         it('declares the same colour on an absolute ground as the matching theme', () => {
             // The overrides exist to hold one theme's value steady when the other
-            // theme's ground is on screen — so they ARE the theme values, and the
+            // theme's ground is on screen, so they ARE the theme values, and the
             // point of the override is only which one applies where. Drift between
             // the two copies would show up as a viewport overlay that changes colour
             // when a component declares a background, which reads as a rendering

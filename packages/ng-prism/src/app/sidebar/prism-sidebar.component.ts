@@ -138,12 +138,12 @@ export class PrismSidebarComponent {
 
     /**
      * Accessible name for the roll-up pill, for the deviating case only. The
-     * pill otherwise renders a bare number distinguished only by colour — a
+     * pill otherwise renders a bare number distinguished only by colour. A
      * screen reader would read the group head as "Feedback 3 12" with nothing
      * naming what either number means, and a colour-blind reader can't tell
      * them apart at all.
      *
-     * There is deliberately no zero branch: a clean category renders its plain
+     * There is no zero branch: a clean category renders its plain
      * item count and the template leaves both attributes off, because
      * `aria-label` on a descendant feeds the group button's name-from-content
      * and "Buttons 0 components need review" is a claim about a group that has

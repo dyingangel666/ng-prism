@@ -169,7 +169,7 @@ export class PrismRendererService {
     private applyVariant(index: number, comp: RuntimeComponent): void {
         const { values, activeContent } = computeVariantState(comp, index, {
             onUnknownInput: (variantName, key) =>
-                console.warn(`[ng-prism] Variant "${variantName}" references unknown input "${key}" on ${comp.meta.className} — ignoring.`)
+                console.warn(`[ng-prism] Variant "${variantName}" references unknown input "${key}" on ${comp.meta.className}, ignoring.`)
         });
 
         this.inputValues.set(values);

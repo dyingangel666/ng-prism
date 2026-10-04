@@ -26,7 +26,7 @@ describe('showsOverview', () => {
         expect(showsOverview(makeComp())).toBe(false);
     });
 
-    it('is false for a single variant — one cell says nothing', () => {
+    it('is false for a single variant, since one cell says nothing', () => {
         const comp = makeComp({ variants: [{ name: 'Default' }] });
 
         expect(showsOverview(comp)).toBe(false);

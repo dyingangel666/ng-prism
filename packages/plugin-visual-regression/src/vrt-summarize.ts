@@ -3,9 +3,9 @@ import { isVrtStatus, type VrtStat, type VrtStatus, type VrtVariantResult } from
 /**
  * Colour role of a status, resolved to a theme token by the components.
  *
- * `new` is `neutral` rather than muted on purpose: the report contract says a
- * variant with no baseline is explicitly not a failure, and grey reads as
- * "ignored" next to a green "unchanged".
+ * `new` is `neutral`, not `muted`: the report contract says a variant with no
+ * baseline is not a failure, and grey reads as "ignored" next to a green
+ * "unchanged".
  */
 export type VrtTone = 'success' | 'danger' | 'warn' | 'neutral' | 'muted';
 
@@ -33,7 +33,7 @@ const STATUS_ORDER: readonly VrtStatus[] = ['changed', 'size-mismatch', 'unchang
 
 export interface VrtSummary {
     /**
-     * Variants with a recognised status — the same set the groups render, so
+     * Variants with a recognised status: the same set the groups render, so
      * the headline figure and the list cannot disagree about how many there are.
      */
     total: number;
@@ -47,7 +47,7 @@ export interface VrtSummary {
 export interface VrtSegment {
     key: VrtStatus;
     label: string;
-    /** Raw count — the bar weights its slices by this, so it needs no ratio. */
+    /** Raw count. The bar weights its slices by this, so it needs no ratio. */
     count: number;
     tone: VrtTone;
 }
@@ -71,14 +71,14 @@ export function summarize(variants: readonly VrtVariantResult[]): VrtSummary {
         // literal, so `in` also answers true for `Object.prototype` members and a
         // report writing `status: "toString"` would increment a key that is not
         // one, turning the count into `NaN`. The reader rejects such an entry
-        // before it reaches here; this keeps the function honest on its own.
+        // before it reaches here; this keeps the function correct on its own.
         if (!isVrtStatus(variant.status)) continue;
         total++;
         counts[variant.status]++;
 
         // A ratio exists only where a baseline and a capture were compared.
         // `new` has nothing to measure against and `size-mismatch` could not be
-        // measured, so neither contributes to the worst-diff figure — the status
+        // measured, so neither contributes to the worst-diff figure. The status
         // is what decides that, not the mere presence of a number. A runner that
         // records `diffRatio: 1` on a resized variant (a natural way to write
         // "completely different") would otherwise push the component head to
@@ -96,15 +96,11 @@ export function summarize(variants: readonly VrtVariantResult[]): VrtSummary {
 /**
  * The slices of the composition bar, worst news first.
  *
- * Only statuses that actually occurred. The tile strip this replaced had to
- * keep `changed` and `unchanged` present at zero so the panel would not change
- * shape with its content — a bar has no such problem, because a zero count is
- * a zero-width slice. Carrying it would add an invisible segment and a legend
- * entry claiming a colour nothing on screen has.
+ * Only statuses that occurred. A zero count would add an invisible segment and
+ * a legend entry for a colour nothing on screen shows.
  *
- * Counts rather than ratios: the bar divides itself with `flex-grow`, so it
- * needs the weights, not pre-divided shares, and an empty run yields an empty
- * bar instead of a division by zero.
+ * Counts, not ratios: the bar divides itself with `flex-grow`, so it needs
+ * weights, and an empty run gives an empty bar instead of a division by zero.
  */
 export function summarySegments(summary: VrtSummary): VrtSegment[] {
     return STATUS_ORDER.filter((status) => summary.counts[status] > 0).map((status) => ({
@@ -118,8 +114,8 @@ export function summarySegments(summary: VrtSummary): VrtSegment[] {
 /**
  * A ratio as the percentage a reviewer reads.
  *
- * Anything above zero keeps two decimals, because the difference between
- * "0.00%" and "a few pixels moved" is the whole point of the panel — a diff
+ * Anything above zero keeps two decimals, because the panel has to tell
+ * "0.00%" apart from "a few pixels moved". A diff
  * that rounds to zero is shown as `<0.01%`, never as `0%`.
  */
 export function formatPercent(ratio: number): string {
@@ -158,7 +154,7 @@ const GROUP_OF: Record<VrtStatus, VrtGroupKey> = {
  * Whether a status lands in the `review` group.
  *
  * Exported so the panel tab's badge can count the same set {@link groupRows}
- * puts in the first group without building all three groups to find out — the
+ * puts in the first group without building all three groups to find out. The
  * badge runs on every change-detection pass, the grouping does not.
  */
 export function isReviewStatus(status: VrtStatus): boolean {
@@ -176,23 +172,16 @@ const GROUP_ORDER: readonly VrtGroupKey[] = ['review', 'unchanged', 'excluded'];
 /**
  * The variant list split into what needs a decision and what does not.
  *
- * `new` sits in `review` beside `changed`, which is the one placement worth
- * explaining. A variant with no baseline is explicitly *not* a failure — the
- * report contract says so and the row keeps its own neutral tone — but it is
- * the one state that cannot resolve itself: somebody has to accept a baseline.
- * `excluded` is the mirror image and gets its own group rather than being
- * folded into `unchanged`: both are "not your problem", but "compared and
- * matched" and "never captured" are different claims and a reviewer counting
- * coverage needs to tell them apart.
+ * `new` sits in `review` beside `changed`. A variant with no baseline is not a
+ * failure (the row keeps its neutral tone), but someone has to accept a
+ * baseline for it. `excluded` gets its own group instead of joining
+ * `unchanged`, because "compared and matched" and "never captured" mean
+ * different things to a reviewer checking coverage.
  *
- * Empty groups are dropped instead of rendered at zero. The summary bar above
- * the list has the same rule, and for the same reason — a zero-count header is
- * a line of chrome asserting a colour nothing on screen has.
+ * Empty groups are dropped, as in the summary bar above the list.
  *
- * Generic over the row rather than taking `VrtVariantResult`: the panel groups
- * its own view models, which already carry the label and the formatted diff,
- * and threading those back through a variant-shaped API would mean building
- * them twice.
+ * Generic over the row type: the panel groups its own view models, which
+ * already carry the label and formatted diff, so they are not built twice.
  */
 export function groupRows<T extends { status: VrtStatus }>(rows: readonly T[]): VrtGroup<T>[] {
     return GROUP_ORDER.map((key) => ({
@@ -208,11 +197,9 @@ export function groupRows<T extends { status: VrtStatus }>(rows: readonly T[]): 
 /**
  * Which groups start open.
  *
- * Nothing, while something needs review — the point of the grouping is that
- * the fourteen unchanged variants stop competing with the one that changed.
- * When there is no review group the rule inverts and the first group opens,
- * because two collapsed headers and no rows reads as a panel that failed to
- * load rather than as a clean run.
+ * None while something needs review, so the unchanged variants do not compete
+ * with the changed ones. Without a review group the first group opens,
+ * because collapsed headers and no rows look like a panel that failed to load.
  */
 export function defaultExpandedGroups<T>(groups: readonly VrtGroup<T>[]): VrtGroupKey[] {
     if (groups.some((group) => group.key === 'review')) return [];
@@ -222,12 +209,10 @@ export function defaultExpandedGroups<T>(groups: readonly VrtGroup<T>[]): VrtGro
 /**
  * Names the reason a warn fires when nothing was actually compared.
  *
- * `value` is `'—'` in exactly this case — a resized capture or a variant with
- * no baseline yet has nothing to measure a diff against — so a label built
- * from `value` would read "Visual regression: — max diff": amber, naming
- * nothing actionable. This names the real cause instead, the same way the
- * a11y danger label lists which severities fired rather than repeating a
- * score that wouldn't explain itself.
+ * `value` is `'—'` in this case: a resized capture or a variant with no
+ * baseline has nothing to measure a diff against, so a label built from
+ * `value` would read "Visual regression: — max diff". This names the cause
+ * instead, like the a11y danger label lists the severities that fired.
  */
 function warnReason(counts: VrtSummary['counts']): string {
     const parts: string[] = [];
@@ -244,20 +229,17 @@ function warnReason(counts: VrtSummary['counts']): string {
 /**
  * The headline figure, colour and label for one component.
  *
- * The colour comes from the *statuses*, not from the percentage, and that is
- * deliberate: {@link DEFAULT_VRT_THRESHOLDS} already says a run is only green
- * at a perfect score, so a "small enough to stay amber" diff would contradict
- * the badge sitting in the same header. Magnitude is what the value carries.
- * Amber is reserved for the variants that could not be measured at all —
- * resized and new — which are neither a regression nor a clean pass.
+ * The colour comes from the *statuses*, not the percentage:
+ * {@link DEFAULT_VRT_THRESHOLDS} is only green at a perfect score, so an amber
+ * "small" diff would contradict the header badge. The value carries the
+ * magnitude. Amber is for variants that could not be measured (resized and
+ * new).
  *
- * The label is composed here, alongside the value, and never again at read
- * time — `badge()` in `panel-contributions.ts` returns it verbatim, the same
- * contract a11y and coverage already follow for their own `summary.label`.
+ * The label is composed here only: `badge()` in `panel-contributions.ts`
+ * returns it verbatim, as a11y and coverage do with their `summary.label`.
  *
  * Computed at build time and stored in the component's meta, so the component
- * head can read primitives instead of reimplementing this plugin's status
- * semantics in the core app.
+ * head reads primitives instead of reimplementing these status rules.
  */
 export function statSummary(summary: VrtSummary): VrtStat {
     const { counts, maxDiffRatio } = summary;

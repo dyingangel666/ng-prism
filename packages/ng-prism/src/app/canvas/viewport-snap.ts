@@ -6,7 +6,7 @@ import { VIEWPORT_SNAP_TOLERANCE, VIEWPORT_SNAPS } from '../../shared/viewport.t
  * The tolerance is what makes a drag land on 390 instead of 388: without it,
  * hitting a named width by hand is a game of pixels, and the presets in the
  * menu would be the only way to reach them exactly. Outside the tolerance the
- * width is returned untouched — searching for a breakpoint between the presets
+ * width is returned untouched. Searching for a breakpoint between the presets
  * is the other half of what this tool is for, and a grid that always snapped
  * would make that impossible.
  */

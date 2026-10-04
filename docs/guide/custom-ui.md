@@ -17,7 +17,7 @@ export default defineConfig({
 });
 ```
 
-All slots accept Angular standalone components. The slot component receives no inputs from ng-prism — use injected services for any data you need.
+All slots accept Angular standalone components. The slot component receives no inputs from ng-prism, so use injected services for any data you need.
 
 | Slot                   | Key                  | Description                          |
 | ---------------------- | -------------------- | ------------------------------------ |
@@ -72,7 +72,7 @@ export default defineConfig({
 });
 ```
 
-`--prism-header-height` is now an alias for `--band-header` (one of the [density-scaled band tokens](guide/theming.md#band-heights-and-density)) rather than its own fixed value — it still resolves, so the example above needs no change, but a stylesheet that wants to affect header height specifically should set `--band-header` (or the shared `--density`) instead of overriding the alias.
+`--prism-header-height` is now an alias for `--band-header` (one of the [density-scaled band tokens](guide/theming.md#band-heights-and-density)) rather than its own fixed value. It still resolves, so the example above needs no change, but a stylesheet that wants to affect header height specifically should set `--band-header` (or the shared `--density`) instead of overriding the alias.
 
 ## Example: Custom Sidebar
 
@@ -114,11 +114,11 @@ export class MySidebarComponent {
 
 > **Not yet implemented.** `headless` is declared on `NgPrismConfig` but has no effect today. Setting it does nothing. It is documented here because the option is already part of the published type surface; the section below describes the intended behaviour, not current behaviour.
 
-The intent is that `headless: true` strips all built-in chrome (header, sidebar, toolbar, panels) so only the component canvas is rendered — useful for embedding the renderer in a larger custom app. Until it lands, use `appComponent` (see **Full Shell Replacement** below) to supply your own shell.
+The intent is that `headless: true` strips all built-in chrome (header, sidebar, toolbar, panels) so only the component canvas is rendered. That is useful for embedding the renderer in a larger custom app. Until it lands, use `appComponent` (see **Full Shell Replacement** below) to supply your own shell.
 
 > Looking for a stripped-down canvas for **screenshot tooling**? That is a different feature and it does work today: see [capture isolation mode](guide/external-tooling.md#capture-isolation-mode).
 
-## Full Shell Replacement — `appComponent`
+## Full Shell Replacement with `appComponent`
 
 Replace the entire application shell with your own Angular component. When `appComponent` is set, ng-prism renders it instead of `PrismShellComponent` while still providing all services.
 

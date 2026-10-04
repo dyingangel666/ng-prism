@@ -16,14 +16,14 @@ function isComponentStatus(value: unknown): value is ComponentStatus {
  * Backgrounds that still work but should not be reached for any more.
  *
  * `checker` draws the same checkerboard as `transparent` while browsing, so
- * the canvas cannot tell them apart — but it captures as `--prism-bg-surface`,
+ * the canvas cannot tell them apart. It captures as `--prism-bg-surface`, though,
  * a *theme* token, which makes a baseline recorded on it depend on the theme
  * the runner's browser started in. Since `transparent` took over as the
  * default, it is the value that looks like transparency and is not.
  *
- * Warned rather than rejected: the value is valid, and dropping it would
- * change what a component renders on — a break wearing a warning's clothes.
- * Scheduled for removal in 23.0.0, the next Angular-aligned major.
+ * Only warned about: the value is valid, and rejecting it would change what a
+ * component renders on, which is a breaking change. Scheduled for removal in
+ * 23.0.0, the next Angular-aligned major.
  */
 const DEPRECATED_BGS: Partial<Record<CanvasBg, string>> = {
     checker: "use 'transparent' for the same look with a capture that keeps its alpha, or 'light'/'dark' for an absolute colour"
@@ -33,7 +33,7 @@ function warnDeprecatedBg(bg: CanvasBg, where: string): void {
     const advice = DEPRECATED_BGS[bg];
 
     if (!advice) return;
-    console.warn(`⚠ ng-prism: ${where} declares bg "${bg}", which is deprecated and will ` + `be removed in 23.0.0 — ${advice}.`);
+    console.warn(`⚠ ng-prism: ${where} declares bg "${bg}", which is deprecated and will ` + `be removed in 23.0.0; ${advice}.`);
 }
 
 function isCanvasBg(value: unknown): value is CanvasBg {
@@ -57,7 +57,7 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): S
 
         if (!classDecl) continue;
 
-        // Perf: cheap pre-filter — skip the full decorator walk for files that don't
+        // Perf: cheap pre-filter that skips the full decorator walk for files that don't
         // mention Showcase at all. False positives (string-literal containing "@Showcase")
         // just lose the optimization for that file; correctness is unaffected.
         if (!classDecl.getSourceFile().text.includes('@Showcase')) continue;
@@ -112,7 +112,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
     if (!raw || typeof raw !== 'object') return undefined;
 
     if (!('title' in raw)) {
-        console.warn(`⚠ ng-prism: ${className} has @Showcase without a "title" field — skipping. ` + `Add a title so it can appear in the styleguide.`);
+        console.warn(`⚠ ng-prism: ${className} has @Showcase without a "title" field, skipping. ` + `Add a title so it can appear in the styleguide.`);
         return undefined;
     }
 
@@ -137,7 +137,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             config.status = obj['status'];
         } else {
             console.warn(
-                `⚠ ng-prism: ${className} declares invalid status "${String(obj['status'])}" — ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
+                `⚠ ng-prism: ${className} declares invalid status "${String(obj['status'])}", ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
             );
         }
     }
@@ -147,7 +147,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             config.bg = obj['bg'];
             warnDeprecatedBg(obj['bg'], className);
         } else {
-            console.warn(`⚠ ng-prism: ${className} declares invalid bg "${String(obj['bg'])}" — ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
+            console.warn(`⚠ ng-prism: ${className} declares invalid bg "${String(obj['bg'])}", ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
         }
     }
 
@@ -156,7 +156,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             config.canvasLayout = obj['canvasLayout'];
         } else {
             console.warn(
-                `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}" — ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
+                `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}", ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
             );
         }
     }
@@ -171,7 +171,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             if (variant['bg'] !== undefined && !isCanvasBg(variant['bg'])) {
                 console.warn(
                     `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
-                        `invalid bg "${String(variant['bg'])}" — expected one of: ` +
+                        `invalid bg "${String(variant['bg'])}", expected one of: ` +
                         `${CANVAS_BGS.join(', ')}. Skipping.`
                 );
                 delete cleaned['bg'];
@@ -179,7 +179,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             if (variant['canvasLayout'] !== undefined && !isCanvasLayout(variant['canvasLayout'])) {
                 console.warn(
                     `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
-                        `invalid canvasLayout "${String(variant['canvasLayout'])}" — expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
+                        `invalid canvasLayout "${String(variant['canvasLayout'])}", expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
                 );
                 delete cleaned['canvasLayout'];
             }

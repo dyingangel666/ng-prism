@@ -162,7 +162,7 @@ describe('groupRows', () => {
 
         expect(groups.map((g) => g.key)).toEqual(['review', 'unchanged']);
         // `new` belongs here because a variant with no baseline still needs a
-        // human decision — accepting one — even though it is not a failure.
+        // human decision (accepting one), even though it is not a failure.
         expect(groups[0].rows.map((r) => r.name)).toEqual(['b', 'd', 'c']);
         expect(groups[0].count).toBe(3);
     });
@@ -244,7 +244,7 @@ describe('statSummary', () => {
 
     it('goes red on a change, however small', () => {
         // The plugin's own default threshold is a perfect score, so any regression
-        // is worth seeing — magnitude belongs in the value, not in the colour.
+        // is worth seeing. Magnitude belongs in the value, not in the colour.
         const stat = statSummary(summarize([variant('unchanged', 0), variant('changed', 0.0004)]));
 
         expect(stat.variant).toBe('danger');
@@ -262,7 +262,7 @@ describe('statSummary', () => {
     });
 
     it('names the real reason a warn fires instead of repeating the missing value', () => {
-        // `value` is '—' here — nothing was compared — so a label built from it
+        // `value` is '—' here because nothing was compared, so a label built from it
         // would read "Visual regression: — max diff": amber, naming nothing.
         const newOnly = statSummary(summarize([variant('new')]));
 

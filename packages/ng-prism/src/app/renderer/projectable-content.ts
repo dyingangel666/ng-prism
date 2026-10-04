@@ -23,14 +23,14 @@ export function parseContentToNodes(content: string | Record<string, string>): N
         if (selector === 'default') continue;
         const wrapper = document.createElement('div');
 
-        // SAFETY: trusted developer-authored HTML — see SECURITY.md.
+        // SAFETY: trusted developer-authored HTML, see SECURITY.md.
         wrapper.innerHTML = html;
         const nodes: Node[] = [];
 
         for (const child of Array.from(wrapper.childNodes)) {
             const el = document.createElement('div');
 
-            // SAFETY: trusted developer-authored HTML — see SECURITY.md.
+            // SAFETY: trusted developer-authored HTML (see SECURITY.md).
             el.innerHTML = (child as Element).outerHTML ?? child.textContent ?? '';
             const projected = el.firstChild;
 
@@ -51,7 +51,7 @@ export function parseContentToNodes(content: string | Record<string, string>): N
     return result;
 }
 
-// SAFETY: see `parseContentToNodes` above and SECURITY.md — `html` is trusted
+// SAFETY: see `parseContentToNodes` above and SECURITY.md. `html` is trusted
 // developer-authored variant content from the `@Showcase` decorator.
 function htmlToNodes(html: string): Node[] {
     const wrapper = document.createElement('div');

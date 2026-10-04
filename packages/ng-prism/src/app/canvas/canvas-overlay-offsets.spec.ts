@@ -13,11 +13,10 @@ import { join } from 'node:path';
  * cannot: capture mode's structural rule only suppresses a direct child of
  * `.prism-canvas-wrap` that does not contain the stage, so the rail has to live
  * outside it. It therefore mirrors the same two values off `canvas.rulers()`,
- * and mirrored values drift — this test is what stops them.
+ * and mirrored values drift. This test is what stops them.
  *
- * The failure it guards is not subtle to a user and invisible to a test suite:
- * with the rail at the no-rulers offset, switching rulers on slides the ruler
- * band underneath the buttons.
+ * If they drift, the rail stays at the no-rulers offset and switching rulers
+ * on slides the ruler band underneath the buttons.
  */
 const RENDERER = join(__dirname, '../renderer/prism-renderer.component.css');
 const TOOLBAR = join(__dirname, 'prism-canvas-toolbar.component.css');
@@ -67,7 +66,7 @@ describe('canvas overlay offsets', () => {
     });
 
     /**
-     * Two overlays that anchor to the same corner do not tile — they stack, and
+     * Two overlays that anchor to the same corner do not tile. They stack, and
      * the one drawn later wins. That is how the tool rail came to sit on top of
      * the background pill: both read the same two offsets, one from `right` and
      * one from `right`. The rail is permanent and the pill is a notice, so the

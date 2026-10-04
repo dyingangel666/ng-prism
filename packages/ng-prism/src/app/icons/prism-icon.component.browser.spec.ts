@@ -39,7 +39,9 @@ describe('resolveIcon', () => {
 
 describe('built-in panel icons', () => {
     it('every built-in panel names an icon the registry can draw', () => {
-        const blank = BUILTIN_PANELS.filter((panel) => panel.icon !== undefined && resolveIcon(panel.icon) === undefined).map((panel) => `${panel.id} → "${panel.icon}"`);
+        const blank = BUILTIN_PANELS.filter((panel) => panel.icon !== undefined && resolveIcon(panel.icon) === undefined).map(
+            (panel) => `${panel.id} -> "${panel.icon}"`
+        );
 
         expect(blank).toEqual([]);
     });

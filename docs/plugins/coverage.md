@@ -47,10 +47,10 @@ export default defineConfig({
 Highlights values in the per-file coverage table when they fall below the configured threshold. Defaults to `80` for every metric.
 
 ```typescript
-// Single value — applied to lines, branches, functions, statements
+// Single value, applied to lines, branches, functions, statements
 coveragePlugin({ thresholds: 90 });
 
-// Per-metric — keys you omit fall back to the default (80)
+// Per-metric: keys you omit fall back to the default (80)
 coveragePlugin({
     thresholds: { lines: 95, branches: 70 }
 });
@@ -100,7 +100,7 @@ The panel displays four coverage categories per component:
 | Functions  | Percentage of functions called                            |
 | Lines      | Percentage of lines executed                              |
 
-The **score** shown in the tab circle is the average of all four metrics, rounded to the nearest integer.
+The score shown in the tab circle is the average of all four metrics, rounded to the nearest integer.
 
 ## Score Levels
 
@@ -114,9 +114,9 @@ The **score** shown in the tab circle is the average of all four metrics, rounde
 
 The plugin matches coverage data to components using the file path from the scanner. It uses a multi-tier matching strategy:
 
-1. **Exact match** — full path comparison
-2. **Suffix match** — handles different workspace roots
-3. **Last 3 segments** — fallback for divergent path structures
+1. **Exact match:** full path comparison
+2. **Suffix match:** handles different workspace roots
+3. **Last 3 segments:** fallback for divergent path structures
 
 This ensures coverage data is found even when the test runner and the ng-prism scanner report different absolute paths (e.g. in monorepo setups).
 

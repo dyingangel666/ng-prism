@@ -5,7 +5,7 @@ import type { InputMeta } from '../../../plugin/plugin.types.js';
  * a JSON textarea (they wrap live framework objects, not data). When a
  * showcased component declares an input of one of these types, the controls
  * panel renders a "Not editable" placeholder instead of routing it through
- * the JsonControl — which would otherwise crash on `undefined`/non-serializable
+ * the JsonControl, which would otherwise crash on `undefined`/non-serializable
  * defaults and presents a misleading editor to the developer anyway.
  */
 const NON_EDITABLE_TYPE_NAMES = ['TemplateRef', 'ElementRef', 'ViewContainerRef'] as const;

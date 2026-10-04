@@ -39,7 +39,7 @@ describe('resolveAssetUrl', () => {
     });
 
     it('trims the base in linear time', () => {
-        // Guards the reason `replace(/\/+$/, '')` is not used here. That pattern
+        // Covers why `replace(/\/+$/, '')` is not used here. That pattern
         // backtracks over the whole slash run from every offset in it, so this
         // input took ~22s to resolve; the backward scan takes well under a
         // millisecond. The bound is four orders of magnitude above the linear

@@ -102,4 +102,4 @@ You will see:
 
 - Learn about all `@Showcase` options in the [@Showcase Decorator](guide/showcase-decorator.md) reference
 - Understand how input types map to controls in [Variants](guide/variants.md)
-- Add content projection with the `content` field — see [Content Projection](guide/content-projection.md)
+- Add content projection with the `content` field (see [Content Projection](guide/content-projection.md))

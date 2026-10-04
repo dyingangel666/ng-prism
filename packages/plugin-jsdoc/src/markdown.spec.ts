@@ -52,7 +52,7 @@ describe('renderBlockMarkdown', () => {
     });
 
     it('renders list items with inline code', () => {
-        const html = renderBlockMarkdown('- `small` (4px) — inline indicators');
+        const html = renderBlockMarkdown('- `small` (4px): inline indicators');
 
         expect(html).toMatch(/<ul>/);
         expect(html).toMatch(/<li><code>small<\/code>/);

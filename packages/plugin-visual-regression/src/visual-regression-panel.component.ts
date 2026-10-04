@@ -49,7 +49,7 @@ export class VisualRegressionPanelComponent {
      * Which groups the reader has opened.
      *
      * `null` means "nobody has touched this yet", which is what lets the default
-     * follow the data — shut while something needs review, the first group open
+     * follow the data: shut while something needs review, the first group open
      * when nothing does. A plain set initialised once would freeze the first
      * component's answer and apply it to every component after it.
      */
@@ -74,7 +74,7 @@ export class VisualRegressionPanelComponent {
         if (!rows.length) return null;
         const key = this.selectedKey();
 
-        // Default to the first variant that actually changed — that is what someone
+        // Default to the first variant that actually changed, since that is what someone
         // opening this panel came to look at.
         return rows.find((r) => r.key === key)?.variant ?? rows.find((r) => r.variant.status === 'changed')?.variant ?? rows[0].variant;
     });

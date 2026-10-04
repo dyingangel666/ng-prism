@@ -2,7 +2,7 @@
 
 Test coverage plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Reads Istanbul/v8 coverage reports at build time and displays per-component test coverage metrics with a score circle in the tab bar.
 
-> **Full documentation:** [ng-prism Docs — Coverage Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/coverage)
+> **Full documentation:** [ng-prism Docs: Coverage Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/coverage)
 
 ## Installation
 
@@ -43,16 +43,16 @@ export default defineConfig({
 
 ## Options
 
-| Option         | Default                            | Description                                                                                                                                                                                          |
-| -------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root)                                                                                                                              |
-| `thresholds`   | `80` for all metrics               | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. Number → applied to all metrics; partial object → keys you omit fall back to `80`. |
+| Option         | Default                            | Description                                                                                                                                                                                              |
+| -------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `coveragePath` | `'coverage/coverage-summary.json'` | Path to the Istanbul coverage summary file (relative to workspace root)                                                                                                                                  |
+| `thresholds`   | `80` for all metrics               | Minimum acceptable percentage per metric. Files below the threshold are highlighted in red in the per-file table. A number applies to all metrics; in a partial object, keys you omit fall back to `80`. |
 
 ```typescript
-// Single value — applied to lines, branches, functions, statements
+// Single value, applied to lines, branches, functions, statements
 coveragePlugin({ thresholds: 90 });
 
-// Per-metric — others fall back to 80
+// Per-metric; the others fall back to 80
 coveragePlugin({
     thresholds: { lines: 95, branches: 70 }
 });

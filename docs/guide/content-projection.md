@@ -71,7 +71,7 @@ content: `
 
 ## Limitations
 
-Content strings are static HTML. Angular template syntax (`*ngIf`, `[(ngModel)]`, event bindings) does not work inside `content` strings for regular components — they are not compiled as Angular templates.
+Content strings are static HTML. Angular template syntax (`*ngIf`, `[(ngModel)]`, event bindings) does not work inside `content` strings for regular components, because they are not compiled as Angular templates.
 
 For content that requires Angular components, bindings, or directives, use a [Component Page](guide/component-pages.md) instead and set `renderPage` on the `@Showcase` decorator.
 

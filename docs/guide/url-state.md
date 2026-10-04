@@ -1,22 +1,22 @@
 # State Preservation
 
-ng-prism keeps the UI state alive across full-page reloads — the workflow you care about during component-driven development. Two layers cooperate:
+ng-prism keeps the UI state alive across full-page reloads, which helps a lot during component-driven development. Two layers cooperate:
 
-- **URL** carries shareable state (component, variant, view, panel tab) — bookmarkable, deep-linkable.
-- **sessionStorage** carries per-session ephemeral state (control panel input overrides, a11y sub-tab, perspective) — quiet on the URL.
+- **URL** carries shareable state (component, variant, view, panel tab), so links are bookmarkable and deep-linkable.
+- **sessionStorage** carries per-session ephemeral state (control panel input overrides, a11y sub-tab, perspective) and keeps it off the URL.
 
 After editing a SCSS file in your library and waiting for the dev-server reload, you land back on the same component, same variant, with the same control overrides applied. No more clicking your way back to where you were.
 
 ## URL Parameters
 
-| Parameter   | Example                      | Description                                                                                                                                                      |
-| ----------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `component` | `?component=ButtonComponent` | Active component class name                                                                                                                                      |
-| `page`      | `?page=Button%20Patterns`    | Active page title (URL-encoded)                                                                                                                                  |
-| `variant`   | `?variant=1`                 | Active variant index (0-based)                                                                                                                                   |
-| `view`      | `?view=overview`             | Active view tab (e.g. `overview`, `docs`, `a11y`)                                                                                                                |
-| `panel`     | `?panel=a11y`                | Active addon panel tab (default: `controls`, omitted when default)                                                                                               |
-| `capture`   | `?capture=1`                 | Read-only input flag — enables [capture isolation mode](guide/external-tooling.md#capture-isolation-mode) for screenshot tooling. Never written back to the URL. |
+| Parameter   | Example                      | Description                                                                                                                                                     |
+| ----------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `component` | `?component=ButtonComponent` | Active component class name                                                                                                                                     |
+| `page`      | `?page=Button%20Patterns`    | Active page title (URL-encoded)                                                                                                                                 |
+| `variant`   | `?variant=1`                 | Active variant index (0-based)                                                                                                                                  |
+| `view`      | `?view=overview`             | Active view tab (e.g. `overview`, `docs`, `a11y`)                                                                                                               |
+| `panel`     | `?panel=a11y`                | Active addon panel tab (default: `controls`, omitted when default)                                                                                              |
+| `capture`   | `?capture=1`                 | Read-only input flag. Enables [capture isolation mode](guide/external-tooling.md#capture-isolation-mode) for screenshot tooling. Never written back to the URL. |
 
 Example URL:
 
@@ -26,7 +26,7 @@ http://localhost:4200?component=ButtonComponent&variant=2&view=docs&panel=a11y
 
 ## Deep-Linking
 
-Share a URL pointing directly to a specific component and variant. Anyone opening the link lands on exactly the same state.
+Share a URL pointing directly to a specific component and variant. Anyone opening the link lands on the same state.
 
 ```
 http://localhost:4200?component=AlertComponent&variant=1
@@ -38,12 +38,12 @@ Each navigation (selecting a component, changing variant, switching view) pushes
 
 ## Control Panel & A11y State (sessionStorage)
 
-URL state does not carry control panel overrides — long input strings would bloat every link. Instead, ng-prism mirrors these to `sessionStorage` under the key `ng-prism:state`:
+URL state does not carry control panel overrides, since long input strings would bloat every link. Instead, ng-prism mirrors these to `sessionStorage` under the key `ng-prism:state`:
 
 - Control input overrides, keyed by `className` + `variantIndex`. Each component keeps its own bucket; switching components does not discard the others.
 - A11y panel `activeTab` (`violations` | `keyboard` | `tree` | `sr`) and `perspective` (`visual` | `screen-reader`).
 
-Writes are debounced 200ms, so rapid keystrokes in a text input do not thrash storage. On reload, the persisted bucket is applied only if the persisted `variantIndex` still matches the active variant restored from the URL — preventing stale overrides from leaking into a different variant.
+Writes are debounced 200ms, so rapid keystrokes in a text input do not thrash storage. On reload, the persisted bucket is applied only if the persisted `variantIndex` still matches the active variant restored from the URL. That keeps stale overrides from leaking into a different variant.
 
 > Layout, theme, and canvas (zoom/background) are persisted independently to `localStorage` by their own services (`ng-prism-layout`, `ng-prism-theme`, `ng-prism-canvas`) and survive across browser sessions.
 
@@ -66,7 +66,7 @@ When `urlState` is `false`, the URL never changes and no state is read from it o
 
 `PrismPersistenceService` reads `sessionStorage` after the URL service has selected the active component, then applies persisted control values that match the current `className` + `variantIndex`. It subscribes to the same signals and debounce-writes back on change. Schema-version, corrupted JSON, quota-exceeded, and missing-`sessionStorage` are all handled gracefully without crashing the app.
 
-Both services are initialized automatically by `PrismShellComponent` in this order: `urlStateService.init()` → `persistenceService.init()`. If you use a custom shell component (`appComponent`), call them manually during bootstrap:
+Both services are initialized automatically by `PrismShellComponent` in this order: `urlStateService.init()`, then `persistenceService.init()`. If you use a custom shell component (`appComponent`), call them manually during bootstrap:
 
 ```typescript
 @Component({ ... })

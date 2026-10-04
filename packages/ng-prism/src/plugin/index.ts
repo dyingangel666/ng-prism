@@ -31,15 +31,11 @@ export type { VariantBgSource } from '../shared/variant-bg.js';
 export { componentPage, customPage } from './page-helpers.js';
 export type { ComponentPageOptions } from './page-helpers.js';
 export { defineConfig } from './define-config.js';
-// From the dependency-free registry module, not `prism-icon.component.js`.
-// The builder evaluates plugin config — and everything it imports — in
-// Node.js, and importing the component module would run an `@Component`
-// decorator there: template compilation, styles, the whole runtime.
-//
-// Not a blanket "no Angular below this line": `prism-tokens.js` a few lines
-// down imports `InjectionToken`, and evaluating a plain class constructor in
-// Node is harmless. The line being drawn is decorated declarations, not the
-// package.
+// Imported from the dependency-free registry module, not from
+// `prism-icon.component.js`. The builder evaluates plugin config in Node.js,
+// and importing the component module would run its `@Component` decorator
+// there. Plain Angular classes are fine (`prism-tokens.js` below imports
+// `InjectionToken`); decorated declarations are not.
 export { ICON_NAMES } from '../app/icons/icon-registry.js';
 export { PRISM_CONFIG, PRISM_MANIFEST, PRISM_RENDERER_HOOKS } from '../app/tokens/prism-tokens.js';
 export type { PrismRendererHooks } from '../app/tokens/prism-tokens.js';

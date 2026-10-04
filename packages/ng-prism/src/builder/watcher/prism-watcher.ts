@@ -51,7 +51,7 @@ export function createChangeHandler(options: ChangeHandlerOptions): ChangeHandle
             }
         } catch (err) {
             if (!disposed) {
-                logger.error(`ng-prism: Re-scan failed — ${err instanceof Error ? err.message : String(err)}`);
+                logger.error(`ng-prism: Re-scan failed: ${err instanceof Error ? err.message : String(err)}`);
             }
         } finally {
             isRebuilding = false;
@@ -113,7 +113,7 @@ export function startWatcher(options: StartWatcherOptions): WatcherHandle {
     watcher.on('change', (filePath) => handler.handleChange(filePath));
     watcher.on('add', (filePath) => handler.handleChange(filePath));
     watcher.on('unlink', (filePath) => handler.handleChange(filePath));
-    watcher.on('error', (err) => logger.error(`ng-prism: Watcher error — ${err instanceof Error ? err.message : String(err)}`));
+    watcher.on('error', (err) => logger.error(`ng-prism: Watcher error: ${err instanceof Error ? err.message : String(err)}`));
 
     logger.info(`ng-prism: Watching ${watchPaths.join(', ')} for changes...`);
 

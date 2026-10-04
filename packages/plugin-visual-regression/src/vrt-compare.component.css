@@ -131,7 +131,7 @@
 .vrt-cmp__stage {
     display: flex;
 
-    /* Takes the leftover height, but only down to a floor — below that the
+    /* Takes the leftover height, but only down to a floor. Below that the
      viewer column scrolls instead, because a stage squashed to nothing is
      not a comparison. */
     flex: 1;
@@ -148,9 +148,8 @@
 
     /* How wide one frame may grow under the fit zoom. Side by side there are
      two of them, so each gets half the stage minus the gap. This is an
-     inherited custom property rather than flex-grow, because a growing
-     flex item ignores its own width -- which is exactly what the explicit
-     zoom steps set. */
+     inherited custom property, not flex-grow, because a growing flex item
+     ignores its own width, and the explicit zoom steps set that width. */
     --vrt-gap: 16px;
     --vrt-fit-basis: 100%;
 }

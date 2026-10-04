@@ -36,7 +36,7 @@ export class PrismPersistenceService {
 
     init(): void {
         if (this.config.persistState === false) return;
-        // Capture mode must render a variant exactly as the manifest declares it;
+        // Capture mode must render a variant as the manifest declares it;
         // restoring a previous session's control values would silently change what
         // an external screenshot tool captures.
         if (this.capture.active()) return;

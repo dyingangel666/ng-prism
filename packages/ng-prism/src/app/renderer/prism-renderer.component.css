@@ -24,7 +24,7 @@
    layout, so the box is provably unchanged. Keep it that way.
    They do still paint, and outline-offset is negative, so the line lands
    inside the box: CAPTURE_STYLES in prism-capture.service.ts sets both
-   to none, which is only safe because neither is load-bearing here. */
+   to none, which is only safe because neither affects layout here. */
     outline: 1px solid var(--prism-stage-edge);
     outline-offset: -1px;
     background-color: var(--prism-stage);
@@ -93,10 +93,9 @@
    1024 viewport at 800 on any component declaring canvasLayout:
    'stretch'.
 
-   container-type is confined to this rule, and that confinement is
-   load-bearing. It implies contain: inline-size, which on the width:auto
+   container-type must stay confined to this rule. It implies contain: inline-size, which on the width:auto
    inline-block .demo-wrap is at rest would decouple its width from its
-   contents — collapsing the box and shifting every baseline in
+   contents, collapsing the box and shifting every baseline in
    test-workspace/vrt/baseline without a component having changed. Here
    the width is explicit, so containment costs nothing and is what makes
    a component's own @container rules respond. Media queries do not and
@@ -108,24 +107,24 @@
    element carries none of this component's _ngcontent attribute and no
    scoped rule here can reach it to undo an inherited value. text-align
    would therefore leak all the way into the specimen and silently
-   re-align its own text the moment the viewport is switched on — a
+   re-align its own text the moment the viewport is switched on. That is a
    canvas that lies about what it is showing. Centring at the container
    instead touches nothing inside.
 
    Shrinking is not a side effect of that choice, it is the resting
    behaviour preserved: at rest .demo-wrap is an inline-block that
    already shrink-wraps its child, so a block-level specimen sizes to its
-   content here exactly as it does with the constraint off. The implicit
+   content here the same as with the constraint off. The implicit
    auto column still fills the declared width, so a component that asks
-   for width: 100% — the canvasLayout: 'stretch' case — keeps getting the
+   for width: 100% (the canvasLayout: 'stretch' case) keeps getting the
    whole viewport. */
 .demo-wrap[data-viewport] {
     display: grid;
 
-    /* flex: none, and it is load-bearing. The stage is a flex container
+    /* flex: none is required. The stage is a flex container
      and this is its only item, so the default flex-shrink: 1 lets the
      box render narrower than the width just asked for whenever the
-     canvas is the smaller of the two — and container-type below drops
+     canvas is the smaller of the two, and container-type below drops
      the automatic minimum size to zero, so nothing stops the shrink.
      The result is the one failure this whole feature cannot afford:
      the dimension line states 1024 while every @container rule in the
@@ -137,7 +136,7 @@
      fits and wrong the moment it does not: bare centring spills an
      over-wide specimen equally past both edges, where a real viewport of
      that width clips at zero and scrolls in one direction. The safe
-     keyword falls back to start exactly when the item overflows, which
+     keyword falls back to start only when the item overflows, which
      is the browser making a case distinction CSS cannot otherwise
      express. */
     justify-items: safe center;
@@ -149,7 +148,7 @@
 /* Both grips derive their position arithmetically, because .demo-wrap is
    centred by the stage's own flexbox and then scaled in place by
    transform: scale(var(--zoom)): the transform preserves that centre, so
-   each edge sits half the *painted* width — --prism-vp-w times --zoom — away
+   each edge sits half the *painted* width (--prism-vp-w times --zoom) away
    from the middle. No measurement, no ResizeObserver, and nothing to
    fall out of step when either the width or the zoom changes.
 
@@ -168,8 +167,8 @@
     display: grid;
     width: 9px;
 
-    /* The element is the guide line's full-height track and nothing else
-     may be clickable about it. It runs from the overlay band to the
+    /* The element is the guide line's full-height track and must not be
+     clickable. It runs from the overlay band to the
      bottom of the stage at z-index 4, straight over prism-canvas-bg-pill
      at z-index 2, so leaving it hit-testable made part of the pill's
      Reset button unreachable whenever a viewport was on. Only the bar
@@ -184,15 +183,15 @@
 }
 
 /* The part you grab, and the only part of the grip that takes pointer
-   events back. It shares the guide line's grid cell — hence the matching
-   grid-area — and is raised above it so the 1px rule does not paint a
+   events back. It shares the guide line's grid cell (hence the matching
+   grid-area) and is raised above it so the 1px rule does not paint a
    seam down the middle of the 3px bar.
 
    The padding is the hit box and the background is the bar: content-box
    sizing plus background-clip: content-box paints 3x34 while leaving
    9x44 clickable, so the target is comfortable without the mark growing
    to match. It is still narrow for WCAG 2.5.8, which the Width chooser
-   in the tools menu answers — the same widths are reachable there, and
+   in the tools menu answers: the same widths are reachable there, and
    both grips take Home/End and the arrow keys. */
 .vp-grip__bar {
     z-index: 1;
@@ -212,7 +211,7 @@
 /* The edge itself, carried the whole height of the stage. Without it a
    grip is a floating nub that says where you may pull but not what it is
    pulling: the line is what makes the constrained region legible as a
-   region rather than as two loose handles. Faint on purpose — it crosses
+   region rather than as two loose handles. Kept faint because it crosses
    the specimen, so it has to stay readable as chrome. */
 .vp-grip::after {
     grid-area: 1 / 1;

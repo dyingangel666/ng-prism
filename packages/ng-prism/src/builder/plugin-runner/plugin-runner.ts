@@ -7,7 +7,7 @@ function pluginLabel(plugin: NgPrismPlugin): string {
 
 function wrapPluginError(plugin: NgPrismPlugin, hook: string, target: string, err: unknown): Error {
     const cause = err instanceof Error ? err.message : String(err);
-    const wrapped = new Error(`ng-prism: plugin ${pluginLabel(plugin)} failed in ${hook} for ${target} — ${cause}`, err instanceof Error ? { cause: err } : undefined);
+    const wrapped = new Error(`ng-prism: plugin ${pluginLabel(plugin)} failed in ${hook} for ${target}: ${cause}`, err instanceof Error ? { cause: err } : undefined);
 
     if (err instanceof Error && err.stack) {
         wrapped.stack = `${wrapped.message}\nCaused by: ${err.stack}`;

@@ -69,14 +69,15 @@
                 <b>Background changed.</b>
                 <span>
                     The baseline was captured on <code>{{ move.from }}</code
-                    >, this run on <code>{{ move.to }}</code> — the difference is the surface, not necessarily the component. Re-record the baseline.
+                    >, this run on <code>{{ move.to }}</code
+                    >. The difference is the surface, not necessarily the component. Re-record the baseline.
                 </span>
             </div>
         }
         @if (variant().status === 'size-mismatch') {
             <div class="vrt-cmp__note vrt-cmp__note--warn">
                 <b>Dimensions changed.</b>
-                <span>No pixel comparison was possible — compare the images directly.</span>
+                <span>No pixel comparison was possible. Compare the images directly.</span>
             </div>
         }
         @if (images(); as img) {

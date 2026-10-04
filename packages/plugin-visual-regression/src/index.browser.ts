@@ -1,6 +1,6 @@
 export { visualRegressionPlugin } from './visual-regression-plugin.browser.js';
 // `package.json` resolves "types" to index.d.ts for every condition, so this
-// entry has to carry every value that file declares — otherwise a browser
+// entry has to carry every value that file declares. Otherwise a browser
 // consumer type-checks clean and the bundler fails on a missing export.
 export { DEFAULT_VRT_THRESHOLDS, resolveVrtThresholds } from './thresholds.js';
 export { VisualRegressionPanelComponent } from './visual-regression-panel.component.js';

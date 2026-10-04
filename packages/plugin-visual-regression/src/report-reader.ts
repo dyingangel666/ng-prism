@@ -29,23 +29,17 @@ function loadReport(reportPath: string): VrtReport | null {
 /**
  * All recorded results for one component, ordered by variant index.
  *
- * Components are matched on `className` — the report and the scanner agree on
- * it exactly, so there is no need for the path-matching heuristics the coverage
- * plugin uses.
+ * Components are matched on `className`, which the report and the scanner
+ * share, so the coverage plugin's path-matching heuristics are not needed.
  *
- * The report's shape is checked rather than trusted. It is written by someone
- * else's runner, and this runs inside `onComponentScanned`, where a throw is
- * rethrown by the plugin runner and fails the whole styleguide build. A report
- * that is merely *missing* already degrades to "no results"; a truncated or
- * malformed one must not be punished harder than a missing one.
+ * The report's shape is validated. It comes from a third-party runner, and this
+ * runs inside `onComponentScanned`, where a throw fails the whole styleguide
+ * build. A malformed report degrades to "no results", like a missing one.
  *
- * `status` is part of that check and not a formality. Everything downstream is
- * keyed by it — the counts, the summary bar, the three groups the panel
- * renders — and the group tables only know the five documented values. An
- * entry carrying anything else used to survive this filter, be counted as
- * present by `summarize`, and then render in no group at all: present in the
- * totals, absent from the list. Dropping it here keeps the two agreeing, and
- * the warning below is what keeps the drop from being the silent kind.
+ * `status` is validated too. The counts, the summary bar and the panel's three
+ * groups are all keyed by it, and the groups only know the five documented
+ * values. An entry with any other status would be counted by `summarize` but
+ * shown in no group. Such entries are dropped here, with a warning.
  */
 export function readVariantsForComponent(reportPath: string, className: string): VrtVariantResult[] {
     const entries: unknown = loadReport(reportPath)?.byVariant;

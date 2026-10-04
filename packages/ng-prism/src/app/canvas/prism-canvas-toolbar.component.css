@@ -8,7 +8,7 @@
    prism-canvas-bg-pill simply inherits those; this rail cannot, because
    capture mode requires it to be a direct child of .prism-canvas-wrap
    outside the stage. So it mirrors the same values off canvas.rulers()
-   instead — keep the two in step.
+   instead, so keep the two in step.
 
    z-index outranks the rulers' 4 rather than matching it: the rail is a
    control and they are chrome, and the toolbar renders before the
@@ -103,8 +103,8 @@
     box-shadow: 0 8px 28px -10px rgb(0 0 0 / 45%);
 }
 
-/* display belongs on :popover-open and nowhere else — see the note in
-   prism-template-popover.component.ts. An author display on the base
+/* display belongs on :popover-open and nowhere else (see the note in
+   prism-template-popover.component.ts). An author display on the base
    rule outranks the UA's [popover]:not(:popover-open) { display: none }
    and pins the menu open. */
 .prism-toolmenu:popover-open {

@@ -55,7 +55,7 @@
     line-height: 1.55;
 }
 
-/* A plain fact about the component, not a measurement — it sits here with
+/* A plain fact about the component, not a measurement. It sits here with
    the selector and the tags rather than in the gauge, whose numbers all
    answer "did this pass its threshold". A count cannot. */
 .info-card__meta {

@@ -36,9 +36,9 @@
 }
 
 /* The caption sits below the frame, not on it. Inside, it would have to
-   invert against every background the cell can paint — and gaining a new
-   contrast rule per CanvasBg value is exactly the cost the sheet exists
-   to avoid. */
+   invert against every background the cell can paint, and gaining a new
+   contrast rule per CanvasBg value is the cost the sheet exists to
+   avoid. */
 .cell__caption {
     overflow: hidden;
     text-overflow: ellipsis;

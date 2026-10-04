@@ -26,7 +26,7 @@ describe('shotSurfaceStyle', () => {
     });
 
     it('keeps the checkerboard for theme-dependent backgrounds', () => {
-        // `dots`, `plain` and `checker` all paint `--prism-bg-surface` — a theme
+        // `dots`, `plain` and `checker` all paint `--prism-bg-surface`, a theme
         // token. The panel cannot know which theme the runner's browser was in, so
         // claiming a colour here would be a guess painted as fact.
         expect(shotSurfaceStyle('dots')).toEqual({});
@@ -39,11 +39,10 @@ describe('shotSurfaceStyle', () => {
     });
 
     it('declares no background at all for a transparent capture', () => {
-        // Worth nailing down precisely because it works by omission: `SURFACE` has
-        // no `transparent` entry, so the lookup falls through. Turn `SURFACE` into
-        // a total record, or give it a default, and every transparent capture gets
-        // painted over — with the panel still looking entirely plausible, because
-        // a flat surface behind a capture is exactly what the other values want.
+        // This works by omission: `SURFACE` has no `transparent` entry, so the
+        // lookup falls through. Making `SURFACE` a total record or adding a
+        // default would paint over every transparent capture, and the panel
+        // would still look plausible.
         expect(shotSurfaceStyle('transparent')).toEqual({});
     });
 });

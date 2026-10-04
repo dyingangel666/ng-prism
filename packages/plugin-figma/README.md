@@ -2,11 +2,11 @@
 
 Figma design embed panel for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Displays Figma designs as interactive iframes directly in your component styleguide.
 
-> **Full documentation:** [ng-prism Docs — Figma Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/figma)
+> **Full documentation:** [ng-prism Docs: Figma Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/figma)
 
-Uses Figma's official embed endpoint — no API token required. Works with any publicly shared Figma file.
+Uses Figma's official embed endpoint, so no API token is required. Works with any publicly shared Figma file.
 
-An optional **Design Diff** panel compares the rendered component against the Figma node pixel by pixel. It is opt-in and needs a Figma access token — see [`figmaPlugin()`](#figmaplugin) below.
+An optional **Design Diff** panel compares the rendered component against the Figma node pixel by pixel. It is opt-in and needs a Figma access token (see [`figmaPlugin()`](#figmaplugin) below).
 
 ## Installation
 
@@ -69,9 +69,9 @@ Components without a `meta.figma` URL show a placeholder message instead.
 
 Any publicly shared Figma URL works:
 
-- `https://www.figma.com/file/<id>/<name>` — full file
-- `https://www.figma.com/file/<id>/<name>?node-id=<node>` — specific frame/component
-- `https://www.figma.com/design/<id>/<name>` — new Figma URL format
+- `https://www.figma.com/file/<id>/<name>`: full file
+- `https://www.figma.com/file/<id>/<name>?node-id=<node>`: specific frame/component
+- `https://www.figma.com/design/<id>/<name>`: new Figma URL format
 
 ## How it works
 
@@ -82,7 +82,7 @@ By default the plugin registers a single panel (`FigmaPanelComponent`) that:
 3. Renders the embed in a sandboxed `<iframe>` with `allowfullscreen`
 4. Reactively updates when navigating between components (Angular Signals)
 
-No build-time hooks — the plugin is purely runtime. The panel component is **lazy-loaded**
+No build-time hooks; the plugin is purely runtime. The panel component is **lazy-loaded**
 via `loadComponent` to avoid pulling in browser-only Angular dependencies (`DomSanitizer`)
 at config-load time in Node.js.
 
@@ -90,7 +90,7 @@ at config-load time in Node.js.
 
 ### `figmaPlugin(options?)`
 
-Factory function that returns an `NgPrismPlugin`. Zero-config by default — called without
+Factory function that returns an `NgPrismPlugin`. Zero-config by default: called without
 arguments it registers the Figma embed panel and nothing else.
 
 ```typescript
@@ -106,20 +106,20 @@ const plugin = figmaPlugin();
 | Option        | Type      | Default | Description                                                                                                 |
 | ------------- | --------- | ------- | ----------------------------------------------------------------------------------------------------------- |
 | `designDiff`  | `boolean` | `false` | Registers the Design Diff panel. Without it, no Design Diff tab appears.                                    |
-| `accessToken` | `string`  | —       | Figma personal access token used to fetch node images via the REST API. Only read by the Design Diff panel. |
+| `accessToken` | `string`  | -       | Figma personal access token used to fetch node images via the REST API. Only read by the Design Diff panel. |
 
 ```typescript
 figmaPlugin({ designDiff: true, accessToken: process.env['FIGMA_TOKEN'] });
 // plugin.panels === [{ id: 'figma', ... }, { id: 'figma-diff', label: 'Design Diff', ... }]
 ```
 
-`accessToken` alone does not enable the panel — the two options are independent, so a token
+`accessToken` alone does not enable the panel. The two options are independent, so a token
 in your config never surfaces a tab you did not ask for. Enabling `designDiff` without a token
 registers the panel, but it reports a missing token when you run a diff.
 
 ### `FigmaPanelComponent`
 
-The Angular component rendering the Figma iframe. Lazy-loaded by the plugin — typically
+The Angular component rendering the Figma iframe. Lazy-loaded by the plugin, so typically
 you don't need to import it directly. The type is exported for advanced use cases.
 
 ## License

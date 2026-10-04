@@ -20,9 +20,9 @@ export class PrismPanelService {
     /**
      * Every panel that renders as a view tab, builtin before plugin.
      *
-     * Unfiltered on purpose: `prism-view-panel-host` resolves the active view
+     * Unfiltered because `prism-view-panel-host` resolves the active view
      * through this list. Filtering here would let the host come up empty for a
-     * frame whenever a component switch invalidates the active view — the
+     * frame whenever a component switch invalidates the active view, because the
      * fallback in `prism-shell` runs in the same change-detection round.
      */
     readonly viewPanels = computed<PanelDefinition[]>(() => [...this.builtinPanels.filter((p) => p.placement === 'view'), ...this.pluginService.viewPanels()]);

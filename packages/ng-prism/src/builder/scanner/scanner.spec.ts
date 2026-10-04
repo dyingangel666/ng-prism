@@ -144,7 +144,7 @@ describe('createScanner', () => {
             const buttons = result.components.filter((c) => c.className === 'ButtonComponent');
 
             expect(buttons).toHaveLength(1);
-            // First-occurrence wins → importPath should be 'lib/a'
+            // First occurrence wins, so importPath should be 'lib/a'
             expect(buttons[0].importPath).toBe('lib/a');
             expect(warn).toHaveBeenCalledWith(expect.stringContaining('exported by multiple entry points'));
         } finally {

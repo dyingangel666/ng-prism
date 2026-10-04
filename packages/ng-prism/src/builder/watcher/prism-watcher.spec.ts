@@ -164,7 +164,7 @@ describe('createChangeHandler', () => {
         await Promise.resolve();
         await Promise.resolve();
 
-        expect(logger.error).toHaveBeenCalledWith('ng-prism: Re-scan failed — scan failed');
+        expect(logger.error).toHaveBeenCalledWith('ng-prism: Re-scan failed: scan failed');
 
         handler.dispose();
     });
