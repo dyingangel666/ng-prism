@@ -37,7 +37,7 @@ This walkthrough takes a fresh clone to a fully running test workspace. Follow e
 #### 1. Clone and install root dependencies
 
 ```bash
-git clone https://github.com/<your-username>/ng-prism.git
+git clone https://github.com/dyingangel666/ng-prism.git
 cd ng-prism
 npm install
 ```
@@ -371,7 +371,17 @@ These are faster than the full `check` because they only run on the named projec
 
 ### 4. Submit a Pull Request
 
-Push your branch and open a PR against `main`. See [Pull Request Process](#pull-request-process) for details.
+Without write access to the repository, you push your branch to a fork. With the [GitHub CLI](https://cli.github.com/), one command creates the fork and rewires the remotes of your existing clone (`origin` → your fork, `upstream` → `dyingangel666/ng-prism`):
+
+```bash
+gh repo fork --remote
+git push -u origin <your-branch>
+gh pr create
+```
+
+Without `gh`, click **Fork** on GitHub, then run `git remote rename origin upstream` and `git remote add origin https://github.com/<your-username>/ng-prism.git` before pushing. Maintainers with write access skip the fork and push to `origin` directly.
+
+Open the PR against `main`. See [Pull Request Process](#pull-request-process) for details.
 
 ## Coding Standards
 
@@ -480,7 +490,7 @@ docs: update plugin API reference
 
 1. Run the full check suite: `npm run check`, which must pass clean (this is what CI runs)
 2. Update documentation in `docs/` if your change affects public APIs or behavior
-3. Rebase on latest `main` if your branch has fallen behind
+3. Rebase on `upstream/main` (or `origin/main` with write access) if your branch has fallen behind
 
 ### PR Requirements
 
