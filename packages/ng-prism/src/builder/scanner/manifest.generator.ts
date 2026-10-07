@@ -38,6 +38,11 @@ function indent(depth: number): string {
     return ' '.repeat(depth);
 }
 
+/** `'aria-label'` and content slots like `'[card-header]'` are only valid keys in quotes. */
+function formatKey(key: string): string {
+    return /^[A-Za-z_$][\w$]*$/.test(key) ? key : JSON.stringify(key);
+}
+
 function formatObject(obj: Record<string, unknown>, baseIndent: number): string {
     const entries = Object.entries(obj).filter(([, v]) => v !== undefined);
 
@@ -51,7 +56,7 @@ function formatObject(obj: Record<string, unknown>, baseIndent: number): string 
               ? formatObject(value as Record<string, unknown>, inner)
               : json(value);
 
-        return `${indent(inner)}${key}: ${formatted},`;
+        return `${indent(inner)}${formatKey(key)}: ${formatted},`;
     });
 
     return `{\n${lines.join('\n')}\n${indent(baseIndent)}}`;
