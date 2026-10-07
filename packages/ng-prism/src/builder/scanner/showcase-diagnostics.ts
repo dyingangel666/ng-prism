@@ -36,15 +36,15 @@ export function describeUnevaluable(className: string, config: ts.Expression, is
 /**
  * `providers` never reached the manifest: classes, factories and instances
  * cannot be written into static data. One message for the field, not one per
- * provider, because none of them could have been kept.
+ * provider, because none of them could have been kept. It points at the
+ * literal property if there is one, else at `found`, a provider the scan came
+ * across through a spread or a constant, else at the whole config.
  */
-export function describeDeprecatedProviders(className: string, config: ts.Expression): string | undefined {
-    const providers = ts.isObjectLiteralExpression(config) ? findProperty(config, 'providers') : undefined;
-
-    if (!providers) return undefined;
+export function describeDeprecatedProviders(className: string, config: ts.Expression, found?: ts.Node): string {
+    const literal = ts.isObjectLiteralExpression(config) ? findProperty(config, 'providers') : undefined;
 
     return (
-        `${className} declares @Showcase providers (${location(providers)}), which are deprecated and will be removed in 23.0.0; ` +
+        `${className} declares @Showcase providers (${location(literal ?? found ?? config)}), which are deprecated and will be removed in 23.0.0; ` +
         `the manifest is static and cannot hold them, so they never reach the styleguide. Use defineConfig({ appProviders }) instead.`
     );
 }

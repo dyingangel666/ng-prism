@@ -119,17 +119,22 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string, repor
 
     if (!arg) return undefined;
 
+    // Reported once for the whole field below, wherever it came from: the literal, a spread or a constant.
+    let providers: ts.Node | undefined;
     const raw = evaluateStatic(arg, {
         checker,
         report: (issue) => {
-            // Reported once for the whole field below.
-            if (issue.path[0] === 'providers') return;
+            if (issue.path[0] === 'providers') {
+                providers ??= issue.node;
+                return;
+            }
             report(describeUnevaluable(className, arg, issue));
         }
     });
-    const providersDeprecation = describeDeprecatedProviders(className, arg);
 
-    if (providersDeprecation) report(providersDeprecation);
+    if (providers || (typeof raw === 'object' && raw !== null && 'providers' in raw)) {
+        report(describeDeprecatedProviders(className, arg, providers));
+    }
 
     if (raw === UNEVALUABLE || !raw || typeof raw !== 'object') return undefined;
 

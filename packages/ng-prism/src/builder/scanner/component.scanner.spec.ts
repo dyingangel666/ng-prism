@@ -360,7 +360,9 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
             'TopLevelSpreadComponent › @Showcase',
             'UnevaluableRootComponent › @Showcase',
             expect.stringMatching(/^DeprecatedProvidersComponent declares @Showcase providers/),
-            'ConstantShowcaseComponent › variants[1] "Retry" › inputs.retries'
+            'ConstantShowcaseComponent › variants[1] "Retry" › inputs.retries',
+            expect.stringMatching(/^ConstConfigProvidersComponent declares @Showcase providers \(.*indirect-providers\.component\.ts:17:11\)/),
+            expect.stringMatching(/^SpreadProvidersComponent declares @Showcase providers \(.*indirect-providers\.component\.ts:9:\d+\)/)
         ]);
     });
 
@@ -432,7 +434,7 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         scanComponents(exports, checker, diagnostics);
         scanComponents(exports, checker, diagnostics);
 
-        expect(diagnostics).toHaveLength(8);
+        expect(diagnostics).toHaveLength(10);
         expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });

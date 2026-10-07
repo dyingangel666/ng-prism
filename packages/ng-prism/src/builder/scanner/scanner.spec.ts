@@ -164,7 +164,7 @@ describe('createScanner', () => {
                 ]
             });
 
-            expect(scanner.scan().diagnostics).toHaveLength(8);
+            expect(scanner.scan().diagnostics).toHaveLength(10);
         } finally {
             warn.mockRestore();
         }
