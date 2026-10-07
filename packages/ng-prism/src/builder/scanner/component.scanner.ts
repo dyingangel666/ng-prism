@@ -221,48 +221,36 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string, repor
 
 function extractComponentMeta(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): ScannedComponent['componentMeta'] {
     const componentDecorator = findDecorator(classDecl, 'Component');
+    const decorator = componentDecorator ?? findDecorator(classDecl, 'Directive');
+    const isDirective = !componentDecorator && decorator !== undefined;
+    const arg = decorator && getDecoratorArgument(decorator);
 
-    if (componentDecorator) {
-        const arg = getDecoratorArgument(componentDecorator);
+    if (!arg) return { selector: '', standalone: true, isDirective };
 
-        if (!arg) return { selector: '', standalone: true, isDirective: false };
+    const selector = readDecoratorField(arg, 'selector', checker);
 
-        const raw = evaluateExpression(arg, checker);
+    return {
+        selector: typeof selector === 'string' ? selector : '',
+        standalone: readDecoratorField(arg, 'standalone', checker) !== false,
+        isDirective
+    };
+}
 
-        if (!raw || typeof raw !== 'object') {
-            return { selector: '', standalone: true, isDirective: false };
-        }
+/**
+ * One field of `@Component`/`@Directive` metadata, read from its own
+ * property where the literal has one, so that `imports`, `providers` and the
+ * rest are not resolved only to be thrown away. A spread or a shorthand could
+ * supply the field from elsewhere, so then the whole argument is evaluated.
+ */
+function readDecoratorField(arg: ts.Expression, key: string, checker: ts.TypeChecker): unknown {
+    if (ts.isObjectLiteralExpression(arg) && !arg.properties.some(ts.isSpreadAssignment)) {
+        const prop = arg.properties.find((p) => p.name !== undefined && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) && p.name.text === key);
 
-        const obj = raw as Record<string, unknown>;
-
-        return {
-            selector: (obj['selector'] as string) ?? '',
-            standalone: obj['standalone'] !== false,
-            isDirective: false
-        };
+        if (!prop) return undefined;
+        if (ts.isPropertyAssignment(prop)) return evaluateExpression(prop.initializer, checker);
     }
 
-    const directiveDecorator = findDecorator(classDecl, 'Directive');
+    const raw = evaluateExpression(arg, checker);
 
-    if (directiveDecorator) {
-        const arg = getDecoratorArgument(directiveDecorator);
-
-        if (!arg) return { selector: '', standalone: true, isDirective: true };
-
-        const raw = evaluateExpression(arg, checker);
-
-        if (!raw || typeof raw !== 'object') {
-            return { selector: '', standalone: true, isDirective: true };
-        }
-
-        const obj = raw as Record<string, unknown>;
-
-        return {
-            selector: (obj['selector'] as string) ?? '',
-            standalone: obj['standalone'] !== false,
-            isDirective: true
-        };
-    }
-
-    return { selector: '', standalone: true, isDirective: false };
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>)[key] : undefined;
 }

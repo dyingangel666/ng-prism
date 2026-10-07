@@ -381,6 +381,28 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         );
     });
 
+    it('does not resolve @Component fields it never reads', () => {
+        const looked: string[] = [];
+        const recording = new Proxy(checker, {
+            get(target, property, receiver) {
+                if (property === 'getSymbolAtLocation') {
+                    return (node: ts.Node) => {
+                        looked.push(node.getText());
+                        return target.getSymbolAtLocation(node);
+                    };
+                }
+                const member = Reflect.get(target, property, receiver);
+
+                return typeof member === 'function' ? member.bind(target) : member;
+            }
+        });
+
+        scanComponents(exports, recording, []);
+
+        expect(looked).not.toContain('ChildComponent');
+        expect(looked).toContain('SELECTOR');
+    });
+
     it('resolves a constant selector in @Component', () => {
         const component = scan().components.find((c) => c.className === 'ConstantShowcaseComponent')!;
 
