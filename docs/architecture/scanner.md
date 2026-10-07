@@ -74,9 +74,29 @@ If no `ng-package.json` is found above the file, or if discovery returns no entr
 
 **`findDecorator(node, name)`** in `ast-utils.ts` walks the node's decorator list and matches by identifier name. It supports both call-expression decorators (`@Component({...})`) and plain identifier decorators.
 
-**`evaluateExpression(node)`** does a shallow constant-fold of the AST node into a JavaScript value. It handles string literals, numeric literals, boolean literals, array literals, and object literals. Non-constant values (function calls, references) return `undefined`.
+**`evaluateStatic(node, report)`** in `ast-utils.ts` folds an AST node into a JavaScript value without running anything. It handles string, numeric and boolean literals, `null`, `undefined`, template literals without placeholders, negative numbers, and array and object literals, including computed keys that are literals themselves.
 
-The `@Showcase` config object is reconstructed by evaluating each property of the object literal passed to the decorator.
+Whatever it cannot fold costs only the member that holds it: an object keeps its other properties, an array its other elements, and a spread, a shorthand property or an unreadable computed key drops just itself. Each drop goes to `report` as an `UnevaluableIssue`:
+
+- `path`: where the value sat, e.g. `['variants', 3, 'inputs', 'maxFileSize']`, with array indices as written in the source
+- `node`: the expression, spread or property that could not be folded
+- `reason`: `runtime-value` for functions, classes and instances, which no static evaluation can capture; `unsupported` for everything else
+
+Only a root that cannot be folded at all comes back as the `UNEVALUABLE` sentinel, a symbol that keeps it distinct from an `undefined` written on purpose.
+
+The three callers treat a drop differently:
+
+| Caller                               | Entry point                               | On a dropped value                                                                                                                                        |
+| ------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@Showcase` config                   | `evaluateStatic` with a reporter          | Warns (see [Diagnostics](#diagnostics))                                                                                                                   |
+| `@Component` / `@Directive` metadata | `evaluateExpression`                      | Nothing. Only `selector` and `standalone` are read, so `imports: [FooComponent]` costs nothing                                                            |
+| Input defaults                       | `evaluateDefault` in `input.extractor.ts` | Nothing, but the whole default goes: the renderer applies `defaultValue` to the component, so the readable part of a default would overwrite the real one |
+
+### Diagnostics
+
+`describeUnevaluable()` in `showcase-diagnostics.ts` turns each `@Showcase` issue into a message: the component, the path (a variant is named by its index and its `name`), the source text, and its `file:line:column` relative to the working directory so terminals and editors can link it.
+
+`scanComponents()` prints each message once as a warning and collects it in a `diagnostics` array. The values it rejects after evaluation (an invalid `bg`, `status` or `canvasLayout`, a missing `title`) go through the same channel; deprecations do not. `createScanner().scan()` shares one array across all entry points, so a component exported from several of them warns once, and returns it as `ScanResult.diagnostics`. The pipeline throws on a non-empty array when [`strictShowcase`](api/ng-prism-config.md#strictshowcase) is on, before plugin hooks run and before a manifest is written.
 
 ## Input and Output Extraction
 

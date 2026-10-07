@@ -40,6 +40,8 @@ interface Variant<T = unknown> {
 
 When no variants are defined, a single unlabeled canvas is shown and all controls start at their default values.
 
+Variant values are read from the source without running it, so they have to be written out: a calculation, a constant or a function call is dropped with a warning. See [What the scanner can read](guide/showcase-decorator.md#what-the-scanner-can-read).
+
 ## Type-safe inputs
 
 Pass the component class as a type argument to `@Showcase` to get autocomplete and compile-time type-checking on every variant's `inputs`:

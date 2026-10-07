@@ -136,16 +136,9 @@ Optional array of strings used for sidebar search and filtering. Matched alongsi
 
 ### `providers`
 
-Optional Angular providers added to a child `EnvironmentInjector` scoped to this component. Use for mock services, dialog providers, or any other dependency not available in the root injector.
+Not supported by the build. Providers are classes, factories or instances, which the [static scanner](guide/showcase-decorator.md#what-the-scanner-can-read) cannot read, so the build drops them with a warning.
 
-```typescript
-@Showcase({
-  title: 'Confirm Dialog',
-  providers: [{ provide: DialogService, useClass: MockDialogService }],
-})
-```
-
-For library-wide providers, use `defineConfig({ appProviders })`.
+For library-wide providers, use `defineConfig({ appProviders })`. For providers only one component needs, use a [component page](guide/component-pages.md) and declare them on the page component.
 
 ---
 

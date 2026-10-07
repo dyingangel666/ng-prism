@@ -13,7 +13,7 @@ import { Showcase } from '@ng-prism/core';
 export class MyComponent { ... }
 ```
 
-The decorator is evaluated at build time by the TypeScript Compiler API scanner. Its presence makes the builder include the component in the manifest.
+The decorator is evaluated at build time by the TypeScript Compiler API scanner, which reads the config from the source without running it (see [What the scanner can read](#what-the-scanner-can-read)). Its presence makes the builder include the component in the manifest.
 
 > **Note:** `@Showcase` must always appear _above_ `@Component` or `@Directive`, as decorator application order in Angular matters.
 
@@ -37,6 +37,42 @@ export class ButtonComponent {
 ```
 
 Without the generic argument, `inputs` falls back to `Record<string, unknown>`, so every existing call site keeps working unchanged. See [Variants: Type-safe inputs](guide/variants.md#type-safe-inputs) and [`InputsOf<T>`](api/types.md#inputsof) for full details.
+
+## What the scanner can read
+
+The builder never runs your code. It reads the `@Showcase` argument from the source, so every value in it has to be spelled out there:
+
+| Works                                           | Example                            |
+| ----------------------------------------------- | ---------------------------------- |
+| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`       |
+| Template literals without placeholders          | `` `Primary` ``                    |
+| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }` |
+| Computed keys made of a literal                 | `{ ['aria-label']: 'Close' }`      |
+
+Anything else would need the code to run, so the scanner drops it:
+
+| Does not work                             | Example                                     |
+| ----------------------------------------- | ------------------------------------------- |
+| References to constants, enums or imports | `MAX_FILES`, `Size.Medium`                  |
+| Calculations and placeholders             | `5 * 1024 * 1024`, `` `${count} files` ``   |
+| Type assertions                           | `['pdf'] as const`, `value!`                |
+| Spread and shorthand properties           | `{ ...shared }`, `{ label }`                |
+| Function and method calls                 | `megabytes(5)`, `items.map(toOption)`       |
+| Functions, classes and instances          | `(value) => value.length > 0`, `new Date()` |
+
+Functions, classes and instances are a limit of the approach, not of the scanner: they only exist once code runs, so the static manifest has no way to hold them.
+
+### What happens to a value it cannot read
+
+Only that value is lost. A property, an array element or a spread is dropped; the object or array around it keeps everything else. Each drop prints a warning naming the component, where the value sat in the config, the source text and its location:
+
+```
+⚠ ng-prism: FileInputComponent › variants[3] "Auto hint" › inputs.maxFileSize — "megabytes(5)" (projects/my-lib/src/file-input/file-input.component.ts:27:52) cannot be evaluated statically and was dropped.
+```
+
+When the whole argument cannot be read, as in `@Showcase(FILE_INPUT_SHOWCASE)`, the component is skipped, and the warning says so.
+
+To fix a warning, write the value out: `maxFileSize: 5242880` instead of `megabytes(5)`. To make the build fail instead of warning, for example in CI, set [`strictShowcase`](api/ng-prism-config.md#strictshowcase).
 
 ## All Fields
 
@@ -156,18 +192,9 @@ Array of strings used for search and filtering in the sidebar. Tags are matched 
 
 ### `providers`
 
-Angular providers injected into a child `EnvironmentInjector` scoped to this component. Use for components that require services not available in the root injector, for example a `DialogService`, `OverlayRef`, or a per-component mock.
+> **Not supported by the build.** A provider is a class, a factory or an instance, which the [scanner cannot read](#what-the-scanner-can-read). The build drops `providers` with a warning, and the component renders without them.
 
-```typescript
-@Showcase({
-  title: 'Confirm Dialog Trigger',
-  providers: [
-    { provide: DialogService, useClass: MockDialogService },
-  ],
-})
-```
-
-For library-wide providers, use `defineConfig({ appProviders })` in your config file.
+For library-wide providers, use `defineConfig({ appProviders })` in your config file. For providers that only one component needs, render it through a [component page](guide/component-pages.md) via [`renderPage`](#renderpage) and declare the providers on the page component.
 
 ### `meta`
 

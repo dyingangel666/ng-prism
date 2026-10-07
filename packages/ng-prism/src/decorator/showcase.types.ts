@@ -60,9 +60,11 @@ export interface ShowcaseConfig<T = unknown> {
     /** Tags for search and filtering */
     tags?: string[];
     /**
-     * Providers for a child injector scoped to this component.
-     * Use for components that require specific services (e.g. DialogService, OverlayService).
-     * For library-wide providers, use defineConfig({ appProviders }).
+     * Not supported by the build: providers are classes, factories or
+     * instances, which the static scanner cannot read, so they are dropped
+     * with a warning. For library-wide providers use
+     * `defineConfig({ appProviders })`; for one component, a component page
+     * (`renderPage`) that declares them.
      */
     providers?: Provider[];
     /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */
