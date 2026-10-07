@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
+import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, getJsDocComment, UNEVALUABLE, type UnevaluableIssue } from './ast-utils.js';
 
 // --- Helpers ---
 
@@ -29,6 +29,16 @@ function createProgramFromSource(source: string) {
     const sourceFile = program.getSourceFile(fileName)!;
 
     return { program, checker, sourceFile };
+}
+
+function evaluateWithIssues(code: string) {
+    const issues: UnevaluableIssue[] = [];
+    const value = evaluateStatic(parseExpression(code), (issue) => issues.push(issue));
+
+    return {
+        value,
+        issues: issues.map((issue) => ({ path: issue.path, text: issue.node.getText(), reason: issue.reason }))
+    };
 }
 
 // --- evaluateExpression ---
@@ -92,18 +102,106 @@ describe('evaluateExpression', () => {
         expect(evaluateExpression(parseExpression('fn()'))).toBeUndefined();
     });
 
-    it('should return undefined for arrays with spread', () => {
-        expect(evaluateExpression(parseExpression('[...items]'))).toBeUndefined();
+    it('should drop only the spread from an array', () => {
+        expect(evaluateExpression(parseExpression("['a', ...items]"))).toEqual(['a']);
     });
 
-    it('should return undefined for objects with spread', () => {
-        expect(evaluateExpression(parseExpression('({ ...base })'))).toBeUndefined();
+    it('should drop only the spread from an object', () => {
+        expect(evaluateExpression(parseExpression("({ ...base, selector: 'x' })"))).toEqual({ selector: 'x' });
     });
 
     it('should evaluate objects with keyword property names', () => {
         const result = evaluateExpression(parseExpression("({ import: { name: 'Foo', from: 'bar' }, default: 'baz' })"));
 
         expect(result).toEqual({ import: { name: 'Foo', from: 'bar' }, default: 'baz' });
+    });
+});
+
+describe('evaluateStatic', () => {
+    it('keeps the siblings of a property it cannot evaluate', () => {
+        expect(evaluateWithIssues('({ a: 1, b: compute() })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: ['b'], text: 'compute()', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a spread, not the object around it', () => {
+        expect(evaluateWithIssues('({ ...base, a: 1 })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: [], text: '...base', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a shorthand property under its own name', () => {
+        expect(evaluateWithIssues('({ label, a: 1 })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: ['label'], text: 'label', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a property whose computed key it cannot evaluate', () => {
+        expect(evaluateWithIssues('({ [key]: 1, a: 2 })')).toEqual({
+            value: { a: 2 },
+            issues: [{ path: [], text: '[key]: 1', reason: 'unsupported' }]
+        });
+    });
+
+    it('evaluates literal computed keys and numeric keys', () => {
+        expect(evaluateWithIssues("({ ['aria-label']: 'x', 1: 'one' })")).toEqual({
+            value: { 'aria-label': 'x', '1': 'one' },
+            issues: []
+        });
+    });
+
+    it('drops an array element and reports its index in the source', () => {
+        expect(evaluateWithIssues("['a', compute(), 'b']")).toEqual({
+            value: ['a', 'b'],
+            issues: [{ path: [1], text: 'compute()', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops an array spread', () => {
+        expect(evaluateWithIssues("[...items, 'x']")).toEqual({
+            value: ['x'],
+            issues: [{ path: [0], text: '...items', reason: 'unsupported' }]
+        });
+    });
+
+    it('reports the full path of a nested value', () => {
+        const { value, issues } = evaluateWithIssues("({ variants: [{ name: 'A' }, { name: 'B', inputs: { size: compute() } }] })");
+
+        expect(value).toEqual({ variants: [{ name: 'A' }, { name: 'B', inputs: {} }] });
+        expect(issues).toEqual([{ path: ['variants', 1, 'inputs', 'size'], text: 'compute()', reason: 'unsupported' }]);
+    });
+
+    it('reports the whole member expression, not the part inside it that failed', () => {
+        expect(evaluateWithIssues('({ a: -limit })').issues).toEqual([{ path: ['a'], text: '-limit', reason: 'unsupported' }]);
+    });
+
+    it('returns UNEVALUABLE for a root it cannot evaluate', () => {
+        expect(evaluateWithIssues('config')).toEqual({
+            value: UNEVALUABLE,
+            issues: [{ path: [], text: 'config', reason: 'unsupported' }]
+        });
+    });
+
+    it('treats a deliberate undefined as a value, not as a loss', () => {
+        expect(evaluateWithIssues('undefined')).toEqual({ value: undefined, issues: [] });
+        expect(evaluateWithIssues('({ a: undefined })').issues).toEqual([]);
+    });
+
+    it.each([
+        ['an arrow function', '({ a: () => 1 })'],
+        ['a function expression', '({ a: function () { return 1; } })'],
+        ['a class expression', '({ a: class {} })'],
+        ['an instance', '({ a: new Date() })'],
+        ['a method', '({ a() { return 1; } })'],
+        ['an accessor', '({ get a() { return 1; } })']
+    ])('marks %s as a runtime value', (_, code) => {
+        const { value, issues } = evaluateWithIssues(code);
+
+        expect(value).toEqual({});
+        expect(issues).toEqual([expect.objectContaining({ path: ['a'], reason: 'runtime-value' })]);
     });
 });
 

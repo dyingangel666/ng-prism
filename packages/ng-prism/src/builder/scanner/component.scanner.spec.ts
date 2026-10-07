@@ -288,11 +288,120 @@ describe('scanComponents', () => {
         expect(sectioned.showcaseConfig.componentOrder).toBe(2);
     });
 
+    it('counts the values it rejects as diagnostics, but not deprecations or @Input() hints', () => {
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+        const diagnostics: string[] = [];
+
+        scanComponents(exports, checker, diagnostics);
+
+        expect(diagnostics).toEqual([
+            expect.stringContaining('MissingTitleComponent has @Showcase without a "title" field'),
+            expect.stringContaining('InvalidBgComponent declares invalid bg "rainbow"'),
+            expect.stringContaining('InvalidStatusComponent declares invalid status "banana"')
+        ]);
+
+        warnSpy.mockRestore();
+    });
+
     it('omits section and sectionOrder when not declared', () => {
         const components = scanComponents(exports, checker);
         const button = components.find((c) => c.className === 'ButtonComponent')!;
 
         expect(button.showcaseConfig.section).toBeUndefined();
         expect(button.showcaseConfig.sectionOrder).toBeUndefined();
+    });
+});
+
+describe('scanComponents with @Showcase values it cannot evaluate', () => {
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
+    let warnSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'unevaluable-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
+    });
+
+    beforeEach(() => {
+        warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        warnSpy.mockRestore();
+    });
+
+    function scan() {
+        const diagnostics: string[] = [];
+        const components = scanComponents(exports, checker, diagnostics);
+
+        return { components, diagnostics };
+    }
+
+    it('warns with the component, the path in the config and the source location', () => {
+        const message = scan().diagnostics.find((d) => d.includes('maxFileSize'))!;
+
+        expect(message).toContain('UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize — "megabytes(5)" (');
+        expect(message).toContain('src/builder/scanner/__fixtures__/unevaluable-showcase.component.ts:31:73) cannot be evaluated statically and was dropped.');
+        expect(message).not.toContain(FIXTURES_DIR);
+        expect(warnSpy).toHaveBeenCalledWith(`⚠ ng-prism: ${message}`);
+    });
+
+    it('reports exactly the @Showcase values it drops, nothing from @Component or input defaults', () => {
+        const where = scan().diagnostics.map((d) => d.split(' — ')[0]);
+
+        expect(where).toEqual([
+            'UnevaluableShowcaseComponent › meta',
+            'UnevaluableShowcaseComponent › variants[0] "Plain" › inputs.validator',
+            'UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize',
+            'UnevaluableShowcaseComponent › variants[2]',
+            'TopLevelSpreadComponent › @Showcase',
+            'UnevaluableRootComponent › @Showcase'
+        ]);
+    });
+
+    it('drops only the value it cannot evaluate', () => {
+        const component = scan().components.find((c) => c.className === 'UnevaluableShowcaseComponent')!;
+
+        expect(component.showcaseConfig.meta).toEqual({ figma: 'https://www.figma.com/design/abc123/DS' });
+        expect(component.showcaseConfig.variants!.map((v) => v.inputs)).toEqual([{ label: 'Plain' }, { label: 'Auto hint' }]);
+    });
+
+    it('says when a value is a function that can never reach the manifest', () => {
+        const message = scan().diagnostics.find((d) => d.includes('validator'))!;
+
+        expect(message).toContain('"(value: string) => value.length > 0" (');
+        expect(message).toContain(':30:63) is a runtime value (function, class or instance) and cannot be part of the static manifest; it was dropped.');
+    });
+
+    it('keeps a component whose @Showcase spreads at the top level', () => {
+        const { components, diagnostics } = scan();
+        const component = components.find((c) => c.className === 'TopLevelSpreadComponent')!;
+
+        expect(component.showcaseConfig.title).toBe('Top-level spread');
+        expect(diagnostics).toContainEqual(expect.stringContaining('TopLevelSpreadComponent › @Showcase — "...sharedShowcase()" ('));
+    });
+
+    it('skips a component whose whole @Showcase argument cannot be evaluated, and says so', () => {
+        const { components, diagnostics } = scan();
+
+        expect(components.find((c) => c.className === 'UnevaluableRootComponent')).toBeUndefined();
+        expect(diagnostics).toContainEqual(
+            expect.stringMatching(
+                /UnevaluableRootComponent › @Showcase — "buildShowcase\(\)" \(.*:11:11\) cannot be evaluated statically, so the component is skipped\.$/
+            )
+        );
+    });
+
+    it('reports a loss once when a component is scanned from several entry points', () => {
+        const diagnostics: string[] = [];
+
+        scanComponents(exports, checker, diagnostics);
+        scanComponents(exports, checker, diagnostics);
+
+        expect(diagnostics).toHaveLength(6);
+        expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });

@@ -3,8 +3,9 @@ import type { ComponentStatus, ShowcaseConfig } from '../../decorator/showcase.t
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
-import { evaluateExpression, findDecorator, getDecoratorArgument } from './ast-utils.js';
+import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, UNEVALUABLE } from './ast-utils.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
+import { describeUnevaluable } from './showcase-diagnostics.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -44,11 +45,22 @@ function isCanvasLayout(value: unknown): value is CanvasLayout {
     return typeof value === 'string' && (CANVAS_LAYOUTS as readonly string[]).includes(value);
 }
 
+type Report = (message: string) => void;
+
 /**
  * Scan exported symbols for Angular components annotated with @Showcase.
+ *
+ * Every @Showcase value the scan has to drop is printed and collected in
+ * `diagnostics`, once: sharing the array across entry points keeps a
+ * component exported from several of them from repeating its warnings.
  */
-export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): ScannedComponent[] {
+export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, diagnostics: string[] = []): ScannedComponent[] {
     const components: ScannedComponent[] = [];
+    const report: Report = (message) => {
+        if (diagnostics.includes(message)) return;
+        diagnostics.push(message);
+        console.warn(`⚠ ng-prism: ${message}`);
+    };
 
     for (const sym of exports) {
         const resolved = sym.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(sym) : sym;
@@ -67,7 +79,7 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): S
         if (!showcaseDecorator) continue;
 
         const className = classDecl.name?.text ?? 'Anonymous';
-        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className);
+        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className, report);
 
         if (!showcaseConfig) continue;
 
@@ -102,17 +114,17 @@ function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
     return false;
 }
 
-function extractShowcaseConfig(decorator: ts.Decorator, className: string): ShowcaseConfig | undefined {
+function extractShowcaseConfig(decorator: ts.Decorator, className: string, report: Report): ShowcaseConfig | undefined {
     const arg = getDecoratorArgument(decorator);
 
     if (!arg) return undefined;
 
-    const raw = evaluateExpression(arg);
+    const raw = evaluateStatic(arg, (issue) => report(describeUnevaluable(className, arg, issue)));
 
-    if (!raw || typeof raw !== 'object') return undefined;
+    if (raw === UNEVALUABLE || !raw || typeof raw !== 'object') return undefined;
 
     if (!('title' in raw)) {
-        console.warn(`⚠ ng-prism: ${className} has @Showcase without a "title" field, skipping. ` + `Add a title so it can appear in the styleguide.`);
+        report(`${className} has @Showcase without a "title" field, skipping. ` + `Add a title so it can appear in the styleguide.`);
         return undefined;
     }
 
@@ -142,9 +154,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
         if (isComponentStatus(obj['status'])) {
             config.status = obj['status'];
         } else {
-            console.warn(
-                `⚠ ng-prism: ${className} declares invalid status "${String(obj['status'])}", ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
-            );
+            report(`${className} declares invalid status "${String(obj['status'])}", ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`);
         }
     }
 
@@ -153,7 +163,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             config.bg = obj['bg'];
             warnDeprecatedBg(obj['bg'], className);
         } else {
-            console.warn(`⚠ ng-prism: ${className} declares invalid bg "${String(obj['bg'])}", ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
+            report(`${className} declares invalid bg "${String(obj['bg'])}", ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
         }
     }
 
@@ -161,9 +171,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
         if (isCanvasLayout(obj['canvasLayout'])) {
             config.canvasLayout = obj['canvasLayout'];
         } else {
-            console.warn(
-                `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}", ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
-            );
+            report(`${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}", ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`);
         }
     }
 
@@ -175,16 +183,16 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
                 warnDeprecatedBg(variant['bg'], `${className} variant "${String(variant['name'])}"`);
             }
             if (variant['bg'] !== undefined && !isCanvasBg(variant['bg'])) {
-                console.warn(
-                    `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
+                report(
+                    `${className} variant "${String(variant['name'])}" declares ` +
                         `invalid bg "${String(variant['bg'])}", expected one of: ` +
                         `${CANVAS_BGS.join(', ')}. Skipping.`
                 );
                 delete cleaned['bg'];
             }
             if (variant['canvasLayout'] !== undefined && !isCanvasLayout(variant['canvasLayout'])) {
-                console.warn(
-                    `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
+                report(
+                    `${className} variant "${String(variant['name'])}" declares ` +
                         `invalid canvasLayout "${String(variant['canvasLayout'])}", expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
                 );
                 delete cleaned['canvasLayout'];
