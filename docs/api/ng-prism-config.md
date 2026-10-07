@@ -256,7 +256,7 @@ See [Accessibility: Library-Wide A11y Score](guide/accessibility.md#library-wide
 
 Fail the build when a `@Showcase` value is lost, instead of warning about it. Default: `false`.
 
-The scanner reads `@Showcase` from the source and drops what it cannot use: a value it [cannot evaluate statically](guide/showcase-decorator.md#what-the-scanner-can-read), an invalid `bg`, `status` or `canvasLayout`, or a config without a `title`, which costs the whole component. Each loss prints a warning. With `strictShowcase` on, the build stops after the scan, before a manifest is written:
+The scanner reads `@Showcase` from the source and drops what it cannot use: a value it [cannot evaluate statically](guide/showcase-decorator.md#what-the-scanner-can-read), an invalid `bg`, `status` or `canvasLayout`, a config without a `title`, which costs the whole component, or the deprecated `providers`, which never reach the styleguide. Each loss prints a warning. With `strictShowcase` on, the build stops after the scan, before a manifest is written:
 
 ```typescript
 export default defineConfig({ strictShowcase: true });
@@ -266,4 +266,4 @@ export default defineConfig({ strictShowcase: true });
 ng-prism: strictShowcase is enabled and 2 @Showcase value(s) were dropped; see the warnings above.
 ```
 
-`build` exits with an error, and `serve` does not start. When a watch-mode rebuild fails this way, the error is logged and the previous manifest stays in place. Deprecations such as `bg: 'checker'` remain warnings either way.
+`build` exits with an error, and `serve` does not start. When a watch-mode rebuild fails this way, the error is logged and the previous manifest stays in place. Deprecations that lose nothing, such as `bg: 'checker'`, remain warnings either way.

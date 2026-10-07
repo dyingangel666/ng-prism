@@ -85,10 +85,13 @@ With the program's `TypeChecker` it also resolves references, which the scanner 
 
 - An identifier or shorthand property whose symbol, after following imports with `getAliasedSymbol`, is a `const` with an initializer folds to that initializer. `let`, `var` and a `const` without an initializer (`declare const`, a compiled package's `.d.ts`) do not.
 - An enum member folds to `checker.getConstantValue()` of its declaration. Asking the declaration matters: for an access like `Size.Medium` the checker only answers for `const enum`s.
-- A property or element access folds by reading from the folded object, unless the access names a declaration of its own, as `tokens.MAX_FILES` on a namespace import does.
-- A spread of a folded object or array merges into the literal around it, later keys winning.
+- A property or element access folds by reading from the folded object, unless the access names a declaration of its own, as `tokens.MAX_FILES` on a namespace import does. If folding the object dropped anything the read depends on, the access fails instead of reading a wrong value: the property itself, something a spread might have supplied, or, in an array, an earlier element whose removal moved the later ones and `length`.
+- A spread of a folded object or array merges into the literal around it, later keys winning. A later property that fails removes the key the spread set, since the source overrides it.
+- Keys are defined as own properties, and `__proto__: x`, which sets a prototype in JavaScript, is dropped. A hole in a sparse array keeps its slot as `undefined`.
 
-A set of the declarations being folded stops a constant that refers back to itself. Members inside a constant are folded like any others, so a constant costs only its unreadable members, and their issues point into the constant's own file.
+A set of the declarations being folded stops a constant that refers back to itself. Members inside a constant are folded like any others, so a constant costs only its unreadable members, and their issues point into the constant's own file. Each constant is folded once per `evaluateStatic` call; its issues are replayed at every reference's path, and every reference gets its own `structuredClone` of the value, so no two parts of a config share an object.
+
+A `const` is read as its initializer says. Runtime mutation (`OPTIONS.push(...)`) is invisible to static evaluation.
 
 A calculation whose result JSON cannot carry (`1 / 0`, `0 / 0`) counts as unfoldable, since `Infinity` and `NaN` would reach the manifest as `null`. Conditions, comparisons and logical operators are left out on purpose: the evaluator folds values, it does not interpret code.
 
@@ -106,7 +109,7 @@ All three callers pass the checker. They treat a drop differently:
 | Caller                               | Entry point                               | On a dropped value                                                                                                                                        |
 | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@Showcase` config                   | `evaluateStatic` with a reporter          | Warns (see [Diagnostics](#diagnostics))                                                                                                                   |
-| `@Component` / `@Directive` metadata | `evaluateExpression`                      | Nothing. Only `selector` and `standalone` are read, so `imports: [FooComponent]` costs nothing                                                            |
+| `@Component` / `@Directive` metadata | `evaluateExpression`                      | Nothing. Only the `selector` and `standalone` properties are evaluated, so `imports: [FooComponent]` is never resolved                                    |
 | Input defaults                       | `evaluateDefault` in `input.extractor.ts` | Nothing, but the whole default goes: the renderer applies `defaultValue` to the component, so the readable part of a default would overwrite the real one |
 
 ### Diagnostics

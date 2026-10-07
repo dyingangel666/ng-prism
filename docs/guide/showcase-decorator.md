@@ -59,6 +59,8 @@ Each of these works as long as every part of it does: `5 * MB` works while `MB` 
 
 A constant imported from a compiled package is read from that package's `.d.ts`, which keeps a value only when it was a plain literal. `export const MAX_FILES = 3` arrives as `MAX_FILES = 3`; `export const MB = 1024 * 1024` arrives as `MB: number` and cannot be read.
 
+A constant is read as its initializer says. Changes made to it at runtime, such as `OPTIONS.push('pdf')` or `CONFIG.size = 'l'`, never happen for the scanner, so keep showcase values in constants that nothing mutates.
+
 Anything else would need the code to run, so the scanner drops it:
 
 | Does not work                    | Example                                     |
@@ -87,7 +89,7 @@ When a reference is what failed, the warning names it and says why:
 
 A value inside a constant is reported where the constant writes it, so the location points to the line to fix even when the constant lives in another file.
 
-When the whole argument cannot be read, as in `@Showcase(FILE_INPUT_SHOWCASE)`, the component is skipped, and the warning says so.
+When the whole argument cannot be read, as in `@Showcase(buildShowcase('File input'))`, the component is skipped, and the warning says so. A config kept in a `const` and passed as `@Showcase(FILE_INPUT_SHOWCASE)` is fine.
 
 To fix a warning, write the value out: `maxFileSize: 5 * 1024 * 1024` instead of `megabytes(5)`. To make the build fail instead of warning, for example in CI, set [`strictShowcase`](api/ng-prism-config.md#strictshowcase).
 
