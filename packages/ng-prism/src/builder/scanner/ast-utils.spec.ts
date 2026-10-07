@@ -42,7 +42,7 @@ function evaluateWithIssues(code: string) {
 }
 
 /** Evaluates `subject` in `/main.ts`, with a type checker over all `files`. */
-function evaluateInProgram(files: Record<string, string>) {
+function evaluateInProgram(files: Record<string, string>, wrapChecker: (checker: ts.TypeChecker) => ts.TypeChecker = (checker) => checker) {
     const host = ts.createCompilerHost({});
 
     host.getSourceFile = (name, target) => (name in files ? ts.createSourceFile(name, files[name], target, true) : undefined);
@@ -58,7 +58,7 @@ function evaluateInProgram(files: Record<string, string>) {
         .flatMap((statement) => [...statement.declarationList.declarations])
         .find((declaration) => declaration.name.getText() === 'subject')!;
     const issues: UnevaluableIssue[] = [];
-    const value = evaluateStatic(subject.initializer!, { checker: program.getTypeChecker(), report: (issue) => issues.push(issue) });
+    const value = evaluateStatic(subject.initializer!, { checker: wrapChecker(program.getTypeChecker()), report: (issue) => issues.push(issue) });
 
     return {
         value,
@@ -215,6 +215,19 @@ describe('evaluateStatic', () => {
         });
     });
 
+    it('keeps the hole of a sparse array in place', () => {
+        expect(evaluateWithIssues('[1, , 3]')).toEqual({ value: [1, undefined, 3], issues: [] });
+    });
+
+    it('does not let a __proto__ key set the prototype', () => {
+        const { value, issues } = evaluateWithIssues("({ __proto__: { title: 'X' }, a: 1 })");
+
+        expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
+        expect('title' in (value as object)).toBe(false);
+        expect(value).toEqual({ a: 1 });
+        expect(issues).toEqual([{ path: ['__proto__'], text: "__proto__: { title: 'X' }", reason: 'unsupported' }]);
+    });
+
     it('treats a deliberate undefined as a value, not as a loss', () => {
         expect(evaluateWithIssues('undefined')).toEqual({ value: undefined, issues: [] });
         expect(evaluateWithIssues('({ a: undefined })').issues).toEqual([]);
@@ -360,6 +373,7 @@ describe('evaluateStatic with a type checker', () => {
         ['declared with let', 'let LIMIT = 5;', 'let'],
         ['declared with var', 'var LIMIT = 5;', 'var'],
         ['declared without a value', 'declare const LIMIT: number;', 'no-value'],
+        ['an ambient let', 'declare let LIMIT: number;', 'no-value'],
         ['a function', 'function LIMIT() { return 5; }', 'runtime-value'],
         ['a class', 'class LIMIT {}', 'runtime-value']
     ])('names the reference that failed when it is %s', (_, declaration, kind) => {
@@ -384,6 +398,91 @@ describe('evaluateStatic with a type checker', () => {
             value: { a: { b: {} } },
             issues: [{ path: ['a', 'b', 'a'], text: 'A', file: '/main.ts', cause: { text: 'A', kind: 'cycle' } }]
         });
+    });
+
+    it('does not read an index that a dropped element would have shifted', () => {
+        const main = "let first = 's';\nconst SIZES = [first, 'm', 'l'];\nexport const subject = { size: SIZES[1], count: SIZES.length };";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: {},
+            issues: [
+                { path: ['size'], text: 'SIZES[1]', file: '/main.ts', cause: { text: 'first', kind: 'let' } },
+                { path: ['count'], text: 'SIZES.length', file: '/main.ts', cause: { text: 'first', kind: 'let' } }
+            ]
+        });
+    });
+
+    it('still reads an index before a dropped element', () => {
+        const main = "let last = 'l';\nconst SIZES = ['s', 'm', last];\nexport const subject = SIZES[1];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: 'm', issues: [] });
+    });
+
+    it('does not read a property that a constant only partly holds', () => {
+        const main = 'const T = { d: { x: 1, f: pick() }, e: 2 };\nexport const subject = { d: T.d, e: T.e };';
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: { e: 2 },
+            issues: [{ path: ['d'], text: 'T.d', file: '/main.ts', cause: undefined }]
+        });
+    });
+
+    it('drops a key that a failed override would have replaced', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const B = { a: 1, b: 2 };\nexport const subject = { ...B, a: pick() };' })).toEqual({
+            value: { b: 2 },
+            issues: [{ path: ['a'], text: 'pick()', file: '/main.ts', cause: undefined }]
+        });
+    });
+
+    it('names why a computed key failed, without blaming it for a later failure', () => {
+        const main = "let key = 'a';\nexport const subject = { [key]: 1, b: `${pick()}` };";
+
+        expect(evaluateInProgram({ '/main.ts': main }).issues).toEqual([
+            { path: [], text: '[key]: 1', file: '/main.ts', cause: { text: 'key', kind: 'let' } },
+            { path: ['b'], text: '`${pick()}`', file: '/main.ts', cause: undefined }
+        ]);
+    });
+
+    it('names a global of the JavaScript runtime as declared without a value, not as a var', () => {
+        const files = {
+            '/lib.d.ts': 'declare var Math: { readonly PI: number };',
+            '/main.ts': '/// <reference path="./lib.d.ts" />\nexport const subject = { angle: Math.PI };'
+        };
+
+        expect(evaluateInProgram(files).issues).toEqual([{ path: ['angle'], text: 'Math.PI', file: '/main.ts', cause: { text: 'Math', kind: 'no-value' } }]);
+    });
+
+    // One lookup per reference to SHARED, plus one per INNER inside SHARED, which is folded once and reused.
+    it('folds a constant once, however often it is referenced', () => {
+        let lookups = 0;
+        const counting = (checker: ts.TypeChecker) =>
+            new Proxy(checker, {
+                get(target, property, receiver) {
+                    if (property === 'getSymbolAtLocation') {
+                        return (node: ts.Node) => {
+                            lookups++;
+                            return target.getSymbolAtLocation(node);
+                        };
+                    }
+                    const member = Reflect.get(target, property, receiver);
+
+                    return typeof member === 'function' ? member.bind(target) : member;
+                }
+            });
+        const main = 'const INNER = 1;\nconst SHARED = { a: INNER, b: INNER, c: INNER, d: INNER, e: INNER };\nexport const subject = [SHARED, SHARED, SHARED, SHARED];';
+        const { value } = evaluateInProgram({ '/main.ts': main }, counting);
+
+        expect(value).toHaveLength(4);
+        expect(lookups).toBe(9);
+    });
+
+    it('gives every reference its own copy of a constant', () => {
+        const { value } = evaluateInProgram({ '/main.ts': 'const SHARED = { a: [1] };\nexport const subject = [SHARED, SHARED];' });
+        const [first, second] = value as Array<{ a: number[] }>;
+
+        expect(first).toEqual(second);
+        expect(first).not.toBe(second);
+        expect(first.a).not.toBe(second.a);
     });
 
     it('does not read a property a const does not have', () => {

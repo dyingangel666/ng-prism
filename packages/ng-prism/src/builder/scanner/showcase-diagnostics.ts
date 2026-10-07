@@ -7,7 +7,7 @@ const MAX_EXCERPT_LENGTH = 60;
 const CAUSES: Record<UnresolvedReference['kind'], string> = {
     let: 'is declared with let; only const declarations can be read',
     var: 'is declared with var; only const declarations can be read',
-    'no-value': 'is declared without a value, as with declare const or in the .d.ts of a compiled package',
+    'no-value': 'is declared without a value, as in a .d.ts file or with declare',
     cycle: 'refers back to itself',
     'runtime-value': 'is a function or class, which only exists at runtime'
 };

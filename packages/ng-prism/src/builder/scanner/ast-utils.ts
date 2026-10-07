@@ -14,8 +14,8 @@ export interface UnresolvedReference {
     node: ts.Node;
     /**
      * `let` and `var` are not constants. `no-value` is a declaration without an
-     * initializer, as with `declare const` or in the `.d.ts` of a compiled
-     * package. `cycle` is a constant that refers back to itself, and
+     * initializer: `declare const`, a compiled package's `.d.ts`, or a global
+     * of the JavaScript runtime such as `Math`. `cycle` is a constant that refers back to itself, and
      * `runtime-value` a function or class.
      */
     kind: 'let' | 'var' | 'no-value' | 'cycle' | 'runtime-value';
@@ -41,11 +41,21 @@ export interface EvaluateOptions {
     checker?: ts.TypeChecker;
 }
 
+interface Resolved {
+    value: unknown;
+    /** Relative to the constant, so that each reference reports them at its own path. */
+    issues: UnevaluableIssue[];
+    /** Why the constant as a whole could not be folded, if it could not. */
+    cause?: UnresolvedReference;
+}
+
 interface Context {
     readonly report: UnevaluableReporter;
     readonly checker: ts.TypeChecker | undefined;
     /** Declarations being evaluated right now, to stop at a constant that refers back to itself. */
     readonly resolving: Set<ts.VariableDeclaration>;
+    /** Constants folded so far in this evaluation, so that a shared one is folded once. */
+    readonly resolved: Map<ts.VariableDeclaration, Resolved>;
     /** Shared with {@link silent} copies, so that a failing operand can still name its cause. */
     readonly trace: { cause?: UnresolvedReference };
 }
@@ -72,7 +82,7 @@ const DECLARATION_SYMBOLS = ts.SymbolFlags.Variable | ts.SymbolFlags.EnumMember 
  * around it. Only the root itself can come back as {@link UNEVALUABLE}.
  */
 export function evaluateStatic(node: ts.Expression, options: EvaluateOptions = {}): unknown {
-    return evaluateMember(node, [], { report: options.report ?? ignore, checker: options.checker, resolving: new Set(), trace: {} });
+    return evaluateMember(node, [], { report: options.report ?? ignore, checker: options.checker, resolving: new Set(), resolved: new Map(), trace: {} });
 }
 
 /**
@@ -195,18 +205,47 @@ function evaluateReference(symbol: ts.Symbol | undefined, reference: ts.Node, pa
     }
 
     if (!declaration || !ts.isVariableDeclaration(declaration) || !ts.isIdentifier(declaration.name)) return UNEVALUABLE;
+    // Before let and var: an ambient `declare var Math` is a declaration without a value, not a variable the user chose.
+    if (!declaration.initializer) return fail(reference, 'no-value', context);
 
     const scope = ts.getCombinedNodeFlags(declaration) & ts.NodeFlags.BlockScoped;
 
     if (scope === ts.NodeFlags.Let) return fail(reference, 'let', context);
     if (scope === 0) return fail(reference, 'var', context);
     if (scope !== ts.NodeFlags.Const) return UNEVALUABLE;
-    if (!declaration.initializer) return fail(reference, 'no-value', context);
-    if (context.resolving.has(declaration)) return fail(reference, 'cycle', context);
+
+    const resolved = context.resolved.get(declaration) ?? resolveConstant(declaration, declaration.initializer, context);
+
+    if (!resolved) return fail(reference, 'cycle', context);
+
+    for (const issue of resolved.issues) context.report({ ...issue, path: [...path, ...issue.path] });
+
+    if (resolved.value === UNEVALUABLE) {
+        context.trace.cause ??= resolved.cause;
+        return UNEVALUABLE;
+    }
+    // A copy per reference, so that two of them never share an object a plugin could change through either.
+    return structuredClone(resolved.value);
+}
+
+/**
+ * Folds a constant once per evaluation, recording its issues relative to the
+ * constant itself. `undefined` while the same constant is still being folded
+ * further up, which is a cycle.
+ */
+function resolveConstant(declaration: ts.VariableDeclaration, initializer: ts.Expression, context: Context): Resolved | undefined {
+    if (context.resolving.has(declaration)) return undefined;
+
+    const issues: UnevaluableIssue[] = [];
+    const trace: Context['trace'] = {};
 
     context.resolving.add(declaration);
     try {
-        return evaluateNode(declaration.initializer, path, context);
+        const value = evaluateNode(initializer, [], { ...context, report: (issue) => issues.push(issue), trace });
+        const resolved: Resolved = { value, issues, cause: trace.cause };
+
+        context.resolved.set(declaration, resolved);
+        return resolved;
     } finally {
         context.resolving.delete(declaration);
     }
@@ -233,12 +272,37 @@ function evaluateAccess(node: ts.PropertyAccessExpression | ts.ElementAccessExpr
         return evaluateReference(symbol, node, path, context);
     }
 
-    const object = evaluateNode(node.expression, [], silent(context));
+    const dropped: UnevaluableIssue[] = [];
+    const object = evaluateNode(node.expression, [], { ...context, report: (issue) => dropped.push(issue) });
     const key = ts.isPropertyAccessExpression(node) ? node.name.text : evaluateNode(node.argumentExpression, [], silent(context));
 
     if (typeof object !== 'object' || object === null || (typeof key !== 'string' && typeof key !== 'number')) return UNEVALUABLE;
 
+    const lost = dropped.find((issue) => touches(issue.path, key, Array.isArray(object)));
+
+    if (lost) {
+        context.trace.cause ??= lost.cause;
+        return UNEVALUABLE;
+    }
     return Object.hasOwn(object, key) ? (object as Record<string | number, unknown>)[key] : UNEVALUABLE;
+}
+
+/**
+ * Whether a part dropped from an object or array could change what `[key]`
+ * reads from it: the part itself, something a spread might have supplied, or,
+ * in an array, an element whose removal moved the later ones up.
+ */
+function touches(dropped: EvaluationPath, key: string | number, array: boolean): boolean {
+    if (dropped.length === 0) return true;
+
+    const [head] = dropped;
+
+    if (!array) return String(head) === String(key);
+
+    const index = Number(key);
+    const moved = dropped.length === 1 && (key === 'length' || (typeof head === 'number' && head < index));
+
+    return head === index || moved;
 }
 
 function evaluatePrefixUnary(node: ts.PrefixUnaryExpression, context: Context): unknown {
@@ -306,6 +370,12 @@ function evaluateArray(node: ts.ArrayLiteralExpression, path: EvaluationPath, co
     node.elements.forEach((element, index) => {
         const elementPath = [...path, index];
 
+        if (ts.isOmittedExpression(element)) {
+            // A hole is a position, not a value that went missing.
+            result.push(undefined);
+            return;
+        }
+
         if (ts.isSpreadElement(element)) {
             const spread = guard(element, elementPath, context, () => {
                 const value = evaluateNode(element.expression, elementPath, context);
@@ -335,7 +405,9 @@ function evaluateObject(node: ts.ObjectLiteralExpression, path: EvaluationPath, 
                 return isRecord(value) ? value : UNEVALUABLE;
             });
 
-            if (isRecord(spread)) Object.assign(result, spread);
+            if (isRecord(spread)) {
+                for (const [key, value] of Object.entries(spread)) setOwn(result, key, value);
+            }
             continue;
         }
 
@@ -343,45 +415,65 @@ function evaluateObject(node: ts.ObjectLiteralExpression, path: EvaluationPath, 
             const keyPath = [...path, prop.name.text];
             const value = guard(prop, keyPath, context, () => evaluateReference(context.checker?.getShorthandAssignmentValueSymbol(prop), prop.name, keyPath, context));
 
-            if (value !== UNEVALUABLE) result[prop.name.text] = value;
+            assign(result, prop.name.text, value);
             continue;
         }
 
-        const key = propertyKey(prop.name, context);
+        const key = propertyKey(prop, path, context);
 
-        if (key === undefined) {
-            context.report({ path, node: prop, reason: 'unsupported' });
+        if (key === undefined) continue;
+
+        if (key === '__proto__' && !ts.isComputedPropertyName(prop.name)) {
+            // In a literal, `__proto__: x` sets the prototype instead of creating a property.
+            context.report({ path: [...path, key], node: prop, reason: 'unsupported' });
             continue;
         }
 
         if (!ts.isPropertyAssignment(prop)) {
             // Methods and accessors: functions, whatever their syntax.
             context.report({ path: [...path, key], node: prop, reason: 'runtime-value' });
+            assign(result, key, UNEVALUABLE);
             continue;
         }
 
-        const value = evaluateMember(prop.initializer, [...path, key], context);
-
-        if (value !== UNEVALUABLE) result[key] = value;
+        assign(result, key, evaluateMember(prop.initializer, [...path, key], context));
     }
     return result;
 }
 
-function propertyKey(name: ts.PropertyName, context: Context): string | undefined {
-    if (ts.isIdentifier(name) || ts.isStringLiteral(name)) {
-        return name.text;
-    }
+/** The key of `prop`, or `undefined` once it is reported as unreadable, with the reason if a reference is to blame. */
+function propertyKey(prop: ts.PropertyAssignment | ts.MethodDeclaration | ts.AccessorDeclaration, path: EvaluationPath, context: Context): string | undefined {
+    const key = guard(prop, path, context, () => {
+        const { name } = prop;
 
-    if (ts.isNumericLiteral(name)) {
-        return String(Number(name.text));
-    }
+        if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
+        if (ts.isNumericLiteral(name)) return String(Number(name.text));
+        if (!ts.isComputedPropertyName(name)) return UNEVALUABLE;
 
-    if (ts.isComputedPropertyName(name)) {
-        const key = evaluateNode(name.expression, [], silent(context));
+        const value = evaluateNode(name.expression, [], silent(context));
 
-        return typeof key === 'string' || typeof key === 'number' ? String(key) : undefined;
+        return typeof value === 'string' || typeof value === 'number' ? String(value) : UNEVALUABLE;
+    });
+
+    return typeof key === 'string' ? key : undefined;
+}
+
+/**
+ * Sets `key`, or removes it when its value could not be evaluated: the source
+ * overrides whatever an earlier spread put there, so keeping that would show
+ * a value the source replaces.
+ */
+function assign(target: Record<string, unknown>, key: string, value: unknown): void {
+    if (value === UNEVALUABLE) {
+        Reflect.deleteProperty(target, key);
+        return;
     }
-    return undefined;
+    setOwn(target, key, value);
+}
+
+/** An own property even for `__proto__`, which plain assignment would turn into the prototype. */
+function setOwn(target: Record<string, unknown>, key: string, value: unknown): void {
+    Object.defineProperty(target, key, { value, enumerable: true, writable: true, configurable: true });
 }
 
 function isRuntimeValue(node: ts.Node): boolean {
