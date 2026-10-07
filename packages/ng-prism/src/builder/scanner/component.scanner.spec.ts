@@ -359,8 +359,30 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
             'UnevaluableShowcaseComponent › variants[2]',
             'TopLevelSpreadComponent › @Showcase',
             'UnevaluableRootComponent › @Showcase',
-            expect.stringMatching(/^DeprecatedProvidersComponent declares @Showcase providers/)
+            expect.stringMatching(/^DeprecatedProvidersComponent declares @Showcase providers/),
+            'ConstantShowcaseComponent › variants[1] "Retry" › inputs.retries'
         ]);
+    });
+
+    it('resolves constants, enum members and spread constants, also from other files', () => {
+        const component = scan().components.find((c) => c.className === 'ConstantShowcaseComponent')!;
+
+        expect(component.showcaseConfig.meta).toEqual({ a11y: { accept: ['color-contrast'] }, figma: 'https://www.figma.com/design/abc123/DS' });
+        expect(component.showcaseConfig.variants![0].inputs).toEqual({ maxFileSize: 5242880, maxFiles: 3, size: 'm' });
+    });
+
+    it('names the reference behind a value it had to drop', () => {
+        const message = scan().diagnostics.find((d) => d.includes('inputs.retries'))!;
+
+        expect(message).toContain(
+            'constant-showcase.component.ts:21:36) cannot be evaluated statically and was dropped: retries is declared with let; only const declarations can be read.'
+        );
+    });
+
+    it('resolves a constant selector in @Component', () => {
+        const component = scan().components.find((c) => c.className === 'ConstantShowcaseComponent')!;
+
+        expect(component.componentMeta.selector).toBe('constant-showcase');
     });
 
     it('warns once about deprecated providers instead of once per provider', () => {
@@ -410,7 +432,7 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         scanComponents(exports, checker, diagnostics);
         scanComponents(exports, checker, diagnostics);
 
-        expect(diagnostics).toHaveLength(7);
+        expect(diagnostics).toHaveLength(8);
         expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });

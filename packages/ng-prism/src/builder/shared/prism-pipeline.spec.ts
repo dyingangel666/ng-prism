@@ -186,7 +186,7 @@ describe('runPrismPipeline integration', () => {
 
         try {
             await expect(runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState())).rejects.toThrow(
-                /strictShowcase is enabled and 7 @Showcase value\(s\) were dropped/
+                /strictShowcase is enabled and 8 @Showcase value\(s\) were dropped/
             );
             expect(existsSync(join(tmp, 'ng-prism-cache'))).toBe(false);
         } finally {
@@ -201,7 +201,7 @@ describe('runPrismPipeline integration', () => {
         try {
             const result = await runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState());
 
-            expect(result.componentCount).toBe(3);
+            expect(result.componentCount).toBe(4);
             expect(warn).toHaveBeenCalledWith(expect.stringContaining('UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize'));
         } finally {
             warn.mockRestore();

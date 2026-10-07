@@ -79,11 +79,11 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, di
         if (!showcaseDecorator) continue;
 
         const className = classDecl.name?.text ?? 'Anonymous';
-        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className, report);
+        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className, report, checker);
 
         if (!showcaseConfig) continue;
 
-        const componentMeta = extractComponentMeta(classDecl);
+        const componentMeta = extractComponentMeta(classDecl, checker);
         const inputs = extractInputs(classDecl, checker);
         const outputs = extractOutputs(classDecl, checker);
 
@@ -114,15 +114,18 @@ function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
     return false;
 }
 
-function extractShowcaseConfig(decorator: ts.Decorator, className: string, report: Report): ShowcaseConfig | undefined {
+function extractShowcaseConfig(decorator: ts.Decorator, className: string, report: Report, checker: ts.TypeChecker): ShowcaseConfig | undefined {
     const arg = getDecoratorArgument(decorator);
 
     if (!arg) return undefined;
 
-    const raw = evaluateStatic(arg, (issue) => {
-        // Reported once for the whole field below.
-        if (issue.path[0] === 'providers') return;
-        report(describeUnevaluable(className, arg, issue));
+    const raw = evaluateStatic(arg, {
+        checker,
+        report: (issue) => {
+            // Reported once for the whole field below.
+            if (issue.path[0] === 'providers') return;
+            report(describeUnevaluable(className, arg, issue));
+        }
     });
     const providersDeprecation = describeDeprecatedProviders(className, arg);
 
@@ -211,7 +214,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string, repor
     return config;
 }
 
-function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent['componentMeta'] {
+function extractComponentMeta(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): ScannedComponent['componentMeta'] {
     const componentDecorator = findDecorator(classDecl, 'Component');
 
     if (componentDecorator) {
@@ -219,7 +222,7 @@ function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent[
 
         if (!arg) return { selector: '', standalone: true, isDirective: false };
 
-        const raw = evaluateExpression(arg);
+        const raw = evaluateExpression(arg, checker);
 
         if (!raw || typeof raw !== 'object') {
             return { selector: '', standalone: true, isDirective: false };
@@ -241,7 +244,7 @@ function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent[
 
         if (!arg) return { selector: '', standalone: true, isDirective: true };
 
-        const raw = evaluateExpression(arg);
+        const raw = evaluateExpression(arg, checker);
 
         if (!raw || typeof raw !== 'object') {
             return { selector: '', standalone: true, isDirective: true };

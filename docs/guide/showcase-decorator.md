@@ -42,26 +42,32 @@ Without the generic argument, `inputs` falls back to `Record<string, unknown>`, 
 
 The builder never runs your code. It reads the `@Showcase` argument from the source, so every value in it has to be spelled out there:
 
-| Works                                           | Example                                  |
-| ----------------------------------------------- | ---------------------------------------- |
-| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`             |
-| Arithmetic and string concatenation             | `5 * 1024 * 1024`, `'Step ' + 2`         |
-| Template literals, with placeholders            | `` `${2 * 3} files` ``                   |
-| Type assertions                                 | `['pdf', 'png'] as const`, `'m' as Size` |
-| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }`       |
-| Computed keys made of a literal                 | `{ ['aria-label']: 'Close' }`            |
+| Works                                           | Example                                       |
+| ----------------------------------------------- | --------------------------------------------- |
+| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`                  |
+| Arithmetic and string concatenation             | `5 * 1024 * 1024`, `'Step ' + 2`              |
+| Template literals, with placeholders            | `` `${2 * 3} files` ``                        |
+| Type assertions                                 | `['pdf', 'png'] as const`, `'m' as Size`      |
+| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }`            |
+| `const` constants, also imported                | `MAX_FILES`, `5 * MB`                         |
+| Enum members                                    | `Size.Medium`                                 |
+| Properties and indices of constants             | `TOKENS.size.m`, `SIZES[1]`                   |
+| Spread and shorthand of constants               | `{ ...SHARED_META }`, `{ label }`             |
+| Computed keys that resolve to a string          | `{ ['aria-label']: 'Close' }`, `{ [KEY]: 1 }` |
 
-Each of these works as long as every part of it does: `5 * MB` cannot be read while `MB` cannot.
+Each of these works as long as every part of it does: `5 * MB` works while `MB` is a `const` with a readable value.
+
+A constant imported from a compiled package is read from that package's `.d.ts`, which keeps a value only when it was a plain literal. `export const MAX_FILES = 3` arrives as `MAX_FILES = 3`; `export const MB = 1024 * 1024` arrives as `MB: number` and cannot be read.
 
 Anything else would need the code to run, so the scanner drops it:
 
-| Does not work                             | Example                                     |
-| ----------------------------------------- | ------------------------------------------- |
-| References to constants, enums or imports | `MAX_FILES`, `Size.Medium`                  |
-| Spread and shorthand properties           | `{ ...shared }`, `{ label }`                |
-| Conditions and comparisons                | `dark ? 'dark' : 'light'`, `label ?? 'OK'`  |
-| Function and method calls                 | `megabytes(5)`, `items.map(toOption)`       |
-| Functions, classes and instances          | `(value) => value.length > 0`, `new Date()` |
+| Does not work                    | Example                                     |
+| -------------------------------- | ------------------------------------------- |
+| `let` and `var` variables        | `let retries = 3`                           |
+| Constants without a value        | `declare const MB: number`, see above       |
+| Conditions and comparisons       | `dark ? 'dark' : 'light'`, `label ?? 'OK'`  |
+| Function and method calls        | `megabytes(5)`, `items.map(toOption)`       |
+| Functions, classes and instances | `(value) => value.length > 0`, `new Date()` |
 
 Functions, classes and instances are a limit of the approach, not of the scanner: they only exist once code runs, so the static manifest has no way to hold them.
 
@@ -72,6 +78,14 @@ Only that value is lost. A property, an array element or a spread is dropped; th
 ```
 ⚠ ng-prism: FileInputComponent › variants[3] "Auto hint" › inputs.maxFileSize — "megabytes(5)" (projects/my-lib/src/file-input/file-input.component.ts:27:52) cannot be evaluated statically and was dropped.
 ```
+
+When a reference is what failed, the warning names it and says why:
+
+```
+⚠ ng-prism: FileInputComponent › variants[4] "Retry" › inputs.retries — "retries" (projects/my-lib/src/file-input/file-input.component.ts:31:41) cannot be evaluated statically and was dropped: retries is declared with let; only const declarations can be read.
+```
+
+A value inside a constant is reported where the constant writes it, so the location points to the line to fix even when the constant lives in another file.
 
 When the whole argument cannot be read, as in `@Showcase(FILE_INPUT_SHOWCASE)`, the component is skipped, and the warning says so.
 

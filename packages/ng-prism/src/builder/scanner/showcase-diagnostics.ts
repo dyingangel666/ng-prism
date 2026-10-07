@@ -1,8 +1,16 @@
 import { relative } from 'node:path';
 import ts from 'typescript';
-import { evaluateExpression, type EvaluationPath, type UnevaluableIssue } from './ast-utils.js';
+import { evaluateExpression, type EvaluationPath, type UnevaluableIssue, type UnresolvedReference } from './ast-utils.js';
 
 const MAX_EXCERPT_LENGTH = 60;
+
+const CAUSES: Record<UnresolvedReference['kind'], string> = {
+    let: 'is declared with let; only const declarations can be read',
+    var: 'is declared with var; only const declarations can be read',
+    'no-value': 'is declared without a value, as with declare const or in the .d.ts of a compiled package',
+    cycle: 'refers back to itself',
+    'runtime-value': 'is a function or class, which only exists at runtime'
+};
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
 /**
@@ -20,7 +28,9 @@ export function describeUnevaluable(className: string, config: ts.Expression, is
           ? 'is a runtime value (function, class or instance) and cannot be part of the static manifest; it was dropped'
           : 'cannot be evaluated statically and was dropped';
 
-    return `${className} › ${where} — "${excerpt(issue.node)}" (${location(issue.node)}) ${consequence}.`;
+    const cause = issue.cause ? `: ${excerpt(issue.cause.node)} ${CAUSES[issue.cause.kind]}` : '';
+
+    return `${className} › ${where} — "${excerpt(issue.node)}" (${location(issue.node)}) ${consequence}${cause}.`;
 }
 
 /**

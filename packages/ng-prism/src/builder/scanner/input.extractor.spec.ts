@@ -256,8 +256,9 @@ describe('extractOutputs (signal-based)', () => {
     });
 });
 
-describe('extractInputs with defaults that cannot be evaluated', () => {
+describe('extractInputs with defaults beyond literals', () => {
     let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
     let inputs: Map<string, InputMeta>;
 
     beforeAll(() => {
@@ -265,7 +266,8 @@ describe('extractInputs with defaults that cannot be evaluated', () => {
         const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
 
         checker = result.program.getTypeChecker();
-        const classDecl = getClassDeclaration(result.entries[0].exports, 'UnevaluableShowcaseComponent', checker);
+        exports = result.entries[0].exports;
+        const classDecl = getClassDeclaration(exports, 'UnevaluableShowcaseComponent', checker);
 
         inputs = new Map(extractInputs(classDecl, checker).map((input) => [input.name, input]));
     });
@@ -283,6 +285,13 @@ describe('extractInputs with defaults that cannot be evaluated', () => {
 
     it('keeps a literal default', () => {
         expect(inputs.get('label')!.defaultValue).toBe('');
+    });
+
+    it('resolves a default from an imported constant', () => {
+        const classDecl = getClassDeclaration(exports, 'ConstantShowcaseComponent', checker);
+        const maxFiles = extractInputs(classDecl, checker).find((input) => input.name === 'maxFiles')!;
+
+        expect(maxFiles.defaultValue).toBe(3);
     });
 });
 

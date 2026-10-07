@@ -19,7 +19,7 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 
         if (inputDecorator) {
             const required = isDecoratorInputRequired(inputDecorator);
-            const defaultValue = member.initializer ? evaluateDefault(member.initializer) : undefined;
+            const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveDecoratorInputType(member, checker);
 
@@ -39,7 +39,7 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 
         if (signalCall) {
             const required = isSignalInputRequired(signalCall);
-            const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0]) : undefined;
+            const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
 
@@ -95,9 +95,9 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
  * the part of `{ ...shared, size: 'm' }` that can be read would overwrite the
  * whole default the component actually declares.
  */
-function evaluateDefault(node: ts.Expression): unknown {
+function evaluateDefault(node: ts.Expression, checker: ts.TypeChecker): unknown {
     let complete = true;
-    const value = evaluateStatic(node, () => (complete = false));
+    const value = evaluateStatic(node, { checker, report: () => (complete = false) });
 
     return complete ? value : undefined;
 }

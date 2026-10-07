@@ -33,11 +33,41 @@ function createProgramFromSource(source: string) {
 
 function evaluateWithIssues(code: string) {
     const issues: UnevaluableIssue[] = [];
-    const value = evaluateStatic(parseExpression(code), (issue) => issues.push(issue));
+    const value = evaluateStatic(parseExpression(code), { report: (issue) => issues.push(issue) });
 
     return {
         value,
         issues: issues.map((issue) => ({ path: issue.path, text: issue.node.getText(), reason: issue.reason }))
+    };
+}
+
+/** Evaluates `subject` in `/main.ts`, with a type checker over all `files`. */
+function evaluateInProgram(files: Record<string, string>) {
+    const host = ts.createCompilerHost({});
+
+    host.getSourceFile = (name, target) => (name in files ? ts.createSourceFile(name, files[name], target, true) : undefined);
+    host.fileExists = (name) => name in files;
+    host.readFile = (name) => files[name];
+    host.directoryExists = () => true;
+    host.getCurrentDirectory = () => '/';
+
+    const program = ts.createProgram(['/main.ts'], { noLib: true, types: [], module: ts.ModuleKind.ES2022, moduleResolution: ts.ModuleResolutionKind.Node10 }, host);
+    const subject = program
+        .getSourceFile('/main.ts')!
+        .statements.filter(ts.isVariableStatement)
+        .flatMap((statement) => [...statement.declarationList.declarations])
+        .find((declaration) => declaration.name.getText() === 'subject')!;
+    const issues: UnevaluableIssue[] = [];
+    const value = evaluateStatic(subject.initializer!, { checker: program.getTypeChecker(), report: (issue) => issues.push(issue) });
+
+    return {
+        value,
+        issues: issues.map((issue) => ({
+            path: issue.path,
+            text: issue.node.getText(),
+            file: issue.node.getSourceFile().fileName,
+            cause: issue.cause && { text: issue.cause.node.getText(), kind: issue.cause.kind }
+        }))
     };
 }
 
@@ -246,6 +276,120 @@ describe('evaluateStatic', () => {
 
         expect(value).toEqual({});
         expect(issues).toEqual([expect.objectContaining({ path: ['a'], reason: 'runtime-value' })]);
+    });
+});
+
+describe('evaluateStatic with a type checker', () => {
+    it('resolves a const declared in the same file', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const MB = 1024 * 1024;\nexport const subject = { size: 5 * MB };' })).toEqual({
+            value: { size: 5242880 },
+            issues: []
+        });
+    });
+
+    it('resolves an imported const through its alias', () => {
+        const files = {
+            '/tokens.ts': 'export const MAX_FILES = 3;',
+            '/main.ts': "import { MAX_FILES as LIMIT } from './tokens';\nexport const subject = { max: LIMIT };"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({ value: { max: 3 }, issues: [] });
+    });
+
+    it('resolves a member of a namespace import', () => {
+        const files = {
+            '/tokens.ts': 'export const MAX_FILES = 3;',
+            '/main.ts': "import * as tokens from './tokens';\nexport const subject = tokens.MAX_FILES;"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({ value: 3, issues: [] });
+    });
+
+    it('resolves a shorthand property', () => {
+        expect(evaluateInProgram({ '/main.ts': "const label = 'Save';\nexport const subject = { label };" })).toEqual({
+            value: { label: 'Save' },
+            issues: []
+        });
+    });
+
+    it('merges a spread const object, letting later keys win', () => {
+        const main = "const BASE = { size: 'm', tone: 'neutral' };\nexport const subject = { ...BASE, tone: 'danger' };";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: { size: 'm', tone: 'danger' }, issues: [] });
+    });
+
+    it('splices a spread const array', () => {
+        expect(evaluateInProgram({ '/main.ts': "const BASE = ['a', 'b'];\nexport const subject = [...BASE, 'c'];" })).toEqual({
+            value: ['a', 'b', 'c'],
+            issues: []
+        });
+    });
+
+    it('reads members of regular and const enums', () => {
+        const main = "enum Size { Small = 's', Medium = 'm' }\nconst enum Level { Low = 1, High }\nexport const subject = [Size.Medium, Level.High];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: ['m', 2], issues: [] });
+    });
+
+    it('reads properties and indices of a const', () => {
+        const main = "const TOKENS = { size: { m: 16 } } as const;\nconst SIZES = ['s', 'm'];\nexport const subject = [TOKENS.size.m, SIZES[1], TOKENS['size']['m']];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: [16, 'm', 16], issues: [] });
+    });
+
+    it('resolves a computed key from a const', () => {
+        expect(evaluateInProgram({ '/main.ts': "const KEY = 'aria-label';\nexport const subject = { [KEY]: 'Close' };" })).toEqual({
+            value: { 'aria-label': 'Close' },
+            issues: []
+        });
+    });
+
+    it('drops only the unevaluable members of a spread constant and points at them in its own file', () => {
+        const files = {
+            '/tokens.ts': "export const SHARED = { size: 'm', format: pickFormat() };",
+            '/main.ts': "import { SHARED } from './tokens';\nexport const subject = { ...SHARED, a: 1 };"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({
+            value: { size: 'm', a: 1 },
+            issues: [{ path: ['format'], text: 'pickFormat()', file: '/tokens.ts', cause: undefined }]
+        });
+    });
+
+    it.each([
+        ['declared with let', 'let LIMIT = 5;', 'let'],
+        ['declared with var', 'var LIMIT = 5;', 'var'],
+        ['declared without a value', 'declare const LIMIT: number;', 'no-value'],
+        ['a function', 'function LIMIT() { return 5; }', 'runtime-value'],
+        ['a class', 'class LIMIT {}', 'runtime-value']
+    ])('names the reference that failed when it is %s', (_, declaration, kind) => {
+        expect(evaluateInProgram({ '/main.ts': `${declaration}\nexport const subject = { max: LIMIT * 2 };` }).issues).toEqual([
+            { path: ['max'], text: 'LIMIT * 2', file: '/main.ts', cause: { text: 'LIMIT', kind } }
+        ]);
+    });
+
+    it('names a const from a .d.ts as declared without a value', () => {
+        const files = {
+            '/tokens.d.ts': 'export declare const MB: number;',
+            '/main.ts': "import { MB } from './tokens';\nexport const subject = { size: 5 * MB };"
+        };
+
+        expect(evaluateInProgram(files).issues).toEqual([{ path: ['size'], text: '5 * MB', file: '/main.ts', cause: { text: 'MB', kind: 'no-value' } }]);
+    });
+
+    it('stops at a constant that refers back to itself', () => {
+        const main = 'const A = { b: B };\nconst B = { a: A };\nexport const subject = { a: A };';
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: { a: { b: {} } },
+            issues: [{ path: ['a', 'b', 'a'], text: 'A', file: '/main.ts', cause: { text: 'A', kind: 'cycle' } }]
+        });
+    });
+
+    it('does not read a property a const does not have', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const T = { a: 1 };\nexport const subject = { b: T.b };' }).issues).toEqual([
+            { path: ['b'], text: 'T.b', file: '/main.ts', cause: undefined }
+        ]);
     });
 });
 

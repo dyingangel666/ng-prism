@@ -74,12 +74,21 @@ If no `ng-package.json` is found above the file, or if discovery returns no entr
 
 **`findDecorator(node, name)`** in `ast-utils.ts` walks the node's decorator list and matches by identifier name. It supports both call-expression decorators (`@Component({...})`) and plain identifier decorators.
 
-**`evaluateStatic(node, report)`** in `ast-utils.ts` folds an AST node into a JavaScript value without running anything. It handles string, numeric and boolean literals, `null`, `undefined`, and array and object literals, including computed keys that fold to a string or number. On top of that it folds:
+**`evaluateStatic(node, { report, checker })`** in `ast-utils.ts` folds an AST node into a JavaScript value without running anything. It handles string, numeric and boolean literals, `null`, `undefined`, and array and object literals, including computed keys that fold to a string or number. On top of that it folds:
 
 - arithmetic (`+ - * / % **`) on numbers, and `+` as concatenation once either side is a string and the other a primitive
 - template literals whose placeholders fold to primitives
 - unary `-` and `+` on numbers, and `!` on anything it can fold
 - type-only wrappers, which it sees through: `as`, `as const`, `satisfies`, `<T>x` and the non-null `!`
+
+With the program's `TypeChecker` it also resolves references, which the scanner already holds from `scanComponents(exports, checker)`:
+
+- An identifier or shorthand property whose symbol, after following imports with `getAliasedSymbol`, is a `const` with an initializer folds to that initializer. `let`, `var` and a `const` without an initializer (`declare const`, a compiled package's `.d.ts`) do not.
+- An enum member folds to `checker.getConstantValue()` of its declaration. Asking the declaration matters: for an access like `Size.Medium` the checker only answers for `const enum`s.
+- A property or element access folds by reading from the folded object, unless the access names a declaration of its own, as `tokens.MAX_FILES` on a namespace import does.
+- A spread of a folded object or array merges into the literal around it, later keys winning.
+
+A set of the declarations being folded stops a constant that refers back to itself. Members inside a constant are folded like any others, so a constant costs only its unreadable members, and their issues point into the constant's own file.
 
 A calculation whose result JSON cannot carry (`1 / 0`, `0 / 0`) counts as unfoldable, since `Infinity` and `NaN` would reach the manifest as `null`. Conditions, comparisons and logical operators are left out on purpose: the evaluator folds values, it does not interpret code.
 
@@ -88,10 +97,11 @@ Whatever it cannot fold costs only the member that holds it: an object keeps its
 - `path`: where the value sat, e.g. `['variants', 3, 'inputs', 'maxFileSize']`, with array indices as written in the source
 - `node`: the expression, spread or property that could not be folded
 - `reason`: `runtime-value` for functions, classes and instances, which no static evaluation can capture; `unsupported` for everything else
+- `cause`: the innermost reference that failed, if one did, with its kind (`let`, `var`, `no-value`, `cycle`, `runtime-value`). Operands and placeholders fold silently, so this is how `5 * MB` can still say that `MB` is a `let`.
 
 Only a root that cannot be folded at all comes back as the `UNEVALUABLE` sentinel, a symbol that keeps it distinct from an `undefined` written on purpose.
 
-The three callers treat a drop differently:
+All three callers pass the checker. They treat a drop differently:
 
 | Caller                               | Entry point                               | On a dropped value                                                                                                                                        |
 | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
