@@ -265,4 +265,11 @@ export interface NgPrismConfig {
     };
     /** Accessibility (build-time audit + runtime live audit) configuration. */
     a11y?: import('../app/panels/a11y/a11y.types.js').NgPrismA11yConfig;
+    /**
+     * When true, the build fails instead of warning whenever the scanner has
+     * to drop a `@Showcase` value: one it cannot evaluate statically, an
+     * invalid `bg`, `status` or `canvasLayout`, or a missing `title`.
+     * Default: `false`.
+     */
+    strictShowcase?: boolean;
 }

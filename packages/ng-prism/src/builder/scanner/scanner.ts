@@ -10,6 +10,8 @@ export interface CreateScannerOptions {
 
 export interface ScanResult {
     components: ScannedComponent[];
+    /** One message per @Showcase value the scan had to drop, already printed as a warning. */
+    diagnostics: string[];
 }
 
 export interface Scanner {
@@ -57,9 +59,10 @@ export function createScanner(options: CreateScannerOptions): Scanner {
 
             const checker = program.getTypeChecker();
             const allComponents: ScannedComponent[] = [];
+            const diagnostics: string[] = [];
 
             for (const { exports, importPath } of entries) {
-                const components = scanComponents(exports, checker);
+                const components = scanComponents(exports, checker, diagnostics);
 
                 for (const c of components) c.importPath = importPath;
                 allComponents.push(...components);
@@ -86,7 +89,7 @@ export function createScanner(options: CreateScannerOptions): Scanner {
                 unique.push(c);
             }
 
-            return { components: unique };
+            return { components: unique, diagnostics };
         }
     };
 }

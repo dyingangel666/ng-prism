@@ -152,6 +152,24 @@ describe('createScanner', () => {
         }
     });
 
+    it('should collect a dropped @Showcase value once, even when several entry points export its component', () => {
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const unevaluableEntry = path.join(FIXTURES_DIR, 'unevaluable-api.ts');
+
+        try {
+            const scanner = createScanner({
+                entryPoints: [
+                    { entryFile: unevaluableEntry, importPath: 'lib/a' },
+                    { entryFile: unevaluableEntry, importPath: 'lib/b' }
+                ]
+            });
+
+            expect(scanner.scan().diagnostics).toHaveLength(6);
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
     it('should isolate a failing entry: other entries still scanned', () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
 
