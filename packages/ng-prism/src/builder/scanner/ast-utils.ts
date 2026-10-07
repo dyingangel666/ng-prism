@@ -19,6 +19,17 @@ export interface UnevaluableIssue {
 
 export type UnevaluableReporter = (issue: UnevaluableIssue) => void;
 
+const ignore: UnevaluableReporter = () => undefined;
+
+const ARITHMETIC: Partial<Record<ts.SyntaxKind, (left: number, right: number) => number>> = {
+    [ts.SyntaxKind.PlusToken]: (left, right) => left + right,
+    [ts.SyntaxKind.MinusToken]: (left, right) => left - right,
+    [ts.SyntaxKind.AsteriskToken]: (left, right) => left * right,
+    [ts.SyntaxKind.SlashToken]: (left, right) => left / right,
+    [ts.SyntaxKind.PercentToken]: (left, right) => left % right,
+    [ts.SyntaxKind.AsteriskAsteriskToken]: (left, right) => left ** right
+};
+
 /**
  * Statically evaluate an AST expression node.
  *
@@ -26,7 +37,7 @@ export type UnevaluableReporter = (issue: UnevaluableIssue) => void;
  * that property or element: it is reported and left out, never the container
  * around it. Only the root itself can come back as {@link UNEVALUABLE}.
  */
-export function evaluateStatic(node: ts.Expression, report: UnevaluableReporter = () => undefined): unknown {
+export function evaluateStatic(node: ts.Expression, report: UnevaluableReporter = ignore): unknown {
     return evaluateMember(node, [], report);
 }
 
@@ -53,7 +64,7 @@ function evaluateMember(node: ts.Expression, path: EvaluationPath, report: Uneva
 /**
  * Reports only what an array or object literal drops. An operand that fails
  * makes the whole expression around it {@link UNEVALUABLE}, so the member
- * holding it reports `-limit`, not just `limit`.
+ * holding it reports `limit * 2`, not just `limit`.
  */
 function evaluateNode(node: ts.Expression, path: EvaluationPath, report: UnevaluableReporter): unknown {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
@@ -61,7 +72,7 @@ function evaluateNode(node: ts.Expression, path: EvaluationPath, report: Unevalu
     }
 
     if (ts.isNumericLiteral(node)) {
-        return Number(node.text);
+        return finite(Number(node.text));
     }
 
     if (node.kind === ts.SyntaxKind.TrueKeyword) return true;
@@ -70,14 +81,27 @@ function evaluateNode(node: ts.Expression, path: EvaluationPath, report: Unevalu
     // In expression position `undefined` parses as an identifier, not a keyword.
     if (ts.isIdentifier(node) && node.text === 'undefined') return undefined;
 
-    if (ts.isParenthesizedExpression(node)) {
+    // Types only: the value is the expression inside.
+    if (
+        ts.isParenthesizedExpression(node) ||
+        ts.isAsExpression(node) ||
+        ts.isSatisfiesExpression(node) ||
+        ts.isNonNullExpression(node) ||
+        ts.isTypeAssertionExpression(node)
+    ) {
         return evaluateNode(node.expression, path, report);
     }
 
-    if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
-        const operand = evaluateNode(node.operand, path, report);
+    if (ts.isPrefixUnaryExpression(node)) {
+        return evaluatePrefixUnary(node);
+    }
 
-        return typeof operand === 'number' ? -operand : UNEVALUABLE;
+    if (ts.isBinaryExpression(node)) {
+        return evaluateBinary(node);
+    }
+
+    if (ts.isTemplateExpression(node)) {
+        return evaluateTemplate(node);
     }
 
     if (ts.isArrayLiteralExpression(node)) {
@@ -89,6 +113,61 @@ function evaluateNode(node: ts.Expression, path: EvaluationPath, report: Unevalu
     }
 
     return UNEVALUABLE;
+}
+
+function evaluatePrefixUnary(node: ts.PrefixUnaryExpression): unknown {
+    const operand = evaluateNode(node.operand, [], ignore);
+
+    switch (node.operator) {
+        case ts.SyntaxKind.MinusToken:
+            return typeof operand === 'number' ? -operand : UNEVALUABLE;
+        case ts.SyntaxKind.PlusToken:
+            return typeof operand === 'number' ? operand : UNEVALUABLE;
+        case ts.SyntaxKind.ExclamationToken:
+            return operand === UNEVALUABLE ? UNEVALUABLE : !operand;
+        default:
+            return UNEVALUABLE;
+    }
+}
+
+/**
+ * Arithmetic on numbers, and `+` as concatenation once either side is a
+ * string. Anything JavaScript would coerce beyond that, such as an object to
+ * `[object Object]`, is not what anybody meant to put into a showcase.
+ */
+function evaluateBinary(node: ts.BinaryExpression): unknown {
+    const operator = node.operatorToken.kind;
+    const left = evaluateNode(node.left, [], ignore);
+    const right = evaluateNode(node.right, [], ignore);
+
+    if (operator === ts.SyntaxKind.PlusToken && (typeof left === 'string' || typeof right === 'string')) {
+        return isPrimitive(left) && isPrimitive(right) ? String(left) + String(right) : UNEVALUABLE;
+    }
+
+    const apply = ARITHMETIC[operator];
+
+    return apply && typeof left === 'number' && typeof right === 'number' ? finite(apply(left, right)) : UNEVALUABLE;
+}
+
+function evaluateTemplate(node: ts.TemplateExpression): unknown {
+    let text = node.head.text;
+
+    for (const span of node.templateSpans) {
+        const value = evaluateNode(span.expression, [], ignore);
+
+        if (!isPrimitive(value)) return UNEVALUABLE;
+        text += String(value) + span.literal.text;
+    }
+    return text;
+}
+
+function isPrimitive(value: unknown): value is string | number | boolean | null | undefined {
+    return value === null || value === undefined || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean';
+}
+
+/** `Infinity` and `NaN` would reach the manifest as `null`. */
+function finite(value: number): number | typeof UNEVALUABLE {
+    return Number.isFinite(value) ? value : UNEVALUABLE;
 }
 
 function evaluateArray(node: ts.ArrayLiteralExpression, path: EvaluationPath, report: UnevaluableReporter): unknown[] {
@@ -153,7 +232,7 @@ function propertyKey(name: ts.PropertyName): string | undefined {
     }
 
     if (ts.isComputedPropertyName(name)) {
-        const key = evaluateNode(name.expression, [], () => undefined);
+        const key = evaluateNode(name.expression, [], ignore);
 
         return typeof key === 'string' || typeof key === 'number' ? String(key) : undefined;
     }

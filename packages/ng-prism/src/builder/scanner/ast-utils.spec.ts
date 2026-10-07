@@ -191,6 +191,50 @@ describe('evaluateStatic', () => {
     });
 
     it.each([
+        ['multiplication', '5 * 1024 * 1024', 5242880],
+        ['addition', '1 + 2', 3],
+        ['subtraction', '10 - 4', 6],
+        ['division', '9 / 2', 4.5],
+        ['a remainder', '9 % 4', 1],
+        ['exponentiation', '2 ** 10', 1024],
+        ['precedence and parentheses', '(1 + 2) * 3', 9],
+        ['a negated calculation', '-(2 * 3)', -6],
+        ['unary plus', '+5', 5],
+        ['logical not', '!false', true],
+        ['string concatenation', "'ab' + 'cd'", 'abcd'],
+        ['a number joined to a string', "'v' + 2", 'v2'],
+        ['a boolean joined to a string', "'disabled: ' + true", 'disabled: true'],
+        ['a template literal with placeholders', '`${2 * 3} files, ${"pdf"} only`', '6 files, pdf only'],
+        ['as const', "['pdf', 'png'] as const", ['pdf', 'png']],
+        ['an as assertion', "'m' as Size", 'm'],
+        ['satisfies', '({ a: 1 } satisfies Config)', { a: 1 }],
+        ['a non-null assertion', "'x'!", 'x'],
+        ['an angle-bracket assertion', '<number>5', 5],
+        ['numeric separators', '1_000_000', 1000000],
+        ['a hexadecimal literal', '0x10', 16]
+    ])('evaluates %s', (_, code, expected) => {
+        expect(evaluateWithIssues(code)).toEqual({ value: expected, issues: [] });
+    });
+
+    it.each([
+        ['an operand it cannot evaluate', 'limit * 2'],
+        ['a placeholder it cannot evaluate', '`${count} files`'],
+        ['an array in a placeholder', '`${[1, 2]}`'],
+        ['arithmetic on a string', "'a' * 2"],
+        ['addition of an object', "'a' + {}"],
+        ['division by zero', '1 / 0'],
+        ['a result that is not a number', '0 / 0'],
+        ['a comparison', '1 === 1'],
+        ['a logical operator', "'' || 'fallback'"],
+        ['unary plus on a string', "+'5'"]
+    ])('does not evaluate %s', (_, code) => {
+        expect(evaluateWithIssues(`({ a: ${code} })`)).toEqual({
+            value: {},
+            issues: [{ path: ['a'], text: code, reason: 'unsupported' }]
+        });
+    });
+
+    it.each([
         ['an arrow function', '({ a: () => 1 })'],
         ['a function expression', '({ a: function () { return 1; } })'],
         ['a class expression', '({ a: class {} })'],

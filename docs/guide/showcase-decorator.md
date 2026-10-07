@@ -42,21 +42,24 @@ Without the generic argument, `inputs` falls back to `Record<string, unknown>`, 
 
 The builder never runs your code. It reads the `@Showcase` argument from the source, so every value in it has to be spelled out there:
 
-| Works                                           | Example                            |
-| ----------------------------------------------- | ---------------------------------- |
-| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`       |
-| Template literals without placeholders          | `` `Primary` ``                    |
-| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }` |
-| Computed keys made of a literal                 | `{ ['aria-label']: 'Close' }`      |
+| Works                                           | Example                                  |
+| ----------------------------------------------- | ---------------------------------------- |
+| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`             |
+| Arithmetic and string concatenation             | `5 * 1024 * 1024`, `'Step ' + 2`         |
+| Template literals, with placeholders            | `` `${2 * 3} files` ``                   |
+| Type assertions                                 | `['pdf', 'png'] as const`, `'m' as Size` |
+| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }`       |
+| Computed keys made of a literal                 | `{ ['aria-label']: 'Close' }`            |
+
+Each of these works as long as every part of it does: `5 * MB` cannot be read while `MB` cannot.
 
 Anything else would need the code to run, so the scanner drops it:
 
 | Does not work                             | Example                                     |
 | ----------------------------------------- | ------------------------------------------- |
 | References to constants, enums or imports | `MAX_FILES`, `Size.Medium`                  |
-| Calculations and placeholders             | `5 * 1024 * 1024`, `` `${count} files` ``   |
-| Type assertions                           | `['pdf'] as const`, `value!`                |
 | Spread and shorthand properties           | `{ ...shared }`, `{ label }`                |
+| Conditions and comparisons                | `dark ? 'dark' : 'light'`, `label ?? 'OK'`  |
 | Function and method calls                 | `megabytes(5)`, `items.map(toOption)`       |
 | Functions, classes and instances          | `(value) => value.length > 0`, `new Date()` |
 
@@ -72,7 +75,7 @@ Only that value is lost. A property, an array element or a spread is dropped; th
 
 When the whole argument cannot be read, as in `@Showcase(FILE_INPUT_SHOWCASE)`, the component is skipped, and the warning says so.
 
-To fix a warning, write the value out: `maxFileSize: 5242880` instead of `megabytes(5)`. To make the build fail instead of warning, for example in CI, set [`strictShowcase`](api/ng-prism-config.md#strictshowcase).
+To fix a warning, write the value out: `maxFileSize: 5 * 1024 * 1024` instead of `megabytes(5)`. To make the build fail instead of warning, for example in CI, set [`strictShowcase`](api/ng-prism-config.md#strictshowcase).
 
 ## All Fields
 

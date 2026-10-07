@@ -40,7 +40,7 @@ interface Variant<T = unknown> {
 
 When no variants are defined, a single unlabeled canvas is shown and all controls start at their default values.
 
-Variant values are read from the source without running it, so they have to be written out: a calculation, a constant or a function call is dropped with a warning. See [What the scanner can read](guide/showcase-decorator.md#what-the-scanner-can-read).
+Variant values are read from the source without running it, so they have to be written out: a constant or a function call is dropped with a warning. See [What the scanner can read](guide/showcase-decorator.md#what-the-scanner-can-read).
 
 ## Type-safe inputs
 

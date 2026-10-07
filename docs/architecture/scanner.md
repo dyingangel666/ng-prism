@@ -74,7 +74,14 @@ If no `ng-package.json` is found above the file, or if discovery returns no entr
 
 **`findDecorator(node, name)`** in `ast-utils.ts` walks the node's decorator list and matches by identifier name. It supports both call-expression decorators (`@Component({...})`) and plain identifier decorators.
 
-**`evaluateStatic(node, report)`** in `ast-utils.ts` folds an AST node into a JavaScript value without running anything. It handles string, numeric and boolean literals, `null`, `undefined`, template literals without placeholders, negative numbers, and array and object literals, including computed keys that are literals themselves.
+**`evaluateStatic(node, report)`** in `ast-utils.ts` folds an AST node into a JavaScript value without running anything. It handles string, numeric and boolean literals, `null`, `undefined`, and array and object literals, including computed keys that fold to a string or number. On top of that it folds:
+
+- arithmetic (`+ - * / % **`) on numbers, and `+` as concatenation once either side is a string and the other a primitive
+- template literals whose placeholders fold to primitives
+- unary `-` and `+` on numbers, and `!` on anything it can fold
+- type-only wrappers, which it sees through: `as`, `as const`, `satisfies`, `<T>x` and the non-null `!`
+
+A calculation whose result JSON cannot carry (`1 / 0`, `0 / 0`) counts as unfoldable, since `Infinity` and `NaN` would reach the manifest as `null`. Conditions, comparisons and logical operators are left out on purpose: the evaluator folds values, it does not interpret code.
 
 Whatever it cannot fold costs only the member that holds it: an object keeps its other properties, an array its other elements, and a spread, a shorthand property or an unreadable computed key drops just itself. Each drop goes to `report` as an `UnevaluableIssue`:
 
