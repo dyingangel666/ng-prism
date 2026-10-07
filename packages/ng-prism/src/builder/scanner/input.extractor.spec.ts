@@ -1,5 +1,6 @@
 import path from 'node:path';
 import ts from 'typescript';
+import type { InputMeta } from '../../plugin/plugin.types.js';
 import { resolveEntryPointExports } from './entry-point.scanner.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
 
@@ -252,6 +253,36 @@ describe('extractOutputs (signal-based)', () => {
         expect(outputs[0].doc).toBe('Click event');
         expect(outputs[1].name).toBe('valueChange');
         expect(outputs[1].doc).toBe('Value change event');
+    });
+});
+
+describe('extractInputs with defaults that cannot be evaluated', () => {
+    let checker: ts.TypeChecker;
+    let inputs: Map<string, InputMeta>;
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'unevaluable-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        const classDecl = getClassDeclaration(result.entries[0].exports, 'UnevaluableShowcaseComponent', checker);
+
+        inputs = new Map(extractInputs(classDecl, checker).map((input) => [input.name, input]));
+    });
+
+    // The renderer applies defaultValue to the component, so the readable
+    // part of a default would overwrite the real one.
+    it('leaves out a default that is only partly evaluable', () => {
+        expect(inputs.get('formats')!.defaultValue).toBeUndefined();
+        expect(inputs.get('rules')!.defaultValue).toBeUndefined();
+    });
+
+    it('leaves out a default it cannot evaluate at all', () => {
+        expect(inputs.get('maxFileSize')!.defaultValue).toBeUndefined();
+    });
+
+    it('keeps a literal default', () => {
+        expect(inputs.get('label')!.defaultValue).toBe('');
     });
 });
 
