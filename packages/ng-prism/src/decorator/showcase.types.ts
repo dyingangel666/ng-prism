@@ -60,11 +60,11 @@ export interface ShowcaseConfig<T = unknown> {
     /** Tags for search and filtering */
     tags?: string[];
     /**
-     * Not supported by the build: providers are classes, factories or
-     * instances, which the static scanner cannot read, so they are dropped
-     * with a warning. For library-wide providers use
-     * `defineConfig({ appProviders })`; for one component, a component page
-     * (`renderPage`) that declares them.
+     * @deprecated Deprecated since 22.4.0, removed in 23.0.0. Never reached
+     * the styleguide: providers are classes, factories or instances, which the
+     * static manifest cannot hold, so the build drops them with a warning. Use
+     * `defineConfig({ appProviders })`, or, for one component, a component
+     * page (`renderPage`) that declares them.
      */
     providers?: Provider[];
     /** Arbitrary metadata for plugins (e.g. { figma: 'https://...' }) */

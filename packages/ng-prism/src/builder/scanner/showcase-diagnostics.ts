@@ -23,6 +23,22 @@ export function describeUnevaluable(className: string, config: ts.Expression, is
     return `${className} › ${where} — "${excerpt(issue.node)}" (${location(issue.node)}) ${consequence}.`;
 }
 
+/**
+ * `providers` never reached the manifest: classes, factories and instances
+ * cannot be written into static data. One message for the field, not one per
+ * provider, because none of them could have been kept.
+ */
+export function describeDeprecatedProviders(className: string, config: ts.Expression): string | undefined {
+    const providers = ts.isObjectLiteralExpression(config) ? findProperty(config, 'providers') : undefined;
+
+    if (!providers) return undefined;
+
+    return (
+        `${className} declares @Showcase providers (${location(providers)}), which are deprecated and will be removed in 23.0.0; ` +
+        `the manifest is static and cannot hold them, so they never reach the styleguide. Use defineConfig({ appProviders }) instead.`
+    );
+}
+
 /** A variant is named by its `name` as well as its index, since that is what the styleguide shows. */
 function formatShowcasePath(path: EvaluationPath, config: ts.Expression): string {
     const [head, index, ...rest] = path;
@@ -47,21 +63,22 @@ function formatPath(path: EvaluationPath): string {
 
 /** Read from the source, because the evaluated array has already lost the elements before the index. */
 function variantName(config: ts.Expression, index: number): string | undefined {
-    const variants = ts.isObjectLiteralExpression(config) ? findProperty(config, 'variants') : undefined;
+    const variants = ts.isObjectLiteralExpression(config) ? findInitializer(config, 'variants') : undefined;
     const variant = variants && ts.isArrayLiteralExpression(variants) ? variants.elements[index] : undefined;
-    const name = variant && ts.isObjectLiteralExpression(variant) ? findProperty(variant, 'name') : undefined;
+    const name = variant && ts.isObjectLiteralExpression(variant) ? findInitializer(variant, 'name') : undefined;
     const value = name && evaluateExpression(name);
 
     return typeof value === 'string' ? value : undefined;
 }
 
-function findProperty(object: ts.ObjectLiteralExpression, key: string): ts.Expression | undefined {
-    for (const prop of object.properties) {
-        if (ts.isPropertyAssignment(prop) && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) && prop.name.text === key) {
-            return prop.initializer;
-        }
-    }
-    return undefined;
+function findProperty(object: ts.ObjectLiteralExpression, key: string): ts.ObjectLiteralElementLike | undefined {
+    return object.properties.find((prop) => prop.name !== undefined && (ts.isIdentifier(prop.name) || ts.isStringLiteral(prop.name)) && prop.name.text === key);
+}
+
+function findInitializer(object: ts.ObjectLiteralExpression, key: string): ts.Expression | undefined {
+    const prop = findProperty(object, key);
+
+    return prop && ts.isPropertyAssignment(prop) ? prop.initializer : undefined;
 }
 
 function excerpt(node: ts.Node): string {

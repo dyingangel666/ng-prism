@@ -5,7 +5,7 @@ import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
 import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, UNEVALUABLE } from './ast-utils.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
-import { describeUnevaluable } from './showcase-diagnostics.js';
+import { describeDeprecatedProviders, describeUnevaluable } from './showcase-diagnostics.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -119,7 +119,14 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string, repor
 
     if (!arg) return undefined;
 
-    const raw = evaluateStatic(arg, (issue) => report(describeUnevaluable(className, arg, issue)));
+    const raw = evaluateStatic(arg, (issue) => {
+        // Reported once for the whole field below.
+        if (issue.path[0] === 'providers') return;
+        report(describeUnevaluable(className, arg, issue));
+    });
+    const providersDeprecation = describeDeprecatedProviders(className, arg);
+
+    if (providersDeprecation) report(providersDeprecation);
 
     if (raw === UNEVALUABLE || !raw || typeof raw !== 'object') return undefined;
 

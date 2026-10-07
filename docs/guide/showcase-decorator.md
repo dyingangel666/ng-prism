@@ -192,9 +192,9 @@ Array of strings used for search and filtering in the sidebar. Tags are matched 
 
 ### `providers`
 
-> **Not supported by the build.** A provider is a class, a factory or an instance, which the [scanner cannot read](#what-the-scanner-can-read). The build drops `providers` with a warning, and the component renders without them.
+> **Deprecated since 22.4.0, removed in 23.0.0.** `providers` never reached the styleguide: a provider is a class, a factory or an instance, which the [scanner cannot read](#what-the-scanner-can-read). The build drops the field with one warning per component, and the component renders without it.
 
-For library-wide providers, use `defineConfig({ appProviders })` in your config file. For providers that only one component needs, render it through a [component page](guide/component-pages.md) via [`renderPage`](#renderpage) and declare the providers on the page component.
+Components that inject something the Prism app does not provide (a `Router` for `routerLink`, `HttpClient`, a translation service, a library config token) get it from `defineConfig({ appProviders })`, which feeds the app's root injector. In the rare case that one component needs a provider the others must not see, render it through a [component page](guide/component-pages.md) via [`renderPage`](#renderpage) and declare the provider on the page component.
 
 ### `meta`
 

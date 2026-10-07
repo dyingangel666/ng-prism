@@ -358,8 +358,17 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
             'UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize',
             'UnevaluableShowcaseComponent › variants[2]',
             'TopLevelSpreadComponent › @Showcase',
-            'UnevaluableRootComponent › @Showcase'
+            'UnevaluableRootComponent › @Showcase',
+            expect.stringMatching(/^DeprecatedProvidersComponent declares @Showcase providers/)
         ]);
+    });
+
+    it('warns once about deprecated providers instead of once per provider', () => {
+        const messages = scan().diagnostics.filter((d) => d.startsWith('DeprecatedProvidersComponent'));
+
+        expect(messages).toHaveLength(1);
+        expect(messages[0]).toContain('deprecated-providers.component.ts:17:5), which are deprecated and will be removed in 23.0.0');
+        expect(messages[0]).toContain('defineConfig({ appProviders })');
     });
 
     it('drops only the value it cannot evaluate', () => {
@@ -401,7 +410,7 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         scanComponents(exports, checker, diagnostics);
         scanComponents(exports, checker, diagnostics);
 
-        expect(diagnostics).toHaveLength(6);
+        expect(diagnostics).toHaveLength(7);
         expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });

@@ -136,9 +136,9 @@ Optional array of strings used for sidebar search and filtering. Matched alongsi
 
 ### `providers`
 
-Not supported by the build. Providers are classes, factories or instances, which the [static scanner](guide/showcase-decorator.md#what-the-scanner-can-read) cannot read, so the build drops them with a warning.
+**Deprecated** since 22.4.0, removed in 23.0.0. Providers are classes, factories or instances, which the [static scanner](guide/showcase-decorator.md#what-the-scanner-can-read) cannot read, so they never reached the styleguide. The build drops the field with one warning per component.
 
-For library-wide providers, use `defineConfig({ appProviders })`. For providers only one component needs, use a [component page](guide/component-pages.md) and declare them on the page component.
+Use `defineConfig({ appProviders })` instead. For a provider only one component may see, use a [component page](guide/component-pages.md) and declare it on the page component.
 
 ---
 

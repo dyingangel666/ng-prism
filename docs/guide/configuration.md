@@ -53,7 +53,7 @@ export default defineConfig({
 });
 ```
 
-For providers scoped to a single component, use `@Showcase({ providers: [...] })` instead.
+Only for a provider that one component needs and the others must not see, render that component through a [component page](guide/component-pages.md) and declare the provider there. `@Showcase({ providers })` never worked and is deprecated.
 
 ## Theming
 
