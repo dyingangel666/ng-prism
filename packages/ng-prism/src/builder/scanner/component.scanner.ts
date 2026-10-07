@@ -127,6 +127,12 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
     if (typeof obj['sectionOrder'] === 'number') {
         config.sectionOrder = obj['sectionOrder'];
     }
+    if (typeof obj['categoryOrder'] === 'number') {
+        config.categoryOrder = obj['categoryOrder'];
+    }
+    if (typeof obj['componentOrder'] === 'number') {
+        config.componentOrder = obj['componentOrder'];
+    }
     if (obj['tags']) config.tags = obj['tags'] as string[];
     if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
     if (obj['host'] !== undefined) config.host = obj['host'] as ShowcaseConfig['host'];

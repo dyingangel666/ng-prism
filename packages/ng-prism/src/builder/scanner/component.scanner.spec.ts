@@ -280,6 +280,14 @@ describe('scanComponents', () => {
         expect(sectioned.showcaseConfig.sectionOrder).toBe(5);
     });
 
+    it('extracts categoryOrder and componentOrder from showcaseConfig', () => {
+        const components = scanComponents(exports, checker);
+        const sectioned = components.find((c) => c.className === 'SectionedComponent')!;
+
+        expect(sectioned.showcaseConfig.categoryOrder).toBe(3);
+        expect(sectioned.showcaseConfig.componentOrder).toBe(2);
+    });
+
     it('omits section and sectionOrder when not declared', () => {
         const components = scanComponents(exports, checker);
         const button = components.find((c) => c.className === 'ButtonComponent')!;
