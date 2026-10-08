@@ -3,8 +3,9 @@ import type { ComponentStatus, ShowcaseConfig } from '../../decorator/showcase.t
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
-import { evaluateExpression, findDecorator, getDecoratorArgument } from './ast-utils.js';
+import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, UNEVALUABLE } from './ast-utils.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
+import { describeDeprecatedProviders, describeUnevaluable } from './showcase-diagnostics.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -44,11 +45,22 @@ function isCanvasLayout(value: unknown): value is CanvasLayout {
     return typeof value === 'string' && (CANVAS_LAYOUTS as readonly string[]).includes(value);
 }
 
+type Report = (message: string) => void;
+
 /**
  * Scan exported symbols for Angular components annotated with @Showcase.
+ *
+ * Every @Showcase value the scan has to drop is printed and collected in
+ * `diagnostics`, once: sharing the array across entry points keeps a
+ * component exported from several of them from repeating its warnings.
  */
-export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): ScannedComponent[] {
+export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, diagnostics: string[] = []): ScannedComponent[] {
     const components: ScannedComponent[] = [];
+    const report: Report = (message) => {
+        if (diagnostics.includes(message)) return;
+        diagnostics.push(message);
+        console.warn(`⚠ ng-prism: ${message}`);
+    };
 
     for (const sym of exports) {
         const resolved = sym.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(sym) : sym;
@@ -67,11 +79,11 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker): S
         if (!showcaseDecorator) continue;
 
         const className = classDecl.name?.text ?? 'Anonymous';
-        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className);
+        const showcaseConfig = extractShowcaseConfig(showcaseDecorator, className, report, checker);
 
         if (!showcaseConfig) continue;
 
-        const componentMeta = extractComponentMeta(classDecl);
+        const componentMeta = extractComponentMeta(classDecl, checker);
         const inputs = extractInputs(classDecl, checker);
         const outputs = extractOutputs(classDecl, checker);
 
@@ -102,17 +114,32 @@ function hasDecoratorInputs(classDecl: ts.ClassDeclaration): boolean {
     return false;
 }
 
-function extractShowcaseConfig(decorator: ts.Decorator, className: string): ShowcaseConfig | undefined {
+function extractShowcaseConfig(decorator: ts.Decorator, className: string, report: Report, checker: ts.TypeChecker): ShowcaseConfig | undefined {
     const arg = getDecoratorArgument(decorator);
 
     if (!arg) return undefined;
 
-    const raw = evaluateExpression(arg);
+    // Reported once for the whole field below, wherever it came from: the literal, a spread or a constant.
+    let providers: ts.Node | undefined;
+    const raw = evaluateStatic(arg, {
+        checker,
+        report: (issue) => {
+            if (issue.path[0] === 'providers') {
+                providers ??= issue.node;
+                return;
+            }
+            report(describeUnevaluable(className, arg, issue));
+        }
+    });
 
-    if (!raw || typeof raw !== 'object') return undefined;
+    if (providers || (typeof raw === 'object' && raw !== null && 'providers' in raw)) {
+        report(describeDeprecatedProviders(className, arg, providers));
+    }
+
+    if (raw === UNEVALUABLE || !raw || typeof raw !== 'object') return undefined;
 
     if (!('title' in raw)) {
-        console.warn(`⚠ ng-prism: ${className} has @Showcase without a "title" field, skipping. ` + `Add a title so it can appear in the styleguide.`);
+        report(`${className} has @Showcase without a "title" field, skipping. ` + `Add a title so it can appear in the styleguide.`);
         return undefined;
     }
 
@@ -127,6 +154,12 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
     if (typeof obj['sectionOrder'] === 'number') {
         config.sectionOrder = obj['sectionOrder'];
     }
+    if (typeof obj['categoryOrder'] === 'number') {
+        config.categoryOrder = obj['categoryOrder'];
+    }
+    if (typeof obj['componentOrder'] === 'number') {
+        config.componentOrder = obj['componentOrder'];
+    }
     if (obj['tags']) config.tags = obj['tags'] as string[];
     if (obj['meta']) config.meta = obj['meta'] as Record<string, unknown>;
     if (obj['host'] !== undefined) config.host = obj['host'] as ShowcaseConfig['host'];
@@ -136,9 +169,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
         if (isComponentStatus(obj['status'])) {
             config.status = obj['status'];
         } else {
-            console.warn(
-                `⚠ ng-prism: ${className} declares invalid status "${String(obj['status'])}", ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`
-            );
+            report(`${className} declares invalid status "${String(obj['status'])}", ` + `expected one of: ${COMPONENT_STATUSES.join(', ')}. Skipping.`);
         }
     }
 
@@ -147,7 +178,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
             config.bg = obj['bg'];
             warnDeprecatedBg(obj['bg'], className);
         } else {
-            console.warn(`⚠ ng-prism: ${className} declares invalid bg "${String(obj['bg'])}", ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
+            report(`${className} declares invalid bg "${String(obj['bg'])}", ` + `expected one of: ${CANVAS_BGS.join(', ')}. Skipping.`);
         }
     }
 
@@ -155,9 +186,7 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
         if (isCanvasLayout(obj['canvasLayout'])) {
             config.canvasLayout = obj['canvasLayout'];
         } else {
-            console.warn(
-                `⚠ ng-prism: ${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}", ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
-            );
+            report(`${className} declares invalid canvasLayout "${String(obj['canvasLayout'])}", ` + `expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`);
         }
     }
 
@@ -169,16 +198,16 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
                 warnDeprecatedBg(variant['bg'], `${className} variant "${String(variant['name'])}"`);
             }
             if (variant['bg'] !== undefined && !isCanvasBg(variant['bg'])) {
-                console.warn(
-                    `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
+                report(
+                    `${className} variant "${String(variant['name'])}" declares ` +
                         `invalid bg "${String(variant['bg'])}", expected one of: ` +
                         `${CANVAS_BGS.join(', ')}. Skipping.`
                 );
                 delete cleaned['bg'];
             }
             if (variant['canvasLayout'] !== undefined && !isCanvasLayout(variant['canvasLayout'])) {
-                console.warn(
-                    `⚠ ng-prism: ${className} variant "${String(variant['name'])}" declares ` +
+                report(
+                    `${className} variant "${String(variant['name'])}" declares ` +
                         `invalid canvasLayout "${String(variant['canvasLayout'])}", expected one of: ${CANVAS_LAYOUTS.join(', ')}. Skipping.`
                 );
                 delete cleaned['canvasLayout'];
@@ -190,50 +219,38 @@ function extractShowcaseConfig(decorator: ts.Decorator, className: string): Show
     return config;
 }
 
-function extractComponentMeta(classDecl: ts.ClassDeclaration): ScannedComponent['componentMeta'] {
+function extractComponentMeta(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): ScannedComponent['componentMeta'] {
     const componentDecorator = findDecorator(classDecl, 'Component');
+    const decorator = componentDecorator ?? findDecorator(classDecl, 'Directive');
+    const isDirective = !componentDecorator && decorator !== undefined;
+    const arg = decorator && getDecoratorArgument(decorator);
 
-    if (componentDecorator) {
-        const arg = getDecoratorArgument(componentDecorator);
+    if (!arg) return { selector: '', standalone: true, isDirective };
 
-        if (!arg) return { selector: '', standalone: true, isDirective: false };
+    const selector = readDecoratorField(arg, 'selector', checker);
 
-        const raw = evaluateExpression(arg);
+    return {
+        selector: typeof selector === 'string' ? selector : '',
+        standalone: readDecoratorField(arg, 'standalone', checker) !== false,
+        isDirective
+    };
+}
 
-        if (!raw || typeof raw !== 'object') {
-            return { selector: '', standalone: true, isDirective: false };
-        }
+/**
+ * One field of `@Component`/`@Directive` metadata, read from its own
+ * property where the literal has one, so that `imports`, `providers` and the
+ * rest are not resolved only to be thrown away. A spread or a shorthand could
+ * supply the field from elsewhere, so then the whole argument is evaluated.
+ */
+function readDecoratorField(arg: ts.Expression, key: string, checker: ts.TypeChecker): unknown {
+    if (ts.isObjectLiteralExpression(arg) && !arg.properties.some(ts.isSpreadAssignment)) {
+        const prop = arg.properties.find((p) => p.name !== undefined && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) && p.name.text === key);
 
-        const obj = raw as Record<string, unknown>;
-
-        return {
-            selector: (obj['selector'] as string) ?? '',
-            standalone: obj['standalone'] !== false,
-            isDirective: false
-        };
+        if (!prop) return undefined;
+        if (ts.isPropertyAssignment(prop)) return evaluateExpression(prop.initializer, checker);
     }
 
-    const directiveDecorator = findDecorator(classDecl, 'Directive');
+    const raw = evaluateExpression(arg, checker);
 
-    if (directiveDecorator) {
-        const arg = getDecoratorArgument(directiveDecorator);
-
-        if (!arg) return { selector: '', standalone: true, isDirective: true };
-
-        const raw = evaluateExpression(arg);
-
-        if (!raw || typeof raw !== 'object') {
-            return { selector: '', standalone: true, isDirective: true };
-        }
-
-        const obj = raw as Record<string, unknown>;
-
-        return {
-            selector: (obj['selector'] as string) ?? '',
-            standalone: obj['standalone'] !== false,
-            isDirective: true
-        };
-    }
-
-    return { selector: '', standalone: true, isDirective: false };
+    return typeof raw === 'object' && raw !== null ? (raw as Record<string, unknown>)[key] : undefined;
 }

@@ -25,19 +25,20 @@ See [NgPrismConfig](api/ng-prism-config.md) for the complete interface.
 
 The most commonly used fields:
 
-| Field             | Type                     | Description                                                 |
-| ----------------- | ------------------------ | ----------------------------------------------------------- |
-| `title`           | `string`                 | Header title text (default: `'ng-prism'`)                   |
-| `subtitle`        | `string`                 | Secondary text below the title (monospace, muted)           |
-| `plugins`         | `NgPrismPlugin[]`        | List of plugins to activate                                 |
-| `pages`           | `StyleguidePage[]`       | Config-declared custom pages                                |
-| `appProviders`    | `Provider[]`             | Angular providers added to the Prism app bootstrap          |
-| `theme`           | `Record<string, string>` | CSS custom property overrides                               |
-| `themeStylesheet` | `string`                 | Path to a custom SCSS file loaded by the Prism app          |
-| `ui`              | object                   | Replace individual UI sections with custom components       |
-| `headless`        | `boolean`                | _Reserved, not yet implemented._ Strips all built-in chrome |
-| `urlState`        | `boolean`                | Disable URL state sync (default: `true`)                    |
-| `buildInfo`       | `object`                 | Show version / git hash pill in header                      |
+| Field             | Type                     | Description                                                           |
+| ----------------- | ------------------------ | --------------------------------------------------------------------- |
+| `title`           | `string`                 | Header title text (default: `'ng-prism'`)                             |
+| `subtitle`        | `string`                 | Secondary text below the title (monospace, muted)                     |
+| `plugins`         | `NgPrismPlugin[]`        | List of plugins to activate                                           |
+| `pages`           | `StyleguidePage[]`       | Config-declared custom pages                                          |
+| `appProviders`    | `Provider[]`             | Angular providers added to the Prism app bootstrap                    |
+| `theme`           | `Record<string, string>` | CSS custom property overrides                                         |
+| `themeStylesheet` | `string`                 | Path to a custom SCSS file loaded by the Prism app                    |
+| `ui`              | object                   | Replace individual UI sections with custom components                 |
+| `headless`        | `boolean`                | _Reserved, not yet implemented._ Strips all built-in chrome           |
+| `urlState`        | `boolean`                | Disable URL state sync (default: `true`)                              |
+| `buildInfo`       | `object`                 | Show version / git hash pill in header                                |
+| `strictShowcase`  | `boolean`                | Fail the build when a `@Showcase` value is dropped (default: `false`) |
 
 ## Adding Global Providers
 
@@ -52,7 +53,7 @@ export default defineConfig({
 });
 ```
 
-For providers scoped to a single component, use `@Showcase({ providers: [...] })` instead.
+Only for a provider that one component needs and the others must not see, render that component through a [component page](guide/component-pages.md) and declare the provider there. `@Showcase({ providers })` never worked and is deprecated.
 
 ## Theming
 

@@ -3,14 +3,13 @@ import { dirname, join } from 'path';
 import type { BuilderContext } from '@angular-devkit/architect';
 import ts from 'typescript';
 import type { StyleguidePage } from '../../plugin/page.types.js';
-import type { PrismManifest } from '../../plugin/plugin.types.js';
 import { checkA11yThresholds, DEFAULT_A11Y_REPORT_PATH, readA11yForComponents, readA11yMeta } from '../a11y/a11y-report-reader.js';
 import { loadConfig } from '../config-loader/config-loader.js';
 import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.js';
 import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
 import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
 import type { EntryPointInput } from '../scanner/entry-point.scanner.js';
-import { createScanner, type Scanner } from '../scanner/scanner.js';
+import { createScanner, type Scanner, type ScanResult } from '../scanner/scanner.js';
 
 export interface PrismPipelineOptions {
     entryPoint: string;
@@ -49,12 +48,16 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
     });
 
     context.reportStatus('Scanning components...');
-    const scanResult = scanEntryPoints(workspaceRoot, options, state);
+    const { components, diagnostics } = scanEntryPoints(workspaceRoot, options, state);
+
+    if (config.strictShowcase && diagnostics.length > 0) {
+        throw new Error(`ng-prism: strictShowcase is enabled and ${diagnostics.length} @Showcase value(s) were dropped; see the warnings above.`);
+    }
 
     const pages: StyleguidePage[] = config.pages ? [...config.pages] : [];
 
     context.reportStatus('Running plugin hooks...');
-    let manifest = await runPluginHooks({ ...scanResult, pages }, config.plugins ?? []);
+    let manifest = await runPluginHooks({ components, pages }, config.plugins ?? []);
 
     const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
     const a11yReportPathAbs = join(workspaceRoot, a11yReportPath);
@@ -207,7 +210,7 @@ function resolveEntryPoints(workspaceRoot: string, options: PrismPipelineOptions
     return { entryPoints, compilerOptions };
 }
 
-function scanEntryPoints(workspaceRoot: string, options: PrismPipelineOptions, state: PrismPipelineState): PrismManifest {
+function scanEntryPoints(workspaceRoot: string, options: PrismPipelineOptions, state: PrismPipelineState): ScanResult {
     const { entryPoints, compilerOptions } = resolveEntryPoints(workspaceRoot, options);
 
     const newKey = entryPoints

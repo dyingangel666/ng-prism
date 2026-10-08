@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { generateManifest } from './manifest.generator.js';
 
@@ -67,6 +68,22 @@ describe('generateManifest', () => {
 
         expect(source).toContain('title: "Button"');
         expect(source).toContain('category: "Inputs"');
+    });
+
+    it('quotes keys that are not identifiers, so that the manifest still parses', () => {
+        const slotted: ScannedComponent = {
+            ...CARD,
+            showcaseConfig: {
+                title: 'Card',
+                variants: [{ name: 'Slots', content: { '[card-header]': '<h3>Title</h3>' }, inputs: { 'aria-label': 'Close' } }]
+            }
+        };
+        const source = generateManifest([slotted]);
+        const { diagnostics } = ts.transpileModule(source, { reportDiagnostics: true, compilerOptions: { module: ts.ModuleKind.ES2022 } });
+
+        expect(diagnostics!.map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))).toEqual([]);
+        expect(source).toContain('"[card-header]": "<h3>Title</h3>"');
+        expect(source).toContain('"aria-label": "Close"');
     });
 
     it('should include variants', () => {

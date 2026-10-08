@@ -13,7 +13,7 @@ import { Showcase } from '@ng-prism/core';
 export class MyComponent { ... }
 ```
 
-The decorator is evaluated at build time by the TypeScript Compiler API scanner. Its presence makes the builder include the component in the manifest.
+The decorator is evaluated at build time by the TypeScript Compiler API scanner, which reads the config from the source without running it (see [What the scanner can read](#what-the-scanner-can-read)). Its presence makes the builder include the component in the manifest.
 
 > **Note:** `@Showcase` must always appear _above_ `@Component` or `@Directive`, as decorator application order in Angular matters.
 
@@ -37,6 +37,61 @@ export class ButtonComponent {
 ```
 
 Without the generic argument, `inputs` falls back to `Record<string, unknown>`, so every existing call site keeps working unchanged. See [Variants: Type-safe inputs](guide/variants.md#type-safe-inputs) and [`InputsOf<T>`](api/types.md#inputsof) for full details.
+
+## What the scanner can read
+
+The builder never runs your code. It reads the `@Showcase` argument from the source, so every value in it has to be spelled out there:
+
+| Works                                           | Example                                       |
+| ----------------------------------------------- | --------------------------------------------- |
+| Strings, numbers, booleans, `null`, `undefined` | `'Save'`, `42`, `-1`, `true`                  |
+| Arithmetic and string concatenation             | `5 * 1024 * 1024`, `'Step ' + 2`              |
+| Template literals, with placeholders            | `` `${2 * 3} files` ``                        |
+| Type assertions                                 | `['pdf', 'png'] as const`, `'m' as Size`      |
+| Array and object literals, nested               | `{ inputs: { tags: ['a', 'b'] } }`            |
+| `const` constants, also imported                | `MAX_FILES`, `5 * MB`                         |
+| Enum members                                    | `Size.Medium`                                 |
+| Properties and indices of constants             | `TOKENS.size.m`, `SIZES[1]`                   |
+| Spread and shorthand of constants               | `{ ...SHARED_META }`, `{ label }`             |
+| Computed keys that resolve to a string          | `{ ['aria-label']: 'Close' }`, `{ [KEY]: 1 }` |
+
+Each of these works as long as every part of it does: `5 * MB` works while `MB` is a `const` with a readable value.
+
+A constant imported from a compiled package is read from that package's `.d.ts`, which keeps a value only when it was a plain literal. `export const MAX_FILES = 3` arrives as `MAX_FILES = 3`; `export const MB = 1024 * 1024` arrives as `MB: number` and cannot be read.
+
+A constant is read as its initializer says. Changes made to it at runtime, such as `OPTIONS.push('pdf')` or `CONFIG.size = 'l'`, never happen for the scanner, so keep showcase values in constants that nothing mutates.
+
+Anything else would need the code to run, so the scanner drops it:
+
+| Does not work                    | Example                                     |
+| -------------------------------- | ------------------------------------------- |
+| `let` and `var` variables        | `let retries = 3`                           |
+| Constants without a value        | `declare const MB: number`, see above       |
+| Conditions and comparisons       | `dark ? 'dark' : 'light'`, `label ?? 'OK'`  |
+| Function and method calls        | `megabytes(5)`, `items.map(toOption)`       |
+| Functions, classes and instances | `(value) => value.length > 0`, `new Date()` |
+
+Functions, classes and instances are a limit of the approach, not of the scanner: they only exist once code runs, so the static manifest has no way to hold them.
+
+### What happens to a value it cannot read
+
+Only that value is lost. A property, an array element or a spread is dropped; the object or array around it keeps everything else. Each drop prints a warning naming the component, where the value sat in the config, the source text and its location:
+
+```
+⚠ ng-prism: FileInputComponent › variants[3] "Auto hint" › inputs.maxFileSize — "megabytes(5)" (projects/my-lib/src/file-input/file-input.component.ts:27:52) cannot be evaluated statically and was dropped.
+```
+
+When a reference is what failed, the warning names it and says why:
+
+```
+⚠ ng-prism: FileInputComponent › variants[4] "Retry" › inputs.retries — "retries" (projects/my-lib/src/file-input/file-input.component.ts:31:41) cannot be evaluated statically and was dropped: retries is declared with let; only const declarations can be read.
+```
+
+A value inside a constant is reported where the constant writes it, so the location points to the line to fix even when the constant lives in another file.
+
+When the whole argument cannot be read, as in `@Showcase(buildShowcase('File input'))`, the component is skipped, and the warning says so. A config kept in a `const` and passed as `@Showcase(FILE_INPUT_SHOWCASE)` is fine.
+
+To fix a warning, write the value out: `maxFileSize: 5 * 1024 * 1024` instead of `megabytes(5)`. To make the build fail instead of warning, for example in CI, set [`strictShowcase`](api/ng-prism-config.md#strictshowcase).
 
 ## All Fields
 
@@ -156,18 +211,9 @@ Array of strings used for search and filtering in the sidebar. Tags are matched 
 
 ### `providers`
 
-Angular providers injected into a child `EnvironmentInjector` scoped to this component. Use for components that require services not available in the root injector, for example a `DialogService`, `OverlayRef`, or a per-component mock.
+> **Deprecated since 22.4.0, removed in 23.0.0.** `providers` never reached the styleguide: a provider is a class, a factory or an instance, which the [scanner cannot read](#what-the-scanner-can-read). The build drops the field with one warning per component, and the component renders without it.
 
-```typescript
-@Showcase({
-  title: 'Confirm Dialog Trigger',
-  providers: [
-    { provide: DialogService, useClass: MockDialogService },
-  ],
-})
-```
-
-For library-wide providers, use `defineConfig({ appProviders })` in your config file.
+Components that inject something the Prism app does not provide (a `Router` for `routerLink`, `HttpClient`, a translation service, a library config token) get it from `defineConfig({ appProviders })`, which feeds the app's root injector. In the rare case that one component needs a provider the others must not see, render it through a [component page](guide/component-pages.md) via [`renderPage`](#renderpage) and declare the provider on the page component.
 
 ### `meta`
 

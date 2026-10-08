@@ -41,6 +41,7 @@ interface NgPrismConfig {
         };
         reportPath?: string;
     };
+    strictShowcase?: boolean;
 }
 ```
 
@@ -248,3 +249,21 @@ export default defineConfig({
 | `reportPath`          | `'a11y-report.json'` | Path (relative to workspace root) where the build pipeline reads the library-wide a11y report. Generating it is up to the consumer; see the guide for the JSON shape. |
 
 See [Accessibility: Library-Wide A11y Score](guide/accessibility.md#library-wide-a11y-score--header-badge) for the report shape and integration workflow.
+
+---
+
+### `strictShowcase`
+
+Fail the build when a `@Showcase` value is lost, instead of warning about it. Default: `false`.
+
+The scanner reads `@Showcase` from the source and drops what it cannot use: a value it [cannot evaluate statically](guide/showcase-decorator.md#what-the-scanner-can-read), an invalid `bg`, `status` or `canvasLayout`, a config without a `title`, which costs the whole component, or the deprecated `providers`, which never reach the styleguide. Each loss prints a warning. With `strictShowcase` on, the build stops after the scan, before a manifest is written:
+
+```typescript
+export default defineConfig({ strictShowcase: true });
+```
+
+```
+ng-prism: strictShowcase is enabled and 2 @Showcase value(s) were dropped; see the warnings above.
+```
+
+`build` exits with an error, and `serve` does not start. When a watch-mode rebuild fails this way, the error is logged and the previous manifest stays in place. Deprecations that lose nothing, such as `bg: 'checker'`, remain warnings either way.

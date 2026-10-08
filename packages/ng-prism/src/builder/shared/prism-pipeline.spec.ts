@@ -179,6 +179,35 @@ describe('runPrismPipeline integration', () => {
         expect(content).toContain('variant: "warn"');
     });
 
+    it('fails on a dropped @Showcase value when strictShowcase is on, before writing a manifest', async () => {
+        tmp = createTempWorkspace();
+        writeFileSync(join(tmp, 'ng-prism.config.ts'), 'export default { strictShowcase: true };', 'utf-8');
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        try {
+            await expect(runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState())).rejects.toThrow(
+                /strictShowcase is enabled and 10 @Showcase value\(s\) were dropped/
+            );
+            expect(existsSync(join(tmp, 'ng-prism-cache'))).toBe(false);
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
+    it('only warns about a dropped @Showcase value while strictShowcase is off', async () => {
+        tmp = createTempWorkspace();
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        try {
+            const result = await runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState());
+
+            expect(result.componentCount).toBe(6);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining('UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize'));
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
     it('leaves components untouched when no report exists', async () => {
         tmp = createTempWorkspace();
 

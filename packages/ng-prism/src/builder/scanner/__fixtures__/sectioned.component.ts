@@ -5,6 +5,8 @@ interface ShowcaseConfig {
     category?: string;
     section?: string;
     sectionOrder?: number;
+    categoryOrder?: number;
+    componentOrder?: number;
 }
 
 function Showcase(config: ShowcaseConfig): ClassDecorator {
@@ -15,7 +17,9 @@ function Showcase(config: ShowcaseConfig): ClassDecorator {
     title: 'Sectioned',
     category: 'Misc',
     section: 'Pipes',
-    sectionOrder: 5
+    sectionOrder: 5,
+    categoryOrder: 3,
+    componentOrder: 2
 })
 @Component({
     selector: 'sectioned',
