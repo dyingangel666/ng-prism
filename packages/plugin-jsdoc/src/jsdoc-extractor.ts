@@ -2,19 +2,35 @@ import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 import type { JsDocData, JsDocTags, MethodDoc, ParamDoc } from './jsdoc.types.js';
 
-export function extractJsDocData(filePath: string, className: string): JsDocData | null {
-    const sourceText = readFileSync(filePath, 'utf-8');
-    const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.ES2022, true);
+/**
+ * `baseClasses` come from the scanner, nearest first. Members are read from
+ * the class and then from each of them; the first class that declares a
+ * member decides its tags, as a redeclaration replaces the inherited one.
+ */
+export function extractJsDocData(filePath: string, className: string, baseClasses: { className: string; filePath: string }[] = []): JsDocData | null {
+    const sourceFiles = new Map<string, ts.SourceFile>();
+    const findClass = (path: string, name: string) => {
+        let sourceFile = sourceFiles.get(path);
 
-    const classDecl = findClassByName(sourceFile, className);
+        if (!sourceFile) {
+            sourceFile = ts.createSourceFile(path, readFileSync(path, 'utf-8'), ts.ScriptTarget.ES2022, true);
+            sourceFiles.set(path, sourceFile);
+        }
+
+        return findClassByName(sourceFile, name);
+    };
+
+    const classDecl = findClass(filePath, className);
 
     if (!classDecl) return null;
+
+    const hierarchy = [classDecl, ...baseClasses.flatMap((base) => findClass(base.filePath, base.className) ?? [])];
 
     return {
         classDescription: extractDescription(classDecl),
         classTags: extractTags(classDecl),
-        memberTags: extractAllMemberTags(classDecl),
-        methods: extractPublicMethods(classDecl)
+        memberTags: extractAllMemberTags(hierarchy),
+        methods: extractPublicMethods(hierarchy)
     };
 }
 
@@ -105,22 +121,36 @@ function tagCommentToString(comment: string | ts.NodeArray<ts.JSDocComment> | un
     );
 }
 
-function extractAllMemberTags(classDecl: ts.ClassDeclaration): Record<string, JsDocTags> {
+function extractAllMemberTags(hierarchy: ts.ClassDeclaration[]): Record<string, JsDocTags> {
     const result: Record<string, JsDocTags> = {};
+    const shadowed = new Set<string>();
 
-    for (const member of classDecl.members) {
-        const name = getMemberName(member);
+    for (const classDecl of hierarchy) {
+        for (const member of classDecl.members) {
+            const name = getMemberName(member);
 
-        if (!name) continue;
+            if (!name || shadowed.has(name)) continue;
 
-        const tags = ts.getJSDocTags(member);
+            const tags = ts.getJSDocTags(member);
 
-        if (tags.length === 0) continue;
+            if (tags.length === 0) continue;
 
-        result[name] = buildTagsFromList(tags);
+            result[name] = buildTagsFromList(tags);
+        }
+
+        addMemberNames(classDecl, shadowed);
     }
 
     return result;
+}
+
+/** Names a class declares hide the same names further up, but not the getter, setter or overloads next to them. */
+function addMemberNames(classDecl: ts.ClassDeclaration, names: Set<string>): void {
+    for (const member of classDecl.members) {
+        const name = getMemberName(member);
+
+        if (name) names.add(name);
+    }
 }
 
 function getMemberName(member: ts.ClassElement): string | undefined {
@@ -141,32 +171,39 @@ const LIFECYCLE_HOOKS = new Set([
     'ngAfterViewChecked'
 ]);
 
-function extractPublicMethods(classDecl: ts.ClassDeclaration): MethodDoc[] {
+function extractPublicMethods(hierarchy: ts.ClassDeclaration[]): MethodDoc[] {
     const result: MethodDoc[] = [];
-    const sourceFile = classDecl.getSourceFile();
+    const shadowed = new Set<string>();
 
-    for (const member of classDecl.members) {
-        if (!ts.isMethodDeclaration(member)) continue;
+    for (const classDecl of hierarchy) {
+        const sourceFile = classDecl.getSourceFile();
 
-        const name = getMemberName(member);
+        for (const member of classDecl.members) {
+            if (!ts.isMethodDeclaration(member)) continue;
 
-        if (!name || name.startsWith('_')) continue;
-        if (LIFECYCLE_HOOKS.has(name)) continue;
+            const name = getMemberName(member);
 
-        const isPrivate = member.modifiers?.some((m) => m.kind === ts.SyntaxKind.PrivateKeyword || m.kind === ts.SyntaxKind.ProtectedKeyword);
+            if (!name || shadowed.has(name)) continue;
+            if (name.startsWith('_')) continue;
+            if (LIFECYCLE_HOOKS.has(name)) continue;
 
-        if (isPrivate) continue;
+            const isPrivate = member.modifiers?.some((m) => m.kind === ts.SyntaxKind.PrivateKeyword || m.kind === ts.SyntaxKind.ProtectedKeyword);
 
-        if (!hasDirectJsDoc(member, sourceFile)) continue;
+            if (isPrivate) continue;
 
-        const description = extractDescription(member);
-        const tags = extractTags(member);
-        const params = extractParamDocs(member);
-        const returnType = member.type ? member.type.getText() : undefined;
+            if (!hasDirectJsDoc(member, sourceFile)) continue;
 
-        if (!description && Object.keys(tags).length === 0) continue;
+            const description = extractDescription(member);
+            const tags = extractTags(member);
+            const params = extractParamDocs(member);
+            const returnType = member.type ? member.type.getText() : undefined;
 
-        result.push({ name, description, tags, params, returnType });
+            if (!description && Object.keys(tags).length === 0) continue;
+
+            result.push({ name, description, tags, params, returnType });
+        }
+
+        addMemberNames(classDecl, shadowed);
     }
 
     return result;

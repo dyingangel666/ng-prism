@@ -344,10 +344,16 @@ describe('extractInputs and extractOutputs with base classes', () => {
         return new Map(extractInputs(classDecl, checker).map((input) => [input.name, input]));
     }
 
-    it('lists its own inputs first, then those of each base class up the chain', () => {
-        const classDecl = getClassDeclaration(exports, 'CountryPickerComponent', checker);
+    function inputNames(className: string): string[] {
+        return [...inputsOf(className).keys()];
+    }
 
-        expect(extractInputs(classDecl, checker).map((input) => input.name)).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
+    function outputsOf(className: string) {
+        return extractOutputs(getClassDeclaration(exports, className, checker), checker);
+    }
+
+    it('lists its own inputs first, then those of each base class up the chain', () => {
+        expect(inputNames('CountryPickerComponent')).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
     });
 
     it('reads an inherited input like a declared one', () => {
@@ -371,6 +377,14 @@ describe('extractInputs and extractOutputs with base classes', () => {
         expect(label.doc).toBe('Label of the country picker');
     });
 
+    // Angular keeps the inherited input, but the component starts with the subclass's value.
+    it('drops the inherited default of an input the subclass assigns a value to', () => {
+        const title = inputsOf('LegacyChildComponent').get('title')!;
+
+        expect(title).toBeDefined();
+        expect(title.defaultValue).toBeUndefined();
+    });
+
     it('resolves the type parameter of a generic base class to the type argument of the subclass', () => {
         const inputs = inputsOf('ColorPickerComponent');
 
@@ -378,17 +392,53 @@ describe('extractInputs and extractOutputs with base classes', () => {
         expect(inputs.get('selected')).toMatchObject({ type: 'union', values: ['red', 'green'], defaultValue: null });
     });
 
-    it('collects outputs from base classes', () => {
-        const classDecl = getClassDeclaration(exports, 'CountryPickerComponent', checker);
-
-        expect(extractOutputs(classDecl, checker)).toEqual([{ name: 'blurred', doc: 'Emits when the field loses focus' }]);
+    it('keeps the declared type of an input in a generic base class that does not use the type parameter', () => {
+        expect(inputsOf('ColorPickerComponent').get('size')).toMatchObject({ type: 'union', values: ['sm', 'md'], rawType: 'Size' });
     });
 
-    it('stops at a base class that only exists as a declaration file', () => {
-        expect([...inputsOf('LibraryBackedComponent').keys()]).toEqual(['hint']);
+    it('resolves type parameters through a chain of generic base classes', () => {
+        expect(inputsOf('NestedPickerComponent').get('items')).toMatchObject({ type: 'array', rawType: 'Color[][]' });
+    });
+
+    it('resolves the type parameter of an @Input() in a generic base class', () => {
+        expect(inputsOf('LegacyGenericComponent').get('legacy')).toMatchObject({ type: 'union', values: ['red', 'green'] });
+    });
+
+    // Angular only inherits from a class with its own directive definition.
+    it('skips inputs and outputs of a base class without @Directive() or @Component()', () => {
+        expect(inputNames('UndecoratedChildComponent')).toEqual(['own']);
+        expect(outputsOf('UndecoratedChildComponent')).toEqual([]);
+    });
+
+    it('reads a decorated base class behind an undecorated one', () => {
+        expect(inputNames('MiddleChildComponent')).toEqual(['rootInput']);
+    });
+
+    it('collects outputs from base classes', () => {
+        expect(outputsOf('ParenthesizedComponent')).toEqual([{ name: 'blurred', doc: 'Emits when the field loses focus' }]);
+    });
+
+    it('lets an output redeclared in the subclass win over the base class', () => {
+        expect(outputsOf('CountryPickerComponent')).toEqual([{ name: 'blurred', doc: 'Emits when the country picker loses focus' }]);
+    });
+
+    it('finds a base class through a default export, a renamed re-export and a namespace import', () => {
+        expect(inputNames('DefaultBasedComponent')).toEqual(['fromDefault']);
+        expect(inputNames('BarrelDefaultComponent')).toEqual(['fromDefault']);
+        expect(inputNames('RenamedBaseComponent')).toEqual(['options', 'value', 'label', 'disabled']);
+    });
+
+    it('follows a parenthesized base class', () => {
+        expect(inputNames('ParenthesizedComponent')).toEqual(['label', 'disabled']);
+    });
+
+    it('stops at a base class that only exists as a declaration', () => {
+        expect(inputNames('LibraryBackedComponent')).toEqual(['hint']);
+        expect(inputNames('AmbientComponent')).toEqual([]);
+        expect(inputNames('ModuleAmbientComponent')).toEqual([]);
     });
 
     it('stops at a mixin', () => {
-        expect([...inputsOf('MixinComponent').keys()]).toEqual(['tracked']);
+        expect(inputNames('MixinComponent')).toEqual(['tracked']);
     });
 });

@@ -59,7 +59,7 @@ export function describeUnreadableBase(className: string, base: UnreadableBase):
     const baseName = base.classDecl.name?.text ?? 'an anonymous class';
 
     return (
-        `${className} inherits ${base.inputs.join(', ')} from ${baseName}, which only exists as a declaration file (${location(base.classDecl)}); ` +
+        `${className} inherits ${base.inputs.join(', ')} from ${baseName}, which only exists as a declaration (${location(base.classDecl)}); ` +
         `without its source these inputs cannot be read, so they are missing from the manifest and variants cannot set them.`
     );
 }

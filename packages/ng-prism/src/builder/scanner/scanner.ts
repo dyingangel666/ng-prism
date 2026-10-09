@@ -60,9 +60,10 @@ export function createScanner(options: CreateScannerOptions): Scanner {
             const checker = program.getTypeChecker();
             const allComponents: ScannedComponent[] = [];
             const diagnostics: string[] = [];
+            const notices = new Set<string>();
 
             for (const { exports, importPath } of entries) {
-                const components = scanComponents(exports, checker, diagnostics);
+                const components = scanComponents(exports, checker, diagnostics, notices);
 
                 for (const c of components) c.importPath = importPath;
                 allComponents.push(...components);

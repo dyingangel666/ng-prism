@@ -71,3 +71,47 @@ describe('extractJsDocData', () => {
         expect(result?.memberTags).toEqual({});
     });
 });
+
+describe('extractJsDocData with base classes', () => {
+    const INPUT_PATH = path.join(__dirname, '__fixtures__/documented-input.ts');
+    const baseClasses = [{ className: 'DocumentedField', filePath: path.join(__dirname, '__fixtures__/documented-field.ts') }];
+
+    it('reads the tags of an inherited member from the base class', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['placeholder']).toEqual({ deprecated: 'Use the label instead.', since: '2.0.0' });
+    });
+
+    it('lets a member the class redeclares win over the base class, tags or not', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['label']).toBeUndefined();
+    });
+
+    it('lists the documented public methods of the base class', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.methods.map((method) => method.name)).toEqual(['focus']);
+    });
+
+    it('keeps the class description and tags of the class itself', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.classDescription).toBe('Text input built on the shared field.');
+    });
+
+    it('reads the class alone without base classes', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent');
+
+        expect(result?.memberTags).toEqual({});
+        expect(result?.methods).toEqual([]);
+    });
+});
+
+describe('extractJsDocData with accessors', () => {
+    it('reads the tags of a setter whose getter has none', () => {
+        const result = extractJsDocData(path.join(__dirname, '__fixtures__/documented-field.ts'), 'AccessorField');
+
+        expect(result?.memberTags['value']).toEqual({ since: '3.0.0' });
+    });
+});

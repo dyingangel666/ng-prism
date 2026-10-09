@@ -5,16 +5,18 @@ import { getClassHierarchy } from './class-hierarchy.js';
 
 /**
  * Extract all @Input(), input() and model() signal metadata from a class
- * declaration and the base classes it extends. An input the subclass
- * redeclares wins over the one in its base class.
+ * declaration and the base classes Angular inherits inputs from. An input the
+ * subclass redeclares wins over the one in its base class.
  */
-export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): InputMeta[] {
+export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker, hierarchy = getClassHierarchy(classDecl, checker)): InputMeta[] {
     const inputs: InputMeta[] = [];
     const seen = new Set<string>();
+    // Fields a subclass initializes without declaring them an input. Angular
+    // keeps the inherited input, but the component starts out with the subclass's value.
+    const reinitialized = new Set<string>();
 
-    for (const owner of getClassHierarchy(classDecl, checker).classes) {
-        // A generic base class only says `T`; what it stands for is up to the subclass.
-        const instantiatedIn = owner !== classDecl && owner.typeParameters ? classDecl : undefined;
+    for (const { classDecl: owner, definesMetadata } of hierarchy.classes) {
+        const subclass = owner === classDecl ? undefined : classDecl;
 
         for (const member of owner.members) {
             if (!ts.isPropertyDeclaration(member)) continue;
@@ -23,9 +25,14 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 
             if (!name || seen.has(name)) continue;
 
-            const input = readInput(member, name, checker, instantiatedIn);
+            const input = definesMetadata ? readInput(member, name, checker, owner, subclass) : undefined;
 
-            if (!input) continue;
+            if (!input) {
+                if (member.initializer) reinitialized.add(name);
+                continue;
+            }
+
+            if (reinitialized.has(name)) delete input.defaultValue;
             seen.add(name);
             inputs.push(input);
         }
@@ -34,14 +41,25 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
     return inputs;
 }
 
-function readInput(member: ts.PropertyDeclaration, name: string, checker: ts.TypeChecker, instantiatedIn?: ts.ClassDeclaration): InputMeta | undefined {
+/**
+ * `owner` declares the member. `subclass` is the showcased class when that is
+ * a different one, which decides what the type parameters of `owner` stand for.
+ */
+function readInput(
+    member: ts.PropertyDeclaration,
+    name: string,
+    checker: ts.TypeChecker,
+    owner: ts.ClassDeclaration,
+    subclass?: ts.ClassDeclaration
+): InputMeta | undefined {
     const inputDecorator = findDecorator(member, 'Input');
 
     if (inputDecorator) {
         const required = isDecoratorInputRequired(inputDecorator);
         const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
         const doc = getJsDocComment(member, checker);
-        const { type, values, rawType } = resolveDecoratorInputType(member, checker);
+        const instantiated = subclass && usesTypeParameters(member.type ?? member.initializer, owner, checker) ? getInstantiatedType(name, subclass, checker) : undefined;
+        const { type, values, rawType } = instantiated ? mapType(instantiated, checker) : resolveDecoratorInputType(member, checker);
 
         return {
             name,
@@ -61,8 +79,11 @@ function readInput(member: ts.PropertyDeclaration, name: string, checker: ts.Typ
     const required = isSignalInputRequired(signalCall);
     const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
     const doc = getJsDocComment(member, checker);
-    const { type, values, rawType } =
-        (instantiatedIn && resolveInstantiatedSignalInputType(name, instantiatedIn, checker)) ?? resolveSignalInputType(signalCall, checker);
+    const declaredType = signalCall.typeArguments?.[0] ?? signalCall.arguments[0];
+    // A signal is a getter function, so its call signature returns the value type.
+    const instantiated =
+        subclass && usesTypeParameters(declaredType, owner, checker) ? getInstantiatedType(name, subclass, checker)?.getCallSignatures()[0]?.getReturnType() : undefined;
+    const { type, values, rawType } = instantiated ? mapType(instantiated, checker) : resolveSignalInputType(signalCall, checker);
 
     return {
         name,
@@ -77,13 +98,15 @@ function readInput(member: ts.PropertyDeclaration, name: string, checker: ts.Typ
 
 /**
  * Extract all @Output() and output() signal metadata from a class declaration
- * and the base classes it extends.
+ * and the base classes Angular inherits outputs from.
  */
-export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): OutputMeta[] {
+export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker, hierarchy = getClassHierarchy(classDecl, checker)): OutputMeta[] {
     const outputs: OutputMeta[] = [];
     const seen = new Set<string>();
 
-    for (const owner of getClassHierarchy(classDecl, checker).classes) {
+    for (const { classDecl: owner, definesMetadata } of hierarchy.classes) {
+        if (!definesMetadata) continue;
+
         for (const member of owner.members) {
             if (!ts.isPropertyDeclaration(member)) continue;
 
@@ -100,6 +123,40 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
     }
 
     return outputs;
+}
+
+/**
+ * Whether a declared type, or the expression a type is inferred from,
+ * mentions a type parameter of the class that declares it. Only then does the
+ * subclass change the type; otherwise the source text stays, alias names included.
+ */
+function usesTypeParameters(node: ts.Node | undefined, owner: ts.ClassDeclaration, checker: ts.TypeChecker): boolean {
+    const parameters = owner.typeParameters;
+
+    if (!node || !parameters?.length) return false;
+
+    const visit = (child: ts.Node): boolean => {
+        if (ts.isTypeReferenceNode(child) && ts.isIdentifier(child.typeName)) {
+            const declaration = checker.getSymbolAtLocation(child.typeName)?.declarations?.[0];
+
+            if (declaration && ts.isTypeParameterDeclaration(declaration) && parameters.includes(declaration)) return true;
+        }
+
+        return ts.forEachChild(child, visit) ?? false;
+    };
+
+    return visit(node);
+}
+
+/**
+ * The type of a property declared in a generic base class, as the subclass
+ * sees it: `items = input.required<T[]>()` in `Field<T>` is an
+ * `InputSignal<Country[]>` on `Picker extends Field<Country>`.
+ */
+function getInstantiatedType(name: string, subclass: ts.ClassDeclaration, checker: ts.TypeChecker): ts.Type | undefined {
+    const property = checker.getPropertyOfType(checker.getTypeAtLocation(subclass), name);
+
+    return property && checker.getTypeOfSymbolAtLocation(property, subclass);
 }
 
 /**
@@ -166,24 +223,6 @@ function resolveSignalInputType(callExpr: ts.CallExpression, checker: ts.TypeChe
     }
 
     return { type: 'unknown', rawType: 'unknown' };
-}
-
-/**
- * The type of an input declared in a generic base class, as the subclass sees
- * it: `input.required<T[]>()` in `Field<T>` is a `Country[]` input on
- * `Picker extends Field<Country>`.
- */
-function resolveInstantiatedSignalInputType(
-    name: string,
-    subclass: ts.ClassDeclaration,
-    checker: ts.TypeChecker
-): { type: InputMeta['type']; values?: string[]; rawType: string } | undefined {
-    const property = checker.getPropertyOfType(checker.getTypeAtLocation(subclass), name);
-
-    // A signal is a getter function, so its call signature returns the value type.
-    const valueType = property && checker.getTypeOfSymbolAtLocation(property, subclass).getCallSignatures()[0]?.getReturnType();
-
-    return valueType && mapType(valueType, checker);
 }
 
 function isDecoratorInputRequired(decorator: ts.Decorator): boolean {

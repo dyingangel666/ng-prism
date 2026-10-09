@@ -139,11 +139,15 @@ export abstract class ListboxField<T> {
 export class CountryPickerComponent extends ListboxField<string> {}
 ```
 
-The component's own inputs come first, then those of each base class. An input the subclass redeclares replaces the one in its base class. The type parameter of a generic base class resolves to what the subclass passes, so `options` above is a `string[]` input.
+The component's own inputs come first, then those of each base class. An input the subclass redeclares replaces the one in its base class. The type parameter of a generic base class resolves to what the subclass passes, so `options` above is a `string[]` input. An input that does not use a type parameter keeps its declared type, alias names included.
+
+Angular only inherits inputs and outputs from a base class with `@Directive()` or `@Component()`, and so does the scan. An undecorated base class compiles without an error, but its inputs are not inputs of the component, so they are left out.
+
+When a subclass assigns an inherited input a value of its own (`override title = 'child'` for an `@Input() title = 'base'`), the input stays, but its default is dropped: the component starts out with the subclass's value, not the one the base class declares.
 
 Two kinds of base class are not read:
 
-- A base class from an npm package ships only its declaration file, which has no `input()` call, required flag or default left to read. The scan prints a warning naming the inputs it cannot see.
+- A base class that only exists as a declaration has no `input()` call, required flag or default left to read. That is a base class from an npm package, which ships only its `.d.ts`, or one written with `declare`. The scan prints a warning naming the inputs it cannot see, by the names a template uses.
 - A mixin (`extends withTracking(Base)`) ends the walk. Neither the mixin nor anything behind it contributes inputs.
 
 ## Explicit Keys Behavior

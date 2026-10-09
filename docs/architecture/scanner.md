@@ -124,14 +124,20 @@ All three callers pass the checker. They treat a drop differently:
 
 ### Base classes
 
-`getClassHierarchy()` in `class-hierarchy.ts` follows the `extends` clause through the checker, so a base class in the same file, in another file or in another library behind a path mapping is found the same way. It returns the class itself first and then each base class, nearest first. The extractors keep the first input or output they see under a name, which lets a subclass that redeclares an input win over its base class.
+`getClassHierarchy()` in `class-hierarchy.ts` follows the `extends` clause through the checker, so a base class in the same file, in another file or in another library behind a path mapping is found the same way, through default exports, renamed re-exports, namespace imports and parentheses as well. It returns the class itself first and then each base class with source, nearest first, and marks which of them Angular takes inputs and outputs from: the class itself and every base class with `@Directive()` or `@Component()`. Angular passes over an undecorated base class, and the extractors skip its inputs and outputs too.
 
-A generic base class declares its inputs in terms of its type parameters. For those, the type comes from the property as the showcased class sees it: the signal's call signature returns the instantiated value type, `Country[]` where the source says `T[]`. `rawType` is then the printed type, not the source text.
+The extractors keep the first input or output they see under a name, which lets a subclass that redeclares an input win over its base class. A field a more derived class initializes without declaring it an input (`override title = 'child'`) leaves the inherited input in place, as Angular does, but drops its `defaultValue`: the renderer would otherwise apply the base class's value to a component that starts out with the subclass's.
+
+A generic base class declares some inputs in terms of its type parameters. For an input whose type argument, declared type or default mentions one of them, the type comes from the property as the showcased class sees it: the signal's call signature returns the instantiated value type, `Country[]` where the source says `T[]`, and an `@Input()` property has that type directly. `rawType` is then the printed type. Every other input keeps the source text, alias names included.
+
+The hierarchy is computed once per component and passed to both extractors. `scanComponents()` also records the base classes with source on `ScannedComponent.baseClasses` (class name and file, nearest first) for plugins that need to read what a component inherits, such as plugin-jsdoc for the tags of inherited members. The field only exists at build time; the manifest does not carry it.
 
 Two kinds of base class are not read:
 
-- **Declaration files.** A base class from an npm package only exists as a `.d.ts`, where `options = input.required<…>()` has turned into `readonly options: InputSignal<…>`. No call is left to read `required` or a default from. If such a class declares properties typed `InputSignal`, `InputSignalWithTransform` or `ModelSignal`, `scanComponents()` warns with their names and the file. The warning is not a [diagnostic](#diagnostics), so `strictShowcase` does not fail the build over a class the component's author cannot change.
+- **Declarations.** A base class from an npm package only exists as a `.d.ts`, where `options = input.required<…>()` has turned into `readonly options: InputSignal<…>`. No call is left to read `required` or a default from. The same goes for a `declare class` in a `.ts` file and for a class inside `declare module` or `declare namespace`. If such a class declares inputs, `scanComponents()` warns with their names and the location. The names come from the input map the Angular compiler writes into `ɵdir` or `ɵcmp`, which covers `@Input()` inputs and gives the public name of an aliased one. A declaration written by hand has no such map, so the properties typed `InputSignal`, `InputSignalWithTransform` or `ModelSignal` stand in for it. The walk continues past the class, and each such class up the chain gets its own warning.
 - **Mixins.** In `extends withTracking(Base)` the base is a call, and what it returns has no class declaration to read members from. The walk ends there.
+
+These warnings, and the one about `@Input()` decorators, which names the base class a decorator comes from, are not [diagnostics](#diagnostics), so `strictShowcase` does not fail the build over a class the component's author cannot change. A `notices` set shared across entry points prints each of them once.
 
 ### Signal inputs: `input()` and `model()`
 
