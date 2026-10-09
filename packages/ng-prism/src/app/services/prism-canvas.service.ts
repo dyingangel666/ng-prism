@@ -15,6 +15,17 @@ export class PrismCanvasService {
     readonly rulers = signal(false);
 
     /**
+     * Whether the measuring tool is active.
+     *
+     * Lives here rather than in `PrismMeasureService` because it is the same
+     * kind of state as `guides` and `rulers`: a preference about the working
+     * environment, not a statement about this variant. That also means the
+     * toggle inherits the constructor's capture-mode behaviour below for
+     * free, without having to repeat it.
+     */
+    readonly measure = signal(false);
+
+    /**
      * The width `.demo-wrap` is constrained to, or `null` for "as wide as it
      * wants".
      *
@@ -39,10 +50,10 @@ export class PrismCanvasService {
     private lastViewportWidth = VIEWPORT_DEFAULT;
 
     constructor() {
-        // Capture mode renders for a screenshot tool: persisted zoom, guides and
-        // rulers would leak a previous session's state into the image, so the
-        // defaults (zoom 1, no guides, no rulers) are kept and nothing is written
-        // back.
+        // Capture mode renders for a screenshot tool: persisted zoom, guides,
+        // rulers and the measure toggle would leak a previous session's state
+        // into the image, so the defaults (zoom 1, no guides, no rulers, measure
+        // off) are kept and nothing is written back.
         if (this.capture.active()) return;
         this.loadFromStorage();
     }
@@ -64,6 +75,11 @@ export class PrismCanvasService {
 
     toggleRulers(): void {
         this.rulers.update((v) => !v);
+        this.save();
+    }
+
+    toggleMeasure(): void {
+        this.measure.update((v) => !v);
         this.save();
     }
 
@@ -96,6 +112,7 @@ export class PrismCanvasService {
             if (typeof d['zoom'] === 'number') this.zoom.set(d['zoom']);
             if (typeof d['guides'] === 'boolean') this.guides.set(d['guides']);
             if (typeof d['rulers'] === 'boolean') this.rulers.set(d['rulers']);
+            if (typeof d['measure'] === 'boolean') this.measure.set(d['measure']);
             if (typeof d['viewportWidth'] === 'number') {
                 const w = clampViewportWidth(d['viewportWidth']);
 
@@ -117,6 +134,7 @@ export class PrismCanvasService {
                     zoom: this.zoom(),
                     guides: this.guides(),
                     rulers: this.rulers(),
+                    measure: this.measure(),
                     viewportWidth: this.viewportWidth()
                 })
             );

@@ -15,6 +15,7 @@ describe('resolveOverlay', () => {
     it('returns none when no panel matches the active id', () => {
         const result = resolveOverlay([panel({ id: 'other' })], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: NO_CACHE
         });
 
@@ -24,6 +25,7 @@ describe('resolveOverlay', () => {
     it('returns none when the matching panel declares no overlay', () => {
         const result = resolveOverlay([panel()], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: NO_CACHE
         });
 
@@ -33,6 +35,7 @@ describe('resolveOverlay', () => {
     it('returns the eager overlay component', () => {
         const result = resolveOverlay([panel({ overlayComponent: EagerOverlay })], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: NO_CACHE
         });
 
@@ -43,6 +46,7 @@ describe('resolveOverlay', () => {
         const load = jest.fn(() => Promise.resolve(LazyOverlay));
         const result = resolveOverlay([panel({ loadOverlayComponent: load })], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: NO_CACHE
         });
 
@@ -69,6 +73,7 @@ describe('resolveOverlay', () => {
 
         const result = resolveOverlay([definition], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: NO_CACHE
         });
 
@@ -79,6 +84,7 @@ describe('resolveOverlay', () => {
     it('returns a cached lazy overlay eagerly', () => {
         const result = resolveOverlay([panel({ loadOverlayComponent: () => Promise.resolve(LazyOverlay) })], 'p', {
             captureActive: false,
+            measureActive: false,
             cache: new Map([['p', LazyOverlay]])
         });
 
@@ -89,6 +95,7 @@ describe('resolveOverlay', () => {
         it('suppresses an eager overlay', () => {
             const result = resolveOverlay([panel({ overlayComponent: EagerOverlay })], 'p', {
                 captureActive: true,
+                measureActive: false,
                 cache: NO_CACHE
             });
 
@@ -98,6 +105,7 @@ describe('resolveOverlay', () => {
         it('suppresses a cached overlay', () => {
             const result = resolveOverlay([panel({ loadOverlayComponent: () => Promise.resolve(LazyOverlay) })], 'p', {
                 captureActive: true,
+                measureActive: false,
                 cache: new Map([['p', LazyOverlay]])
             });
 
@@ -108,6 +116,35 @@ describe('resolveOverlay', () => {
             const load = jest.fn(() => Promise.resolve(LazyOverlay));
             const result = resolveOverlay([panel({ loadOverlayComponent: load })], 'p', {
                 captureActive: true,
+                measureActive: false,
+                cache: NO_CACHE
+            });
+
+            expect(result).toEqual({ kind: 'none' });
+            expect(load).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('measure mode', () => {
+        it('returns none while the measure tool is active', () => {
+            // Every canvas overlay competes for the same pixels *and* the same
+            // pointer movement — plugin-box-model subscribes to mousemove on its
+            // parent element. The rule belongs at the one place that already
+            // decides overlay suppression.
+            const result = resolveOverlay([panel({ overlayComponent: EagerOverlay })], 'p', {
+                captureActive: false,
+                measureActive: true,
+                cache: NO_CACHE
+            });
+
+            expect(result).toEqual({ kind: 'none' });
+        });
+
+        it('does not trigger a lazy overlay load while the measure tool is active', () => {
+            const load = jest.fn(() => Promise.resolve(LazyOverlay));
+            const result = resolveOverlay([panel({ loadOverlayComponent: load })], 'p', {
+                captureActive: false,
+                measureActive: true,
                 cache: NO_CACHE
             });
 

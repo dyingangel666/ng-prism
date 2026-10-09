@@ -16,19 +16,33 @@ const NONE: OverlayResolution = { kind: 'none' };
 /**
  * Decides which overlay component belongs to the active panel.
  *
- * Panel overlays render *inside* `.demo-wrap`, the same element external
- * screenshot tools capture, so capture mode resolves to `none` regardless of
- * which panel is active, and never triggers a lazy overlay load.
+ * Resolves to `none` regardless of which panel is active, and never
+ * triggers a lazy overlay load, under either of two independent
+ * conditions:
+ *
+ * - Capture mode: panel overlays render *inside* `.demo-wrap`, the same
+ *   element external screenshot tools capture.
+ * - Measure mode: see the `measureActive` option below for why a running
+ *   measuring tool preempts every panel overlay the same way.
  */
 export function resolveOverlay(
     panels: readonly PanelDefinition[],
     activePanelId: string,
     options: {
         captureActive: boolean;
+        /**
+         * True while the measuring tool is running.
+         *
+         * A bridge for now: once the tool can attribute a measured pixel gap
+         * to the CSS property that produced it, the box-model plugin has
+         * nothing left that it alone can do, and the competition for the
+         * pointer dissolves. See Spec §13.
+         */
+        measureActive: boolean;
         cache: ReadonlyMap<string, Type<unknown>>;
     }
 ): OverlayResolution {
-    if (options.captureActive) return NONE;
+    if (options.captureActive || options.measureActive) return NONE;
 
     const panel = panels.find((p) => p.id === activePanelId);
 

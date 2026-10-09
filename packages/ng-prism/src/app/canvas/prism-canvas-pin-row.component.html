@@ -1,0 +1,21 @@
+@if (chips().length > 0) {
+    <div
+        class="pin-row"
+        role="group"
+        aria-label="Pinned measurements">
+        @for (chip of chips(); track $index) {
+            <span class="pin-chip">
+                {{ chip }}
+                <button
+                    type="button"
+                    class="pin-chip__x"
+                    (click)="remove($index)"
+                    [attr.aria-label]="'Remove measurement ' + chip">
+                    <prism-icon
+                        name="x"
+                        [size]="10" />
+                </button>
+            </span>
+        }
+    </div>
+}

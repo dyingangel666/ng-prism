@@ -37,7 +37,7 @@ export const PRISM_DARK_THEME: Record<string, string> = {
     '--prism-mark-nominal': '#34d399',
     '--prism-mark-attention': '#e8a33d',
     '--prism-mark-critical': '#e5484d',
-    '--prism-measure': '#41bcff',
+    '--prism-measure': '#f632ff',
     '--prism-spectrum': 'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))'
 };
 
@@ -80,7 +80,7 @@ export const PRISM_LIGHT_THEME: Record<string, string> = {
     '--prism-mark-nominal': '#047857',
     '--prism-mark-attention': '#8f6b00',
     '--prism-mark-critical': '#951226',
-    '--prism-measure': '#004d8a',
+    '--prism-measure': '#ca00c1',
     '--prism-spectrum': 'linear-gradient(90deg, var(--prism-accent), var(--prism-primary), var(--prism-primary-to))'
 };
 

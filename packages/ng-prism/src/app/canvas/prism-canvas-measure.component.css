@@ -1,0 +1,145 @@
+/* The host catches the pointer — it is the one layer allowed to. Everything
+   it draws is exempted from that, or the hit test would land on its own
+   lines instead of the specimen. Walking past the host itself is
+   elementUnderPoint's job; see its doc.
+
+   z-index 1, and both halves of that are load-bearing. It has to be set at
+   all because .demo-wrap is position: relative with a transform — a
+   stacking context of its own — and comes *after* this element in
+   prism-renderer.component.html: at z-index auto the two are painted in
+   tree order and .demo-wrap wins, hiding every line over the specimen and,
+   worse, swallowing the pointerdown that alt-click anchoring needs to land
+   on an element. And it has to be the *lowest* of the stage's overlays,
+   below the background pill at 2, the rulers, grips and dimension line at
+   4, and the toolrail at 5, because this is the only one of them that
+   takes pointer events across the whole stage. Raised past the pill it
+   would cover its Reset button — the failure .vp-grip already documents —
+   and raised past the rail it would cover the very button that switches
+   the tool off again. */
+:host {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    cursor: crosshair;
+
+    /* A measuring drag across a text-bearing specimen would otherwise paint
+     a selection highlight over the thing being measured. `pointerdown`
+     calls preventDefault() for the selection that starts underneath; this
+     covers a selection that starts on the overlay itself. */
+    user-select: none;
+}
+
+.m-svg,
+.m-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* An `<svg>` is a replaced element, and for an absolutely positioned replaced
+   element CSS takes the used width and height from the intrinsic size — 300x150
+   when the element declares none — instead of resolving them from `inset`. The
+   rule above therefore sized this box 300x150 in the stage's top-left corner,
+   while `.m-labels`, an ordinary div, stretched to the host as those same
+   declarations promised. Since an `<svg>` clips to its own viewport, every line,
+   tick, echo and outline beyond that corner was drawn and thrown away, and the
+   tool printed numbers with nothing to attach them to. The identical trap is why
+   `prism-canvas-rulers.component.ts` sizes its `<canvas>` elements by hand. */
+.m-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.m-svg line {
+    stroke: var(--prism-measure);
+    stroke-width: 1;
+    stroke-linecap: round;
+}
+
+.m-svg .is-pinned line {
+    stroke-opacity: 0.55;
+}
+
+/* The snap echo is a footnote to the measurement, not a second measurement —
+   hence dotted and noticeably weaker than the line itself. */
+.m-svg .m-echo {
+    stroke-opacity: 0.34;
+    stroke-dasharray: 2 3;
+}
+
+.m-svg .is-pinned .m-echo {
+    stroke-opacity: 0.2;
+}
+
+/* Spec §4.5: anchor dashed, target solid. Both sit at reduced opacity for
+   the same reason the snap echo does — they say *which two boxes* the four
+   numbers are about, and must not compete with the numbers themselves. The
+   anchor outline is also the only feedback an Alt-click produces before a
+   second element is hovered. */
+.m-svg .m-outline {
+    fill: none;
+    stroke: var(--prism-measure);
+    stroke-opacity: 0.7;
+    stroke-width: 1;
+}
+
+.m-svg .m-outline--anchor {
+    stroke-dasharray: 4 3;
+}
+
+/* The same dashed shape the anchor takes, at half the weight, while it is
+   still only a prediction of what an Alt-click would take. Drawn at equal
+   weight the click would produce no visible change — the outline is already
+   there and merely stops following the pointer — which is the confirmation
+   the anchor outline exists to give. */
+.m-svg .m-outline--preview {
+    stroke-opacity: 0.35;
+}
+
+/* The number sits outside .demo-wrap and therefore does not scale with
+   --zoom. It also never rotates for a diagonal measurement: a tilted number
+   is slower to read, and readability is the whole point here.
+
+   The plate follows the *ground*, not --prism-stage, and that is the same
+   argument canvas-bg.styles.ts makes for --prism-measure itself. On
+   bg: 'light' and bg: 'dark' the ground is absolute while --prism-stage
+   stays with the theme, so a plate painted in --prism-stage puts the
+   re-pointed measurement colour on the other theme's surface: 2.10:1 for a
+   light ground under the dark theme, 2.13:1 the other way round. Both are
+   documented @Showcase({ bg }) values, so "always visible" would have been
+   true-in-the-common-case again — exactly the problem the token override
+   exists to prevent. --prism-measure-plate is re-pointed alongside
+   --prism-measure in that same file and falls back to --prism-stage
+   everywhere else, where the stage *is* the ground. */
+.m-label {
+    position: absolute;
+    padding: var(--sp-1) var(--sp-2);
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: var(--prism-measure);
+    white-space: nowrap;
+    background: var(--prism-measure-plate, var(--prism-stage));
+    transform: translate(-50%, -50%);
+}
+
+.m-label.is-pinned {
+    opacity: 0.62;
+}
+
+/* Visually hidden, not display:none — a status region only announces to a
+   screen reader while it stays in the accessibility tree. */
+.m-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+:host(:focus-visible) {
+    outline: 2px solid var(--prism-measure);
+    outline-offset: -2px;
+}

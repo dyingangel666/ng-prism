@@ -1,0 +1,18 @@
+import { ICON_NAMES, ICONS } from './icon-registry.js';
+
+describe('icon registry', () => {
+    it('should carry a dedicated glyph for the measure tool', () => {
+        // Dedicated in both senses the rail needs. A `ruler` key has to exist,
+        // and it has to draw something of its own: crosshair, move and
+        // ruler-dimension are already spoken for by guides, rulers and the
+        // viewport width, and a `ruler` holding a copy of any of them would
+        // satisfy a bare `toContain` while putting two identical icons side by
+        // side on the same rail.
+        expect(ICON_NAMES).toContain('ruler');
+        expect(ICONS.ruler).toBeTruthy();
+
+        const taken = ['crosshair', 'move', 'ruler-dimension'].map((name) => ICONS[name]);
+
+        expect(taken).not.toContain(ICONS.ruler);
+    });
+});

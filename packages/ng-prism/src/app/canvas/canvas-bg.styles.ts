@@ -27,8 +27,19 @@ export const CANVAS_BG_STYLES = `
   /* These two also re-point --prism-measure. Other overlays use theme colours
      on theme surfaces, but these grounds ignore the theme: "light" stays
      near-white in the dark theme and "dark" stays near-black in the light one.
-     The dark theme's blue reaches only 1.8:1 on the light ground, so the
-     measurement colour has to follow the ground, not the theme.
+     The dark theme's magenta reaches only 2.85:1 on the light ground, under the
+     4.5:1 its 9px readout needs, so the measurement colour has to follow the
+     ground, not the theme.
+
+     --prism-measure-plate follows it for the same reason. It is the surface
+     the measuring tool's value label paints itself on, so the label reads as a
+     gap in the measurement line rather than a badge on top of it. At its
+     --prism-stage fallback it would be the theme's stage under a re-pointed
+     foreground: the light theme's magenta on the dark theme's stage reads
+     3.71:1, the dark theme's on white 3.08:1. Pinned to the ground the same way,
+     the pairs reach 4.54:1 and 6.57:1. A color-mix against the ground would
+     work too, but this file already states both grounds literally, and one
+     mechanism per decision is enough.
 
      Literal values because this file is theme-independent, like the two
      grounds below. Keep them in step with --prism-measure in
@@ -36,12 +47,14 @@ export const CANVAS_BG_STYLES = `
   [data-bg="light"] {
     background-color: var(--prism-void-light, #f7f5fc);
     background-image: none;
-    --prism-measure: #004d8a;
+    --prism-measure: #ca00c1;
+    --prism-measure-plate: var(--prism-void-light, #f7f5fc);
   }
   [data-bg="dark"] {
     background-color: var(--prism-void-dark, #07050f);
     background-image: none;
-    --prism-measure: #41bcff;
+    --prism-measure: #f632ff;
+    --prism-measure-plate: var(--prism-void-dark, #07050f);
   }
 
   /* "transparent" shares the checkerboard. In the app the checkerboard is

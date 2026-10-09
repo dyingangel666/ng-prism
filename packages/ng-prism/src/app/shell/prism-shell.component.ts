@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, untracked } from '@angular/core';
 import type { NgPrismConfig } from '../../plugin/plugin.types.js';
+import { PrismCanvasPinRowComponent } from '../canvas/prism-canvas-pin-row.component.js';
 import { PrismCanvasToolbarComponent } from '../canvas/prism-canvas-toolbar.component.js';
 import { PrismTemplatePopoverComponent } from '../canvas/prism-template-popover.component.js';
 import { PrismComponentHeadComponent } from '../component-head/prism-component-head.component.js';
@@ -37,7 +38,8 @@ import { PrismViewTabBarComponent } from '../view-tab-bar/prism-view-tab-bar.com
         PrismViewPanelHostComponent,
         PrismResizerDirective,
         PrismCanvasToolbarComponent,
-        PrismTemplatePopoverComponent
+        PrismTemplatePopoverComponent,
+        PrismCanvasPinRowComponent
     ],
     templateUrl: './prism-shell.component.html',
     styleUrl: './prism-shell.component.css'
