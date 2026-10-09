@@ -134,22 +134,42 @@ export interface QuadSpan {
 /**
  * The four distances as drawable spans.
  *
- * Each span runs through {@link quadCentre}, from the outer edge to the inner
- * one, so that four simultaneous measurement lines don't cross each other.
- * Disjoint boxes have no outer and inner and keep the order they were picked
- * in. Sides with no distance are dropped: a measurement line of length 0 is
- * not the statement "0 pixels" — it is no statement at all, and two ticks
+ * Each span runs through {@link quadCentre}, so that four simultaneous
+ * measurement lines don't cross each other, and covers exactly the distance
+ * it is labelled with. Nested boxes span from the outer edge in to the inner
+ * one. Disjoint boxes span the gap between the two edges that *face* each
+ * other — measured from the anchor's edge to the target's far one instead,
+ * the line overshot the gap by the whole target, and a heading 4px above its
+ * subtitle drew a 24px line labelled 4.
+ *
+ * Sides with no distance are dropped: a measurement line of length 0 is not
+ * the statement "0 pixels" — it is no statement at all, and two ticks
  * stacked on top of each other read as a drawing fault.
  */
 export function quadSpans(anchor: Box, target: Box): QuadSpan[] {
     const d = quadDistances(anchor, target);
-    const { outer, inner } = nesting(anchor, target) ?? { outer: anchor, inner: target };
+    const nested = nesting(anchor, target);
     const { x: cx, y: cy } = quadCentre(anchor, target);
+    // Per side, the two coordinates the span runs between along its axis —
+    // top and left first, so every span points the same way in both readings.
+    const [top, right, bottom, left] = nested
+        ? [
+              [nested.outer.top, nested.inner.top],
+              [nested.inner.right, nested.outer.right],
+              [nested.inner.bottom, nested.outer.bottom],
+              [nested.outer.left, nested.inner.left]
+          ]
+        : [
+              [target.bottom, anchor.top],
+              [anchor.right, target.left],
+              [anchor.bottom, target.top],
+              [target.right, anchor.left]
+          ];
     const all: QuadSpan[] = [
-        { a: { x: cx, y: outer.top }, b: { x: cx, y: inner.top }, value: d.top, side: 'top' },
-        { a: { x: inner.right, y: cy }, b: { x: outer.right, y: cy }, value: d.right, side: 'right' },
-        { a: { x: cx, y: inner.bottom }, b: { x: cx, y: outer.bottom }, value: d.bottom, side: 'bottom' },
-        { a: { x: outer.left, y: cy }, b: { x: inner.left, y: cy }, value: d.left, side: 'left' }
+        { a: { x: cx, y: top[0] }, b: { x: cx, y: top[1] }, value: d.top, side: 'top' },
+        { a: { x: right[0], y: cy }, b: { x: right[1], y: cy }, value: d.right, side: 'right' },
+        { a: { x: cx, y: bottom[0] }, b: { x: cx, y: bottom[1] }, value: d.bottom, side: 'bottom' },
+        { a: { x: left[0], y: cy }, b: { x: left[1], y: cy }, value: d.left, side: 'left' }
     ];
 
     return all.filter((s) => s.value !== 0);

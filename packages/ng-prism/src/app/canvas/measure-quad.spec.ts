@@ -123,6 +123,35 @@ describe('quadSpans', () => {
         expect(spans).toEqual(quadSpans(anchor, inner));
         expect(spans.find((s) => s.side === 'top')).toEqual({ a: { x: 50, y: 0 }, b: { x: 50, y: 16 }, value: 16, side: 'top' });
     });
+
+    it('should span only the gap between two disjoint boxes', () => {
+        // The card's heading above its subtitle, 4px apart. The span used to
+        // run from the anchor's edge to the target's *far* edge — straight
+        // through the whole heading, a 24px line labelled 4.
+        const subtitle = { left: 16, top: 40, right: 184, bottom: 60 };
+        const title = { left: 16, top: 16, right: 184, bottom: 36 };
+
+        expect(quadSpans(subtitle, title)).toEqual([{ a: { x: 100, y: 36 }, b: { x: 100, y: 40 }, value: 4, side: 'top' }]);
+    });
+
+    it.each([
+        ['above', { left: 120, top: 20, right: 180, bottom: 60 }],
+        ['right of', { left: 260, top: 120, right: 300, bottom: 180 }],
+        ['below', { left: 120, top: 250, right: 180, bottom: 290 }],
+        ['left of', { left: 10, top: 120, right: 70, bottom: 180 }],
+        ['diagonal to', { left: 230, top: 230, right: 260, bottom: 270 }],
+        ['inside', { left: 116, top: 124, right: 170, bottom: 190 }]
+    ])('should draw every span exactly as long as its value for a box %s the other, in either order', (_, other) => {
+        // The invariant both readings rest on: the number printed on a line is
+        // the length of that line. Pinned per direction because each side of
+        // the disjoint reading picks its two edges separately.
+        const box = { left: 100, top: 100, right: 200, bottom: 200 };
+
+        for (const spans of [quadSpans(box, other), quadSpans(other, box)]) {
+            expect(spans.length).toBeGreaterThan(0);
+            for (const { a, b, value } of spans) expect(Math.hypot(b.x - a.x, b.y - a.y)).toBe(value);
+        }
+    });
 });
 
 describe('quadCentre', () => {
