@@ -144,12 +144,19 @@ function extractAllMemberTags(hierarchy: ts.ClassDeclaration[]): Record<string, 
     return result;
 }
 
-/** Names a class declares hide the same names further up, but not the getter, setter or overloads next to them. */
+/**
+ * A member with JSDoc of its own hides the same name further up, as it does
+ * for TypeScript and for the description the scanner reads; one without
+ * keeps the documentation it inherits. Applied after the whole class, so the
+ * getter, setter or overloads next to a member are read too. A static member
+ * hides nothing, since inputs, outputs and methods are instance members.
+ */
 function addMemberNames(classDecl: ts.ClassDeclaration, names: Set<string>): void {
     for (const member of classDecl.members) {
         const name = getMemberName(member);
+        const isStatic = ts.canHaveModifiers(member) && ts.getModifiers(member)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
 
-        if (name) names.add(name);
+        if (name && !isStatic && ts.getJSDocCommentsAndTags(member).length > 0) names.add(name);
     }
 }
 

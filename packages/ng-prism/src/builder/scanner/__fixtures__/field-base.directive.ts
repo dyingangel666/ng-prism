@@ -38,6 +38,11 @@ export abstract class GenericField<T> {
 
     /** Does not depend on T */
     readonly size = input<Size>();
+
+    initial!: T;
+
+    /** Depends on T through the type of its default only */
+    readonly fromMember = model(this.initial);
 }
 
 @Directive()
@@ -51,6 +56,8 @@ export abstract class LegacyGenericField<T> {
 @Directive()
 export abstract class LegacyBase {
     @Input() title = 'base';
+
+    @Input() count = 1;
 }
 
 // Angular reads neither: it only inherits from classes with @Directive() or @Component().
@@ -63,8 +70,12 @@ export abstract class UndecoratedBase {
 @Directive()
 export abstract class DecoratedRoot {
     readonly rootInput = input('root');
+
+    readonly shared = input('root-shared');
 }
 
 export abstract class UndecoratedMiddle extends DecoratedRoot {
     readonly middleInput = input('middle');
+
+    override readonly shared = input('middle-shared');
 }

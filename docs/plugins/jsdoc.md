@@ -78,7 +78,7 @@ export class ButtonComponent {
 
 The panel renders two tables (one for inputs, one for outputs) with columns for name, type, default value, and description.
 
-Inputs, outputs and methods a component inherits from a base class are documented the same way. The plugin reads their JSDoc from the base classes the scanner found, so `@deprecated` and `@since` on an inherited input show up in the table as well. A member the component redeclares takes its tags from the redeclaration, even if that has none.
+Inputs, outputs and methods a component inherits from a base class are documented the same way. The plugin reads their JSDoc from the base classes the scanner found, so `@deprecated` and `@since` on an inherited input show up in the table as well. A member the component redeclares with a JSDoc comment of its own takes its tags from that comment, even if it has none; a redeclaration or override without JSDoc keeps the documentation of the base class, as it does in TypeScript.
 
 ## Class Description
 

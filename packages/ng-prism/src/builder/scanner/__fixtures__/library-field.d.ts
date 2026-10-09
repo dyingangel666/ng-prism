@@ -29,6 +29,11 @@ export declare abstract class LibraryLabelledField extends LibraryField {
     static ɵdir: i0.ɵɵDirectiveDeclaration<LibraryLabelledField, never, never, { "label": { "alias": "label"; "required": true; "isSignal": true; }; }, Record<string, never>, never, never, true, never>;
 }
 
+// Compiled, but without a decorator, so there is no ɵdir: Angular does not inherit from it.
+export declare abstract class LibraryUndecorated {
+    readonly ghost: i0.InputSignal<string>;
+}
+
 export declare abstract class LibraryLogger {
     protected log(message: string): void;
 }

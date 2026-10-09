@@ -378,11 +378,23 @@ describe('extractInputs and extractOutputs with base classes', () => {
     });
 
     // Angular keeps the inherited input, but the component starts with the subclass's value.
-    it('drops the inherited default of an input the subclass assigns a value to', () => {
-        const title = inputsOf('LegacyChildComponent').get('title')!;
+    it('takes the default of an inherited input from the subclass that assigns it a value', () => {
+        expect(inputsOf('LegacyChildComponent').get('title')!.defaultValue).toBe('child');
+    });
 
-        expect(title).toBeDefined();
-        expect(title.defaultValue).toBeUndefined();
+    it('drops the inherited default when the value the subclass assigns cannot be read', () => {
+        const count = inputsOf('LegacyChildComponent').get('count')!;
+
+        expect(count).toBeDefined();
+        expect(count.defaultValue).toBeUndefined();
+    });
+
+    it('takes the default from an undecorated class that initializes an input again', () => {
+        expect(inputsOf('MiddleChildComponent').get('shared')!.defaultValue).toBe('middle-shared');
+    });
+
+    it('ignores a static member with the name of an inherited input', () => {
+        expect(inputsOf('StaticShadowComponent').get('label')!.defaultValue).toBe('');
     });
 
     it('resolves the type parameter of a generic base class to the type argument of the subclass', () => {
@@ -394,6 +406,10 @@ describe('extractInputs and extractOutputs with base classes', () => {
 
     it('keeps the declared type of an input in a generic base class that does not use the type parameter', () => {
         expect(inputsOf('ColorPickerComponent').get('size')).toMatchObject({ type: 'union', values: ['sm', 'md'], rawType: 'Size' });
+    });
+
+    it('resolves an inferred type that depends on a type parameter without naming it', () => {
+        expect(inputsOf('ColorPickerComponent').get('fromMember')).toMatchObject({ type: 'union', values: ['red', 'green'] });
     });
 
     it('resolves type parameters through a chain of generic base classes', () => {
@@ -411,7 +427,7 @@ describe('extractInputs and extractOutputs with base classes', () => {
     });
 
     it('reads a decorated base class behind an undecorated one', () => {
-        expect(inputNames('MiddleChildComponent')).toEqual(['rootInput']);
+        expect(inputNames('MiddleChildComponent')).toEqual(['rootInput', 'shared']);
     });
 
     it('collects outputs from base classes', () => {

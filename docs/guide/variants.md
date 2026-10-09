@@ -143,7 +143,7 @@ The component's own inputs come first, then those of each base class. An input t
 
 Angular only inherits inputs and outputs from a base class with `@Directive()` or `@Component()`, and so does the scan. An undecorated base class compiles without an error, but its inputs are not inputs of the component, so they are left out.
 
-When a subclass assigns an inherited input a value of its own (`override title = 'child'` for an `@Input() title = 'base'`), the input stays, but its default is dropped: the component starts out with the subclass's value, not the one the base class declares.
+When a subclass assigns an inherited input a value of its own (`override title = 'child'` for an `@Input() title = 'base'`), the input stays and its default becomes the subclass's value, since that is what the component starts out with. If that value cannot be read at build time, the input has no default.
 
 Two kinds of base class are not read:
 

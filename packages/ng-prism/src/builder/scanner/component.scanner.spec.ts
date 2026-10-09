@@ -537,7 +537,9 @@ describe('scanComponents with base classes', () => {
     it('warns about an ambient base class in a .ts file like about a declaration file', () => {
         scanComponents(exports, checker);
 
-        expect(warningsAbout('AmbientComponent')).toEqual([expect.stringMatching(/AmbientComponent inherits ambientLabel from AmbientField, .*ambient-field\.ts/)]);
+        expect(warningsAbout('AmbientComponent')).toEqual([
+            expect.stringMatching(/AmbientComponent inherits ambientLabel, importTyped, aliased from AmbientField, .*ambient-field\.ts/)
+        ]);
         expect(warningsAbout('ModuleAmbientComponent')).toEqual([expect.stringContaining('ModuleAmbientComponent inherits moduleLabel from ModuleField')]);
     });
 
@@ -545,6 +547,13 @@ describe('scanComponents with base classes', () => {
         scanComponents(exports, checker);
 
         expect(warningsAbout('LoggingComponent')).toEqual([]);
+    });
+
+    // The Angular compiler writes ɵdir for every decorated class, so a compiled class without it is undecorated.
+    it('does not warn about a compiled base class without a directive definition', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('UndecoratedLibraryComponent')).toEqual([]);
     });
 
     it('does not warn about base classes it can read, or about mixins', () => {

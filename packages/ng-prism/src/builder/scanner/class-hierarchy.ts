@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { findDecorator } from './ast-utils.js';
 
-/** The types Angular gives a signal input, which is all a declaration written by hand shows of one. */
+/** The types Angular gives a signal input, which is all a `declare class` written by hand shows of one. */
 const INPUT_SIGNAL_TYPES = new Set(['InputSignal', 'InputSignalWithTransform', 'ModelSignal']);
 
 /** The static fields the Angular compiler writes a class's directive definition into. */
@@ -53,7 +53,7 @@ export function getClassHierarchy(classDecl: ts.ClassDeclaration, checker: ts.Ty
             continue;
         }
 
-        const inputs = getDeclaredInputs(current);
+        const inputs = getDeclaredInputs(current, checker);
 
         if (inputs.length > 0) unreadable.push({ classDecl: current, inputs });
     }
@@ -95,10 +95,12 @@ function isDeclarationOnly(classDecl: ts.ClassDeclaration): boolean {
 
 /**
  * The input map the Angular compiler writes into `ɵdir`/`ɵcmp` is complete,
- * decorator inputs and aliases included. A declaration written by hand has
- * none, so the signal types are all there is to go by.
+ * decorator inputs and aliases included. It writes one for every decorated
+ * class, so a compiled class without it is one Angular does not inherit from.
+ * A `declare class` written by hand has no map at all; there the properties
+ * typed as signal inputs are all there is to go by.
  */
-function getDeclaredInputs(classDecl: ts.ClassDeclaration): string[] {
+function getDeclaredInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): string[] {
     const definition = classDecl.members.find(
         (member): member is ts.PropertyDeclaration => ts.isPropertyDeclaration(member) && DEFINITION_FIELDS.has(getPropertyNameText(member.name) ?? '')
     );
@@ -109,13 +111,13 @@ function getDeclaredInputs(classDecl: ts.ClassDeclaration): string[] {
         return inputMap && ts.isTypeLiteralNode(inputMap) ? inputMap.members.flatMap((entry) => getPublicInputName(entry) ?? []) : [];
     }
 
+    if (classDecl.getSourceFile().isDeclarationFile) return [];
+
     return classDecl.members.flatMap((member) => {
-        if (!ts.isPropertyDeclaration(member) || !member.type || !ts.isTypeReferenceNode(member.type)) return [];
+        const name = ts.isPropertyDeclaration(member) ? getPropertyNameText(member.name) : undefined;
 
-        const typeName = ts.isQualifiedName(member.type.typeName) ? member.type.typeName.right : member.type.typeName;
-        const name = getPropertyNameText(member.name);
-
-        return name && INPUT_SIGNAL_TYPES.has(typeName.text) ? [name] : [];
+        // Through the checker, so an import type or an alias of InputSignal counts too.
+        return name && INPUT_SIGNAL_TYPES.has(checker.getTypeAtLocation(member).symbol?.name ?? '') ? [name] : [];
     });
 }
 

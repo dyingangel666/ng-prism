@@ -11,15 +11,15 @@ import { getClassHierarchy } from './class-hierarchy.js';
 export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker, hierarchy = getClassHierarchy(classDecl, checker)): InputMeta[] {
     const inputs: InputMeta[] = [];
     const seen = new Set<string>();
-    // Fields a subclass initializes without declaring them an input. Angular
-    // keeps the inherited input, but the component starts out with the subclass's value.
-    const reinitialized = new Set<string>();
+    // Fields a more derived class initializes without declaring them an input.
+    // Angular keeps the inherited input, but the component starts out with that value.
+    const reinitialized = new Map<string, ts.PropertyDeclaration>();
 
     for (const { classDecl: owner, definesMetadata } of hierarchy.classes) {
         const subclass = owner === classDecl ? undefined : classDecl;
 
         for (const member of owner.members) {
-            if (!ts.isPropertyDeclaration(member)) continue;
+            if (!ts.isPropertyDeclaration(member) || isStatic(member)) continue;
 
             const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
 
@@ -28,17 +28,38 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
             const input = definesMetadata ? readInput(member, name, checker, owner, subclass) : undefined;
 
             if (!input) {
-                if (member.initializer) reinitialized.add(name);
+                if (member.initializer && !reinitialized.has(name)) reinitialized.set(name, member);
                 continue;
             }
 
-            if (reinitialized.has(name)) delete input.defaultValue;
+            const initializedBy = reinitialized.get(name);
+
+            if (initializedBy) {
+                const defaultValue = readInitialValue(initializedBy, checker);
+
+                if (defaultValue === undefined) delete input.defaultValue;
+                else input.defaultValue = defaultValue;
+            }
+
             seen.add(name);
             inputs.push(input);
         }
     }
 
     return inputs;
+}
+
+function isStatic(member: ts.PropertyDeclaration): boolean {
+    return !!ts.getModifiers(member)?.some((m) => m.kind === ts.SyntaxKind.StaticKeyword);
+}
+
+/** What a field starts out with: its initializer, or for `input()` and `model()` the value passed to them. */
+function readInitialValue(member: ts.PropertyDeclaration, checker: ts.TypeChecker): unknown {
+    const signalCall = getInputSignalCall(member);
+
+    if (!signalCall) return member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
+
+    return !isSignalInputRequired(signalCall) && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
 }
 
 /**
@@ -56,7 +77,7 @@ function readInput(
 
     if (inputDecorator) {
         const required = isDecoratorInputRequired(inputDecorator);
-        const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
+        const defaultValue = readInitialValue(member, checker);
         const doc = getJsDocComment(member, checker);
         const instantiated = subclass && usesTypeParameters(member.type ?? member.initializer, owner, checker) ? getInstantiatedType(name, subclass, checker) : undefined;
         const { type, values, rawType } = instantiated ? mapType(instantiated, checker) : resolveDecoratorInputType(member, checker);
@@ -77,7 +98,7 @@ function readInput(
     if (!signalCall) return undefined;
 
     const required = isSignalInputRequired(signalCall);
-    const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
+    const defaultValue = readInitialValue(member, checker);
     const doc = getJsDocComment(member, checker);
     const declaredType = signalCall.typeArguments?.[0] ?? signalCall.arguments[0];
     // A signal is a getter function, so its call signature returns the value type.
@@ -135,17 +156,38 @@ function usesTypeParameters(node: ts.Node | undefined, owner: ts.ClassDeclaratio
 
     if (!node || !parameters?.length) return false;
 
+    const isOwnParameter = (declaration: ts.Declaration | undefined) => !!declaration && ts.isTypeParameterDeclaration(declaration) && parameters.includes(declaration);
     const visit = (child: ts.Node): boolean => {
-        if (ts.isTypeReferenceNode(child) && ts.isIdentifier(child.typeName)) {
-            const declaration = checker.getSymbolAtLocation(child.typeName)?.declarations?.[0];
-
-            if (declaration && ts.isTypeParameterDeclaration(declaration) && parameters.includes(declaration)) return true;
+        if (ts.isTypeReferenceNode(child) && ts.isIdentifier(child.typeName) && isOwnParameter(checker.getSymbolAtLocation(child.typeName)?.declarations?.[0])) {
+            return true;
         }
 
         return ts.forEachChild(child, visit) ?? false;
     };
 
-    return visit(node);
+    // An inferred type can depend on `T` without the source naming it: `model(this.initial)`.
+    return visit(node) || (!ts.isTypeNode(node) && typeMentions(checker.getTypeAtLocation(node), isOwnParameter, checker));
+}
+
+function typeMentions(
+    type: ts.Type,
+    isOwnParameter: (declaration: ts.Declaration | undefined) => boolean,
+    checker: ts.TypeChecker,
+    visited = new Set<ts.Type>()
+): boolean {
+    if (visited.has(type)) return false;
+    visited.add(type);
+
+    if (type.flags & ts.TypeFlags.TypeParameter) return isOwnParameter(type.symbol?.declarations?.[0]);
+
+    const isReference = type.flags & ts.TypeFlags.Object && (type as ts.ObjectType).objectFlags & ts.ObjectFlags.Reference;
+    const nested = [
+        ...(type.isUnionOrIntersection() ? type.types : []),
+        ...(type.aliasTypeArguments ?? []),
+        ...(isReference ? checker.getTypeArguments(type as ts.TypeReference) : [])
+    ];
+
+    return nested.some((t) => typeMentions(t, isOwnParameter, checker, visited));
 }
 
 /**

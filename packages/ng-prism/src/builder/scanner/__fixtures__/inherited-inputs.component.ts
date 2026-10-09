@@ -5,7 +5,7 @@ import { AmbientField } from './ambient-field.js';
 import * as fields from './field-barrel.js';
 import DefaultField from './field-base-default.directive.js';
 import { FieldBase, GenericField, LegacyBase, LegacyGenericField, ListboxField, NestedField, UndecoratedBase, UndecoratedMiddle } from './field-base.directive.js';
-import { LibraryField, LibraryLabelledField, LibraryLogger } from './library-field.js';
+import { LibraryField, LibraryLabelledField, LibraryLogger, LibraryUndecorated } from './library-field.js';
 
 function Showcase(config: unknown): ClassDecorator {
     return () => {};
@@ -65,6 +65,18 @@ export class LegacyGenericComponent extends LegacyGenericField<Color> {}
 })
 export class LegacyChildComponent extends LegacyBase {
     override title = 'child';
+
+    override count = Math.random();
+}
+
+@Showcase({ title: 'Static shadow' })
+@Component({
+    selector: 'my-static-shadow',
+    standalone: true,
+    template: ``
+})
+export class StaticShadowComponent extends FieldBase {
+    static label = 'unrelated';
 }
 
 @Showcase({ title: 'Undecorated child' })
@@ -135,6 +147,14 @@ export class LibraryBackedComponent extends LibraryField {
     template: ``
 })
 export class LabelledLibraryComponent extends LibraryLabelledField {}
+
+@Showcase({ title: 'Undecorated library' })
+@Component({
+    selector: 'my-undecorated-library',
+    standalone: true,
+    template: ``
+})
+export class UndecoratedLibraryComponent extends LibraryUndecorated {}
 
 @Showcase({ title: 'Logging' })
 @Component({
