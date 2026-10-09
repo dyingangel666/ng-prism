@@ -1,4 +1,4 @@
-import { outlineOf, quadDistances, quadLines, type QuadSpan, quadSpans, quadSummary } from './measure-quad.js';
+import { outlineOf, quadCentre, quadDistances, quadLines, type QuadSpan, quadSpans, quadSummary } from './measure-quad.js';
 
 const card = { left: 148, top: 64, right: 368, bottom: 260 };
 
@@ -8,6 +8,23 @@ describe('quadDistances', () => {
         const button = { left: 258, top: 212, right: 352, bottom: 244 };
 
         expect(quadDistances(card, button)).toEqual({
+            top: 148,
+            right: 16,
+            bottom: 16,
+            left: 110,
+            contained: true
+        });
+    });
+
+    it('should report the same insets when the anchor sits inside the target', () => {
+        // Picking the button first and hovering its card asks the same question
+        // as the other way round. Only the target-inside-anchor order used to
+        // count as containment, so this one fell through to the disjoint
+        // reading, where the boxes overlap on both axes — and came back 0 on
+        // every side, drawing two outlines and not a single number.
+        const button = { left: 258, top: 212, right: 352, bottom: 244 };
+
+        expect(quadDistances(button, card)).toEqual({
             top: 148,
             right: 16,
             bottom: 16,
@@ -95,6 +112,33 @@ describe('quadSpans', () => {
 
     it('should produce no spans when the boxes are flush on every side', () => {
         expect(quadSpans(anchor, anchor)).toEqual([]);
+    });
+
+    it('should draw a containment identically in either order', () => {
+        // Off-centre on purpose: the spans run through the middle of the inner
+        // box, and for a centred one the outer box's middle would pass too.
+        const inner = { left: 16, top: 16, right: 84, bottom: 84 };
+        const spans = quadSpans(inner, anchor);
+
+        expect(spans).toEqual(quadSpans(anchor, inner));
+        expect(spans.find((s) => s.side === 'top')).toEqual({ a: { x: 50, y: 0 }, b: { x: 50, y: 16 }, value: 16, side: 'top' });
+    });
+});
+
+describe('quadCentre', () => {
+    it('should centre on the inner box whichever was picked first', () => {
+        // The point the spans run through, and the one quadLines places short
+        // labels away from — both orders of a containment have to agree on it,
+        // or the same reading would put its labels on different sides.
+        const outer = { left: 0, top: 0, right: 200, bottom: 100 };
+        const inner = { left: 16, top: 16, right: 84, bottom: 84 };
+
+        expect(quadCentre(inner, outer)).toEqual({ x: 50, y: 50 });
+        expect(quadCentre(outer, inner)).toEqual({ x: 50, y: 50 });
+    });
+
+    it('should centre on the target when the boxes are disjoint', () => {
+        expect(quadCentre({ left: 0, top: 0, right: 10, bottom: 10 }, { left: 20, top: 0, right: 40, bottom: 10 })).toEqual({ x: 30, y: 5 });
     });
 });
 

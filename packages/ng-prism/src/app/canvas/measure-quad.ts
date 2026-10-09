@@ -35,19 +35,57 @@ export interface QuadResult {
     right: number;
     bottom: number;
     left: number;
-    /** True when the target lies entirely inside the anchor — see the explanation below. */
+    /** True when one box lies entirely inside the other, in either order — see the explanation below. */
     contained: boolean;
+}
+
+/** True when `inner` lies entirely inside `outer`, shared edges included. */
+function within(inner: Box, outer: Box): boolean {
+    return inner.left >= outer.left && inner.top >= outer.top && inner.right <= outer.right && inner.bottom <= outer.bottom;
+}
+
+/**
+ * The two boxes as container and contained, or `null` when neither holds
+ * the other.
+ *
+ * Which of the two was picked first says nothing about which one is the
+ * container: alt-clicking a label and hovering its card asks exactly the
+ * question that alt-clicking the card and hovering the label does. Checking
+ * only the target-inside-anchor order sent the other one to the disjoint
+ * reading, where two nested boxes overlap on both axes and every side comes
+ * back 0 — two outlines on screen and not a single number between them.
+ */
+function nesting(anchor: Box, target: Box): { outer: Box; inner: Box } | null {
+    if (within(target, anchor)) return { outer: anchor, inner: target };
+    if (within(anchor, target)) return { outer: target, inner: anchor };
+
+    return null;
+}
+
+/**
+ * The point the spans run through: the middle of the inner box when one
+ * contains the other, the middle of the target otherwise.
+ *
+ * Exported because `quadLines` needs the same point to place short labels
+ * away from, and both orders of a containment have to agree on it — or the
+ * same reading would put its labels on different sides depending on which
+ * box was clicked first.
+ */
+export function quadCentre(anchor: Box, target: Box): Vec {
+    const { left, top, right, bottom } = nesting(anchor, target)?.inner ?? target;
+
+    return { x: (left + right) / 2, y: (top + bottom) / 2 };
 }
 
 /**
  * The distances between two boxes, border-box to border-box.
  *
  * Two reading modes, because two different questions sit behind them. When
- * the target lies **inside** the anchor, what you want is the four insets —
- * that is the case where 16/16 makes a container's padding visible. When the
- * boxes sit **beside** each other, there are no four insets, only a gap per
- * axis; reporting an inset there would mean presenting negative numbers as
- * distances.
+ * one box lies **inside** the other (in either order, see {@link nesting}),
+ * what you want is the four insets — that is the case where 16/16 makes a
+ * container's padding visible. When the boxes sit **beside** each other,
+ * there are no four insets, only a gap per axis; reporting an inset there
+ * would mean presenting negative numbers as distances.
  *
  * Partial overlap counts as "not contained": there, exactly one side would
  * go negative, and one negative inset next to three positive ones reads as a
@@ -60,14 +98,16 @@ export interface QuadResult {
  * that is the intended reading, not a bug to chase down.
  */
 export function quadDistances(anchor: Box, target: Box): QuadResult {
-    const contained = target.left >= anchor.left && target.top >= anchor.top && target.right <= anchor.right && target.bottom <= anchor.bottom;
+    const nested = nesting(anchor, target);
 
-    if (contained) {
+    if (nested) {
+        const { outer, inner } = nested;
+
         return {
-            top: target.top - anchor.top,
-            right: anchor.right - target.right,
-            bottom: anchor.bottom - target.bottom,
-            left: target.left - anchor.left,
+            top: inner.top - outer.top,
+            right: outer.right - inner.right,
+            bottom: outer.bottom - inner.bottom,
+            left: inner.left - outer.left,
             contained: true
         };
     }
@@ -94,21 +134,22 @@ export interface QuadSpan {
 /**
  * The four distances as drawable spans.
  *
- * Each span runs through the middle of the target, from the anchor edge to
- * the target edge, so that four simultaneous measurement lines don't cross
- * each other. Sides with no distance are dropped: a measurement line of
- * length 0 is not the statement "0 pixels" — it is no statement at all, and
- * two ticks stacked on top of each other read as a drawing fault.
+ * Each span runs through {@link quadCentre}, from the outer edge to the inner
+ * one, so that four simultaneous measurement lines don't cross each other.
+ * Disjoint boxes have no outer and inner and keep the order they were picked
+ * in. Sides with no distance are dropped: a measurement line of length 0 is
+ * not the statement "0 pixels" — it is no statement at all, and two ticks
+ * stacked on top of each other read as a drawing fault.
  */
 export function quadSpans(anchor: Box, target: Box): QuadSpan[] {
     const d = quadDistances(anchor, target);
-    const cx = (target.left + target.right) / 2;
-    const cy = (target.top + target.bottom) / 2;
+    const { outer, inner } = nesting(anchor, target) ?? { outer: anchor, inner: target };
+    const { x: cx, y: cy } = quadCentre(anchor, target);
     const all: QuadSpan[] = [
-        { a: { x: cx, y: anchor.top }, b: { x: cx, y: target.top }, value: d.top, side: 'top' },
-        { a: { x: target.right, y: cy }, b: { x: anchor.right, y: cy }, value: d.right, side: 'right' },
-        { a: { x: cx, y: target.bottom }, b: { x: cx, y: anchor.bottom }, value: d.bottom, side: 'bottom' },
-        { a: { x: anchor.left, y: cy }, b: { x: target.left, y: cy }, value: d.left, side: 'left' }
+        { a: { x: cx, y: outer.top }, b: { x: cx, y: inner.top }, value: d.top, side: 'top' },
+        { a: { x: inner.right, y: cy }, b: { x: outer.right, y: cy }, value: d.right, side: 'right' },
+        { a: { x: cx, y: inner.bottom }, b: { x: cx, y: outer.bottom }, value: d.bottom, side: 'bottom' },
+        { a: { x: outer.left, y: cy }, b: { x: inner.left, y: cy }, value: d.left, side: 'left' }
     ];
 
     return all.filter((s) => s.value !== 0);

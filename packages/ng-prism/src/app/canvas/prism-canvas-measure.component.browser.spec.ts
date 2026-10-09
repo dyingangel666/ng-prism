@@ -539,6 +539,20 @@ describe('PrismCanvasMeasureComponent — alt-hover readout', () => {
         expect(host.querySelectorAll('.m-label')).toHaveLength(4);
     });
 
+    it('should draw the same four spans when the inner box is alt-clicked first', () => {
+        // The reverse of the test above: `target` (the inner box) becomes the
+        // anchor and `anchor` (its container) is hovered. This used to draw
+        // both outlines and no numbers at all, because only the hovered-inside-
+        // anchor order counted as containment.
+        hits(target);
+        pointer('pointerdown', { clientX: 200, clientY: 200, altKey: true });
+        hits(anchor);
+        pointer('pointermove', { clientX: 150, clientY: 150, altKey: true });
+
+        expect(host.querySelectorAll('.m-label')).toHaveLength(4);
+        expect(host.querySelector('.m-live')?.textContent?.trim()).toBe('top 16 px, right 16 px, bottom 16 px, left 16 px');
+    });
+
     it('should drop the target outline when the pointer returns to the anchor', () => {
         // There is no distance from an element to itself, so no spans — but
         // the anchor is still set, so its own outline stays.

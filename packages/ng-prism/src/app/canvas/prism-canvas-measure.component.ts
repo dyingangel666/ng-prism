@@ -17,7 +17,7 @@ import {
     type Vec
 } from './measure-geometry.js';
 import { nudge } from './measure-keyboard.js';
-import { type Box, outlineOf, type OutlineRect, quadLines, quadSpans, quadSummary } from './measure-quad.js';
+import { type Box, outlineOf, type OutlineRect, quadCentre, quadLines, quadSpans, quadSummary } from './measure-quad.js';
 import { nearestSnap, readElementBox, snapTargetsFor } from './measure-snap.js';
 
 /**
@@ -280,16 +280,15 @@ export class PrismCanvasMeasureComponent {
         if (!targetEl || anchorEl === targetEl) return { ...EMPTY_HOVER, anchor };
 
         const t = this.boxOf(targetEl, host);
-        const centre = { x: (t.left + t.right) / 2, y: (t.top + t.bottom) / 2 };
         // `quadSpans` already drops a side with nothing to say, so an anchor
         // and target that merely overlap correctly renders nothing at all —
         // see its doc on `measure-quad.ts`. The DOM-bound half (boxOf) stops
-        // here; quadSpans/quadLines/quadSummary are all pure and tested
+        // here; quadSpans/quadCentre/quadLines/quadSummary are all pure and tested
         // directly in measure-quad.spec.ts.
         const spans = quadSpans(a, t);
 
         return {
-            lines: quadLines(spans, centre, zoom),
+            lines: quadLines(spans, quadCentre(a, t), zoom),
             summary: quadSummary(spans, zoom),
             anchor,
             // Solid against the anchor's dashed outline, per Spec §4.5.
