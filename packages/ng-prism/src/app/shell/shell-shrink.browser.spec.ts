@@ -29,8 +29,8 @@ describe('shell width', () => {
 
     /**
      * The fix itself. An implicit track is `auto`, and an `auto` track takes the
-     * min-content width of its contents as its minimum — the whole body, in this
-     * one case. Declaring the track is the only way to give it a zero floor.
+     * min-content width of its contents as its minimum (here, the whole body in this
+     * one case). Declaring the track is the only way to give it a zero floor.
      */
     it('should give its column a zero minimum so the body can shrink', () => {
         const dom = renderCanvasChain('light');
@@ -45,9 +45,9 @@ describe('shell width', () => {
      *
      * The levels below the shell declare bare `fr` tracks of their own, and they
      * get away with it because an item whose `overflow` is not `visible` has an
-     * automatic minimum of zero — so `.prism-main` never imposes its min-content
+     * automatic minimum of zero, so `.prism-main` never imposes its min-content
      * width on the track holding it. Take that `overflow` away and the one-line
-     * fix above silently stops being sufficient, with nothing else to catch it.
+     * fix above silently stops being sufficient, and no other test would catch it.
      */
     it('should keep the main region clipping, which is what zeroes its own minimum', () => {
         const dom = renderCanvasChain('light');

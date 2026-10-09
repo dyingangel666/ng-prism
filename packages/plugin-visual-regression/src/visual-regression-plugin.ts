@@ -9,7 +9,7 @@ const DEFAULT_REPORT_PATH = 'vrt-report.json';
 /**
  * Renders a visual regression report produced by an external runner.
  *
- * The plugin performs no image comparison of its own — that belongs to the
+ * The plugin performs no image comparison of its own. That belongs to the
  * runner, which owns the baselines and the pinned container. See
  * `docs/guide/visual-regression.md`.
  */

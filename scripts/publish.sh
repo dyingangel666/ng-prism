@@ -28,7 +28,7 @@ project_names() {
   echo "${names[*]}"
 }
 
-# Same, without the core package — for steps that handle it separately.
+# Same, without the core package, for steps that handle it separately.
 plugin_project_names() {
   local names=() pkg
   for pkg in "${PACKAGES[@]}"; do
@@ -81,8 +81,8 @@ show_menu() {
 
 # ─── Compute peer-dep range from a version string ───
 # Strips any prerelease suffix and returns ^base-0
-# e.g. 21.12.0-beta.5 → ^21.12.0-0   (matches all 21.12.0 prereleases AND 21.x stable)
-#      21.12.0        → ^21.12.0-0   (matches all 21.x stable)
+# e.g. 21.12.0-beta.5 -> ^21.12.0-0   (matches all 21.12.0 prereleases AND 21.x stable)
+#      21.12.0        -> ^21.12.0-0   (matches all 21.x stable)
 peer_range_from_version() {
   local version="$1"
   local base="${version%%-*}"
@@ -96,7 +96,7 @@ sync_plugin_peer_deps() {
   peer_range=$(peer_range_from_version "$new_version")
 
   for pkg in "${PACKAGES[@]}"; do
-    # Skip the core package itself — it doesn't depend on itself
+    # Skip the core package itself; it doesn't depend on itself
     [[ "$pkg" == "packages/ng-prism" ]] && continue
 
     node -e "
@@ -108,7 +108,7 @@ sync_plugin_peer_deps() {
         fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
       }
     "
-    info "$(basename "$pkg") peer @ng-prism/core → $peer_range"
+    info "$(basename "$pkg") peer @ng-prism/core -> $peer_range"
   done
 }
 
@@ -127,7 +127,7 @@ bump_version() {
     major) new_version=$(node -e "const [a]=process.argv[1].split('.'); console.log([+a+1,0,0].join('.'))" "$clean") ;;
   esac
 
-  header "Bumping $old_version → $new_version"
+  header "Bumping $old_version to $new_version"
 
   for pkg in "${PACKAGES[@]}"; do
     node -e "
@@ -137,7 +137,7 @@ bump_version() {
       p.version = '$new_version';
       fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
     "
-    info "$(basename "$pkg") → $new_version"
+    info "$(basename "$pkg") -> $new_version"
   done
 
   sync_plugin_peer_deps "$new_version"
@@ -155,7 +155,7 @@ bump_beta_version() {
 
   if [[ "$mode" == "iterate" ]]; then
     if [[ ! "$old_version" =~ -beta\.([0-9]+)$ ]]; then
-      err "Current version $old_version is not a beta — cannot iterate"
+      err "Current version $old_version is not a beta, cannot iterate"
       exit 1
     fi
     local base="${old_version%-beta.*}"
@@ -174,7 +174,7 @@ bump_beta_version() {
     new_version="${base}-beta.0"
   fi
 
-  header "Bumping $old_version → $new_version (beta)"
+  header "Bumping $old_version to $new_version (beta)"
 
   for pkg in "${PACKAGES[@]}"; do
     node -e "
@@ -184,7 +184,7 @@ bump_beta_version() {
       p.version = '$new_version';
       fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
     "
-    info "$(basename "$pkg") → $new_version"
+    info "$(basename "$pkg") -> $new_version"
   done
 
   sync_plugin_peer_deps "$new_version"
@@ -193,19 +193,19 @@ bump_beta_version() {
   echo "$new_version"
 }
 
-# ─── Promote beta → stable (drop -beta.N suffix, no version bump) ───
+# ─── Promote beta to stable (drop -beta.N suffix, no version bump) ───
 promote_beta_to_stable() {
   local old_version new_version
   old_version=$(current_version)
 
   if [[ ! "$old_version" =~ -beta\.[0-9]+$ ]]; then
-    err "Current version $old_version is not a beta — nothing to promote"
+    err "Current version $old_version is not a beta, nothing to promote"
     exit 1
   fi
 
   new_version="${old_version%%-*}"
 
-  header "Promoting $old_version → $new_version (stable)"
+  header "Promoting $old_version to $new_version (stable)"
 
   for pkg in "${PACKAGES[@]}"; do
     node -e "
@@ -215,7 +215,7 @@ promote_beta_to_stable() {
       p.version = '$new_version';
       fs.writeFileSync(path, JSON.stringify(p, null, 2) + '\n');
     "
-    info "$(basename "$pkg") → $new_version"
+    info "$(basename "$pkg") -> $new_version"
   done
 
   sync_plugin_peer_deps "$new_version"
@@ -256,19 +256,14 @@ preflight_checks() {
 run_tests() {
   header "Running tests"
 
-  # Every published package, not only the core. A plugin's suite is the only
-  # thing that checks its own half of the contract, so a release that ran just
-  # `nx test ng-prism` could ship a broken plugin with green output.
+  # Every published package, not only the core: a plugin's own suite is the
+  # only check of its side of the contract.
   #
-  # Unpiped on purpose: `set -o pipefail` already aborts the release on a
-  # failure, but the previous `| tail -3` reduced that failure to a summary
-  # line and hid which test broke.
+  # Not piped through `tail`, so a failure shows which test broke;
+  # `set -o pipefail` still aborts the release.
   #
-  # `static` is what the pipe used to imply. Nx picks its Terminal UI when it
-  # detects an interactive stdout, and that UI waits for a keypress after the
-  # run — a release script would sit there until someone pressed q. `static`
-  # is Nx's own recommendation for non-interactive environments: every task's
-  # output, printed once, in order, and the process exits on its own.
+  # `--outputStyle=static` because Nx's Terminal UI (picked for an interactive
+  # stdout) waits for a keypress after the run and would block the script.
   npx nx run-many -t test --projects="$(project_names)" --outputStyle=static
 
   ok "Tests passed"
@@ -289,7 +284,7 @@ build_all() {
 
 # ─── Dry run ───
 dry_run() {
-  header "Dry run — checking package contents"
+  header "Dry run: checking package contents"
 
   for pkg in "${PACKAGES[@]}"; do
     local name
@@ -335,13 +330,13 @@ publish_all_beta() {
   done
 }
 
-# ─── Git tag + push (beta — uses current branch, not main) ───
+# ─── Git tag + push (beta: uses current branch, not main) ───
 tag_and_push_beta() {
   local version="$1"
   local current_branch
   current_branch=$(git rev-parse --abbrev-ref HEAD)
 
-  header "Git tag + push (beta — branch: $current_branch)"
+  header "Git tag + push (beta, branch: $current_branch)"
 
   git add -A
   git commit -m "release: v$version" || true
@@ -365,7 +360,7 @@ create_github_prerelease() {
   local tag="v$version"
 
   if ! command -v gh &>/dev/null; then
-    warn "gh CLI not found — skipping GitHub release"
+    warn "gh CLI not found, skipping GitHub release"
     return
   fi
 
@@ -419,7 +414,7 @@ create_github_release() {
   local tag="v$version"
 
   if ! command -v gh &>/dev/null; then
-    warn "gh CLI not found — skipping GitHub release"
+    warn "gh CLI not found, skipping GitHub release"
     return
   fi
 
@@ -484,7 +479,7 @@ main() {
       local current
       current=$(current_version)
       if [[ "$current" =~ -beta\.[0-9]+$ ]]; then
-        err "Current version $current is a beta — cannot publish to 'latest'."
+        err "Current version $current is a beta and cannot be published to 'latest'."
         warn "Use option 6 (re-publish beta) or option 7 (promote to stable) instead."
         exit 1
       fi
@@ -497,7 +492,7 @@ main() {
     5)
       build_all
       dry_run
-      ok "Dry run complete — nothing published"
+      ok "Dry run complete, nothing published"
       ;;
 
     6)
@@ -562,7 +557,7 @@ main() {
       local current
       current=$(current_version)
       if [[ ! "$current" =~ -beta\.[0-9]+$ ]]; then
-        err "Current version $current is not a beta — nothing to promote"
+        err "Current version $current is not a beta, nothing to promote"
         exit 1
       fi
 
@@ -581,7 +576,7 @@ main() {
       tag_and_push "$new_version"
 
       echo ""
-      ok "Promote $current → v$new_version complete!"
+      ok "Promote $current to v$new_version complete!"
       echo -e "  ${DIM}https://www.npmjs.com/package/@ng-prism/core${RESET}"
       ;;
 

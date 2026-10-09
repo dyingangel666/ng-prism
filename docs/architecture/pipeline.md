@@ -28,12 +28,12 @@ Atomic write  (skip if unchanged)
 
 `scanEntryPoints()` resolves the library root and then dispatches to `discoverSecondaryEntryPoints()`:
 
-- **Directory** — used as the library root directly
-- **File** — `findLibraryRoot()` walks upward to the nearest `ng-package.json` and uses that directory as the library root. If no `ng-package.json` is found above the file, or if discovery returns no entries, the pipeline falls back to scanning the file directly (back-compat for non-ng-packagr setups).
+- **Directory:** used as the library root directly
+- **File:** `findLibraryRoot()` walks upward to the nearest `ng-package.json` and uses that directory as the library root. If no `ng-package.json` is found above the file, or if discovery returns no entries, the pipeline falls back to scanning the file directly (back-compat for non-ng-packagr setups).
 
-Discovery returns one entry per `ng-package.json` (excluding the primary `dest`-rooted one). All discovered entry points are fed into a **single** `Scanner` instance that is cached on `PrismPipelineState.scanner`. The import path attached to each scanned component (`my-lib`, `my-lib/atoms`, ...) is derived from the entry-point's relative directory.
+Discovery returns one entry per `ng-package.json` (excluding the primary `dest`-rooted one). All discovered entry points are fed into a single `Scanner` instance that is cached on `PrismPipelineState.scanner`. The import path attached to each scanned component (`my-lib`, `my-lib/atoms`, ...) is derived from the entry-point's relative directory.
 
-On rebuild, the same `Scanner` instance is reused, which means the previous `ts.Program` is passed to `ts.createProgram()` as `oldProgram` — only changed files are re-parsed. See [PrismPipelineState](#prismpipelinestate-scanner-reuse-across-rebuilds) below for how the cached scanner is invalidated when the entry-point set itself changes.
+On rebuild, the same `Scanner` instance is reused, which means the previous `ts.Program` is passed to `ts.createProgram()` as `oldProgram`, so only changed files are re-parsed. See [PrismPipelineState](#prismpipelinestate-scanner-reuse-across-rebuilds) below for how the cached scanner is invalidated when the entry-point set itself changes.
 
 ### 3. Merge Config Pages
 
@@ -47,7 +47,7 @@ On rebuild, the same `Scanner` instance is reused, which means the previous `ts.
 2. `onPageScanned` called once per page
 3. `onManifestReady` called once with the full `PrismManifest`
 
-All hooks are awaited — async plugins are fully supported.
+All hooks are awaited, so async plugins are fully supported.
 
 ### 5. Runtime Manifest Generation
 
@@ -76,9 +76,9 @@ When the file must be written, it is first written to `prism-manifest.ts.tmp` th
 
 ### Manifest Output Location
 
-Das generierte `prism-manifest.ts` liegt unter `<workspaceRoot>/ng-prism-cache/<prism-project>/prism-manifest.ts`. Es ist ein reines Build-Artifact: `main.ts` importiert es über ein wildcard-basiertes `tsconfig.json`-Path-Mapping (`"prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]`), und der Import-Specifier enthält den Prism-Projektnamen (`from 'prism-manifest/<prism-project>'`). Dadurch erscheint die Datei nicht im Source-Tree, benötigt keinen per-Projekt `.gitignore`-Eintrag (nur ein workspace-weites `ng-prism-cache/`), und Multi-Project-Workspaces lösen kollisionsfrei auf. Für CI-Sandboxes oder ungewöhnliche Setups akzeptieren die Builder eine `cacheDir`-Option als Override (relative Pfade werden gegen den Workspace-Root aufgelöst).
+The generated `prism-manifest.ts` is written to `<workspaceRoot>/ng-prism-cache/<prism-project>/prism-manifest.ts`. It is a build artifact only: `main.ts` imports it through a wildcard `tsconfig.json` path mapping (`"prism-manifest/*": ["ng-prism-cache/*/prism-manifest.ts"]`), with the prism project name in the import specifier (`from 'prism-manifest/<prism-project>'`). The file stays out of the source tree, needs no per-project `.gitignore` entry (one workspace-wide `ng-prism-cache/` is enough), and multi-project workspaces resolve without collisions. For CI sandboxes or unusual setups the builders accept a `cacheDir` option as an override (relative paths resolve against the workspace root).
 
-## PrismPipelineState — Scanner Reuse Across Rebuilds
+## PrismPipelineState: Scanner Reuse Across Rebuilds
 
 ```typescript
 export interface PrismPipelineState {
@@ -89,10 +89,10 @@ export interface PrismPipelineState {
 
 The builder creates one `PrismPipelineState` per builder run (not per file change). It is passed into every `runPrismPipeline()` call and caches two things:
 
-- **`scanner`** — a single `Scanner` instance that owns the underlying `ts.Program`. When it is reused across rebuilds, the previous program is passed in as `oldProgram` and TypeScript's incremental parser only re-parses changed files.
-- **`lastEntrySetKey`** — the sorted-and-joined list of entry-file paths from the previous run. It acts as a fingerprint of the entry-point set.
+- **`scanner`:** a single `Scanner` instance that owns the underlying `ts.Program`. When it is reused across rebuilds, the previous program is passed in as `oldProgram` and TypeScript's incremental parser only re-parses changed files.
+- **`lastEntrySetKey`:** the sorted-and-joined list of entry-file paths from the previous run. It acts as a fingerprint of the entry-point set.
 
-Before each scan the pipeline computes a fresh entry-set key. If it differs from `lastEntrySetKey` — for example because a new secondary entry point was added or removed — the cached `scanner` is discarded (`state.scanner = undefined`) so the next call constructs a fresh one with the new entry set. Otherwise the existing scanner is reused, preserving its incremental-compilation state for fast rebuilds.
+Before each scan the pipeline computes a fresh entry-set key. If it differs from `lastEntrySetKey` (for example because a new secondary entry point was added or removed), the cached `scanner` is discarded (`state.scanner = undefined`) so the next call constructs a fresh one with the new entry set. Otherwise the existing scanner is reused, preserving its incremental-compilation state for fast rebuilds.
 
 ## Serve Builder
 
@@ -101,18 +101,18 @@ The serve builder orchestrates the full dev experience:
 1. Creates `PrismPipelineState`
 2. Runs `runPrismPipeline()` once before starting the Angular dev server
 3. Calls `context.scheduleTarget()` to delegate to the Angular dev server
-4. **Subscribes to `run.output`** (Observable) — not `run.result` (Promise). `run.result` resolves on the first output event, which is long before the server stops. The builder must stay alive until `run.output` completes.
+4. **Subscribes to `run.output`** (Observable), not `run.result` (Promise). `run.result` resolves on the first output event, which is long before the server stops. The builder must stay alive until `run.output` completes.
 5. Starts a chokidar file watcher via `startWatcher()`
 
-### Watch Mode — chokidar
+### Watch Mode with chokidar
 
 `startWatcher()` uses chokidar (not `fs.watch`) because `fs.watch({ recursive: true })` does not fire events reliably on macOS.
 
 `createChangeHandler()` wraps the rebuild callback with:
 
-- **300 ms debounce** — rapid saves (e.g. auto-format on save) trigger only one rebuild
-- **`isRebuilding` guard** — prevents overlapping rebuild runs
-- **Extension filter** — only `.ts`, `.scss`, `.css`, `.svg` changes trigger rebuilds
+- **300 ms debounce:** rapid saves (e.g. auto-format on save) trigger only one rebuild
+- **`isRebuilding` guard:** prevents overlapping rebuild runs
+- **Extension filter:** only `.ts`, `.scss`, `.css`, `.svg` changes trigger rebuilds
 
 After a successful rebuild, if the manifest content changed, the Angular dev server detects the file write and triggers a browser reload.
 

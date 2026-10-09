@@ -32,7 +32,7 @@ export interface A11yReport {
         auditedComponents: number;
         auditedVariants: number;
     };
-    /** Optional per-component breakdown (className → score). Used for tooltips/drilldown. */
+    /** Optional per-component breakdown (className -> score). Used for tooltips/drilldown. */
     components?: Record<string, A11yScoreResult>;
     /** Timestamp the report was generated. */
     generatedAt?: string;

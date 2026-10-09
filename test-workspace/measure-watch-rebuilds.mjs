@@ -3,7 +3,7 @@
 //
 // Loops N rebuilds against test-ui-kit, mutating one component file between each call.
 // Reports per-rebuild RSS + duration, then validates that after warm-up the RSS does
-// not drift more than 10% — the steady-state criterion from the design doc.
+// not drift more than 10% (the steady-state criterion from the design doc).
 
 import { runPrismPipeline, createPipelineState } from '../packages/ng-prism/dist/builder/shared/prism-pipeline.js';
 import { readFileSync, writeFileSync } from 'fs';

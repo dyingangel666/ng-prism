@@ -7,10 +7,9 @@ body:
       attributes:
           value: |
               Thanks for taking the time to file a report. A minimal reproduction is
-              by far the most useful thing you can give us — it usually turns a week
-              of guessing into an afternoon fix.
+              the most useful thing you can give us.
 
-              Please do **not** report security vulnerabilities here — use the
+              Please do not report security vulnerabilities here. Use the
               [private advisory form](https://github.com/dyingangel666/ng-prism/security/advisories/new)
               instead.
 
@@ -49,9 +48,9 @@ body:
           description: Roughly which stage of the pipeline is involved.
           options:
               - 'ng add / schematics'
-              - 'Build time — scanner or manifest generation'
-              - 'Build time — builder (prism / prism-build)'
-              - 'Runtime — styleguide app (canvas, controls, navigation, panels)'
+              - 'Build time: scanner or manifest generation'
+              - 'Build time: builder (prism / prism-build)'
+              - 'Runtime: styleguide app (canvas, controls, navigation, panels)'
               - 'Theming or custom UI sections'
               - Not sure
       validations:
@@ -118,5 +117,5 @@ body:
           options:
               - label: I searched existing issues and this is not a duplicate.
                 required: true
-              - label: My components use signal APIs (`input()` / `output()`) — legacy `@Input()` / `@Output()` decorators are not supported.
+              - label: My components use signal APIs (`input()` / `output()`). Legacy `@Input()` / `@Output()` decorators are not supported.
                 required: true

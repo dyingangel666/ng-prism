@@ -4,7 +4,7 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 /**
  * Identity disclosure for the component head.
  *
- * Selector, description and tags all answer "what is this component" — a
+ * Selector, description and tags all answer "what is this component", a
  * question you read once on arrival and never again while building. Keeping
  * them permanently on screen cost a 128px band to say something that belongs
  * behind one glyph.

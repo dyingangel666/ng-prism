@@ -104,7 +104,7 @@ describe('runPluginHooks', () => {
         };
         const manifest = createManifest([createComponent({ className: 'BadComponent' })]);
 
-        await expect(runPluginHooks(manifest, [plugin])).rejects.toThrow(/plugin "broken-plugin" failed in onComponentScanned for component "BadComponent" — boom/);
+        await expect(runPluginHooks(manifest, [plugin])).rejects.toThrow(/plugin "broken-plugin" failed in onComponentScanned for component "BadComponent": boom/);
     });
 
     it('should preserve original error as cause', async () => {

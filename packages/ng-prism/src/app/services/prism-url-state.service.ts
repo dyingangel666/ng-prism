@@ -92,7 +92,7 @@ export class PrismUrlStateService {
     private writeToUrl(item: NavigationItem | null, variantIndex: number, viewId: string, panelId: string): void {
         // Built from scratch, never from the current search string: parameters the
         // app does not own must not survive a navigation. `?capture=1` relies on
-        // this — see the "capture flag" specs, which pin the guarantee.
+        // this; the "capture flag" specs pin the guarantee.
         const params = new URLSearchParams();
 
         if (item?.kind === 'component') {

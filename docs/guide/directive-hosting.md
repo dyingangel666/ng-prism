@@ -1,6 +1,6 @@
 # Directive Hosting
 
-Angular directives cannot render on their own — they must be applied to a host element or component. Use the `host` field on `@Showcase` to tell ng-prism what to render the directive on.
+Angular directives cannot render on their own; they must be applied to a host element or component. Use the `host` field on `@Showcase` to tell ng-prism what to render the directive on.
 
 ## Why `host` Is Needed
 
@@ -29,7 +29,7 @@ The simplest form: provide an HTML element string. ng-prism wraps it as follows:
 
 The directive's selector is applied to the element automatically. Inputs from the Controls panel and variant `inputs` are bound as attributes.
 
-## Object Host — Angular Component
+## Object Host: Angular Component
 
 When the directive is designed to be applied to a specific Angular component, use the object form:
 

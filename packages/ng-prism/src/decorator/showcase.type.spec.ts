@@ -1,6 +1,6 @@
 /**
  * Type-level smoke tests for the generic `@Showcase<T>` decorator and
- * `InputsOf<T>` helper. Most assertions are compile-time only — Jest just
+ * `InputsOf<T>` helper. Most assertions are compile-time only. Jest just
  * confirms the file loads (which means it type-checked through SWC).
  */
 import { input, model, output } from '@angular/core';
@@ -40,11 +40,11 @@ void okNullableTabIndex;
 @Showcase<FixtureComponent>({
     title: 'Fixture',
     variants: [
-        // @ts-expect-error — 'nope' is not assignable to 'primary' | 'secondary' | 'danger'
+        // @ts-expect-error: 'nope' is not assignable to 'primary' | 'secondary' | 'danger'
         { name: 'BadVariantValue', inputs: { variant: 'nope' } },
-        // @ts-expect-error — label expects string, not number
+        // @ts-expect-error: label expects string, not number
         { name: 'BadLabelType', inputs: { label: 42 } },
-        // @ts-expect-error — disabled expects boolean
+        // @ts-expect-error: disabled expects boolean
         { name: 'BadDisabledType', inputs: { disabled: 'yes' } }
     ]
 })
@@ -55,7 +55,7 @@ void BadValuesUsage;
 @Showcase<FixtureComponent>({
     title: 'Fixture',
     variants: [
-        // @ts-expect-error — 'unknownKey' is not a known input on FixtureComponent
+        // @ts-expect-error: 'unknownKey' is not a known input on FixtureComponent
         { name: 'UnknownKey', inputs: { unknownKey: 1 } }
     ]
 })
@@ -66,9 +66,9 @@ void UnknownKeyUsage;
 @Showcase<FixtureComponent>({
     title: 'Fixture',
     variants: [
-        // @ts-expect-error — 'clicked' is an output(), not an input
+        // @ts-expect-error: 'clicked' is an output(), not an input
         { name: 'OutputAsInput', inputs: { clicked: () => undefined } },
-        // @ts-expect-error — 'valueChange' is an output(), not an input
+        // @ts-expect-error: 'valueChange' is an output(), not an input
         { name: 'OutputAsInput2', inputs: { valueChange: 'foo' } }
     ]
 })
@@ -87,7 +87,7 @@ const inputKeysMatch: InputKeysEqual = true;
 
 void inputKeysMatch;
 
-// (e) Calls without the generic type param still compile (backward compat) —
+// (e) Calls without the generic type param still compile (backward compat):
 // arbitrary keys and values are accepted, matching the pre-generic behaviour.
 @Showcase({
     title: 'NoGeneric',

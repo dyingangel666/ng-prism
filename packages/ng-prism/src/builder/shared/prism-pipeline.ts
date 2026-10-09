@@ -3,14 +3,13 @@ import { dirname, join } from 'path';
 import type { BuilderContext } from '@angular-devkit/architect';
 import ts from 'typescript';
 import type { StyleguidePage } from '../../plugin/page.types.js';
-import type { PrismManifest } from '../../plugin/plugin.types.js';
 import { checkA11yThresholds, DEFAULT_A11Y_REPORT_PATH, readA11yForComponents, readA11yMeta } from '../a11y/a11y-report-reader.js';
 import { loadConfig } from '../config-loader/config-loader.js';
 import { generateRuntimeManifest } from '../manifest/runtime-manifest.generator.js';
 import { runPluginHooks } from '../plugin-runner/plugin-runner.js';
 import { discoverSecondaryEntryPoints } from '../scanner/entry-point-discovery.js';
 import type { EntryPointInput } from '../scanner/entry-point.scanner.js';
-import { createScanner, type Scanner } from '../scanner/scanner.js';
+import { createScanner, type Scanner, type ScanResult } from '../scanner/scanner.js';
 
 export interface PrismPipelineOptions {
     entryPoint: string;
@@ -31,7 +30,7 @@ export interface PrismPipelineResult {
 
 export interface PrismPipelineState {
     scanner: Scanner | undefined;
-    /** Sorted, joined entry-file paths — used to detect when the entry set changed between rebuilds. */
+    /** Sorted, joined entry-file paths. Used to detect when the entry set changed between rebuilds. */
     lastEntrySetKey: string | undefined;
 }
 
@@ -49,12 +48,16 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
     });
 
     context.reportStatus('Scanning components...');
-    const scanResult = scanEntryPoints(workspaceRoot, options, state);
+    const { components, diagnostics } = scanEntryPoints(workspaceRoot, options, state);
+
+    if (config.strictShowcase && diagnostics.length > 0) {
+        throw new Error(`ng-prism: strictShowcase is enabled and ${diagnostics.length} @Showcase value(s) were dropped; see the warnings above.`);
+    }
 
     const pages: StyleguidePage[] = config.pages ? [...config.pages] : [];
 
     context.reportStatus('Running plugin hooks...');
-    let manifest = await runPluginHooks({ ...scanResult, pages }, config.plugins ?? []);
+    let manifest = await runPluginHooks({ components, pages }, config.plugins ?? []);
 
     const a11yReportPath = config.a11y?.reportPath ?? DEFAULT_A11Y_REPORT_PATH;
     const a11yReportPathAbs = join(workspaceRoot, a11yReportPath);
@@ -66,7 +69,7 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
         if (violations.length > 0) {
             const summary = violations.map((v) => `${v.metric}: ${v.actual} (threshold ${v.threshold})`).join(', ');
 
-            throw new Error(`ng-prism: a11y thresholds violated — ${summary}. ` + `Update components or relax thresholds via config.a11y.thresholds.`);
+            throw new Error(`ng-prism: a11y thresholds violated: ${summary}. ` + `Update components or relax thresholds via config.a11y.thresholds.`);
         }
         // Read once, not once per component: the reader re-stats the file on every
         // call even when its cache hits, so a per-component lookup scales the
@@ -113,7 +116,7 @@ export async function runPrismPipeline(options: PrismPipelineOptions, context: B
         `ng-prism: ${written ? 'Generated' : 'Verified (unchanged)'} manifest ` +
             `with ${manifest.components.length} component(s)` +
             (pageCount > 0 ? ` and ${pageCount} page(s)` : '') +
-            ` → ${manifestPath}`
+            ` at ${manifestPath}`
     );
 
     return {
@@ -133,16 +136,11 @@ function writeManifestIfChanged(manifestPath: string, newContent: string): boole
         }
     }
 
-    // In-place write (truncate + write to the existing inode). The previous
-    // implementation used a temp file + atomic rename, which produces a fresh
-    // inode on every write. That breaks file watchers — most importantly Vite's
-    // — when the manifest lives in a cache dir outside the prism project's
-    // source root: Vite watches the file by path/inode, loses the handle on
-    // rename, and never picks up subsequent rewrites. The result for the user
-    // is that @Showcase changes never trigger an HMR / reload. The window
-    // between truncate and write is small (single syscall for kilobyte-sized
-    // manifests), so the risk of a bundler observing a partial file is
-    // negligible in practice.
+    // Write in place (truncate + write, same inode). A temp file + atomic
+    // rename creates a new inode each time, and Vite's watcher loses the file
+    // when the manifest lives in a cache dir outside the project's source
+    // root, so @Showcase changes would stop triggering HMR. The manifest is
+    // only kilobytes, so a bundler seeing a partial write is unlikely.
     writeFileSync(manifestPath, newContent, 'utf-8');
     return true;
 }
@@ -212,7 +210,7 @@ function resolveEntryPoints(workspaceRoot: string, options: PrismPipelineOptions
     return { entryPoints, compilerOptions };
 }
 
-function scanEntryPoints(workspaceRoot: string, options: PrismPipelineOptions, state: PrismPipelineState): PrismManifest {
+function scanEntryPoints(workspaceRoot: string, options: PrismPipelineOptions, state: PrismPipelineState): ScanResult {
     const { entryPoints, compilerOptions } = resolveEntryPoints(workspaceRoot, options);
 
     const newKey = entryPoints

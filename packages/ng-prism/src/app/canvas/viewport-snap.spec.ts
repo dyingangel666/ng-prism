@@ -30,7 +30,7 @@ describe('snapViewportWidth', () => {
 
     it('should pick the nearest preset when two are in reach', () => {
         // The shipped presets are at least 60 apart and the tolerance is 8, so no
-        // two of them can ever both be in reach — against VIEWPORT_SNAPS this
+        // two of them can ever both be in reach. Against VIEWPORT_SNAPS this
         // branch is unreachable and the previous version of this test said so in
         // its own comment while claiming to cover it. The function takes the snap
         // list as a parameter, so the nearest-wins rule is exercised with a list
@@ -41,7 +41,7 @@ describe('snapViewportWidth', () => {
 
     it('should keep the first of two equidistant presets', () => {
         // A tie is decided by `distance < bestDistance` being strict, which is an
-        // arbitrary but stable choice — pinned so a refactor to `<=` cannot flip
+        // arbitrary but stable choice, pinned so a refactor to `<=` cannot flip
         // the result of a drag that lands exactly between two named widths.
         expect(snapViewportWidth(405, [400, 410], 8)).toBe(400);
     });

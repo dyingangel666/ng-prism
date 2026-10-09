@@ -6,7 +6,7 @@ import type { VisualRegressionPluginOptions } from './visual-regression.types.js
  * Browser-safe twin of {@link visualRegressionPlugin}.
  *
  * The config is loaded in Node.js by the builder *and* in the browser by the
- * Prism app. Only the runtime contributions survive here — the build-time hooks
+ * Prism app. Only the runtime contributions survive here; the build-time hooks
  * read the report from disk and must not be reachable from a browser bundle.
  */
 export function visualRegressionPlugin(_options?: VisualRegressionPluginOptions): NgPrismPlugin {

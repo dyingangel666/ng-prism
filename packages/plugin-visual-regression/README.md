@@ -1,10 +1,10 @@
 # @ng-prism/plugin-visual-regression
 
-Visual regression plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Reads a per-variant screenshot comparison report at build time and renders it inside the styleguide — so diffs live next to the component they belong to instead of in a CI log.
+Visual regression plugin for [@ng-prism/core](https://github.com/dyingangel666/ng-prism). Reads a per-variant screenshot comparison report at build time and renders it inside the styleguide, so diffs live next to the component they belong to instead of in a CI log.
 
-> **Full documentation:** [ng-prism Docs — Visual Regression Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/visual-regression)
+> **Full documentation:** [ng-prism Docs: Visual Regression Plugin](https://dyingangel666.github.io/ng-prism/#/plugins/visual-regression)
 
-The plugin **only renders a report someone else produced.** It performs no image comparison of its own — that belongs to your runner, which owns the baselines and the pinned container. See [Visual Regression Testing](https://dyingangel666.github.io/ng-prism/#/guide/visual-regression) for how to capture screenshots that do not flake, including the `?capture=1` isolation mode.
+The plugin **only renders a report someone else produced.** It performs no image comparison of its own. That belongs to your runner, which owns the baselines and the pinned container. See [Visual Regression Testing](https://dyingangel666.github.io/ng-prism/#/guide/visual-regression) for how to capture screenshots that do not flake, including the `?capture=1` isolation mode.
 
 ## Installation
 
@@ -79,27 +79,27 @@ export default defineConfig({
 
 Results are matched to components by `className`. All three image paths are optional and the panel degrades gracefully: baseline + current gives a wipe comparison, baseline + diff falls back to comparing against the diff mask, and a single image is shown on its own.
 
-`status: "new"` — a variant with no baseline yet — renders as a **neutral** state, never as a failure.
+`status: "new"` (a variant with no baseline yet) renders as a **neutral** state, never as a failure.
 
-`bg` and `baselineBg` are optional and record the canvas background a capture was taken on — `bg` for this run, `baselineBg` for the stored baseline. A runner gets `bg` for free: it is the resolved `bg` on the variant it already read from `__PRISM_MANIFEST__`. Given them, the panel frames the images in that surface instead of the transparency checkerboard (which is what makes a dark variant's diff mask readable), and when the two differ it names the background change rather than leaving a 100% diff unexplained.
+`bg` and `baselineBg` are optional and record the canvas background a capture was taken on: `bg` for this run, `baselineBg` for the stored baseline. A runner already has `bg`: it is the resolved `bg` on the variant it read from `__PRISM_MANIFEST__`. Given them, the panel frames the images in that surface instead of the transparency checkerboard (which is what makes a dark variant's diff mask readable), and when the two differ it names the background change instead of leaving a 100% diff unexplained.
 
 ## Serving the Images
 
 The report references images by path; those files must be reachable from the built styleguide. Copy them in via the `assets` array of your Prism app's build target, then point `assetBaseUrl` at where they land.
 
-`assetBaseUrl` is **prepended to the path in the report** — it is not a replacement for it. The three values have to line up:
+`assetBaseUrl` is **prepended to the path in the report**, not a replacement for it. The three values have to line up:
 
 ```jsonc
-// angular.json — my-lib-prism build target
+// angular.json, my-lib-prism build target
 "assets": [
   { "glob": "**/*", "input": "vrt", "output": "assets/vrt" }
 ]
 ```
 
-| Recorded in the report | `assetBaseUrl` | Requested URL                  |
-| ---------------------- | -------------- | ------------------------------ |
-| `vrt/baseline/x.png`   | `assets/`      | `assets/vrt/baseline/x.png` ✅ |
-| `vrt/baseline/x.png`   | `vrt/`         | `vrt/vrt/baseline/x.png` ❌    |
+| Recorded in the report | `assetBaseUrl` | Requested URL                                   |
+| ---------------------- | -------------- | ----------------------------------------------- |
+| `vrt/baseline/x.png`   | `assets/`      | `assets/vrt/baseline/x.png`                     |
+| `vrt/baseline/x.png`   | `vrt/`         | `vrt/vrt/baseline/x.png` (broken: path doubled) |
 
 ## License
 

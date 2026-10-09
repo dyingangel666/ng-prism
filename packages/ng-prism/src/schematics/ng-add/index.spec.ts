@@ -655,7 +655,7 @@ describe('ng-add schematic', () => {
  * Nx never puts an `angular.json` on disk, but its `wrapAngularDevkitSchematic`
  * bridge synthesizes one into the schematic `Tree` from the project graph and
  * translates writes back into per-project `project.json` files. So the Tree a
- * schematic sees in Nx still has `angular.json` — what differs is everything
+ * schematic sees in Nx still has `angular.json`. What differs is everything
  * around it: the layout, `tsconfig.base.json`, and the installed builder.
  */
 function createNxTree(
@@ -718,7 +718,7 @@ function createNxTree(
     return tree;
 }
 
-describe('ng-add schematic — Nx workspaces', () => {
+describe('ng-add schematic: Nx workspaces', () => {
     it('should place the showcase app under apps/ when that layout exists', async () => {
         const tree = createNxTree();
 
@@ -858,7 +858,7 @@ describe('ng-add schematic — Nx workspaces', () => {
     });
 });
 
-describe('ng-add schematic — application builder resolution', () => {
+describe('ng-add schematic: application builder resolution', () => {
     it('should use @angular-devkit/build-angular when @angular/build is not a direct dependency', async () => {
         const tree = createTree(defaultLibProject());
 
@@ -905,7 +905,7 @@ describe('ng-add schematic — application builder resolution', () => {
     });
 });
 
-describe('ng-add schematic — library barrel resolution', () => {
+describe('ng-add schematic: library barrel resolution', () => {
     it('should read the barrel from ng-package.json when no mapping exists yet', async () => {
         const tree = createTree(defaultLibProject());
 

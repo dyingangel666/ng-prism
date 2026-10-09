@@ -18,7 +18,7 @@ describe('nextViewId', () => {
         expect(nextViewId('overview', [panel('api')])).toBe('renderer');
     });
 
-    it('falls back to renderer when the visible list is empty — the case that drops a page out of its view tabs', () => {
+    it('falls back to renderer when the visible list is empty (the case that drops a page out of its view tabs)', () => {
         expect(nextViewId('overview', [])).toBe('renderer');
     });
 });

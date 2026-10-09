@@ -7,8 +7,8 @@ import { join } from 'node:path';
 /**
  * The panel's markup and stylesheet, read from the files the component points
  * at rather than from a rendered component: the panel declares `input()`, and
- * initializer-based APIs do not survive this workspace's JIT test compilation —
- * the specs go through SWC, so nothing runs the Angular compiler over them.
+ * initializer-based APIs do not survive this workspace's JIT test compilation
+ * (the specs go through SWC, so nothing runs the Angular compiler over them).
  */
 const PANEL_TEMPLATE = join(__dirname, 'visual-regression-panel.component.html');
 const PANEL_STYLES = join(__dirname, 'visual-regression-panel.component.css');
@@ -17,7 +17,7 @@ const PANEL_STYLES = join(__dirname, 'visual-regression-panel.component.css');
  * The panel's own markup and stylesheet, mounted for real.
  *
  * `:host` has no element here, so it is rewritten to the wrapper the markup
- * actually hangs off — that is the only substitution, and it keeps the host's
+ * actually hangs off. That is the only substitution, and it keeps the host's
  * declarations in the cascade where the test can read them.
  */
 function mountPanel(): { host: HTMLElement } {
@@ -50,14 +50,11 @@ describe('visual regression panel scrolling', () => {
     });
 
     /**
-     * The bug this pins: the panel used to be one scroll container, so both
-     * columns simply grew inside it. Scrolling the variant list down scrolled
-     * the comparison off the top, and picking a variant meant scrolling back up
-     * to see what you had picked.
+     * Regression: the panel used to be one scroll container, so scrolling the
+     * variant list also scrolled the comparison out of view.
      *
-     * Asserted as a property of the rendered elements rather than of the CSS
-     * text, so it survives the rules being rewritten and fails if a refactor
-     * hands the scrolling back to the host.
+     * Asserted on the rendered elements, not the CSS text, so it survives the
+     * rules being rewritten and fails if the host scrolls again.
      */
     it('should give the list and the viewer a scroll container each, and not the host', () => {
         const { host } = mountPanel();
@@ -68,13 +65,11 @@ describe('visual regression panel scrolling', () => {
     });
 
     /**
-     * The half of the fix that is easy to drop in a later edit.
-     *
-     * A grid or flex item defaults to `min-height: auto` and refuses to shrink
-     * below its content: without an explicit `min-height: 0` on every link of
-     * the chain, the columns grow past the panel and push the overflow back up
-     * to the host — which looks exactly like the original bug, with the
-     * `overflow` rules still correctly in place.
+     * A grid or flex item defaults to `min-height: auto` and will not shrink
+     * below its content. Without `min-height: 0` on every element of the chain,
+     * the columns grow past the panel and push the overflow up to the host,
+     * which brings the original bug back even with the `overflow` rules in
+     * place.
      */
     it('should let every column shrink below its content', () => {
         const { host } = mountPanel();

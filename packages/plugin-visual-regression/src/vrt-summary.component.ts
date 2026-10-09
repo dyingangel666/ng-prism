@@ -4,21 +4,15 @@ import { formatPercent, summarySegments, type VrtSummary } from './vrt-summarize
 /**
  * The run's headline, sitting above the variant list.
  *
- * It lives in the 250px column rather than in a band across the panel, and
- * that placement is the whole design. This panel docks at the bottom of the
- * app at 260px by default, which leaves ~228px inside it; a full-width summary
- * strip took ~89px of that before the comparison had rendered a single pixel.
- * In the narrow column it costs the variant list about one row and costs the
- * image nothing — and the image is what the panel is for.
+ * Placed in the 250px column, not in a full-width band. The panel docks at
+ * 260px by default (~228px inside), and a full-width strip took ~89px of that
+ * from the comparison. In the column it costs the variant list about one row
+ * and the image nothing.
  *
- * The cost of that is precision, so the split is deliberate: the bar carries
- * the *composition* (which statuses, in what proportion) where a glance is
- * enough, and the line under it carries the one figure a reviewer acts on.
- * Exact per-status counts live one place over, in the grouped list below,
- * whose headers already read "Needs review · 1" and "Unchanged · 14" —
- * restating them here would be the tile strip again, in a narrower column.
- * The line therefore disappears entirely when nothing could be compared,
- * rather than printing a dash under a bar that already says so.
+ * The bar shows the composition (which statuses, in what proportion); the line
+ * under it shows the one figure a reviewer acts on. Exact per-status counts
+ * are in the grouped list headers below ("Needs review · 1"), so they are not
+ * repeated here. The line is hidden when nothing could be compared.
  */
 @Component({
     selector: 'prism-vrt-summary',
@@ -46,7 +40,7 @@ export class VrtSummaryComponent {
      * The bar's content as a sentence.
      *
      * The slices are the only place the per-status breakdown is shown, and they
-     * are colour and proportion — nothing a screen reader can read. Each slice
+     * are colour and proportion, nothing a screen reader can read. Each slice
      * carries a `title` for a pointer; this carries the same thing for everyone
      * else.
      */

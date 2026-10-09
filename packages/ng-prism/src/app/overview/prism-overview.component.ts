@@ -3,10 +3,10 @@ import type { RuntimeComponent } from '../../plugin/plugin.types.js';
 import { PrismOverviewCellComponent } from './prism-overview-cell.component.js';
 
 /**
- * All variants of one component at once — a contact sheet rather than a
+ * All variants of one component at once: a contact sheet rather than a
  * viewfinder.
  *
- * Deliberately without controls of any kind: columns follow the window, and
+ * No controls of any kind: columns follow the window, and
  * everything else a cell shows is what the variant itself declared.
  */
 @Component({

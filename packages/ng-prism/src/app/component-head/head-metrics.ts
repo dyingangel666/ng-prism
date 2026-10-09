@@ -1,7 +1,7 @@
 /**
  * How a metric compares to its threshold.
  *
- * `none` means there is no verdict to give — either the value is missing, or
+ * `none` means there is no verdict to give: either the value is missing, or
  * it is a plain fact with no threshold to compare against, like a count of
  * variants. Those render grey and stay out of the gauge's tally, which counts
  * the metrics that actually passed something.
@@ -38,7 +38,7 @@ const SEVERITY: Record<MetricVariant, number> = {
 /**
  * Folds the head's metrics into what one chip can say.
  *
- * Deliberately a pure function rather than a computed inside the component:
+ * A pure function instead of a computed inside the component:
  * components using signal inputs cannot be rendered through TestBed in this
  * repo's Jest setup, so any logic left in a template is logic that never gets
  * a test. This mirrors `decorateItem` in the sidebar, which resolves the same

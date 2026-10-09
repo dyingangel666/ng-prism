@@ -85,8 +85,8 @@ describe('decorateItem', () => {
     });
 
     it('returns null for a page item', () => {
-        // StyleguidePage ist eine Union mit `type` als Discriminator; CustomPage
-        // verlangt zusätzlich `data`. Ein blosses { title } type-checkt nicht.
+        // StyleguidePage is a union discriminated by `type`; CustomPage also
+        // requires `data`. A bare { title } does not type-check.
         const page: NavigationItem = {
             kind: 'page',
             data: { type: 'custom', title: 'Intro', data: {} }
@@ -112,7 +112,7 @@ describe('decorateItem', () => {
     });
 
     it('tags each mark with its definition id, even when two sources share an icon', () => {
-        // `@for` in the sidebar tracks by `mark.id`, not `mark.icon` — a
+        // `@for` in the sidebar tracks by `mark.id`, not `mark.icon`. A
         // third-party plugin is free to pick the same icon an existing source
         // already uses (e.g. 'camera'), and two marks with the same track key on
         // one item would collide.
@@ -128,7 +128,7 @@ describe('rollupCategory', () => {
     const defs = [def('a11y', 'accessibility', 10, { Dialog: 'danger' }), def('coverage', 'shield-check', 30, { Dialog: 'warn', Table: 'warn' })];
 
     // rollupCategory takes each item's already-resolved decorations rather than
-    // the raw items — the caller runs decorateItem once per item to render its
+    // the raw items. The caller runs decorateItem once per item to render its
     // marks, and this proves the roll-up reuses that instead of recomputing it.
     function decorationsFor(names: string[]) {
         return names.map((name) => decorateItem(item(name), defs));

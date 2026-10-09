@@ -66,7 +66,7 @@ describe('resolvePanelBadge', () => {
     });
 
     it('lets a panel override a built-in of the same id', () => {
-        // The built-in chain is a fallback, not a floor — a plugin that replaces a
+        // The built-in chain is a fallback, not a floor. A plugin that replaces a
         // panel id owns its tab entirely.
         const own = panel('a11y', () => ({ text: 'AA', variant: 'ok' as const }));
         const badge = resolvePanelBadge(own, COMPONENT, {
@@ -102,10 +102,10 @@ describe('resolvePanelBadge', () => {
     });
 
     it('grades the a11y tab against the configured thresholds', () => {
-        // The tab and the navigation marker look at different numbers — a running
-        // audit versus the build-time report — but never at different scales. The
+        // The tab and the navigation marker look at different numbers (a running
+        // audit versus the build-time report) but never at different scales. The
         // expectations come from the same derivation the marker uses, so a change
-        // to one cannot quietly leave the other behind.
+        // to one cannot leave the other behind unnoticed.
         const thresholds = { ...DEFAULT_A11Y_THRESHOLDS, score: 80 };
         const grade = (result: A11yScoreResult) =>
             resolvePanelBadge(panel('a11y'), COMPONENT, {

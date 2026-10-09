@@ -3,37 +3,26 @@ import type { CanvasBg } from './canvas-bg.type.js';
 /**
  * The surface a variant is reported to render on when nothing declares one.
  *
- * An undeclared variant is the "no opinion" case, and `transparent` is the
- * honest capture of no opinion. The alternative, `checker`, patterns over
- * `--prism-bg-surface` — a *theme* token — and capture mode strips the pattern
- * and keeps the colour, so an undeclared variant used to be photographed on
- * whichever theme the runner's browser happened to start in. That is not a
- * neutral default; it is the runner's theme leaking into a baseline. Alpha
- * carries no such dependency, and it is not the thing capture mode's
- * determinism argument rules out: a pattern has a phase that shifts when a
- * centred component resizes, an alpha channel is a per-pixel value that does
- * not move.
+ * `transparent`, because an undeclared variant has no opinion about its
+ * surface. `checker` patterns over `--prism-bg-surface`, a theme token, and
+ * capture mode keeps the colour, so the runner's theme would leak into the
+ * baseline. Alpha has no such dependency and, unlike a pattern, does not shift
+ * when a centred component resizes. In the app both render the same
+ * checkerboard; the difference only shows in a capture.
  *
- * In the app both values look identical — `transparent` renders as the same
- * checkerboard, which is the UI's way of saying "no surface here". The change
- * is only visible in a capture.
- *
- * The cost is real and worth stating plainly: a runner that does not pass
- * `omitBackground: true` gets an opaque capture over whatever the browser
- * painted, because the page's own backdrop is below every stylesheet. See
+ * A runner must pass `omitBackground: true`, otherwise the capture is opaque
+ * over whatever the browser painted. See
  * `docs/guide/visual-regression.md#capturing-transparency`.
  *
- * What to declare, now that the default no longer decides it for you:
+ * What to declare:
  *
- * - `light` or `dark` when the component was designed against a surface.
- *   Their colours are absolute rather than theme tokens, which is what makes
- *   them stable across runners.
- * - `transparent` when the component's own transparency is the thing under
- *   test — an outlined button, an icon, a divider. Flattening one onto an
- *   opaque colour makes a transparent fill and a painted fill produce the
- *   same pixels.
- * - `dots`, `plain` or `checker` for browsing. All three follow the active
- *   theme, so a baseline recorded on one is only as stable as the theme.
+ * - `light` or `dark` when the component was designed against a surface. Their
+ *   colours are absolute, not theme tokens, so they are stable across runners.
+ * - `transparent` when the component's own transparency is under test (an
+ *   outlined button, an icon, a divider). On an opaque colour a transparent
+ *   fill and a painted fill produce the same pixels.
+ * - `dots`, `plain` or `checker` for browsing. They follow the active theme, so
+ *   a baseline recorded on one is only as stable as the theme.
  */
 export const DEFAULT_VARIANT_BG: CanvasBg = 'transparent';
 
@@ -51,7 +40,7 @@ export interface VariantBgSource {
 /**
  * The background a variant *declares*, or `null` when it declares none.
  *
- * Priority is variant, then component. `null` is a meaningful answer — it is
+ * Priority is variant, then component. `null` is a meaningful answer. It is
  * what lets the canvas keep the user's own background choice instead of
  * overwriting it, and what makes the background pill able to say "this is your
  * choice, not the component's".
@@ -68,8 +57,8 @@ export function declaredVariantBg(config: VariantBgSource, variantIndex: number)
 /**
  * The background a variant renders on, always resolved to a concrete value.
  *
- * This is the answer external tooling needs — a screenshot runner cannot act
- * on "nothing declared" — and the one capture mode paints, so the value
+ * This is the answer external tooling needs, since a screenshot runner cannot act
+ * on "nothing declared". It is also what capture mode paints, so the value
  * reported by `__PRISM_MANIFEST__` and the pixels in the capture agree.
  */
 export function resolveVariantBg(config: VariantBgSource, variantIndex: number): CanvasBg {

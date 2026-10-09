@@ -144,9 +144,27 @@ describe('createScanner', () => {
             const buttons = result.components.filter((c) => c.className === 'ButtonComponent');
 
             expect(buttons).toHaveLength(1);
-            // First-occurrence wins → importPath should be 'lib/a'
+            // First occurrence wins, so importPath should be 'lib/a'
             expect(buttons[0].importPath).toBe('lib/a');
             expect(warn).toHaveBeenCalledWith(expect.stringContaining('exported by multiple entry points'));
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
+    it('should collect a dropped @Showcase value once, even when several entry points export its component', () => {
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const unevaluableEntry = path.join(FIXTURES_DIR, 'unevaluable-api.ts');
+
+        try {
+            const scanner = createScanner({
+                entryPoints: [
+                    { entryFile: unevaluableEntry, importPath: 'lib/a' },
+                    { entryFile: unevaluableEntry, importPath: 'lib/b' }
+                ]
+            });
+
+            expect(scanner.scan().diagnostics).toHaveLength(10);
         } finally {
             warn.mockRestore();
         }

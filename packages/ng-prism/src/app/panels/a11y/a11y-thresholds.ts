@@ -1,6 +1,6 @@
 import type { A11yThresholds } from './a11y.types.js';
 
-/** Sentinel value meaning "no upper bound" — JSON-safe (unlike Infinity, which serializes to null). */
+/** Sentinel value meaning "no upper bound". JSON-safe (unlike Infinity, which serializes to null). */
 export const A11Y_UNLIMITED = Number.MAX_SAFE_INTEGER;
 
 export const DEFAULT_A11Y_THRESHOLDS: A11yThresholds = {

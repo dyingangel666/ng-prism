@@ -5,7 +5,7 @@ function Showcase(config: unknown): ClassDecorator {
 }
 
 @Showcase({
-    description: 'Missing title on purpose — should be skipped with a warning'
+    description: 'No title, should be skipped with a warning'
 })
 @Component({
     selector: 'missing-title',

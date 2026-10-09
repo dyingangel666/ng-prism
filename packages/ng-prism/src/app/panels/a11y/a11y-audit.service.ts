@@ -24,14 +24,14 @@ export function calculateScore(results: AxeResults): A11yScoreResult {
 
 /**
  * axe-core is a dependency of `@ng-prism/core` and loaded lazily, so a failure
- * here means the chunk could not be fetched — not that anything is missing.
+ * here means the chunk could not be fetched, not that anything is missing.
  */
 async function loadAxe() {
     try {
         return await import('axe-core');
     } catch (cause) {
         throw new Error(
-            'Could not load axe-core, so the accessibility audit is unavailable. It ships with @ng-prism/core — check that the install is intact and the chunk is reachable.',
+            'Could not load axe-core, so the accessibility audit is unavailable. It ships with @ng-prism/core; check that the install is intact and the chunk is reachable.',
             { cause }
         );
     }

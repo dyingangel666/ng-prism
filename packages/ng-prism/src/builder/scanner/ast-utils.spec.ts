@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
+import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, getJsDocComment, UNEVALUABLE, type UnevaluableIssue } from './ast-utils.js';
 
 // --- Helpers ---
 
@@ -29,6 +29,46 @@ function createProgramFromSource(source: string) {
     const sourceFile = program.getSourceFile(fileName)!;
 
     return { program, checker, sourceFile };
+}
+
+function evaluateWithIssues(code: string) {
+    const issues: UnevaluableIssue[] = [];
+    const value = evaluateStatic(parseExpression(code), { report: (issue) => issues.push(issue) });
+
+    return {
+        value,
+        issues: issues.map((issue) => ({ path: issue.path, text: issue.node.getText(), reason: issue.reason }))
+    };
+}
+
+/** Evaluates `subject` in `/main.ts`, with a type checker over all `files`. */
+function evaluateInProgram(files: Record<string, string>, wrapChecker: (checker: ts.TypeChecker) => ts.TypeChecker = (checker) => checker) {
+    const host = ts.createCompilerHost({});
+
+    host.getSourceFile = (name, target) => (name in files ? ts.createSourceFile(name, files[name], target, true) : undefined);
+    host.fileExists = (name) => name in files;
+    host.readFile = (name) => files[name];
+    host.directoryExists = () => true;
+    host.getCurrentDirectory = () => '/';
+
+    const program = ts.createProgram(['/main.ts'], { noLib: true, types: [], module: ts.ModuleKind.ES2022, moduleResolution: ts.ModuleResolutionKind.Node10 }, host);
+    const subject = program
+        .getSourceFile('/main.ts')!
+        .statements.filter(ts.isVariableStatement)
+        .flatMap((statement) => [...statement.declarationList.declarations])
+        .find((declaration) => declaration.name.getText() === 'subject')!;
+    const issues: UnevaluableIssue[] = [];
+    const value = evaluateStatic(subject.initializer!, { checker: wrapChecker(program.getTypeChecker()), report: (issue) => issues.push(issue) });
+
+    return {
+        value,
+        issues: issues.map((issue) => ({
+            path: issue.path,
+            text: issue.node.getText(),
+            file: issue.node.getSourceFile().fileName,
+            cause: issue.cause && { text: issue.cause.node.getText(), kind: issue.cause.kind }
+        }))
+    };
 }
 
 // --- evaluateExpression ---
@@ -92,18 +132,363 @@ describe('evaluateExpression', () => {
         expect(evaluateExpression(parseExpression('fn()'))).toBeUndefined();
     });
 
-    it('should return undefined for arrays with spread', () => {
-        expect(evaluateExpression(parseExpression('[...items]'))).toBeUndefined();
+    it('should drop only the spread from an array', () => {
+        expect(evaluateExpression(parseExpression("['a', ...items]"))).toEqual(['a']);
     });
 
-    it('should return undefined for objects with spread', () => {
-        expect(evaluateExpression(parseExpression('({ ...base })'))).toBeUndefined();
+    it('should drop only the spread from an object', () => {
+        expect(evaluateExpression(parseExpression("({ ...base, selector: 'x' })"))).toEqual({ selector: 'x' });
     });
 
     it('should evaluate objects with keyword property names', () => {
         const result = evaluateExpression(parseExpression("({ import: { name: 'Foo', from: 'bar' }, default: 'baz' })"));
 
         expect(result).toEqual({ import: { name: 'Foo', from: 'bar' }, default: 'baz' });
+    });
+});
+
+describe('evaluateStatic', () => {
+    it('keeps the siblings of a property it cannot evaluate', () => {
+        expect(evaluateWithIssues('({ a: 1, b: compute() })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: ['b'], text: 'compute()', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a spread, not the object around it', () => {
+        expect(evaluateWithIssues('({ ...base, a: 1 })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: [], text: '...base', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a shorthand property under its own name', () => {
+        expect(evaluateWithIssues('({ label, a: 1 })')).toEqual({
+            value: { a: 1 },
+            issues: [{ path: ['label'], text: 'label', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops a property whose computed key it cannot evaluate', () => {
+        expect(evaluateWithIssues('({ [key]: 1, a: 2 })')).toEqual({
+            value: { a: 2 },
+            issues: [{ path: [], text: '[key]: 1', reason: 'unsupported' }]
+        });
+    });
+
+    it('evaluates literal computed keys and numeric keys', () => {
+        expect(evaluateWithIssues("({ ['aria-label']: 'x', 1: 'one' })")).toEqual({
+            value: { 'aria-label': 'x', '1': 'one' },
+            issues: []
+        });
+    });
+
+    it('drops an array element and reports its index in the source', () => {
+        expect(evaluateWithIssues("['a', compute(), 'b']")).toEqual({
+            value: ['a', 'b'],
+            issues: [{ path: [1], text: 'compute()', reason: 'unsupported' }]
+        });
+    });
+
+    it('drops an array spread', () => {
+        expect(evaluateWithIssues("[...items, 'x']")).toEqual({
+            value: ['x'],
+            issues: [{ path: [0], text: '...items', reason: 'unsupported' }]
+        });
+    });
+
+    it('reports the full path of a nested value', () => {
+        const { value, issues } = evaluateWithIssues("({ variants: [{ name: 'A' }, { name: 'B', inputs: { size: compute() } }] })");
+
+        expect(value).toEqual({ variants: [{ name: 'A' }, { name: 'B', inputs: {} }] });
+        expect(issues).toEqual([{ path: ['variants', 1, 'inputs', 'size'], text: 'compute()', reason: 'unsupported' }]);
+    });
+
+    it('reports the whole member expression, not the part inside it that failed', () => {
+        expect(evaluateWithIssues('({ a: -limit })').issues).toEqual([{ path: ['a'], text: '-limit', reason: 'unsupported' }]);
+    });
+
+    it('returns UNEVALUABLE for a root it cannot evaluate', () => {
+        expect(evaluateWithIssues('config')).toEqual({
+            value: UNEVALUABLE,
+            issues: [{ path: [], text: 'config', reason: 'unsupported' }]
+        });
+    });
+
+    it('keeps the hole of a sparse array in place', () => {
+        expect(evaluateWithIssues('[1, , 3]')).toEqual({ value: [1, undefined, 3], issues: [] });
+    });
+
+    it('does not let a __proto__ key set the prototype', () => {
+        const { value, issues } = evaluateWithIssues("({ __proto__: { title: 'X' }, a: 1 })");
+
+        expect(Object.getPrototypeOf(value)).toBe(Object.prototype);
+        expect('title' in (value as object)).toBe(false);
+        expect(value).toEqual({ a: 1 });
+        expect(issues).toEqual([{ path: ['__proto__'], text: "__proto__: { title: 'X' }", reason: 'unsupported' }]);
+    });
+
+    it('treats a deliberate undefined as a value, not as a loss', () => {
+        expect(evaluateWithIssues('undefined')).toEqual({ value: undefined, issues: [] });
+        expect(evaluateWithIssues('({ a: undefined })').issues).toEqual([]);
+    });
+
+    it.each([
+        ['multiplication', '5 * 1024 * 1024', 5242880],
+        ['addition', '1 + 2', 3],
+        ['subtraction', '10 - 4', 6],
+        ['division', '9 / 2', 4.5],
+        ['a remainder', '9 % 4', 1],
+        ['exponentiation', '2 ** 10', 1024],
+        ['precedence and parentheses', '(1 + 2) * 3', 9],
+        ['a negated calculation', '-(2 * 3)', -6],
+        ['unary plus', '+5', 5],
+        ['logical not', '!false', true],
+        ['string concatenation', "'ab' + 'cd'", 'abcd'],
+        ['a number joined to a string', "'v' + 2", 'v2'],
+        ['a boolean joined to a string', "'disabled: ' + true", 'disabled: true'],
+        ['a template literal with placeholders', '`${2 * 3} files, ${"pdf"} only`', '6 files, pdf only'],
+        ['as const', "['pdf', 'png'] as const", ['pdf', 'png']],
+        ['an as assertion', "'m' as Size", 'm'],
+        ['satisfies', '({ a: 1 } satisfies Config)', { a: 1 }],
+        ['a non-null assertion', "'x'!", 'x'],
+        ['an angle-bracket assertion', '<number>5', 5],
+        ['numeric separators', '1_000_000', 1000000],
+        ['a hexadecimal literal', '0x10', 16]
+    ])('evaluates %s', (_, code, expected) => {
+        expect(evaluateWithIssues(code)).toEqual({ value: expected, issues: [] });
+    });
+
+    it.each([
+        ['an operand it cannot evaluate', 'limit * 2'],
+        ['a placeholder it cannot evaluate', '`${count} files`'],
+        ['an array in a placeholder', '`${[1, 2]}`'],
+        ['arithmetic on a string', "'a' * 2"],
+        ['addition of an object', "'a' + {}"],
+        ['division by zero', '1 / 0'],
+        ['a result that is not a number', '0 / 0'],
+        ['a comparison', '1 === 1'],
+        ['a logical operator', "'' || 'fallback'"],
+        ['unary plus on a string', "+'5'"]
+    ])('does not evaluate %s', (_, code) => {
+        expect(evaluateWithIssues(`({ a: ${code} })`)).toEqual({
+            value: {},
+            issues: [{ path: ['a'], text: code, reason: 'unsupported' }]
+        });
+    });
+
+    it.each([
+        ['an arrow function', '({ a: () => 1 })'],
+        ['a function expression', '({ a: function () { return 1; } })'],
+        ['a class expression', '({ a: class {} })'],
+        ['an instance', '({ a: new Date() })'],
+        ['a method', '({ a() { return 1; } })'],
+        ['an accessor', '({ get a() { return 1; } })']
+    ])('marks %s as a runtime value', (_, code) => {
+        const { value, issues } = evaluateWithIssues(code);
+
+        expect(value).toEqual({});
+        expect(issues).toEqual([expect.objectContaining({ path: ['a'], reason: 'runtime-value' })]);
+    });
+});
+
+describe('evaluateStatic with a type checker', () => {
+    it('resolves a const declared in the same file', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const MB = 1024 * 1024;\nexport const subject = { size: 5 * MB };' })).toEqual({
+            value: { size: 5242880 },
+            issues: []
+        });
+    });
+
+    it('resolves an imported const through its alias', () => {
+        const files = {
+            '/tokens.ts': 'export const MAX_FILES = 3;',
+            '/main.ts': "import { MAX_FILES as LIMIT } from './tokens';\nexport const subject = { max: LIMIT };"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({ value: { max: 3 }, issues: [] });
+    });
+
+    it('resolves a member of a namespace import', () => {
+        const files = {
+            '/tokens.ts': 'export const MAX_FILES = 3;',
+            '/main.ts': "import * as tokens from './tokens';\nexport const subject = tokens.MAX_FILES;"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({ value: 3, issues: [] });
+    });
+
+    it('resolves a shorthand property', () => {
+        expect(evaluateInProgram({ '/main.ts': "const label = 'Save';\nexport const subject = { label };" })).toEqual({
+            value: { label: 'Save' },
+            issues: []
+        });
+    });
+
+    it('merges a spread const object, letting later keys win', () => {
+        const main = "const BASE = { size: 'm', tone: 'neutral' };\nexport const subject = { ...BASE, tone: 'danger' };";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: { size: 'm', tone: 'danger' }, issues: [] });
+    });
+
+    it('splices a spread const array', () => {
+        expect(evaluateInProgram({ '/main.ts': "const BASE = ['a', 'b'];\nexport const subject = [...BASE, 'c'];" })).toEqual({
+            value: ['a', 'b', 'c'],
+            issues: []
+        });
+    });
+
+    it('reads members of regular and const enums', () => {
+        const main = "enum Size { Small = 's', Medium = 'm' }\nconst enum Level { Low = 1, High }\nexport const subject = [Size.Medium, Level.High];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: ['m', 2], issues: [] });
+    });
+
+    it('reads properties and indices of a const', () => {
+        const main = "const TOKENS = { size: { m: 16 } } as const;\nconst SIZES = ['s', 'm'];\nexport const subject = [TOKENS.size.m, SIZES[1], TOKENS['size']['m']];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: [16, 'm', 16], issues: [] });
+    });
+
+    it('resolves a computed key from a const', () => {
+        expect(evaluateInProgram({ '/main.ts': "const KEY = 'aria-label';\nexport const subject = { [KEY]: 'Close' };" })).toEqual({
+            value: { 'aria-label': 'Close' },
+            issues: []
+        });
+    });
+
+    it('drops only the unevaluable members of a spread constant and points at them in its own file', () => {
+        const files = {
+            '/tokens.ts': "export const SHARED = { size: 'm', format: pickFormat() };",
+            '/main.ts': "import { SHARED } from './tokens';\nexport const subject = { ...SHARED, a: 1 };"
+        };
+
+        expect(evaluateInProgram(files)).toEqual({
+            value: { size: 'm', a: 1 },
+            issues: [{ path: ['format'], text: 'pickFormat()', file: '/tokens.ts', cause: undefined }]
+        });
+    });
+
+    it.each([
+        ['declared with let', 'let LIMIT = 5;', 'let'],
+        ['declared with var', 'var LIMIT = 5;', 'var'],
+        ['declared without a value', 'declare const LIMIT: number;', 'no-value'],
+        ['an ambient let', 'declare let LIMIT: number;', 'no-value'],
+        ['a function', 'function LIMIT() { return 5; }', 'runtime-value'],
+        ['a class', 'class LIMIT {}', 'runtime-value']
+    ])('names the reference that failed when it is %s', (_, declaration, kind) => {
+        expect(evaluateInProgram({ '/main.ts': `${declaration}\nexport const subject = { max: LIMIT * 2 };` }).issues).toEqual([
+            { path: ['max'], text: 'LIMIT * 2', file: '/main.ts', cause: { text: 'LIMIT', kind } }
+        ]);
+    });
+
+    it('names a const from a .d.ts as declared without a value', () => {
+        const files = {
+            '/tokens.d.ts': 'export declare const MB: number;',
+            '/main.ts': "import { MB } from './tokens';\nexport const subject = { size: 5 * MB };"
+        };
+
+        expect(evaluateInProgram(files).issues).toEqual([{ path: ['size'], text: '5 * MB', file: '/main.ts', cause: { text: 'MB', kind: 'no-value' } }]);
+    });
+
+    it('stops at a constant that refers back to itself', () => {
+        const main = 'const A = { b: B };\nconst B = { a: A };\nexport const subject = { a: A };';
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: { a: { b: {} } },
+            issues: [{ path: ['a', 'b', 'a'], text: 'A', file: '/main.ts', cause: { text: 'A', kind: 'cycle' } }]
+        });
+    });
+
+    it('does not read an index that a dropped element would have shifted', () => {
+        const main = "let first = 's';\nconst SIZES = [first, 'm', 'l'];\nexport const subject = { size: SIZES[1], count: SIZES.length };";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: {},
+            issues: [
+                { path: ['size'], text: 'SIZES[1]', file: '/main.ts', cause: { text: 'first', kind: 'let' } },
+                { path: ['count'], text: 'SIZES.length', file: '/main.ts', cause: { text: 'first', kind: 'let' } }
+            ]
+        });
+    });
+
+    it('still reads an index before a dropped element', () => {
+        const main = "let last = 'l';\nconst SIZES = ['s', 'm', last];\nexport const subject = SIZES[1];";
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({ value: 'm', issues: [] });
+    });
+
+    it('does not read a property that a constant only partly holds', () => {
+        const main = 'const T = { d: { x: 1, f: pick() }, e: 2 };\nexport const subject = { d: T.d, e: T.e };';
+
+        expect(evaluateInProgram({ '/main.ts': main })).toEqual({
+            value: { e: 2 },
+            issues: [{ path: ['d'], text: 'T.d', file: '/main.ts', cause: undefined }]
+        });
+    });
+
+    it('drops a key that a failed override would have replaced', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const B = { a: 1, b: 2 };\nexport const subject = { ...B, a: pick() };' })).toEqual({
+            value: { b: 2 },
+            issues: [{ path: ['a'], text: 'pick()', file: '/main.ts', cause: undefined }]
+        });
+    });
+
+    it('names why a computed key failed, without blaming it for a later failure', () => {
+        const main = "let key = 'a';\nexport const subject = { [key]: 1, b: `${pick()}` };";
+
+        expect(evaluateInProgram({ '/main.ts': main }).issues).toEqual([
+            { path: [], text: '[key]: 1', file: '/main.ts', cause: { text: 'key', kind: 'let' } },
+            { path: ['b'], text: '`${pick()}`', file: '/main.ts', cause: undefined }
+        ]);
+    });
+
+    it('names a global of the JavaScript runtime as declared without a value, not as a var', () => {
+        const files = {
+            '/lib.d.ts': 'declare var Math: { readonly PI: number };',
+            '/main.ts': '/// <reference path="./lib.d.ts" />\nexport const subject = { angle: Math.PI };'
+        };
+
+        expect(evaluateInProgram(files).issues).toEqual([{ path: ['angle'], text: 'Math.PI', file: '/main.ts', cause: { text: 'Math', kind: 'no-value' } }]);
+    });
+
+    // One lookup per reference to SHARED, plus one per INNER inside SHARED, which is folded once and reused.
+    it('folds a constant once, however often it is referenced', () => {
+        let lookups = 0;
+        const counting = (checker: ts.TypeChecker) =>
+            new Proxy(checker, {
+                get(target, property, receiver) {
+                    if (property === 'getSymbolAtLocation') {
+                        return (node: ts.Node) => {
+                            lookups++;
+                            return target.getSymbolAtLocation(node);
+                        };
+                    }
+                    const member = Reflect.get(target, property, receiver);
+
+                    return typeof member === 'function' ? member.bind(target) : member;
+                }
+            });
+        const main = 'const INNER = 1;\nconst SHARED = { a: INNER, b: INNER, c: INNER, d: INNER, e: INNER };\nexport const subject = [SHARED, SHARED, SHARED, SHARED];';
+        const { value } = evaluateInProgram({ '/main.ts': main }, counting);
+
+        expect(value).toHaveLength(4);
+        expect(lookups).toBe(9);
+    });
+
+    it('gives every reference its own copy of a constant', () => {
+        const { value } = evaluateInProgram({ '/main.ts': 'const SHARED = { a: [1] };\nexport const subject = [SHARED, SHARED];' });
+        const [first, second] = value as Array<{ a: number[] }>;
+
+        expect(first).toEqual(second);
+        expect(first).not.toBe(second);
+        expect(first.a).not.toBe(second.a);
+    });
+
+    it('does not read a property a const does not have', () => {
+        expect(evaluateInProgram({ '/main.ts': 'const T = { a: 1 };\nexport const subject = { b: T.b };' }).issues).toEqual([
+            { path: ['b'], text: 'T.b', file: '/main.ts', cause: undefined }
+        ]);
     });
 });
 

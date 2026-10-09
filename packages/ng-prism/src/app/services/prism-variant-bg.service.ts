@@ -26,32 +26,18 @@ export class PrismVariantBgService {
     /**
      * The background the stage actually paints.
      *
-     * Capture mode keeps the *declared* background. `@Showcase({ bg })` and a
-     * per-variant `bg` exist precisely so a component is judged against the
-     * surface it was designed for — an outlined button on `dark` proves nothing
-     * when it is screenshotted on the light default — so a capture that dropped
-     * them would pin the wrong image.
+     * Capture mode uses the declared background, since a component must be
+     * judged on the surface it was designed for, and ignores the user override,
+     * which is session UI state and must not shape a baseline. Patterns are
+     * stripped separately in `CAPTURE_STYLES`.
      *
-     * What capture mode does drop is the manual user override: session UI state
-     * that must never decide what a baseline looks like. The other half of the
-     * determinism problem — the dot grid and the checkerboard, whose phase shifts
-     * under a centred component whenever that component changes size — is solved
-     * in `CAPTURE_STYLES`, which strips the pattern and leaves the colour. Colour
-     * is deterministic; the pattern is not.
+     * With nothing declared, capture uses {@link DEFAULT_VARIANT_BG}, not the
+     * canvas default: `dots` paints a theme token, so the baseline would depend
+     * on the runner's theme. It is also what the discovery manifest reports, so
+     * the reported and the captured background cannot drift apart.
      *
-     * With no declared bg capture mode lands on {@link DEFAULT_VARIANT_BG} rather
-     * than on the canvas default. `dots` would paint `--prism-bg-surface`, a
-     * *theme* token, so the surface behind an undeclared component would depend
-     * on whichever theme the runner's browser started in — a baseline that
-     * flips with a persisted UI preference. The fixed default is also exactly
-     * what the discovery manifest reports for the variant, so what a tool is
-     * told and what it screenshots cannot drift apart. That default is
-     * `transparent`, which removes the theme dependency outright instead of
-     * pinning one theme's colour: an undeclared variant has no opinion about its
-     * surface, and no surface is the honest capture of that.
-     *
-     * Interactive mode keeps `canvas.bg()`: there the dot grid on the themed
-     * surface is the point, and forcing `light` would break dark-theme browsing.
+     * Interactive mode keeps `canvas.bg()`: browsing wants the themed dot grid,
+     * and forcing `light` would break dark-theme browsing.
      */
     readonly effective = computed<CanvasBg>(() =>
         this.capture.active() ? (this.recommended() ?? DEFAULT_VARIANT_BG) : (this._override() ?? this.recommended() ?? this.canvas.bg())

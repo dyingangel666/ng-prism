@@ -36,12 +36,12 @@
 - **Plugins**
 
     - [Plugin Overview](plugins/overview.md)
-    - [JSDoc — API Docs](plugins/jsdoc.md)
-    - [Figma — Embed & Design Diff](plugins/figma.md)
-    - [Box Model — Inspector](plugins/box-model.md)
-    - [Perf — Performance](plugins/perf.md)
-    - [Coverage — Test Coverage](plugins/coverage.md)
-    - [Visual Regression — VRT Report](plugins/visual-regression.md)
+    - [JSDoc: API Docs](plugins/jsdoc.md)
+    - [Figma: Embed & Design Diff](plugins/figma.md)
+    - [Box Model Inspector](plugins/box-model.md)
+    - [Perf: Performance](plugins/perf.md)
+    - [Coverage: Test Coverage](plugins/coverage.md)
+    - [Visual Regression: VRT Report](plugins/visual-regression.md)
     - [Writing a Plugin](plugins/writing-plugins.md)
 
 - **API Reference**

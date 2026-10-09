@@ -4,7 +4,7 @@ import type { RuntimeComponent } from '../../plugin/plugin.types.js';
  * Whether the Overview tab is offered for this component.
  *
  * Two conditions, and the second is a correctness argument rather than taste.
- * A `renderPage` component does not render itself — it renders a registered
+ * A `renderPage` component does not render itself. It renders a registered
  * `ComponentPage`, and that page reads its values from the *global*
  * `PrismRendererService`. n cells side by side would all show the same state,
  * so an Overview there would be demonstrably wrong, not merely unhelpful.

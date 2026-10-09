@@ -8,7 +8,7 @@ const T: CoverageThresholds = {
     statements: 80
 };
 
-// Sums to 322, so avg = Math.round(80.5) = 81 — an odd average, unlike T's
+// Sums to 322, so avg = Math.round(80.5) = 81. That is an odd average, unlike T's
 // even 80. That makes avg * 0.75 = 60.75, a fractional boundary that T can
 // never exercise (80 * 0.75 = 60 is a whole number).
 const ODD_T: CoverageThresholds = {

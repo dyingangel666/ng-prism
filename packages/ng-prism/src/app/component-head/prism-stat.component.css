@@ -27,8 +27,8 @@
     color: var(--prism-text);
 }
 
-/* Four states, four treatments. "ok" earns the nominal green, and "none"
-   deliberately does not: a metric with no data has nothing to report, and
+/* Four states, four treatments. "ok" gets the nominal green, and "none"
+   does not: a metric with no data has nothing to report, and
    colouring it green would claim a clean result the tool never measured.
    That is the one distinction worth keeping grey. */
 .stat--ok .stat__dot {

@@ -6,7 +6,7 @@ import type { NavigationItem } from '../services/navigation-item.types.js';
 export interface ItemMark {
     /**
      * The definition's id. `resolveNavigationDecorations` guarantees these are
-     * unique, so this is the only field safe to `@for track` by — `icon` is a
+     * unique, so this is the only field safe to `@for track` by. `icon` is a
      * free-form string on a public extension point and two sources can pick the
      * same one.
      */
@@ -17,7 +17,7 @@ export interface ItemMark {
 }
 
 export interface ItemDecorations {
-    /** Ordered marks — never empty; `decorateItem` returns null instead. */
+    /** Ordered marks, never empty (`decorateItem` returns null instead). */
     marks: ItemMark[];
     /** Worst variant across `marks`. Drives the group roll-up. */
     worst: 'warn' | 'danger';
@@ -39,7 +39,7 @@ const SEVERITY: Record<'warn' | 'danger', number> = { warn: 1, danger: 2 };
  * by `order`.
  *
  * Built-ins win a collision: a plugin must not be able to silence or restyle a
- * core source by claiming its id. Sorting is by `order` alone — the reading
+ * core source by claiming its id. Sorting is by `order` alone because the reading
  * contract says position names the source, so registration order must not leak
  * into the result.
  */
@@ -101,7 +101,7 @@ export function decorateItem(item: NavigationItem, defs: readonly NavigationDeco
  * the work.
  *
  * Takes each item's already-resolved `ItemDecorations` rather than the raw
- * items — callers already run `decorateItem` once per item to render its
+ * items. Callers already run `decorateItem` once per item to render its
  * marks, and recomputing it here would both waste the work and let the
  * roll-up drift from what actually renders.
  */

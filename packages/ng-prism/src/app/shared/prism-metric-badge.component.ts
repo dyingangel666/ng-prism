@@ -4,21 +4,15 @@ import { PrismIconComponent } from '../icons/prism-icon.component.js';
 /**
  * Library-wide metric badge for the header.
  *
- * Presentational only — it takes an already-formatted value and a variant and
- * knows nothing about thresholds, manifests or where the number came from.
- * That keeps the three badges that use it (a11y in core, coverage and visual
- * regression in their plugins) owning their own data logic while sharing one
- * appearance.
+ * Presentational only: it takes a formatted value and a variant, so each badge
+ * (a11y in core, coverage and visual regression in their plugins) keeps its own
+ * data logic while sharing one appearance.
  *
- * It carries an icon rather than a text label on purpose. The glyph is the
- * same one the source contributes to the navigation marks and its panel tab,
- * so one symbol means one source wherever it appears — and the badge gets
- * narrow enough that three of them fit a 40px header without crowding it.
- * The icon is `aria-hidden` — it is decoration, not content. The accessible
- * name is composed here as "label: value" (e.g. "Library coverage: 23%"), so
- * the figure that is the whole point of the badge cannot be dropped by a
- * consumer that only passes `label`. `title` stays the full text the
- * consumer passes, for the hover tooltip.
+ * It shows an icon instead of a text label: the same glyph the source uses for
+ * its navigation marks and panel tab, and narrow enough to fit three badges in
+ * the 40px header. The icon is `aria-hidden`; the accessible name is built here
+ * as "label: value" (e.g. "Library coverage: 23%") so a consumer cannot drop
+ * the figure. `title` is the consumer's full text for the hover tooltip.
  */
 @Component({
     selector: 'prism-metric-badge',
@@ -35,6 +29,6 @@ export class PrismMetricBadgeComponent {
     readonly title = input<string>('');
     readonly variant = input<'ok' | 'warn' | 'danger'>('ok');
 
-    /** "label: value" — the accessible name, so the figure is never dropped. */
+    /** "label: value" is the accessible name, so the figure is never dropped. */
     readonly accessibleName = computed(() => `${this.label()}: ${this.value()}`);
 }

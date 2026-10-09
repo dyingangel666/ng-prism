@@ -10,11 +10,11 @@ import { computeVariantState } from '../services/prism-renderer.service.js';
  * One frame of the contact sheet: a stage painting the variant's declared
  * background, with the variant's own instance on it and a caption beneath.
  *
- * It deliberately shares none of the Playground's bookkeeping. Output
+ * It shares none of the Playground's bookkeeping. Output
  * subscriptions, `renderedElement`, the `prism:render:*` marks, the renderer
  * hooks and `data-prism-rendered` all describe *one* rendered thing; n cells
  * writing to any of them would corrupt what they mean. `data-prism-rendered`
- * matters most — it is the selector external screenshot runners key on (see
+ * matters most: it is the selector external screenshot runners key on (see
  * `docs/guide/external-tooling.md`), and this component never emits it.
  */
 @Component({
@@ -49,7 +49,7 @@ export class PrismOverviewCellComponent {
         // Defensive, not reachable today: `Variant.name` is required
         // (decorator/showcase.types.ts) and `prism-overview` only ever creates a
         // cell for an index it just read out of that same `variants` array. A
-        // bare `07` would only appear if those two facts stopped lining up — the
+        // bare `07` would only appear if those two facts stopped lining up, i.e. the
         // grid indexing past the array it iterates, or `name` becoming optional.
         return variant ? `${number} ${variant.name}` : number;
     });
@@ -75,10 +75,9 @@ export class PrismOverviewCellComponent {
     // The Playground lets a variant that throws on construction propagate: one
     // broken instance, and the user navigates away from it. The Overview
     // fans instantiation out from one instance to n, all mounted in the same
-    // change-detection pass — an uncaught throw here would abort the refresh of
+    // change-detection pass. An uncaught throw here would abort the refresh of
     // every cell after it, so one bad variant would take down the whole sheet
-    // instead of just its own cell. That asymmetry is deliberate: contain here,
-    // propagate there.
+    // instead of just its own cell. Hence: contain here, propagate there.
     private mount(component: RuntimeComponent, index: number): void {
         try {
             this.outlet().clear();
@@ -113,8 +112,8 @@ export class PrismOverviewCellComponent {
             // *after* that attach. So there is usually a half-built subtree sitting
             // in the outlet by the time we get here, and clearing it is what makes
             // a caught cell actually show an empty stage with its caption still in
-            // place — an honest picture of "this variant failed", rather than a
-            // broken grid with no indication of which cell caused it.
+            // place, which shows "this variant failed" instead of a broken grid
+            // with no indication of which cell caused it.
             this.outlet().clear();
             console.error(`[ng-prism] Variant ${index} of ${component.meta.className} failed to render:`, error);
         }

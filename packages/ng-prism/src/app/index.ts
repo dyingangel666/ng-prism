@@ -34,28 +34,21 @@ export type { ProvidePrismOptions } from './provide-prism.js';
 // HMR helper
 export { enablePrismHmr } from './hmr.js';
 
-// Shared presentational components for plugin contributions. These live on
-// the main entry rather than `plugin/index.ts` because the builder evaluates
-// plugin config — and everything it imports — in Node.js, and that barrel
-// draws an explicit line at decorated declarations.
+// Shared presentational components for plugin contributions. They live on the
+// main entry, not `plugin/index.ts`, because the builder evaluates plugin
+// config in Node.js and that barrel excludes decorated declarations.
 //
-// This barrel draws no such line, and the badges do cross into Node. The
-// `loadComponent` indirection keeps plugin *panels* out of the builder's
-// module graph, but `@ng-prism/plugin-coverage` and
-// `@ng-prism/plugin-visual-regression` also re-export their header badge
-// components *statically* from their Node entry (`exports["."].import`), and
-// those components import `PrismMetricBadgeComponent` from here. So loading a
-// plugin config in `builder/config-loader` pulls this whole file — shell
-// component included — into Node. It evaluates cleanly only because the
-// config loader imports `@angular/compiler` before anything else.
+// They still reach Node: `@ng-prism/plugin-coverage` and
+// `@ng-prism/plugin-visual-regression` re-export their header badges statically
+// from their Node entry, and those import `PrismMetricBadgeComponent` from here.
+// Loading a plugin config in `builder/config-loader` therefore pulls this whole
+// file, shell included, into Node. That only works because the config loader
+// imports `@angular/compiler` first.
 //
-// Moving those two re-exports to the packages' `.browser.ts` entries does not
-// fix it: `package.json` maps "types" to the single `index.d.ts` generated
-// from the Node entry under every condition, so a symbol dropped from that
-// entry disappears from the public type surface while still shipping in the
-// browser bundle — the mismatch `plugin-visual-regression`'s
-// `entry-parity.spec.ts` exists to forbid. Making the badges Node-safe means
-// giving them an import that is not this barrel, which is a public API
-// decision, not a cleanup.
+// Moving those re-exports to the `.browser.ts` entries does not help: "types"
+// maps to the one `index.d.ts` built from the Node entry, so the symbols would
+// vanish from the public types while still shipping (which
+// `entry-parity.spec.ts` forbids). A Node-safe import path for the badges is a
+// public API decision.
 export { PrismMetricBadgeComponent } from './shared/prism-metric-badge.component.js';
 export { PrismIconComponent } from './icons/prism-icon.component.js';

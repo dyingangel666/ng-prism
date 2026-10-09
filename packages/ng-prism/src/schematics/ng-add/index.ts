@@ -1,6 +1,6 @@
 import { chain, type Rule, type SchematicContext, SchematicsException, type Tree } from '@angular-devkit/schematics';
 // `@angular-devkit/schematics` has no `exports` map, so its subpaths must name
-// a file — Node's ESM resolver does not honour the legacy `tasks/package.json`
+// a file. Node's ESM resolver does not honour the legacy `tasks/package.json`
 // `main` field the way CommonJS `require()` does. See issue #32.
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks/index.js';
 import { addTsConfigPath } from '../utils/tsconfig-paths.js';
@@ -44,8 +44,8 @@ function readJsonIfPresent<T>(tree: Tree, path: string): T | undefined {
 /**
  * Angular CLI workspaces install `@angular-devkit/build-angular`; Nx and newer
  * Angular workspaces install `@angular/build`. Presence in node_modules is not a
- * usable signal — `@angular-devkit/build-angular` depends on `@angular/build`
- * itself — so only a direct entry in package.json counts.
+ * usable signal (`@angular-devkit/build-angular` depends on `@angular/build`
+ * itself), so only a direct entry in package.json counts.
  */
 function resolveAppBuilder(tree: Tree): string {
     const pkg = readJsonIfPresent<PackageJsonSchema>(tree, 'package.json');
@@ -122,7 +122,7 @@ function readWorkspace(tree: Tree): WorkspaceSchema {
     if (!buffer) {
         throw new SchematicsException(
             'Could not find angular.json. Run this from an Angular workspace root, or ' +
-                'in an Nx workspace via `nx g @ng-prism/core:ng-add --project=<library>` — ' +
+                'in an Nx workspace via `nx g @ng-prism/core:ng-add --project=<library>`. ' +
                 'Nx supplies the workspace configuration the schematic reads.'
         );
     }

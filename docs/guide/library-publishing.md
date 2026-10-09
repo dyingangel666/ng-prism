@@ -122,7 +122,7 @@ It removes the decorator calls and cleans up the corresponding import statements
 No. The dev server (`ng run my-lib:prism`) scans your TypeScript source files, not the compiled output. Stripping only affects the production library build.
 
 **Can I remove `@ng-prism/core` from my library's `package.json`?**
-Yes — after stripping, your published library no longer references `@ng-prism/core`. Keep it as a `devDependency` for local development.
+Yes. After stripping, your published library no longer references `@ng-prism/core`. Keep it as a `devDependency` for local development.
 
 **Is it safe to run twice?**
 Yes. The transformer is idempotent. If no `@Showcase` imports are found, the file is returned unchanged.

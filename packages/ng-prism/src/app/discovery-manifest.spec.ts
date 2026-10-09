@@ -139,8 +139,8 @@ describe('buildDiscoveryManifest', () => {
     });
 
     it('reports the Default variant for an empty variants array too', () => {
-        // The renderer treats `[]` exactly like `undefined` — it still instantiates
-        // the component at index 0 — so a runner must not be told there is nothing
+        // The renderer treats `[]` the same as `undefined` (it still instantiates
+        // the component at index 0), so a runner must not be told there is nothing
         // to capture.
         const result = buildDiscoveryManifest(
             manifestOf({
@@ -164,7 +164,7 @@ describe('buildDiscoveryManifest', () => {
             })
         );
 
-        // Inherited from the component, then overridden by the variant — a runner
+        // Inherited from the component, then overridden by the variant. A runner
         // reads one field instead of reimplementing the fallback chain.
         expect(result.components[0].variants).toEqual([
             { name: 'Filled', index: 0, bg: 'dark' },

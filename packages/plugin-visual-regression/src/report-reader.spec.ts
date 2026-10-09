@@ -135,9 +135,9 @@ describe('readTotals', () => {
 });
 
 /**
- * A malformed report must degrade exactly like a missing one. These run inside
- * `onComponentScanned`, where the plugin runner rethrows and fails the whole
- * styleguide build — the one moment you most want the report to be readable.
+ * A malformed report must degrade the same way as a missing one. These run
+ * inside `onComponentScanned`, where the plugin runner rethrows and fails the
+ * whole styleguide build.
  */
 describe('a malformed report', () => {
     beforeEach(() => clearReportCache());

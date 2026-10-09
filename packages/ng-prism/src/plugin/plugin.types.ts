@@ -3,7 +3,7 @@ import type { CanvasBg } from '../shared/canvas-bg.type.js';
 import type { StyleguidePage } from './page.types.js';
 
 export interface NgPrismPlugin {
-    /** Unique plugin name — used for debugging and conflict detection */
+    /** Unique plugin name, used for debugging and conflict detection */
     name: string;
 
     // Build-time hooks (run inside the Angular builder / Node.js)
@@ -23,12 +23,12 @@ export interface NgPrismPlugin {
 }
 
 export interface HeaderWidgetDefinition {
-    /** Unique widget id — used for de-duplication and tracking. */
+    /** Unique widget id, used for de-duplication and tracking. */
     id: string;
     /** Eager component reference. */
     component?: Type<unknown>;
     /**
-     * Lazy-loaded component — use when the widget pulls in browser-only or
+     * Lazy-loaded component. Use it when the widget pulls in browser-only or
      * heavy dependencies that should not run at config-load time.
      */
     loadComponent?: () => Promise<Type<unknown>>;
@@ -40,7 +40,7 @@ export interface HeaderWidgetDefinition {
 
 /** A short marker rendered on a panel's tab, usually a count. */
 export interface PanelBadge {
-    /** Kept to a couple of characters — the tab bar scrolls horizontally. */
+    /** Kept to a couple of characters because the tab bar scrolls horizontally. */
     text: string;
     /**
      * Colour role. `default` is the neutral primary tint used for a plain count;
@@ -52,7 +52,7 @@ export interface PanelBadge {
 /** What one source has to say about one component in the navigation. */
 export interface NavigationDecoration {
     /**
-     * Colour role. Deliberately only two: an 'ok' state would make the marker
+     * Colour role. Only two: an 'ok' state would make the marker
      * permanent, and a marker that is always present stops being a signal.
      */
     variant: 'warn' | 'danger';
@@ -61,7 +61,7 @@ export interface NavigationDecoration {
 }
 
 export interface NavigationDecorationDefinition {
-    /** Unique id — used for de-duplication when two plugins contribute the same source. */
+    /** Unique id, used for de-duplication when two plugins contribute the same source. */
     id: string;
     /** Icon name from the built-in registry (`ICON_NAMES`). */
     icon: string;
@@ -87,7 +87,7 @@ export interface PanelDefinition {
     label: string;
     /** Angular standalone component for the panel content */
     component?: Type<unknown>;
-    /** Lazy-loaded component — use when the component import would pull in browser-only dependencies (e.g. DomSanitizer) */
+    /** Lazy-loaded component. Use when the component import would pull in browser-only dependencies (e.g. DomSanitizer) */
     loadComponent?: () => Promise<Type<unknown>>;
     overlayComponent?: Type<unknown>;
     loadOverlayComponent?: () => Promise<Type<unknown>>;
@@ -101,7 +101,7 @@ export interface PanelDefinition {
     isVisible?: (component: RuntimeComponent) => boolean;
     /**
      * When provided, the panel's tab carries this badge for the active
-     * component. Return `null` for "nothing worth saying" — a badge that is
+     * component. Return `null` for "nothing worth saying": a badge that is
      * always present stops being a signal.
      *
      * Called during change detection, so it has to be cheap and pure: read what
@@ -112,7 +112,7 @@ export interface PanelDefinition {
      * Keep the panel's component instance alive across tab switches.
      * When `true`, the panel is rendered once on first activation and merely hidden
      * (instead of destroyed) when the user switches tabs. Use for panels with
-     * expensive setup (iframes, network calls, heavy DOM) — e.g. embedded designs,
+     * expensive setup (iframes, network calls, heavy DOM), e.g. embedded designs,
      * remote previews.
      *
      * Default: `false`.
@@ -199,7 +199,7 @@ export interface DiscoveryManifest {
 
 export interface DiscoveryComponent {
     className: string;
-    /** `ShowcaseConfig.title` — the display name, not the class name. */
+    /** `ShowcaseConfig.title`, i.e. the display name, not the class name. */
     title: string;
     variants: DiscoveryVariant[];
     /** Sanitised `ShowcaseConfig.meta`. Omitted when empty. */
@@ -208,14 +208,14 @@ export interface DiscoveryComponent {
 
 export interface DiscoveryVariant {
     name: string;
-    /** 0-based index into the `variants` array — the `?variant=` URL value. */
+    /** 0-based index into the `variants` array (the `?variant=` URL value). */
     index: number;
     /**
      * The canvas background this variant renders on, already resolved:
      * `Variant.bg`, else `ShowcaseConfig.bg`, else `DEFAULT_VARIANT_BG`.
      *
      * Always present, because a screenshot runner cannot act on "nothing
-     * declared" — and it is the background capture mode paints, so the value
+     * declared". It is also the background capture mode paints, so the value
      * here and the pixels in the capture agree.
      */
     bg: CanvasBg;
@@ -232,7 +232,7 @@ export interface DiscoveryPage {
 export interface NgPrismConfig {
     plugins?: NgPrismPlugin[];
     pages?: StyleguidePage[];
-    /** Providers added to the Prism app bootstrap — for library-wide services */
+    /** Providers added to the Prism app bootstrap, for library-wide services */
     appProviders?: Provider[];
     theme?: Record<string, string>;
     darkTheme?: Record<string, string>;
@@ -265,4 +265,12 @@ export interface NgPrismConfig {
     };
     /** Accessibility (build-time audit + runtime live audit) configuration. */
     a11y?: import('../app/panels/a11y/a11y.types.js').NgPrismA11yConfig;
+    /**
+     * When true, the build fails instead of warning whenever the scanner has
+     * to drop a `@Showcase` value: one it cannot evaluate statically, an
+     * invalid `bg`, `status` or `canvasLayout`, a missing `title`, or the
+     * deprecated `providers`, which never reach the styleguide.
+     * Default: `false`.
+     */
+    strictShowcase?: boolean;
 }

@@ -6,18 +6,11 @@ const SLASH = '/'.charCodeAt(0);
 /**
  * Drops every trailing `/` from the base.
  *
- * Deliberately not `replace(/\/+$/, '')`. That pattern is quadratic on a run
- * of slashes followed by anything else: `\/+` consumes the whole run, `$`
- * fails, and the engine retries the run one slash shorter — from every
- * starting offset in it. Measured in V8 on `'/'.repeat(n) + 'a'`, it costs
- * 56ms at n=10_000 and 902ms at n=40_000, so the growth is real and not a
- * theoretical reading of the pattern.
- *
- * Reaching it takes a base that no deployment would have: `assetBaseUrl` is
- * build-time configuration, not request data. But `resolveAssetUrl` is
- * exported from both package entries, so the base is whatever a consumer
- * hands over, and scanning backwards is both linear and a plainer statement
- * of the intent than a regex was.
+ * Not `replace(/\/+$/, '')`: that pattern backtracks quadratically on a run of
+ * slashes followed by another character (in V8, 56ms at 10_000 slashes and
+ * 902ms at 40_000). `assetBaseUrl` is build-time config, but
+ * `resolveAssetUrl` is exported from both entries and takes any base, so the
+ * backward scan keeps it linear.
  */
 function withoutTrailingSlashes(base: string): string {
     let end = base.length;
@@ -30,11 +23,11 @@ function withoutTrailingSlashes(base: string): string {
  * Resolves an image path from the report against the served styleguide.
  *
  * The report records whatever paths the runner chose; where those files end up
- * in the build output is a separate decision made in `angular.json`. This is
- * the seam between the two, and it assumes nothing about either layout.
+ * in the build output is configured separately in `angular.json`. This joins
+ * the two without assuming either layout.
  *
- * Paths that carry their own origin — `https:`, `data:` and protocol-relative
- * — are returned untouched. A root-relative path is *not* one of them: it is
+ * Paths that carry their own origin (`https:`, `data:` and protocol-relative)
+ * are returned untouched. A root-relative path is *not* one of them: it is
  * still relative to wherever the styleguide is served from, so it is joined to
  * the base like any other path (without doubling the separator).
  */

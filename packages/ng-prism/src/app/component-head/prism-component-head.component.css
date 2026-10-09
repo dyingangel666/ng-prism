@@ -15,10 +15,9 @@
 
 /* The text yields, the controls never do. A long category and a long title
    would otherwise push the gauge out of a fixed-height row whose ancestors
-   clip — making the measurement unreachable in exactly the case where you
-   most want to read it, and costing the gauge the fixed position it was
-   designed around. The trade is deliberate: a title truncated with an
-   ellipsis, so the chip stays put at the right edge. The crumb gives way
+   clip, making the measurement unreachable when you most want to read it,
+   and costing the gauge the fixed position it was designed around. So the
+   title truncates with an ellipsis and the chip stays at the right edge. The crumb gives way
    first, being the least important text in the row. */
 .comp-crumb {
     flex: 0 8 auto;
@@ -62,7 +61,7 @@ prism-head-gauge,
 
 /* Wraps the slot rather than styling the projected element, which this
    stylesheet cannot reach. :empty keeps the row's trailing gap from
-   appearing when nothing is projected — comment anchors do not count. */
+   appearing when nothing is projected; comment anchors do not count. */
 .comp-head-end {
     display: inline-flex;
     align-items: center;
@@ -72,9 +71,9 @@ prism-head-gauge,
     display: none;
 }
 
-/* Always an outline, never a filled surface — deprecated separates itself
+/* Always an outline, never a filled surface. Deprecated separates itself
    by hue, not by weight. A filled alarm-coloured chip in a permanently
-   visible band is exactly the "red as background texture" problem this
+   visible band is the "red as background texture" problem this
    redesign exists to fix. */
 .comp-status {
     display: inline-flex;

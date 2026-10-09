@@ -82,7 +82,7 @@ export class VrtCompareComponent {
 
         // The caption follows which URL actually won, never the status alone.
         // `new` promises there is no baseline, but a row that carries one anyway
-        // — a baseline accepted after a run that recorded no current capture —
+        // (a baseline accepted after a run that recorded no current capture)
         // would otherwise show the baseline image labelled "Current".
         const showingBaseline = Boolean(baseline);
         const isNew = this.variant().status === 'new' && !showingBaseline;
@@ -92,7 +92,7 @@ export class VrtCompareComponent {
             surface: showingBaseline ? this.baselineSurface() : this.currentSurface(),
             label: isNew ? 'Current' : showingBaseline ? 'Baseline' : 'Recorded image',
             title: isNew ? 'No baseline yet.' : 'Only one image recorded.',
-            note: isNew ? 'Nothing to compare against — this is what the runner captured.' : 'The report recorded only one image for this variant.'
+            note: isNew ? 'Nothing to compare against. This is what the runner captured.' : 'The report recorded only one image for this variant.'
         };
     });
 
@@ -102,10 +102,10 @@ export class VrtCompareComponent {
 
         // Wiping between two images of different sizes overlays pixels that do not
         // correspond, so a resized variant leads with side-by-side. Wipe stays
-        // available — it is a poor comparison there, not a forbidden one.
+        // available: it is a poor comparison there, not a forbidden one.
         const modes: CompareMode[] = this.variant().status === 'size-mismatch' ? ['side-by-side', 'wipe'] : ['wipe', 'side-by-side'];
 
-        // Only a distinct diff mask earns its own tab; when it is already the
+        // Only a distinct diff mask gets its own tab; when it is already the
         // right-hand image, a "Diff" button would just repeat the comparison.
         if (this.diffUrl() && this.currentUrl()) modes.push('diff');
         return modes;

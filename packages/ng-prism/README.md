@@ -1,6 +1,6 @@
 # ng-prism
 
-**ng-prism** is the Angular-native Storybook alternative. A lightweight component showcase tool that scans your library at build time and renders interactive demos — annotate components with `@Showcase`, no separate story files needed.
+**ng-prism** is the Angular-native Storybook alternative. A lightweight component showcase tool that scans your library at build time and renders interactive demos. Annotate components with `@Showcase`; no separate story files needed.
 
 [![Angular](https://img.shields.io/badge/Angular-20%20%7C%2021%20%7C%2022-dd0031)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6)](https://www.typescriptlang.org)
@@ -10,15 +10,15 @@
 
 ## Features
 
-- **Zero-config discovery** — TypeScript Compiler API scans your library at build time
-- **Signal-native** — works with `input()` / `output()` signals
-- **Directive support** — showcase directives with configurable host elements
-- **Plugin architecture** — JSDoc, A11y, Figma, Performance, Box Model, Coverage
-- **Live Controls** — auto-generated input controls with type-aware editors
-- **Code Snippets** — live-updating Angular template snippets per variant
-- **Component Pages** — free-form demo pages for complex components
-- **Deep-linking** — URL state sync for sharing specific component/variant/view
-- **Themeable** — full CSS custom property system, replaceable UI sections
+- **Zero-config discovery**: TypeScript Compiler API scans your library at build time
+- **Signal-native**: works with `input()` / `output()` signals
+- **Directive support**: showcase directives with configurable host elements
+- **Plugin architecture**: JSDoc, A11y, Figma, Performance, Box Model, Coverage
+- **Live Controls**: auto-generated input controls with type-aware editors
+- **Code Snippets**: live-updating Angular template snippets per variant
+- **Component Pages**: free-form demo pages for complex components
+- **Deep-linking**: URL state sync for sharing specific component/variant/view
+- **Themeable**: full CSS custom property system, replaceable UI sections
 
 ## Quick Start
 
@@ -70,7 +70,7 @@ This creates the prism app project, configures Angular builders, and generates `
 ng run my-lib:prism
 ```
 
-Open `http://localhost:4400` — your component appears in the sidebar with live controls, code snippets, and variant tabs.
+Open `http://localhost:4400`. Your component appears in the sidebar with live controls, code snippets, and variant tabs.
 
 ## Configuration
 
@@ -142,7 +142,7 @@ Link to a `@Showcase`-decorated component for combined API docs + custom renderi
 | Coverage  | `@ng-prism/plugin-coverage`          | Per-component test coverage from Istanbul/v8                  |
 | VRT       | `@ng-prism/plugin-visual-regression` | Per-variant visual regression report from a screenshot runner |
 
-> **Note:** Accessibility auditing (axe-core) is built into ng-prism core — no plugin needed.
+> **Note:** Accessibility auditing (axe-core) is built into ng-prism core, so no plugin is needed.
 
 ## Requirements
 

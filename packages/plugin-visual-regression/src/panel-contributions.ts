@@ -6,11 +6,9 @@ import { isReviewStatus } from './vrt-summarize.js';
  * The runtime contributions both entry points declare.
  *
  * `visual-regression-plugin.ts` carries the build-time hooks and must never be
- * reachable from a browser bundle, so the browser entry cannot import through
- * it — which used to mean the panel's visibility rule was written out twice,
- * once per entry, with nothing but `entry-parity.spec.ts` noticing if the two
- * drifted. This module is the half both can share: no `node:` imports, no
- * Angular, just the predicates the panel definition needs.
+ * reachable from a browser bundle, so the browser entry cannot import it. This
+ * module holds what both entries share: no `node:` imports, no Angular, just
+ * the predicates the panel definition needs.
  */
 
 function componentMeta(component: RuntimeComponent): VrtComponentMeta | null {
@@ -27,17 +25,15 @@ export function hasResults(component: RuntimeComponent): boolean {
 /**
  * How many of this component's variants are waiting on a person.
  *
- * The same set the panel's first group holds, decided by the same predicate,
- * so the number on the tab and the number in the group header cannot disagree.
- * Red once anything actually changed, amber while the only open items are ones
- * that could not be compared — resized and new. Null when there is nothing to
- * say, which is what keeps a clean component's tab free of a green "0".
+ * Uses the same predicate as the panel's first group, so the tab count and the
+ * group header always agree. Red once anything changed, amber while the only
+ * open items could not be compared (resized and new). Null when there is
+ * nothing to review, so a clean component's tab shows no green "0".
  *
- * One pass over the variants rather than a call to `groupRows`. The panel host
- * invokes this from its template, so it re-runs on every change-detection pass
- * for every visible tab, and `PanelDefinition.badge` asks for cheap and pure
- * on exactly those grounds — building all three groups to read the count
- * of one allocates a group per call and filters the list five times over.
+ * A single pass instead of calling `groupRows`: the panel host calls this from
+ * its template on every change-detection pass for every visible tab, and
+ * `PanelDefinition.badge` has to be cheap. `groupRows` would build all three
+ * groups and filter the list five times.
  */
 export function reviewBadge(component: RuntimeComponent): PanelBadge | null {
     const meta = componentMeta(component);

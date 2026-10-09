@@ -1,3 +1,4 @@
+import ts from 'typescript';
 import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { generateRuntimeManifest } from './runtime-manifest.generator.js';
 
@@ -162,6 +163,23 @@ describe('generateRuntimeManifest', () => {
         expect(source).toContain('selector: "my-button"');
         expect(source).toContain('name: "variant"');
         expect(source).toContain('name: "clicked"');
+    });
+
+    it('quotes keys that are not identifiers, so that the manifest still parses', () => {
+        const slotted: ScannedComponent = {
+            ...CARD,
+            showcaseConfig: {
+                title: 'Card',
+                variants: [{ name: 'Slots', content: { '[card-header]': '<h3>Title</h3>' }, inputs: { 'aria-label': 'Close' } }]
+            }
+        };
+        const source = generateRuntimeManifest({ components: [slotted], libraryImportPath: 'my-lib' });
+        const { diagnostics } = ts.transpileModule(source, { reportDiagnostics: true, compilerOptions: { module: ts.ModuleKind.ES2022 } });
+
+        expect(diagnostics!.map((d) => ts.flattenDiagnosticMessageText(d.messageText, '\n'))).toEqual([]);
+        expect(source).toContain('"[card-header]": "<h3>Title</h3>"');
+        expect(source).toContain('"aria-label": "Close"');
+        expect(source).toContain('name: "Slots"');
     });
 
     it('should handle empty components array', () => {

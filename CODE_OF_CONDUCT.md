@@ -39,7 +39,7 @@ Examples of unacceptable behavior include:
 ## Scope on Technical Discussion
 
 Disagreement about code is normal and welcome. Reviews on this project are
-direct and detailed — a critical review of an implementation is not a personal
+direct and detailed. A critical review of an implementation is not a personal
 attack, and receiving one is part of collaborating here. What this Code of
 Conduct rules out is aiming that criticism at the person instead of the work.
 
@@ -57,8 +57,8 @@ decisions when appropriate.
 
 ## Scope
 
-This Code of Conduct applies within all community spaces — issues, pull
-requests, discussions, and the project's documentation — and also applies when
+This Code of Conduct applies within all community spaces (issues, pull
+requests, discussions, and the project's documentation) and also applies when
 an individual is officially representing the community in public spaces.
 Examples of representing our community include using an official email address,
 posting via an official social media account, or acting as an appointed
@@ -70,7 +70,7 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported privately to the project maintainers through GitHub's
 [private reporting form](https://github.com/dyingangel666/ng-prism/security/advisories/new)
 (Security tab → "Report a vulnerability"). That channel is primarily meant for
-security reports, but it is the project's only private inbox — please use it for
+security reports, but it is the project's only private inbox, so please use it for
 Code of Conduct reports as well, and start your report with "Code of Conduct" so
 we can triage it correctly.
 

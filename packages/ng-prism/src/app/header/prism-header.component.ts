@@ -65,6 +65,6 @@ export class PrismHeaderComponent {
     }
 
     protected onSearchFocus(): void {
-        // Placeholder — will be wired to command palette later
+        // Placeholder, will be wired to the command palette later
     }
 }

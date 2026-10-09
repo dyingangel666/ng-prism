@@ -21,7 +21,7 @@ export function providePrism(manifest: RuntimeManifest, config?: NgPrismConfig, 
 
     // Exposes a thin discovery view of the manifest to external audit tooling:
     // class name, title, variants, and the `@Showcase` metadata a tool needs to
-    // decide how to treat a variant. Still no Angular type references — see
+    // decide how to treat a variant. Still no Angular type references; see
     // buildDiscoveryManifest for what gets stripped and why.
     if (typeof globalThis !== 'undefined') {
         (globalThis as Record<string, unknown>)['__PRISM_MANIFEST__'] = buildDiscoveryManifest(mergedManifest);

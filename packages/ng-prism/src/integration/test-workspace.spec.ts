@@ -165,7 +165,7 @@ describe('test-workspace integration', () => {
         expect(ctx.logger.info).toHaveBeenCalledWith(expect.stringContaining('Generated manifest with 15 component(s)'));
     });
 
-    it('end-to-end: core ng-add → plugin ng-add wires config + deps', async () => {
+    it('end-to-end: core ng-add then plugin ng-add wires config + deps', async () => {
         const corePkgRoot = resolve(__dirname, '../..');
         const jsdocPkgRoot = resolve(corePkgRoot, '../plugin-jsdoc');
 

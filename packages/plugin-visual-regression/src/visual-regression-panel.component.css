@@ -1,13 +1,9 @@
 /*
- * Not a scroll container.
- *
- * It used to be overflow:auto, which made the whole panel one scroller:
- * both columns simply grew and the panel scrolled as a unit, so picking a
- * variant further down the list scrolled the comparison off the top and
- * you had to scroll back up to see what you had picked. The two columns
- * own their scrolling now, and the chain of min-height:0 below is what
- * lets them — a grid or flex item defaults to min-height:auto, refuses
- * to shrink below its content, and pushes the overflow back up here.
+ * Not a scroll container. If the panel scrolled as a unit, picking a variant
+ * further down the list would scroll the comparison out of view. The two
+ * columns scroll on their own, which needs the min-height:0 chain below: a
+ * grid or flex item defaults to min-height:auto, will not shrink below its
+ * content, and pushes the overflow back up here.
  */
 :host {
     display: block;
@@ -56,7 +52,7 @@
 
 /* The group header, in both its forms: a paragraph for the group that
    cannot collapse and a button for the ones that can, so the disclosure is
-   a real control rather than a click handler on a label — same box either
+   a real control rather than a click handler on a label. Same box either
    way, which is what keeps the two from jumping as groups appear. */
 .vrt__group {
     display: flex;
@@ -224,7 +220,7 @@
 }
 
 /* Too narrow for two columns: stack them, and hand the scrolling back to
-   the panel as a whole — side by side the two scrollers keep the list and
+   the panel as a whole. Side by side the two scrollers keep the list and
    the image in view at once, stacked there is nothing to keep in view. */
 @media (width <= 860px) {
     :host {

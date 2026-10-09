@@ -36,8 +36,8 @@ function writeA11yReport(root: string, score: number): void {
     writeFileSync(
         join(root, 'a11y-report.json'),
         JSON.stringify({
-            // total erfüllt jeden Threshold — sonst wirft checkA11yThresholds,
-            // bevor der Merge überhaupt läuft.
+            // total meets every threshold, otherwise checkA11yThresholds throws
+            // before the merge runs.
             total: {
                 score: 95,
                 violations: 0,
@@ -179,6 +179,35 @@ describe('runPrismPipeline integration', () => {
         expect(content).toContain('variant: "warn"');
     });
 
+    it('fails on a dropped @Showcase value when strictShowcase is on, before writing a manifest', async () => {
+        tmp = createTempWorkspace();
+        writeFileSync(join(tmp, 'ng-prism.config.ts'), 'export default { strictShowcase: true };', 'utf-8');
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        try {
+            await expect(runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState())).rejects.toThrow(
+                /strictShowcase is enabled and 10 @Showcase value\(s\) were dropped/
+            );
+            expect(existsSync(join(tmp, 'ng-prism-cache'))).toBe(false);
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
+    it('only warns about a dropped @Showcase value while strictShowcase is off', async () => {
+        tmp = createTempWorkspace();
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        try {
+            const result = await runPrismPipeline({ ...defaultOptions, entryPoint: 'lib/unevaluable-api.ts' }, createMockContext(tmp), createPipelineState());
+
+            expect(result.componentCount).toBe(6);
+            expect(warn).toHaveBeenCalledWith(expect.stringContaining('UnevaluableShowcaseComponent › variants[1] "Auto hint" › inputs.maxFileSize'));
+        } finally {
+            warn.mockRestore();
+        }
+    });
+
     it('leaves components untouched when no report exists', async () => {
         tmp = createTempWorkspace();
 
@@ -190,8 +219,8 @@ describe('runPrismPipeline integration', () => {
     it('does not overwrite plugin meta written by runPluginHooks when merging the a11y entry', async () => {
         // The a11y merge runs after runPluginHooks specifically so a plugin's
         // `showcaseConfig.meta` survives it. Swapping the order of the two
-        // blocks in `runPrismPipeline` — or having the a11y merge replace
-        // `meta` outright instead of spreading it — would silently drop
+        // blocks in `runPrismPipeline` (or having the a11y merge replace
+        // `meta` outright instead of spreading it) would silently drop
         // whatever a plugin wrote, and every other test in this file uses a
         // config with no a11y report or a plugin that leaves no trace in
         // `showcaseConfig.meta`, so none of them would catch it.
@@ -199,7 +228,7 @@ describe('runPrismPipeline integration', () => {
         writeA11yReport(tmp, 55);
         // `Object.assign` rather than object-spread: this file is transpiled and
         // then dynamically `import()`-ed from a temp path outside the workspace
-        // (see config-loader.ts), which Jest's own transform also reaches for —
+        // (see config-loader.ts), which Jest's own transform also reaches for,
         // and its helper injection for object spread can't resolve `@swc/helpers`
         // from that temp path. The pre-existing `test-meta-plugin` fixture beside
         // this one works around the same thing the same way.

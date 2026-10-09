@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import type { InputMeta, OutputMeta } from '../../plugin/plugin.types.js';
-import { evaluateExpression, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
+import { evaluateStatic, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
 
 /**
  * Extract all @Input(), input() and model() signal metadata from a class declaration.
@@ -19,7 +19,7 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 
         if (inputDecorator) {
             const required = isDecoratorInputRequired(inputDecorator);
-            const defaultValue = member.initializer ? evaluateExpression(member.initializer) : undefined;
+            const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveDecoratorInputType(member, checker);
 
@@ -39,7 +39,7 @@ export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeCh
 
         if (signalCall) {
             const required = isSignalInputRequired(signalCall);
-            const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateExpression(signalCall.arguments[0]) : undefined;
+            const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
             const doc = getJsDocComment(member, checker);
             const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
 
@@ -88,6 +88,18 @@ export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeC
     }
 
     return outputs;
+}
+
+/**
+ * A default is all or nothing. The renderer applies it to the component, so
+ * the part of `{ ...shared, size: 'm' }` that can be read would overwrite the
+ * whole default the component actually declares.
+ */
+function evaluateDefault(node: ts.Expression, checker: ts.TypeChecker): unknown {
+    let complete = true;
+    const value = evaluateStatic(node, { checker, report: () => (complete = false) });
+
+    return complete ? value : undefined;
 }
 
 function getInputSignalCall(member: ts.PropertyDeclaration): ts.CallExpression | null {

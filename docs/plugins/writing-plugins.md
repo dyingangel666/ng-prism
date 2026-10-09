@@ -129,7 +129,7 @@ The wrapper receives no inputs. Use `inject()` to access services.
 
 ## Header and Panel Widgets
 
-`@ng-prism/core` (the **main** entry, not `@ng-prism/core/plugin`) exports two presentational components for building a `headerWidgets` entry or a panel's own chrome, so a plugin does not have to invent its own metric pill or reimplement icon rendering:
+`@ng-prism/core` (the main entry, not `@ng-prism/core/plugin`) exports two presentational components for building a `headerWidgets` entry or a panel's own chrome, so a plugin does not have to invent its own metric pill or reimplement icon rendering:
 
 ```typescript
 import { PrismMetricBadgeComponent, PrismIconComponent } from '@ng-prism/core';
@@ -184,7 +184,7 @@ export class CoverageHeaderBadgeComponent {
 }
 ```
 
-Registered like any other `headerWidgets` entry — see [`HeaderWidgetDefinition`](api/ng-prism-plugin.md#headerwidgetdefinition). Full field reference: [`PrismMetricBadgeComponent`](api/ng-prism-plugin.md#prismmetricbadgecomponent) and [`PrismIconComponent`](api/ng-prism-plugin.md#prismiconcomponent).
+Registered like any other `headerWidgets` entry; see [`HeaderWidgetDefinition`](api/ng-prism-plugin.md#headerwidgetdefinition). Full field reference: [`PrismMetricBadgeComponent`](api/ng-prism-plugin.md#prismmetricbadgecomponent) and [`PrismIconComponent`](api/ng-prism-plugin.md#prismiconcomponent).
 
 ## PanelDefinition Fields
 
@@ -201,7 +201,7 @@ Registered like any other `headerWidgets` entry — see [`HeaderWidgetDefinition
 | `placement`            | `'addon' \| 'view'`   | `addon` = bottom tab bar, `view` = top view toolbar                |
 | `providers`            | `Provider[]`          | Providers scoped to this panel's injector                          |
 
-> **Note:** Always use `loadComponent` rather than `component` if your panel component imports anything from `@angular/platform-browser` or any other browser-only package. The config file is loaded in Node.js during the build — a static import of a browser component crashes the builder.
+> **Note:** Always use `loadComponent` rather than `component` if your panel component imports anything from `@angular/platform-browser` or any other browser-only package. The config file is loaded in Node.js during the build, and a static import of a browser component crashes the builder.
 
 ## Example: Minimal Panel Plugin
 
@@ -268,7 +268,7 @@ export function colorSwatchPlugin(): NgPrismPlugin {
 }
 ```
 
-The `ColorSwatchControlComponent` receives `inputMeta` and `rendererService` as inputs from the Controls panel — no need to `inject()` the service:
+The `ColorSwatchControlComponent` receives `inputMeta` and `rendererService` as inputs from the Controls panel, so there is no need to `inject()` the service:
 
 ```typescript
 @Component({

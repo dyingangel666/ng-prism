@@ -27,7 +27,7 @@ describe('density and band heights', () => {
     /**
      * The point of the band tokens is that one CSS variable rescales the whole
      * chrome. A band declared as a bare pixel value silently opts out, and
-     * nothing else would notice.
+     * no other test would notice.
      */
     it.each(['--band-header', '--band-head', '--band-rail', '--band-tabs'])('%s scales with density', (key) => {
         expect(PRISM_BASE_TOKENS[key]).toMatch(/^calc\(\d+px \* var\(--density\)\)$/);
@@ -49,7 +49,7 @@ describe('mark roles', () => {
      *
      * It began as `transparent`, on the argument that drawing anything for a
      * healthy value is the wallpaper problem in another hue. That still holds
-     * where a mark would otherwise not exist — the sidebar renders nothing for a
+     * where a mark would otherwise not exist: the sidebar renders nothing for a
      * clean component, because `decorateItem` returns `null`. But the status
      * chip, the header badges and the gauge render regardless, and there grey
      * made "measured and fine" look like "not measured at all". Those read this
@@ -85,7 +85,7 @@ describe('stage tokens', () => {
     });
 
     /**
-     * The defect this guards: the stage and its container both read
+     * Regression check: the stage and its container both read
      * `--prism-bg-surface`, so in light mode the boundary between tool and
      * specimen disappears entirely. The stage needs a surface of its own.
      */

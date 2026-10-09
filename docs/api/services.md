@@ -6,7 +6,7 @@ All services are provided in `root` and injectable anywhere in the Prism app or 
 
 ## PrismManifestService
 
-Manages the runtime manifest — the in-memory representation of all discovered components and pages.
+Manages the runtime manifest, i.e. the in-memory representation of all discovered components and pages.
 
 ```typescript
 import { PrismManifestService } from '@ng-prism/core';
@@ -24,7 +24,7 @@ export class MyComponent {
 | `pages`                    | `Signal<StyleguidePage[]>`                | All registered pages                                                   |
 | `categories`               | `Signal<string[]>`                        | Distinct category names, sorted by `categoryOrder` then alphabetically |
 | `groupedByCategory`        | `Signal<Map<string, RuntimeComponent[]>>` | Components keyed by category                                           |
-| `updateManifest(manifest)` | `void`                                    | Replace the entire manifest — used by HMR                              |
+| `updateManifest(manifest)` | `void`                                    | Replace the entire manifest (used by HMR)                              |
 
 ---
 
@@ -37,7 +37,7 @@ Manages which component or page is currently selected in the sidebar.
 | `activeItem`       | `WritableSignal<NavigationItem \| null>` | Currently active navigation item                   |
 | `activeComponent`  | `Signal<RuntimeComponent \| null>`       | Derived from `activeItem` if kind is `'component'` |
 | `activePage`       | `Signal<StyleguidePage \| null>`         | Derived from `activeItem` if kind is `'page'`      |
-| `categoryTree`     | `Signal<Map<string, NavigationItem[]>>`  | Sidebar tree — filtered by search, sorted by order |
+| `categoryTree`     | `Signal<Map<string, NavigationItem[]>>`  | Sidebar tree, filtered by search, sorted by order  |
 | `select(comp)`     | `void`                                   | Select a `RuntimeComponent`                        |
 | `selectPage(page)` | `void`                                   | Select a `StyleguidePage`                          |
 | `selectFirst()`    | `void`                                   | Select the first component or page in the manifest |
@@ -48,16 +48,16 @@ Manages which component or page is currently selected in the sidebar.
 
 Tracks the active variant and input values for the currently rendered component.
 
-| Member                        | Type                                                    | Description                                                                                                                                                      |
-| ----------------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `activeVariantIndex`          | `WritableSignal<number>`                                | Index of the active variant tab (0-based)                                                                                                                        |
-| `inputValues`                 | `WritableSignal<Record<string, unknown>>`               | Current input values (merged defaults + variant + user overrides)                                                                                                |
-| `activeContent`               | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas                                                                                                                                |
-| `renderedElement`             | `WritableSignal<Element \| null>`                       | Reference to the root DOM element of the rendered component                                                                                                      |
-| `resetForComponent(comp)`     | `void`                                                  | Full reset — resets variant index, inputs, and content to variant 0                                                                                              |
-| `reconcileForComponent(comp)` | `void`                                                  | Soft reset — preserves variant index and user-overridden inputs on HMR or initial mount; merges input defaults when the prior className was `null` (fresh mount) |
-| `selectVariant(index)`        | `void`                                                  | Change variant and apply its inputs                                                                                                                              |
-| `updateInput(name, value)`    | `void`                                                  | Update a single input value (merges into `inputValues`)                                                                                                          |
+| Member                        | Type                                                    | Description                                                                                                                                                     |
+| ----------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activeVariantIndex`          | `WritableSignal<number>`                                | Index of the active variant tab (0-based)                                                                                                                       |
+| `inputValues`                 | `WritableSignal<Record<string, unknown>>`               | Current input values (merged defaults + variant + user overrides)                                                                                               |
+| `activeContent`               | `Signal<string \| Record<string, string> \| undefined>` | Content projected into the canvas                                                                                                                               |
+| `renderedElement`             | `WritableSignal<Element \| null>`                       | Reference to the root DOM element of the rendered component                                                                                                     |
+| `resetForComponent(comp)`     | `void`                                                  | Full reset: resets variant index, inputs, and content to variant 0                                                                                              |
+| `reconcileForComponent(comp)` | `void`                                                  | Soft reset: preserves variant index and user-overridden inputs on HMR or initial mount; merges input defaults when the prior className was `null` (fresh mount) |
+| `selectVariant(index)`        | `void`                                                  | Change variant and apply its inputs                                                                                                                             |
+| `updateInput(name, value)`    | `void`                                                  | Update a single input value (merges into `inputValues`)                                                                                                         |
 
 Use `inputValues()` in Component Pages to react to Controls panel changes:
 
@@ -179,7 +179,7 @@ Schema version, corrupted JSON, quota-exceeded errors, and a missing `sessionSto
 
 Disabled via `NgPrismConfig.persistState = false`. See [State Preservation](guide/url-state.md).
 
-When using a custom `appComponent`, call both init methods in the order URL → persistence:
+When using a custom `appComponent`, call both init methods, URL first, then persistence:
 
 ```typescript
 @Component({ ... })

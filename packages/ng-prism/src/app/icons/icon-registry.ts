@@ -6,7 +6,7 @@
  * `prism-icon.component.ts` so a plugin author can resolve the name the docs
  * point them to (`NavigationDecorationDefinition.icon`, `PanelDefinition.icon`)
  * without pulling an `@Component` class into a module graph the builder
- * evaluates in Node.js — the same reason plugin panels are lazy-loaded.
+ * evaluates in Node.js. Plugin panels are lazy-loaded for the same reason.
  */
 const ICONS: Record<string, string> = {
     search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
@@ -49,5 +49,5 @@ const ICONS: Record<string, string> = {
 
 export { ICONS };
 
-/** Every name the registry can draw — what a panel's `icon` has to pick from. */
+/** Every name the registry can draw. A panel's `icon` has to pick from these. */
 export const ICON_NAMES: readonly string[] = Object.keys(ICONS);

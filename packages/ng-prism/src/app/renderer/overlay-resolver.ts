@@ -20,7 +20,7 @@ const NONE: OverlayResolution = { kind: 'none' };
  * triggers a lazy overlay load, under either of two independent
  * conditions:
  *
- * - Capture mode: panel overlays render *inside* `.demo-wrap` — the same
+ * - Capture mode: panel overlays render *inside* `.demo-wrap`, the same
  *   element external screenshot tools capture.
  * - Measure mode: see the `measureActive` option below for why a running
  *   measuring tool preempts every panel overlay the same way.

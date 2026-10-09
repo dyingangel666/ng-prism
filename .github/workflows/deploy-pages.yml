@@ -40,14 +40,14 @@ jobs:
               working-directory: test-workspace
               # Must run before the demo build: the coverage plugin reads
               # coverage-summary.json while scanning, and matches its entries against
-              # absolute source paths — so the report has to come from this checkout.
+              # absolute source paths, so the report has to come from this checkout.
               run: npm run test:coverage
 
             - name: Build demo
               working-directory: test-workspace
               run: |
                   # ng-prism.config.ts is gitignored because `ng add` writes it, so the
-                  # demo mirrors the checked-in example — which enables every plugin.
+                  # demo mirrors the checked-in example (which enables every plugin).
                   cp ng-prism.config.example.ts ng-prism.config.ts
 
                   # Serve from the GitHub Pages subpath.

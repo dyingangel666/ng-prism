@@ -180,7 +180,7 @@ describe('PrismVariantBgService in capture mode', () => {
     });
 
     it('keeps a component-level bg', () => {
-        // Deliberately not `checker`: that is the fallback, so declaring it could
+        // Not `transparent`: that is the default, so declaring it could
         // not tell "honoured the declaration" from "fell through to the default".
         activate(manifestService, nav, makeComponent('plain'));
         TestBed.flushEffects();

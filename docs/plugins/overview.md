@@ -15,7 +15,7 @@ Plugins extend ng-prism with additional panels, controls, and build-time data ex
 
 ## Installing Plugins
 
-The fastest path is the `ng-add` schematic — it installs the package and registers the plugin in `ng-prism.config.ts` automatically:
+The fastest path is the `ng-add` schematic. It installs the package and registers the plugin in `ng-prism.config.ts` automatically:
 
 ```bash
 ng add @ng-prism/plugin-jsdoc
@@ -23,7 +23,7 @@ ng add @ng-prism/plugin-figma
 # … and so on for any other plugin
 ```
 
-Re-running is safe — already-registered plugins are skipped.
+Re-running is safe, because already-registered plugins are skipped.
 
 If you prefer to wire things up manually, install the package and add the plugin factory to your config:
 

@@ -70,11 +70,11 @@ export class PrismShellComponent {
         this.persistenceService.init();
 
         // A view survives a component switch as long as the new component still
-        // offers it — browsing a library variant-sheet by variant-sheet was
+        // offers it. Browsing a library variant-sheet by variant-sheet was
         // impossible while every navigation dropped back to the Playground. The
         // old rule watched for the *event* of switching and needed a key to
         // remember; this one states the invariant and needs nothing. The rule
-        // itself lives in `nextViewId`, a pure function with its own tests — this
+        // itself lives in `nextViewId`, a pure function with its own tests; this
         // effect only reads the two signals it needs and applies the result.
         effect(() => {
             const next = nextViewId(this.panelService.activeViewId(), this.panelService.visibleViewPanels());
