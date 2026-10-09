@@ -1,6 +1,5 @@
-import './ambient-module.js';
+import './ambient-namespace.js';
 import { Component, input, output } from '@angular/core';
-import { ModuleField } from 'ambient-lib';
 import { AmbientField } from './ambient-field.js';
 import * as fields from './field-barrel.js';
 import DefaultField from './field-base-default.directive.js';
@@ -180,7 +179,7 @@ export class AmbientComponent extends AmbientField {}
     standalone: true,
     template: ``
 })
-export class ModuleAmbientComponent extends ModuleField {}
+export class ModuleAmbientComponent extends AmbientLib.ModuleField {}
 
 function withTracking<T extends abstract new (...args: any[]) => object>(base: T): T {
     return base;
