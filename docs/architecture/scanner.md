@@ -120,7 +120,18 @@ All three callers pass the checker. They treat a drop differently:
 
 ## Input and Output Extraction
 
-`extractInputs()` and `extractOutputs()` in `input.extractor.ts` walk the class members:
+`extractInputs()` and `extractOutputs()` in `input.extractor.ts` walk the members of the class and of every base class it extends.
+
+### Base classes
+
+`getClassHierarchy()` in `class-hierarchy.ts` follows the `extends` clause through the checker, so a base class in the same file, in another file or in another library behind a path mapping is found the same way. It returns the class itself first and then each base class, nearest first. The extractors keep the first input or output they see under a name, which lets a subclass that redeclares an input win over its base class.
+
+A generic base class declares its inputs in terms of its type parameters. For those, the type comes from the property as the showcased class sees it: the signal's call signature returns the instantiated value type, `Country[]` where the source says `T[]`. `rawType` is then the printed type, not the source text.
+
+Two kinds of base class are not read:
+
+- **Declaration files.** A base class from an npm package only exists as a `.d.ts`, where `options = input.required<…>()` has turned into `readonly options: InputSignal<…>`. No call is left to read `required` or a default from. If such a class declares properties typed `InputSignal`, `InputSignalWithTransform` or `ModelSignal`, `scanComponents()` warns with their names and the file. The warning is not a [diagnostic](#diagnostics), so `strictShowcase` does not fail the build over a class the component's author cannot change.
+- **Mixins.** In `extends withTracking(Base)` the base is a call, and what it returns has no class declaration to read members from. The walk ends there.
 
 ### Signal inputs: `input()` and `model()`
 

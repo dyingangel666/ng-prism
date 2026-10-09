@@ -4,8 +4,9 @@ import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
 import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, UNEVALUABLE } from './ast-utils.js';
+import { getClassHierarchy } from './class-hierarchy.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
-import { describeDeprecatedProviders, describeUnevaluable } from './showcase-diagnostics.js';
+import { describeDeprecatedProviders, describeUnevaluable, describeUnreadableBase } from './showcase-diagnostics.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -88,9 +89,16 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, di
         const outputs = extractOutputs(classDecl, checker);
 
         const filePath = classDecl.getSourceFile().fileName;
+        const hierarchy = getClassHierarchy(classDecl, checker);
 
-        if (hasDecoratorInputs(classDecl)) {
+        if (hierarchy.classes.some(hasDecoratorInputs)) {
             console.warn(`⚠ ng-prism: ${className} uses @Input() decorators which are not fully supported. ` + `Migrate to input() signals for full ng-prism support.`);
+        }
+
+        // A plain warning, not a diagnostic: strictShowcase would fail the build
+        // over a base class in a package, which the component's author cannot change.
+        for (const base of hierarchy.unreadable) {
+            console.warn(`⚠ ng-prism: ${describeUnreadableBase(className, base)}`);
         }
 
         components.push({

@@ -1,88 +1,100 @@
 import ts from 'typescript';
 import type { InputMeta, OutputMeta } from '../../plugin/plugin.types.js';
 import { evaluateStatic, findDecorator, getDecoratorArgument, getJsDocComment } from './ast-utils.js';
+import { getClassHierarchy } from './class-hierarchy.js';
 
 /**
- * Extract all @Input(), input() and model() signal metadata from a class declaration.
+ * Extract all @Input(), input() and model() signal metadata from a class
+ * declaration and the base classes it extends. An input the subclass
+ * redeclares wins over the one in its base class.
  */
 export function extractInputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): InputMeta[] {
     const inputs: InputMeta[] = [];
+    const seen = new Set<string>();
 
-    for (const member of classDecl.members) {
-        if (!ts.isPropertyDeclaration(member)) continue;
+    for (const owner of getClassHierarchy(classDecl, checker).classes) {
+        // A generic base class only says `T`; what it stands for is up to the subclass.
+        const instantiatedIn = owner !== classDecl && owner.typeParameters ? classDecl : undefined;
 
-        const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+        for (const member of owner.members) {
+            if (!ts.isPropertyDeclaration(member)) continue;
 
-        if (!name) continue;
+            const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
 
-        const inputDecorator = findDecorator(member, 'Input');
+            if (!name || seen.has(name)) continue;
 
-        if (inputDecorator) {
-            const required = isDecoratorInputRequired(inputDecorator);
-            const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
-            const doc = getJsDocComment(member, checker);
-            const { type, values, rawType } = resolveDecoratorInputType(member, checker);
+            const input = readInput(member, name, checker, instantiatedIn);
 
-            inputs.push({
-                name,
-                type,
-                rawType,
-                required,
-                ...(values && { values }),
-                ...(defaultValue !== undefined && { defaultValue }),
-                ...(doc && { doc })
-            });
-            continue;
-        }
-
-        const signalCall = getInputSignalCall(member);
-
-        if (signalCall) {
-            const required = isSignalInputRequired(signalCall);
-            const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
-            const doc = getJsDocComment(member, checker);
-            const { type, values, rawType } = resolveSignalInputType(signalCall, checker);
-
-            inputs.push({
-                name,
-                type,
-                rawType,
-                required,
-                ...(values && { values }),
-                ...(defaultValue !== undefined && { defaultValue }),
-                ...(doc && { doc })
-            });
+            if (!input) continue;
+            seen.add(name);
+            inputs.push(input);
         }
     }
 
     return inputs;
 }
 
+function readInput(member: ts.PropertyDeclaration, name: string, checker: ts.TypeChecker, instantiatedIn?: ts.ClassDeclaration): InputMeta | undefined {
+    const inputDecorator = findDecorator(member, 'Input');
+
+    if (inputDecorator) {
+        const required = isDecoratorInputRequired(inputDecorator);
+        const defaultValue = member.initializer ? evaluateDefault(member.initializer, checker) : undefined;
+        const doc = getJsDocComment(member, checker);
+        const { type, values, rawType } = resolveDecoratorInputType(member, checker);
+
+        return {
+            name,
+            type,
+            rawType,
+            required,
+            ...(values && { values }),
+            ...(defaultValue !== undefined && { defaultValue }),
+            ...(doc && { doc })
+        };
+    }
+
+    const signalCall = getInputSignalCall(member);
+
+    if (!signalCall) return undefined;
+
+    const required = isSignalInputRequired(signalCall);
+    const defaultValue = !required && signalCall.arguments.length > 0 ? evaluateDefault(signalCall.arguments[0], checker) : undefined;
+    const doc = getJsDocComment(member, checker);
+    const { type, values, rawType } =
+        (instantiatedIn && resolveInstantiatedSignalInputType(name, instantiatedIn, checker)) ?? resolveSignalInputType(signalCall, checker);
+
+    return {
+        name,
+        type,
+        rawType,
+        required,
+        ...(values && { values }),
+        ...(defaultValue !== undefined && { defaultValue }),
+        ...(doc && { doc })
+    };
+}
+
 /**
- * Extract all @Output() and output() signal metadata from a class declaration.
+ * Extract all @Output() and output() signal metadata from a class declaration
+ * and the base classes it extends.
  */
 export function extractOutputs(classDecl: ts.ClassDeclaration, checker: ts.TypeChecker): OutputMeta[] {
     const outputs: OutputMeta[] = [];
+    const seen = new Set<string>();
 
-    for (const member of classDecl.members) {
-        if (!ts.isPropertyDeclaration(member)) continue;
+    for (const owner of getClassHierarchy(classDecl, checker).classes) {
+        for (const member of owner.members) {
+            if (!ts.isPropertyDeclaration(member)) continue;
 
-        const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
+            const name = member.name && ts.isIdentifier(member.name) ? member.name.text : undefined;
 
-        if (!name) continue;
+            if (!name || seen.has(name)) continue;
+            if (!findDecorator(member, 'Output') && !isOutputSignal(member)) continue;
 
-        const outputDecorator = findDecorator(member, 'Output');
-
-        if (outputDecorator) {
             const doc = getJsDocComment(member, checker);
 
-            outputs.push({ name, ...(doc && { doc }) });
-            continue;
-        }
-
-        if (isOutputSignal(member)) {
-            const doc = getJsDocComment(member, checker);
-
+            seen.add(name);
             outputs.push({ name, ...(doc && { doc }) });
         }
     }
@@ -154,6 +166,24 @@ function resolveSignalInputType(callExpr: ts.CallExpression, checker: ts.TypeChe
     }
 
     return { type: 'unknown', rawType: 'unknown' };
+}
+
+/**
+ * The type of an input declared in a generic base class, as the subclass sees
+ * it: `input.required<T[]>()` in `Field<T>` is a `Country[]` input on
+ * `Picker extends Field<Country>`.
+ */
+function resolveInstantiatedSignalInputType(
+    name: string,
+    subclass: ts.ClassDeclaration,
+    checker: ts.TypeChecker
+): { type: InputMeta['type']; values?: string[]; rawType: string } | undefined {
+    const property = checker.getPropertyOfType(checker.getTypeAtLocation(subclass), name);
+
+    // A signal is a getter function, so its call signature returns the value type.
+    const valueType = property && checker.getTypeOfSymbolAtLocation(property, subclass).getCallSignatures()[0]?.getReturnType();
+
+    return valueType && mapType(valueType, checker);
 }
 
 function isDecoratorInputRequired(decorator: ts.Decorator): boolean {

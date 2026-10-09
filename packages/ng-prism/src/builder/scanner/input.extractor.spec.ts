@@ -325,3 +325,70 @@ describe('extractOutputs', () => {
         expect(outputs).toHaveLength(0);
     });
 });
+
+describe('extractInputs and extractOutputs with base classes', () => {
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'inheritance-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
+    });
+
+    function inputsOf(className: string): Map<string, InputMeta> {
+        const classDecl = getClassDeclaration(exports, className, checker);
+
+        return new Map(extractInputs(classDecl, checker).map((input) => [input.name, input]));
+    }
+
+    it('lists its own inputs first, then those of each base class up the chain', () => {
+        const classDecl = getClassDeclaration(exports, 'CountryPickerComponent', checker);
+
+        expect(extractInputs(classDecl, checker).map((input) => input.name)).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
+    });
+
+    it('reads an inherited input like a declared one', () => {
+        const options = inputsOf('CountryPickerComponent').get('options')!;
+
+        expect(options).toEqual({ name: 'options', type: 'array', rawType: 'ListboxItem[]', required: true, doc: 'Selectable options' });
+    });
+
+    it('reads an inherited model() with its default', () => {
+        const value = inputsOf('CountryPickerComponent').get('value')!;
+
+        expect(value.required).toBe(false);
+        expect(value.defaultValue).toBeNull();
+        expect(value.type).toBe('string');
+    });
+
+    it('lets an input redeclared in the subclass win over the base class', () => {
+        const label = inputsOf('CountryPickerComponent').get('label')!;
+
+        expect(label.defaultValue).toBe('Country');
+        expect(label.doc).toBe('Label of the country picker');
+    });
+
+    it('resolves the type parameter of a generic base class to the type argument of the subclass', () => {
+        const inputs = inputsOf('ColorPickerComponent');
+
+        expect(inputs.get('items')).toMatchObject({ type: 'array', rawType: 'Color[]', required: true });
+        expect(inputs.get('selected')).toMatchObject({ type: 'union', values: ['red', 'green'], defaultValue: null });
+    });
+
+    it('collects outputs from base classes', () => {
+        const classDecl = getClassDeclaration(exports, 'CountryPickerComponent', checker);
+
+        expect(extractOutputs(classDecl, checker)).toEqual([{ name: 'blurred', doc: 'Emits when the field loses focus' }]);
+    });
+
+    it('stops at a base class that only exists as a declaration file', () => {
+        expect([...inputsOf('LibraryBackedComponent').keys()]).toEqual(['hint']);
+    });
+
+    it('stops at a mixin', () => {
+        expect([...inputsOf('MixinComponent').keys()]).toEqual(['tracked']);
+    });
+});

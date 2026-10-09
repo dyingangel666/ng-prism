@@ -51,18 +51,18 @@ interface ScannedComponent {
 }
 ```
 
-| Field                       | Description                                                                |
-| --------------------------- | -------------------------------------------------------------------------- |
-| `className`                 | TypeScript class name                                                      |
-| `filePath`                  | Absolute path to the source file                                           |
-| `showcaseConfig`            | The `ShowcaseConfig` passed to `@Showcase`                                 |
-| `inputs`                    | Array of extracted `InputMeta` for each `input()` signal                   |
-| `outputs`                   | Array of extracted `OutputMeta` for each `output()` signal                 |
-| `componentMeta.selector`    | Angular element selector                                                   |
-| `componentMeta.standalone`  | Whether the component is standalone                                        |
-| `componentMeta.isDirective` | `true` if decorated with `@Directive`, `false` for `@Component`            |
-| `importPath`                | Entry point import path (e.g. `'my-lib/atoms'` for secondary entry points) |
-| `meta`                      | Plugin-injected metadata                                                   |
+| Field                       | Description                                                                       |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `className`                 | TypeScript class name                                                             |
+| `filePath`                  | Absolute path to the source file                                                  |
+| `showcaseConfig`            | The `ShowcaseConfig` passed to `@Showcase`                                        |
+| `inputs`                    | Array of extracted `InputMeta` for each `input()` signal, base classes included   |
+| `outputs`                   | Array of extracted `OutputMeta` for each `output()` signal, base classes included |
+| `componentMeta.selector`    | Angular element selector                                                          |
+| `componentMeta.standalone`  | Whether the component is standalone                                               |
+| `componentMeta.isDirective` | `true` if decorated with `@Directive`, `false` for `@Component`                   |
+| `importPath`                | Entry point import path (e.g. `'my-lib/atoms'` for secondary entry points)        |
+| `meta`                      | Plugin-injected metadata                                                          |
 
 ---
 

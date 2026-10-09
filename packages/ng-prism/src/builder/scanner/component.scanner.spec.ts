@@ -460,3 +460,64 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });
+
+describe('scanComponents with base classes', () => {
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
+    let warnSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'inheritance-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
+    });
+
+    beforeEach(() => {
+        warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        warnSpy.mockRestore();
+    });
+
+    function warnings(): string[] {
+        return warnSpy.mock.calls.map((call) => String(call[0]));
+    }
+
+    it('records inherited inputs on the scanned component', () => {
+        const picker = scanComponents(exports, checker).find((c) => c.className === 'CountryPickerComponent')!;
+
+        expect(picker.inputs.map((input) => input.name)).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
+        expect(picker.outputs.map((output) => output.name)).toEqual(['blurred']);
+    });
+
+    it('warns about inputs of a base class it can only see as a declaration file', () => {
+        scanComponents(exports, checker);
+
+        expect(warnings()).toContainEqual(expect.stringMatching(/LibraryBackedComponent inherits placeholder from LibraryField, .*library-field\.d\.ts/));
+    });
+
+    it('does not warn about a declaration-file base class without inputs', () => {
+        scanComponents(exports, checker);
+
+        expect(warnings().filter((message) => message.includes('LoggingComponent'))).toEqual([]);
+    });
+
+    it('does not warn about base classes it can read, or about mixins', () => {
+        scanComponents(exports, checker);
+
+        expect(warnings().filter((message) => /CountryPicker|ColorPicker|Mixin/.test(message))).toEqual([]);
+    });
+
+    // strictShowcase fails the build on diagnostics, and a base class in a
+    // package is nothing the author of the component can fix.
+    it('keeps the warning out of the diagnostics', () => {
+        const diagnostics: string[] = [];
+
+        scanComponents(exports, checker, diagnostics);
+
+        expect(diagnostics).toEqual([]);
+    });
+});
