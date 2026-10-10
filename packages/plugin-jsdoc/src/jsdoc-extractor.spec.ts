@@ -71,3 +71,60 @@ describe('extractJsDocData', () => {
         expect(result?.memberTags).toEqual({});
     });
 });
+
+describe('extractJsDocData with base classes', () => {
+    const INPUT_PATH = path.join(__dirname, '__fixtures__/documented-input.ts');
+    const baseClasses = [{ className: 'DocumentedField', filePath: path.join(__dirname, '__fixtures__/documented-field.ts') }];
+
+    it('reads the tags of an inherited member from the base class', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['placeholder']).toEqual({ deprecated: 'Use the label instead.', since: '2.0.0' });
+    });
+
+    it('lets a documented redeclaration win over the base class, tags or not', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['label']).toBeUndefined();
+    });
+
+    // As TypeScript and the scanner do with the description.
+    it('keeps the tags of the base class for a redeclaration without JSDoc of its own', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['size']).toEqual({ since: '1.2.0' });
+    });
+
+    it('does not let a static member hide an inherited one', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.memberTags['tone']).toEqual({ since: '1.3.0' });
+    });
+
+    it('lists the documented public methods of the base class, overridden ones without JSDoc included', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.methods.map((method) => method.name)).toEqual(['focus', 'open']);
+    });
+
+    it('keeps the class description and tags of the class itself', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent', baseClasses);
+
+        expect(result?.classDescription).toBe('Text input built on the shared field.');
+    });
+
+    it('reads the class alone without base classes', () => {
+        const result = extractJsDocData(INPUT_PATH, 'DocumentedInputComponent');
+
+        expect(result?.memberTags).toEqual({});
+        expect(result?.methods).toEqual([]);
+    });
+});
+
+describe('extractJsDocData with accessors', () => {
+    it('reads the tags of a setter whose getter has none', () => {
+        const result = extractJsDocData(path.join(__dirname, '__fixtures__/documented-field.ts'), 'AccessorField');
+
+        expect(result?.memberTags['value']).toEqual({ since: '3.0.0' });
+    });
+});

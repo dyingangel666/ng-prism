@@ -149,6 +149,12 @@ export interface ScannedComponent {
     };
     /** Import path for the component's entry point (e.g. 'my-lib/atoms/pill') */
     importPath?: string;
+    /**
+     * Base classes with source the component extends, nearest first, for a
+     * plugin to read what the component inherits. Build time only: the
+     * manifest does not carry it.
+     */
+    baseClasses?: { className: string; filePath: string }[];
     /** Arbitrary plugin metadata */
     meta?: Record<string, unknown>;
 }

@@ -1,6 +1,7 @@
 import { relative } from 'node:path';
 import ts from 'typescript';
 import { evaluateExpression, type EvaluationPath, type UnevaluableIssue, type UnresolvedReference } from './ast-utils.js';
+import type { UnreadableBase } from './class-hierarchy.js';
 
 const MAX_EXCERPT_LENGTH = 60;
 
@@ -46,6 +47,20 @@ export function describeDeprecatedProviders(className: string, config: ts.Expres
     return (
         `${className} declares @Showcase providers (${location(literal ?? found ?? config)}), which are deprecated and will be removed in 23.0.0; ` +
         `the manifest is static and cannot hold them, so they never reach the styleguide. Use defineConfig({ appProviders }) instead.`
+    );
+}
+
+/**
+ * A base class from a package only ships its declarations: no `input()`
+ * call, no required flag, no default. Its inputs are named so the reader
+ * knows which variant values will not reach the component.
+ */
+export function describeUnreadableBase(className: string, base: UnreadableBase): string {
+    const baseName = base.classDecl.name?.text ?? 'an anonymous class';
+
+    return (
+        `${className} inherits ${base.inputs.join(', ')} from ${baseName}, which only exists as a declaration (${location(base.classDecl)}); ` +
+        `without its source these inputs cannot be read, so they are missing from the manifest and variants cannot set them.`
     );
 }
 

@@ -120,6 +120,36 @@ variant = input<'primary'>('primary'); // default: 'primary'
 
 When a variant does not specify a value for an input, the control falls back to the input's declared default. If no default exists and the input is not required, the value is `undefined` (omitted from the rendered snippet).
 
+## Inherited Inputs
+
+Inputs and outputs declared in a base class belong to the showcased component as well. Variants can set them, and the Controls panel lists them:
+
+```typescript
+@Directive()
+export abstract class ListboxField<T> {
+  options = input.required<T[]>();
+  value = model<T | null>(null);
+}
+
+@Showcase<CountryPickerComponent>({
+  title: 'Country picker',
+  variants: [{ name: 'Countries', inputs: { options: ['de', 'jp'], value: 'de' } }],
+})
+@Component({ ... })
+export class CountryPickerComponent extends ListboxField<string> {}
+```
+
+The component's own inputs come first, then those of each base class. An input the subclass redeclares replaces the one in its base class. The type parameter of a generic base class resolves to what the subclass passes, so `options` above is a `string[]` input. An input that does not use a type parameter keeps its declared type, alias names included.
+
+Angular only inherits inputs and outputs from a base class with `@Directive()` or `@Component()`, and so does the scan. An undecorated base class compiles without an error, but its inputs are not inputs of the component, so they are left out.
+
+When a subclass assigns an inherited input a value of its own (`override title = 'child'` for an `@Input() title = 'base'`), the input stays and its default becomes the subclass's value, since that is what the component starts out with. If that value cannot be read at build time, the input has no default.
+
+Two kinds of base class are not read:
+
+- A base class that only exists as a declaration has no `input()` call, required flag or default left to read. That is a base class from an npm package, which ships only its `.d.ts`, or one written with `declare`. The scan prints a warning naming the inputs it cannot see, by the names a template uses.
+- A mixin (`extends withTracking(Base)`) ends the walk. Neither the mixin nor anything behind it contributes inputs.
+
 ## Explicit Keys Behavior
 
 When you define `inputs` on a variant, only the keys you list are overridden. Other inputs keep their defaults or any value set via the Controls panel. They are not reset unless you navigate to a different variant.

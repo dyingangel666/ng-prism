@@ -4,8 +4,9 @@ import type { ScannedComponent } from '../../plugin/plugin.types.js';
 import { CANVAS_BGS, type CanvasBg } from '../../shared/canvas-bg.type.js';
 import { CANVAS_LAYOUTS, type CanvasLayout } from '../../shared/canvas-layout.type.js';
 import { evaluateExpression, evaluateStatic, findDecorator, getDecoratorArgument, UNEVALUABLE } from './ast-utils.js';
+import { getClassHierarchy } from './class-hierarchy.js';
 import { extractInputs, extractOutputs } from './input.extractor.js';
-import { describeDeprecatedProviders, describeUnevaluable } from './showcase-diagnostics.js';
+import { describeDeprecatedProviders, describeUnevaluable, describeUnreadableBase } from './showcase-diagnostics.js';
 
 const COMPONENT_STATUSES = ['stable', 'beta', 'wip', 'deprecated'] as const;
 
@@ -53,12 +54,19 @@ type Report = (message: string) => void;
  * Every @Showcase value the scan has to drop is printed and collected in
  * `diagnostics`, once: sharing the array across entry points keeps a
  * component exported from several of them from repeating its warnings.
+ * `notices` does the same for warnings about what a component inherits,
+ * which are not diagnostics.
  */
-export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, diagnostics: string[] = []): ScannedComponent[] {
+export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, diagnostics: string[] = [], notices = new Set<string>()): ScannedComponent[] {
     const components: ScannedComponent[] = [];
     const report: Report = (message) => {
         if (diagnostics.includes(message)) return;
         diagnostics.push(message);
+        console.warn(`⚠ ng-prism: ${message}`);
+    };
+    const notify = (message: string) => {
+        if (notices.has(message)) return;
+        notices.add(message);
         console.warn(`⚠ ng-prism: ${message}`);
     };
 
@@ -84,13 +92,24 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, di
         if (!showcaseConfig) continue;
 
         const componentMeta = extractComponentMeta(classDecl, checker);
-        const inputs = extractInputs(classDecl, checker);
-        const outputs = extractOutputs(classDecl, checker);
+        const hierarchy = getClassHierarchy(classDecl, checker);
+        const inputs = extractInputs(classDecl, checker, hierarchy);
+        const outputs = extractOutputs(classDecl, checker, hierarchy);
 
         const filePath = classDecl.getSourceFile().fileName;
+        const decoratorInputs = hierarchy.classes.find((c) => c.definesMetadata && hasDecoratorInputs(c.classDecl))?.classDecl;
 
-        if (hasDecoratorInputs(classDecl)) {
-            console.warn(`⚠ ng-prism: ${className} uses @Input() decorators which are not fully supported. ` + `Migrate to input() signals for full ng-prism support.`);
+        if (decoratorInputs) {
+            const where =
+                decoratorInputs === classDecl ? 'uses @Input() decorators' : `inherits @Input() decorators from ${decoratorInputs.name?.text ?? 'an anonymous class'},`;
+
+            notify(`${className} ${where} which are not fully supported. Migrate to input() signals for full ng-prism support.`);
+        }
+
+        // Not diagnostics: strictShowcase would fail the build over a base
+        // class in a package, which the component's author cannot change.
+        for (const base of hierarchy.unreadable) {
+            notify(describeUnreadableBase(className, base));
         }
 
         components.push({
@@ -99,7 +118,11 @@ export function scanComponents(exports: ts.Symbol[], checker: ts.TypeChecker, di
             showcaseConfig,
             inputs,
             outputs,
-            componentMeta
+            componentMeta,
+            // Plugins look a base class up by name, so an anonymous one is of no use to them.
+            baseClasses: hierarchy.classes
+                .slice(1)
+                .flatMap(({ classDecl: base }) => (base.name ? [{ className: base.name.text, filePath: base.getSourceFile().fileName }] : []))
         });
     }
 

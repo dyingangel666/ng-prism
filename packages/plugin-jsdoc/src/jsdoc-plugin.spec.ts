@@ -110,5 +110,19 @@ describe('jsDocPlugin', () => {
             expect(jsdoc.memberTags['variant']).toBeDefined();
             expect(jsdoc.memberTags['variant'].deprecated).toBeTruthy();
         });
+
+        it('should read member tags from the base classes of the component', async () => {
+            const plugin = jsDocPlugin();
+            const component = makeComponent({
+                className: 'DocumentedInputComponent',
+                filePath: path.join(__dirname, '__fixtures__/documented-input.ts'),
+                baseClasses: [{ className: 'DocumentedField', filePath: path.join(__dirname, '__fixtures__/documented-field.ts') }]
+            });
+            const result = await plugin.onComponentScanned!(component);
+
+            const jsdoc = (result as ScannedComponent).showcaseConfig.meta?.['jsdoc'] as any;
+
+            expect(jsdoc.memberTags['placeholder'].since).toBe('2.0.0');
+        });
     });
 });

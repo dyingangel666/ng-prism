@@ -120,7 +120,26 @@ All three callers pass the checker. They treat a drop differently:
 
 ## Input and Output Extraction
 
-`extractInputs()` and `extractOutputs()` in `input.extractor.ts` walk the class members:
+`extractInputs()` and `extractOutputs()` in `input.extractor.ts` walk the members of the class and of every base class it extends.
+
+### Base classes
+
+`getClassHierarchy()` in `class-hierarchy.ts` follows the `extends` clause through the checker, so a base class in the same file, in another file or in another library behind a path mapping is found the same way, through default exports, renamed re-exports, namespace imports and parentheses as well. It returns the class itself first and then each base class with source, nearest first, and marks which of them Angular takes inputs and outputs from: the class itself and every base class with `@Directive()` or `@Component()`. Angular passes over an undecorated base class, and the extractors skip its inputs and outputs too.
+
+The extractors keep the first input or output they see under a name, which lets a subclass that redeclares an input win over its base class. Static members are skipped, since an input is always an instance field. A field a more derived class initializes without declaring it an input (`override title = 'child'`, or an `input()` in an undecorated class in between) leaves the inherited input in place, as Angular does, but the component starts out with the value of the most derived initializer. That value becomes `defaultValue`, read the same way as a default (`input()` and `model()` contribute the value passed to them); if it cannot be read, the input has no default rather than the base class's.
+
+A generic base class declares some inputs in terms of its type parameters. For an input whose type argument, declared type or default mentions one of them, the type comes from the property as the showcased class sees it: the signal's call signature returns the instantiated value type, `Country[]` where the source says `T[]`, and an `@Input()` property has that type directly. Without a type argument the type of the default counts as well, so `model(this.initial)` with `initial: T` resolves too. `rawType` is then the printed type. Every other input is resolved as before: from the source text of its type argument, alias names included, or from the type of its default.
+
+The hierarchy is computed once per component and passed to both extractors. `scanComponents()` also records the base classes with source on `ScannedComponent.baseClasses` (class name and file, nearest first) for plugins that need to read what a component inherits, such as plugin-jsdoc for the tags of inherited members. The field only exists at build time; the manifest does not carry it.
+
+Two kinds of base class are not read:
+
+- **Declarations.** A base class from an npm package only exists as a `.d.ts`, where `options = input.required<…>()` has turned into `readonly options: InputSignal<…>`. No call is left to read `required` or a default from. The same goes for a `declare class` in a `.ts` file and for a class inside `declare module` or `declare namespace`. If such a class declares inputs, `scanComponents()` warns with their names and the location. The names come from the input map the Angular compiler writes into `ɵdir` or `ɵcmp`, which covers `@Input()` inputs and gives the public name of an aliased one. The compiler writes that field for every decorated class, so a `.d.ts` class without it is undecorated, Angular inherits nothing from it, and there is no warning. A `declare class` written by hand has no such map either, so there the properties whose type resolves to `InputSignal`, `InputSignalWithTransform` or `ModelSignal` stand in for it, import types and aliases included. The walk continues past the class, and each such class up the chain gets its own warning.
+- **Mixins.** In `extends withTracking(Base)` the base is a call, and what it returns has no class declaration to read members from. The walk ends there.
+
+These warnings, and the one about `@Input()` decorators, which names the base class a decorator comes from, are not [diagnostics](#diagnostics), so `strictShowcase` does not fail the build over a class the component's author cannot change. A `notices` set shared across entry points prints each of them once.
+
+In watch mode, `startWatcher()` only watches the directory of the entry point (and the config file). A base class in another library behind a path mapping is read on every scan, but editing it does not trigger one; the next change inside the watched directory, or a restart, picks it up.
 
 ### Signal inputs: `input()` and `model()`
 

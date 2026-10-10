@@ -325,3 +325,136 @@ describe('extractOutputs', () => {
         expect(outputs).toHaveLength(0);
     });
 });
+
+describe('extractInputs and extractOutputs with base classes', () => {
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'inheritance-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
+    });
+
+    function inputsOf(className: string): Map<string, InputMeta> {
+        const classDecl = getClassDeclaration(exports, className, checker);
+
+        return new Map(extractInputs(classDecl, checker).map((input) => [input.name, input]));
+    }
+
+    function inputNames(className: string): string[] {
+        return [...inputsOf(className).keys()];
+    }
+
+    function outputsOf(className: string) {
+        return extractOutputs(getClassDeclaration(exports, className, checker), checker);
+    }
+
+    it('lists its own inputs first, then those of each base class up the chain', () => {
+        expect(inputNames('CountryPickerComponent')).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
+    });
+
+    it('reads an inherited input like a declared one', () => {
+        const options = inputsOf('CountryPickerComponent').get('options')!;
+
+        expect(options).toEqual({ name: 'options', type: 'array', rawType: 'ListboxItem[]', required: true, doc: 'Selectable options' });
+    });
+
+    it('reads an inherited model() with its default', () => {
+        const value = inputsOf('CountryPickerComponent').get('value')!;
+
+        expect(value.required).toBe(false);
+        expect(value.defaultValue).toBeNull();
+        expect(value.type).toBe('string');
+    });
+
+    it('lets an input redeclared in the subclass win over the base class', () => {
+        const label = inputsOf('CountryPickerComponent').get('label')!;
+
+        expect(label.defaultValue).toBe('Country');
+        expect(label.doc).toBe('Label of the country picker');
+    });
+
+    // Angular keeps the inherited input, but the component starts with the subclass's value.
+    it('takes the default of an inherited input from the subclass that assigns it a value', () => {
+        expect(inputsOf('LegacyChildComponent').get('title')!.defaultValue).toBe('child');
+    });
+
+    it('drops the inherited default when the value the subclass assigns cannot be read', () => {
+        const count = inputsOf('LegacyChildComponent').get('count')!;
+
+        expect(count).toBeDefined();
+        expect(count.defaultValue).toBeUndefined();
+    });
+
+    it('takes the default from an undecorated class that initializes an input again', () => {
+        expect(inputsOf('MiddleChildComponent').get('shared')!.defaultValue).toBe('middle-shared');
+    });
+
+    it('ignores a static member with the name of an inherited input', () => {
+        expect(inputsOf('StaticShadowComponent').get('label')!.defaultValue).toBe('');
+    });
+
+    it('resolves the type parameter of a generic base class to the type argument of the subclass', () => {
+        const inputs = inputsOf('ColorPickerComponent');
+
+        expect(inputs.get('items')).toMatchObject({ type: 'array', rawType: 'Color[]', required: true });
+        expect(inputs.get('selected')).toMatchObject({ type: 'union', values: ['red', 'green'], defaultValue: null });
+    });
+
+    it('keeps the declared type of an input in a generic base class that does not use the type parameter', () => {
+        expect(inputsOf('ColorPickerComponent').get('size')).toMatchObject({ type: 'union', values: ['sm', 'md'], rawType: 'Size' });
+    });
+
+    it('resolves an inferred type that depends on a type parameter without naming it', () => {
+        expect(inputsOf('ColorPickerComponent').get('fromMember')).toMatchObject({ type: 'union', values: ['red', 'green'] });
+    });
+
+    it('resolves type parameters through a chain of generic base classes', () => {
+        expect(inputsOf('NestedPickerComponent').get('items')).toMatchObject({ type: 'array', rawType: 'Color[][]' });
+    });
+
+    it('resolves the type parameter of an @Input() in a generic base class', () => {
+        expect(inputsOf('LegacyGenericComponent').get('legacy')).toMatchObject({ type: 'union', values: ['red', 'green'] });
+    });
+
+    // Angular only inherits from a class with its own directive definition.
+    it('skips inputs and outputs of a base class without @Directive() or @Component()', () => {
+        expect(inputNames('UndecoratedChildComponent')).toEqual(['own']);
+        expect(outputsOf('UndecoratedChildComponent')).toEqual([]);
+    });
+
+    it('reads a decorated base class behind an undecorated one', () => {
+        expect(inputNames('MiddleChildComponent')).toEqual(['rootInput', 'shared']);
+    });
+
+    it('collects outputs from base classes', () => {
+        expect(outputsOf('ParenthesizedComponent')).toEqual([{ name: 'blurred', doc: 'Emits when the field loses focus' }]);
+    });
+
+    it('lets an output redeclared in the subclass win over the base class', () => {
+        expect(outputsOf('CountryPickerComponent')).toEqual([{ name: 'blurred', doc: 'Emits when the country picker loses focus' }]);
+    });
+
+    it('finds a base class through a default export, a renamed re-export and a namespace import', () => {
+        expect(inputNames('DefaultBasedComponent')).toEqual(['fromDefault']);
+        expect(inputNames('BarrelDefaultComponent')).toEqual(['fromDefault']);
+        expect(inputNames('RenamedBaseComponent')).toEqual(['options', 'value', 'label', 'disabled']);
+    });
+
+    it('follows a parenthesized base class', () => {
+        expect(inputNames('ParenthesizedComponent')).toEqual(['label', 'disabled']);
+    });
+
+    it('stops at a base class that only exists as a declaration', () => {
+        expect(inputNames('LibraryBackedComponent')).toEqual(['hint']);
+        expect(inputNames('AmbientComponent')).toEqual([]);
+        expect(inputNames('ModuleAmbientComponent')).toEqual([]);
+    });
+
+    it('stops at a mixin', () => {
+        expect(inputNames('MixinComponent')).toEqual(['tracked']);
+    });
+});

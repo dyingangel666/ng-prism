@@ -460,3 +460,133 @@ describe('scanComponents with @Showcase values it cannot evaluate', () => {
         expect(warnSpy.mock.calls.filter(([message]) => String(message).includes('megabytes(5)'))).toHaveLength(1);
     });
 });
+
+describe('scanComponents with base classes', () => {
+    let checker: ts.TypeChecker;
+    let exports: ts.Symbol[];
+    let warnSpy: jest.SpyInstance;
+
+    beforeAll(() => {
+        const entryFile = path.join(FIXTURES_DIR, 'inheritance-api.ts');
+        const result = resolveEntryPointExports([{ entryFile, importPath: 'fixture' }], compilerOptions);
+
+        checker = result.program.getTypeChecker();
+        exports = result.entries[0].exports;
+    });
+
+    beforeEach(() => {
+        warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+    });
+
+    afterEach(() => {
+        warnSpy.mockRestore();
+    });
+
+    function warnings(): string[] {
+        return warnSpy.mock.calls.map((call) => String(call[0]));
+    }
+
+    function warningsAbout(className: string): string[] {
+        return warnings().filter((message) => message.includes(`ng-prism: ${className} `));
+    }
+
+    function scanned(className: string) {
+        return scanComponents(exports, checker).find((c) => c.className === className)!;
+    }
+
+    it('records inherited inputs on the scanned component', () => {
+        const picker = scanned('CountryPickerComponent');
+
+        expect(picker.inputs.map((input) => input.name)).toEqual(['label', 'showFlags', 'options', 'value', 'disabled']);
+        expect(picker.outputs.map((output) => output.name)).toEqual(['blurred']);
+    });
+
+    it('records the base classes with source, nearest first', () => {
+        expect(scanned('CountryPickerComponent').baseClasses).toEqual([
+            { className: 'ListboxField', filePath: expect.stringMatching(/field-base\.directive\.ts$/) },
+            { className: 'FieldBase', filePath: expect.stringMatching(/field-base\.directive\.ts$/) }
+        ]);
+    });
+
+    // Angular does not read their inputs, but their methods are still inherited.
+    it('records undecorated base classes as well', () => {
+        expect(scanned('UndecoratedChildComponent').baseClasses).toEqual([{ className: 'UndecoratedBase', filePath: expect.any(String) }]);
+    });
+
+    it('leaves base classes that only exist as a declaration out of the recorded base classes', () => {
+        expect(scanned('LibraryBackedComponent').baseClasses).toEqual([]);
+    });
+
+    it('warns about the inputs of a base class that only exists in a declaration file, by their public names', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('LibraryBackedComponent')).toEqual([
+            expect.stringMatching(/LibraryBackedComponent inherits placeholder, maxlength from LibraryField, .*library-field\.d\.ts/)
+        ]);
+    });
+
+    it('warns once for each such base class up the chain', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('LabelledLibraryComponent')).toEqual([
+            expect.stringContaining('LabelledLibraryComponent inherits label from LibraryLabelledField'),
+            expect.stringContaining('LabelledLibraryComponent inherits placeholder, maxlength from LibraryField')
+        ]);
+    });
+
+    it('warns about an ambient base class in a .ts file like about a declaration file', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('AmbientComponent')).toEqual([
+            expect.stringMatching(/AmbientComponent inherits ambientLabel, importTyped, aliased from AmbientField, .*ambient-field\.ts/)
+        ]);
+        expect(warningsAbout('ModuleAmbientComponent')).toEqual([expect.stringContaining('ModuleAmbientComponent inherits moduleLabel from ModuleField')]);
+    });
+
+    it('does not warn about a declaration-file base class without inputs', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('LoggingComponent')).toEqual([]);
+    });
+
+    // The Angular compiler writes ɵdir for every decorated class, so a compiled class without it is undecorated.
+    it('does not warn about a compiled base class without a directive definition', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('UndecoratedLibraryComponent')).toEqual([]);
+    });
+
+    it('does not warn about base classes it can read, or about mixins', () => {
+        scanComponents(exports, checker);
+
+        for (const className of ['CountryPickerComponent', 'ColorPickerComponent', 'UndecoratedChildComponent', 'MiddleChildComponent', 'MixinComponent']) {
+            expect(warningsAbout(className)).toEqual([]);
+        }
+    });
+
+    it('names the base class an @Input() decorator comes from', () => {
+        scanComponents(exports, checker);
+
+        expect(warningsAbout('LegacyChildComponent')).toEqual([expect.stringContaining('LegacyChildComponent inherits @Input() decorators from LegacyBase')]);
+    });
+
+    it('warns once per base class, however many entry points export the component', () => {
+        const notices = new Set<string>();
+
+        scanComponents(exports, checker, [], notices);
+        scanComponents(exports, checker, [], notices);
+
+        expect(warningsAbout('LibraryBackedComponent')).toHaveLength(1);
+        expect(warningsAbout('LegacyChildComponent')).toHaveLength(1);
+    });
+
+    // strictShowcase fails the build on diagnostics, and a base class in a
+    // package is nothing the author of the component can fix.
+    it('keeps the warnings out of the diagnostics', () => {
+        const diagnostics: string[] = [];
+
+        scanComponents(exports, checker, diagnostics);
+
+        expect(diagnostics).toEqual([]);
+    });
+});
